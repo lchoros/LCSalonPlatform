@@ -23,6 +23,29 @@ Also add the system design doc as `docs/system-design.md` (export the Doc as Mar
 No Docker, no hosting, no real payments or SMS. Install the .NET 10 SDK, PostgreSQL 17 (create `salon_dev` and `salon_test`)
 and Mailpit (single exe). Payments go through a Manual provider that only records them. GitHub is used for PRs and CI only.
 
+## Run locally
+1. Install the .NET 10 SDK (`global.json` pins 10.0.4xx), PostgreSQL 17 and [Mailpit](https://mailpit.axllent.org/) (single exe).
+2. Create the databases once:
+   ```sql
+   CREATE DATABASE salon_dev;
+   CREATE DATABASE salon_test;
+   ```
+   `appsettings.Development.json` expects `postgres/postgres` on `localhost:5432`. Override with user secrets if yours differ:
+   `dotnet user-secrets set "ConnectionStrings:Default" "Host=...;Database=salon_dev;Username=...;Password=..." -p src/Presentation/Salon.Web`.
+   Tests read `ConnectionStrings__Test` (env var) and fall back to `salon_test` with the same defaults.
+3. Download the Tailwind 4 standalone CLI into `tools/` (see `tools/README.md`) and build the stylesheet:
+   `./tools/tailwindcss -i src/Presentation/Salon.Web/Styles/app.css -o src/Presentation/Salon.Web/wwwroot/css/app.css --minify`
+4. Start Mailpit (`mailpit`, inbox at http://localhost:8025, SMTP on 1025) and the app: `dotnet watch --project src/Presentation/Salon.Web`.
+5. Tests: `dotnet test tests/Salon.Tests.Unit`, `...Architecture`, `...Integration`, then
+   `pwsh tests/Salon.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install chromium` once and `dotnet test tests/Salon.Tests.E2E`
+   (screenshots land in `tests/Salon.Tests.E2E/screenshots/`).
+6. Migrations: `dotnet ef migrations add <Name> -p src/Libraries/Salon.Data -s src/Presentation/Salon.Web` (the `dotnet-ef` tool is in `.config/dotnet-tools.json`; run `dotnet tool restore` first).
+
+## Solution layout
+See CLAUDE.md §Architecture. `Salon.slnx` holds `src/Libraries` (Core, Data, Services), `src/Presentation` (Web.Framework, Web),
+`src/Plugins` (Payments.Manual, Sms.Log) and `tests/` (Unit, Integration, Architecture, E2E). `Directory.Build.props` turns on
+nullable, warnings-as-errors and the recommended analyzers; `Directory.Packages.props` pins every package version centrally.
+
 ## Setup (about 30 minutes)
 1. Create the repo; push this kit to `main`.
 2. Secrets: `ANTHROPIC_API_KEY`; `MERGE_BOT_TOKEN` (fine-grained PAT or a GitHub App with contents + pull requests write).

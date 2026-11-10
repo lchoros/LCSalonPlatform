@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- Host. Use cases live in Features/<Module>/<UseCase>/; admin UI in Areas/Admin; public booking in Areas/Booking. -->
+
+  <PropertyGroup>
+    <UserSecretsId>salon-platform-dev</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Salon.Web.Framework\Salon.Web.Framework.csproj" />
+    <ProjectReference Include="..\..\Plugins\Salon.Plugin.Payments.Manual\Salon.Plugin.Payments.Manual.csproj" />
+    <ProjectReference Include="..\..\Plugins\Salon.Plugin.Sms.Log\Salon.Plugin.Sms.Log.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Needed by `dotnet ef` when this host is the startup project. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Salon.Tests.Integration" />
+    <InternalsVisibleTo Include="Salon.Tests.E2E" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.Name" class="h-full bg-stone-50">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] · Salon Platform</title>
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
+</head>
+<body class="min-h-full flex flex-col text-stone-900 antialiased">
+    <header class="border-b border-stone-200 bg-white">
+        <nav class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+            <a class="text-lg font-semibold tracking-tight" asp-area="" asp-controller="Home" asp-action="Index">Salon Platform</a>
+        </nav>
+    </header>
+    <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
+        @RenderBody()
+    </main>
+    <footer class="border-t border-stone-200 py-4 text-center text-sm text-stone-500">
+        &copy; @DateTime.UtcNow.Year Salon Platform
+    </footer>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

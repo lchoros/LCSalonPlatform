@@ -4,13 +4,13 @@ Status key: [ ] todo · [~] in progress · [x] done · [!] needs owner
 
 ## M0 Walking skeleton (weeks 1–2)
 Gate: CI green and agents merge a Tier 0 PR on their own.
-- [ ] Solution layers + Directory.Build.props / Directory.Packages.props
+- [x] Solution layers + Directory.Build.props / Directory.Packages.props (2026-11-10: Salon.slnx, 7 src + 4 test projects, layer tests green)
 - [ ] Tenancy: ITenantContext, global filter, Postgres RLS, tenant-isolation test helper
 - [ ] Platform services: settings, localization (en-GB, pl-PL), events + outbox, cache, schedule tasks, plugin loader, widget zones, permissions
 - [ ] Slice pipeline behaviours
 - [ ] Catalog/CreateService + Booking/ListServices end to end
-- [ ] Run locally without Docker: local Postgres 17, Mailpit, dotnet watch; CI and agent workflows (no deploy)
-- [ ] ManualPaymentProvider + LogSmsProvider behind their interfaces
+- [~] Run locally without Docker: local Postgres 17, Mailpit, dotnet watch; CI and agent workflows (no deploy) — README "Run locally" written; CI not yet run against the skeleton
+- [~] ManualPaymentProvider + LogSmsProvider behind their interfaces — contracts + providers + unit tests in place; not yet wired to appointments or settings
 - [ ] Demo tenant seed "studio-20"
 
 ## M1 Booking core (weeks 3–6)

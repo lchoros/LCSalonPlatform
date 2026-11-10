@@ -1,0 +1,8 @@
+{
+  "systemName": "Payments.Manual",
+  "displayNameKey": "Plugins.Payments.Manual.DisplayName",
+  "group": "Payments",
+  "author": "Salon Platform",
+  "version": "0.1.0",
+  "description": "Records deposits, card/cash taken at the salon's own terminal and no-show fees. Never charges a card."
+}

@@ -1,0 +1,29 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="CLAUDE.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path=".editorconfig" />
+  </Folder>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Libraries/">
+    <Project Path="src/Libraries/Salon.Core/Salon.Core.csproj" />
+    <Project Path="src/Libraries/Salon.Data/Salon.Data.csproj" />
+    <Project Path="src/Libraries/Salon.Services/Salon.Services.csproj" />
+  </Folder>
+  <Folder Name="/src/Presentation/">
+    <Project Path="src/Presentation/Salon.Web.Framework/Salon.Web.Framework.csproj" />
+    <Project Path="src/Presentation/Salon.Web/Salon.Web.csproj" />
+  </Folder>
+  <Folder Name="/src/Plugins/">
+    <Project Path="src/Plugins/Salon.Plugin.Payments.Manual/Salon.Plugin.Payments.Manual.csproj" />
+    <Project Path="src/Plugins/Salon.Plugin.Sms.Log/Salon.Plugin.Sms.Log.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Salon.Tests.Unit/Salon.Tests.Unit.csproj" />
+    <Project Path="tests/Salon.Tests.Integration/Salon.Tests.Integration.csproj" />
+    <Project Path="tests/Salon.Tests.Architecture/Salon.Tests.Architecture.csproj" />
+    <Project Path="tests/Salon.Tests.E2E/Salon.Tests.E2E.csproj" />
+  </Folder>
+</Solution>

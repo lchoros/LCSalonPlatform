@@ -1,0 +1,4 @@
+/* Source stylesheet for the Tailwind 4 standalone CLI. Output: wwwroot/css/app.css (generated, not committed).
+   ./tools/tailwindcss -i src/Presentation/Salon.Web/Styles/app.css -o src/Presentation/Salon.Web/wwwroot/css/app.css --minify */
+@import "tailwindcss";
+@source "../**/*.cshtml";

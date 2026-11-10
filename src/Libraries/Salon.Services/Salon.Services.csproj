@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Cross-slice services: availability, pricing, settings, localization, notifications. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\Salon.Core\Salon.Core.csproj" />
+    <ProjectReference Include="..\Salon.Data\Salon.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="Hangfire.Core" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="MailKit" />
+  </ItemGroup>
+
+</Project>
