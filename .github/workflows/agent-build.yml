@@ -1,0 +1,61 @@
+name: agent-build
+# An issue labelled `agent:ready` (or a comment "/agent build") starts the Orchestrator,
+# which plans, spawns role subagents, and opens one PR per slice.
+on:
+  issues:
+    types: [labeled]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+concurrency:
+  group: agent-build-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  orchestrate:
+    if: >
+      vars.AGENTS_ENABLED == 'true' &&
+      !contains(github.event.issue.labels.*.name, 'agent:stop') &&
+      ((github.event_name == 'issues' && github.event.label.name == 'agent:ready') ||
+       (github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/agent build') &&
+        github.event.comment.author_association == 'OWNER'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    services:
+      postgres:
+        image: postgres:17
+        env: { POSTGRES_PASSWORD: postgres }
+        ports: ['5432:5432']
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '10.0.x' }
+      - name: Open agent PR limit
+        run: |
+          OPEN=$(gh pr list --search "head:agent/ is:open" --json number -q length)
+          if [ "$OPEN" -ge 5 ]; then gh issue comment ${{ github.event.issue.number }} -b "5 agent PRs already open; queued."; exit 1; fi
+        env: { GH_TOKEN: '${{ github.token }}' }
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: "--max-turns 120"
+          prompt: |
+            You are the Orchestrator for Salon Platform. Follow CLAUDE.md exactly.
+            Work on issue #${{ github.event.issue.number }} in ${{ github.repository }}.
+            1. Read CLAUDE.md, docs/system-design.md, docs/PLAN.md, docs/adr/, and the issue with its comments.
+            2. Post a plan comment on the issue: slices, tier per slice, files, tests, risks, ADRs needed.
+            3. For each slice: use the tester subagent to commit failing tests, the builder subagent to implement
+               on branch agent/${{ github.event.issue.number }}-<slug>, and ux-frontend for views.
+            4. Open one PR per slice using .github/pull_request_template.md and add the label tier:N.
+            5. Decide ambiguous points yourself (simplest reversible option), record them as ADRs
+               "Decided — owner may veto", and continue. Only stop for Tier 2 questions: label the issue needs-owner.
+            6. Never merge. Never edit CLAUDE.md or .github/. Never weaken tests.
+            7. Finish with a short comment on the issue: PRs opened, decisions made, anything for the owner.

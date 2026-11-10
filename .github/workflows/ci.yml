@@ -1,0 +1,78 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17   # runs on GitHub's runner only; no Docker needed on your machine
+        env: { POSTGRES_PASSWORD: postgres, POSTGRES_DB: salon_test }
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-retries 10
+    env:
+      ConnectionStrings__Test: Host=localhost;Port=5432;Database=salon_test;Username=postgres;Password=postgres
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '10.0.x' }
+      - name: Format
+        run: dotnet format --verify-no-changes
+      - name: Build
+        run: dotnet build -c Release -warnaserror
+      - name: Unit + architecture tests
+        run: |
+          dotnet test tests/Salon.Tests.Unit -c Release --no-build --collect:"XPlat Code Coverage"
+          dotnet test tests/Salon.Tests.Architecture -c Release --no-build
+      - name: Integration tests (Postgres service + Respawn)
+        run: dotnet test tests/Salon.Tests.Integration -c Release --no-build
+      - name: E2E (Playwright, mobile + desktop, axe)
+        run: |
+          pwsh tests/Salon.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+          dotnet test tests/Salon.Tests.E2E -c Release --no-build
+      - name: Vulnerable packages
+        run: |
+          dotnet list package --vulnerable --include-transitive | tee vuln.txt
+          ! grep -q "has the following vulnerable packages" vuln.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: playwright-screenshots, path: tests/Salon.Tests.E2E/screenshots }
+
+  tier-check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Read declared tier label
+        id: label
+        run: |
+          T=$(gh pr view ${{ github.event.pull_request.number }} --json labels -q '[.labels[].name | select(startswith("tier:"))][0] // "tier:0"' | cut -d: -f2)
+          echo "tier=$T" >> $GITHUB_OUTPUT
+        env: { GH_TOKEN: '${{ github.token }}' }
+      - run: bash scripts/tier-check.sh origin/${{ github.base_ref }} ${{ steps.label.outputs.tier }}
+
+  security-scan:
+    runs-on: ubuntu-latest
+    permissions: { security-events: write, contents: read }
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: gitleaks/gitleaks-action@v2
+        env: { GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
+      - uses: github/codeql-action/init@v3
+        with: { languages: csharp }
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '10.0.x' }
+      - run: dotnet build -c Release
+      - uses: github/codeql-action/analyze@v3
+
+  # Phase 1 is local only: no deploy job. A deploy-staging job (Docker image + migration bundle) is added at M3.

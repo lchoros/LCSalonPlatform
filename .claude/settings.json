@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet:*)",
+      "Bash(psql:*)",
+      "Bash(git:*)",
+      "Bash(gh issue:*)",
+      "Bash(gh pr:*)",
+      "Bash(./tools/tailwindcss:*)",
+      "Bash(./scripts/*)",
+      "Read",
+      "Edit",
+      "Write",
+      "Grep",
+      "Glob"
+    ],
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git push origin main:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(az:*)",
+      "Bash(curl:*)",
+      "Read(./.env*)",
+      "Read(./secrets/**)",
+      "Edit(./CLAUDE.md)",
+      "Edit(./.github/**)"
+    ]
+  }
+}

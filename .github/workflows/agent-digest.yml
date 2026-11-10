@@ -1,0 +1,29 @@
+name: agent-digest
+on:
+  schedule:
+    - cron: '41 20 * * *'   # ~20:41 UTC every evening
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+  id-token: write
+
+jobs:
+  digest:
+    if: vars.AGENTS_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: "--max-turns 20"
+          prompt: |
+            Act as the release-manager subagent (.claude/agents/release-manager.md).
+            Write today's digest as a new issue titled "Digest <today's date>" with label digest:
+            merged PRs (last 24h), PRs labelled needs-owner, ADRs added today in docs/adr/, blocked or failing items,
+            and what the agents plan next from docs/PLAN.md. Under 30 lines, plain English.

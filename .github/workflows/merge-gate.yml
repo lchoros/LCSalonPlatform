@@ -1,0 +1,51 @@
+name: merge-gate
+# Decides whether a PR may merge, by tier. Branch protection on main requires:
+#   build-test, tier-check, security-scan, agent/merge-gate
+# Tier 0: CI green + agent/reviewer
+# Tier 1: CI green + agent/reviewer + agent/tester + agent/architect + agent/security
+# Tier 2: all of the above + an APPROVED review from the repo owner (only the owner merges)
+on:
+  status:
+  check_suite:
+    types: [completed]
+  pull_request_review:
+    types: [submitted]
+  pull_request:
+    types: [labeled, unlabeled, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+  statuses: write
+
+jobs:
+  gate:
+    if: vars.AGENTS_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate open agent PRs
+        run: |
+          for PR in $(gh pr list -R $REPO --state open --json number,headRefName -q '.[] | select(.headRefName|startswith("agent/")) | .number'); do
+            J=$(gh pr view $PR -R $REPO --json headRefOid,labels,reviews,statusCheckRollup)
+            SHA=$(echo "$J" | jq -r .headRefOid)
+            LABELS=$(echo "$J" | jq -r '[.labels[].name] | join(",")')
+            if echo "$LABELS" | grep -q "agent:stop"; then continue; fi
+            TIER=$(echo "$LABELS" | grep -oE 'tier:[0-2]' | cut -d: -f2 | sort -r | head -1); TIER=${TIER:-2}
+            ok() { echo "$J" | jq -e --arg c "$1" '[.statusCheckRollup[] | select((.context // .name)==$c) | (.state // .conclusion)] | any(.=="SUCCESS" or .=="success")' >/dev/null; }
+            NEED="build-test tier-check security-scan agent/reviewer"
+            [ "$TIER" -ge 1 ] && NEED="$NEED agent/tester agent/architect agent/security"
+            PASS=true; for c in $NEED; do ok "$c" || PASS=false; done
+            if [ "$TIER" = "2" ]; then
+              echo "$J" | jq -e --arg o "$OWNER" '[.reviews[] | select(.author.login==$o and .state=="APPROVED")] | length > 0' >/dev/null || PASS=false
+              gh pr edit $PR -R $REPO --add-label needs-owner >/dev/null || true
+            fi
+            STATE=$([ "$PASS" = true ] && echo success || echo pending)
+            gh api repos/$REPO/statuses/$SHA -f state=$STATE -f context=agent/merge-gate -f description="tier $TIER"
+            if [ "$PASS" = true ] && [ "$TIER" != "2" ]; then
+              gh pr merge $PR -R $REPO --auto --squash --delete-branch
+            fi
+          done
+        env:
+          GH_TOKEN: ${{ secrets.MERGE_BOT_TOKEN }}   # fine-grained PAT or GitHub App, so merges trigger the deploy workflow
+          REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
