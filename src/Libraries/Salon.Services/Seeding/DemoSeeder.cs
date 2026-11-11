@@ -99,12 +99,12 @@ public sealed class DemoSeeder(
         var password = demoOptions.Value.OwnerPassword;
         if (string.IsNullOrWhiteSpace(password))
         {
-            logger.LogWarning("Demo:OwnerPassword is not configured; the demo salon has no logins. Set it in appsettings.Development.json to sign in as {OwnerEmail}", OwnerEmail);
+            logger.LogWarning("Demo:OwnerPassword is not configured; the demo salon has no logins. Set it in appsettings.Development.json (see docs/system-design.md for the demo accounts)");
             return;
         }
 
         await users.CreateAsync(OwnerEmail, "Studio 20 Owner", password, Role.Owner, cancellationToken).ConfigureAwait(false);
         await users.CreateAsync(ReceptionistEmail, "Studio 20 Front Desk", password, Role.Receptionist, cancellationToken).ConfigureAwait(false);
-        logger.LogInformation("Seeded demo logins {OwnerEmail} (Owner) and {ReceptionistEmail} (Receptionist)", OwnerEmail, ReceptionistEmail);
+        logger.LogInformation("Seeded {Count} demo logins for tenant {Slug} (roles: Owner, Receptionist)", 2, Slug);
     }
 }
