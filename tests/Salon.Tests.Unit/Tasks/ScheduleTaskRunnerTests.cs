@@ -54,7 +54,11 @@ public class ScheduleTaskRunnerTests
     {
         var method = typeof(ScheduleTaskRunner).GetMethod(nameof(ScheduleTaskRunner.RunAsync))!;
 
-        method.GetCustomAttributes(typeof(Hangfire.DisableConcurrentExecutionAttribute), false).ShouldNotBeEmpty();
+        var lockAttribute = method.GetCustomAttributes(typeof(Hangfire.DisableConcurrentExecutionAttribute), false)
+            .Cast<Hangfire.DisableConcurrentExecutionAttribute>().ShouldHaveSingleItem();
+        // Without an explicit resource Hangfire would use the runner method itself as the lock, shared by every task.
+        lockAttribute.Resource.ShouldBe(ScheduleTaskRunner.LockResource);
+        ScheduleTaskRunner.LockResource.ShouldContain("{0}");
         var retry = method.GetCustomAttributes(typeof(Hangfire.AutomaticRetryAttribute), false).Cast<Hangfire.AutomaticRetryAttribute>().Single();
         retry.Attempts.ShouldBe(0);
     }

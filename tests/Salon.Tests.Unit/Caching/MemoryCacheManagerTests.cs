@@ -149,3 +149,25 @@ public sealed class MemoryCacheManagerTests : IDisposable
         }
     }
 }
+public class MemoryCacheManagerEvictionTests
+{
+    [Fact]
+    public async Task A_value_set_after_its_predecessor_expired_stays_invalidatable_by_prefix()
+    {
+        using var memory = new Microsoft.Extensions.Caching.Memory.MemoryCache(new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions());
+        var manager = new MemoryCacheManager(memory);
+        // Same key string and the same prefix list instance (as `with` copies share), as static readonly keys do.
+        var key = CacheKey.Create("Salon.evict.item", "Salon.evict.");
+        var shortLived = key with { CacheTime = TimeSpan.FromMilliseconds(1) };
+
+        await manager.SetAsync(shortLived, "old");
+        await Task.Delay(30);
+        (await manager.GetAsync(key, () => Task.FromResult("new"))).ShouldBe("new");
+        // The expired entry's eviction callback runs on the thread pool shortly after it was detected.
+        await Task.Delay(300);
+
+        await manager.RemoveByPrefixAsync("Salon.evict.");
+
+        memory.TryGetValue("Salon.evict.item", out _).ShouldBeFalse("the fresh entry fell out of the prefix index");
+    }
+}
