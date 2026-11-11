@@ -11,6 +11,8 @@ using Respawn;
 
 using Salon.Core.Tenancy;
 using Salon.Data;
+using Salon.Services.Events;
+using Salon.Web.Framework.Pipeline;
 
 namespace Salon.Tests.Integration.Infrastructure;
 
@@ -86,5 +88,12 @@ public sealed class SalonWebApplicationFactory : WebApplicationFactory<Program>,
 
     Task IAsyncLifetime.DisposeAsync() => DisposeAsync().AsTask();
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.UseEnvironment("Testing");
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.UseEnvironment("Testing");
+
+        // Test-only events, consumers and request handlers (Events/OutboxProbe.cs) join the host's own registrations.
+        var testAssembly = typeof(SalonWebApplicationFactory).Assembly;
+        builder.ConfigureServices(services => services.AddSalonEvents(testAssembly).AddSalonPipeline(testAssembly));
+    }
 }
