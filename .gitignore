@@ -480,3 +480,7 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Project folders whose names collide with the generic rules above
+!src/Plugins/Salon.Plugin.Sms.Log/
+!tests/Salon.Tests.E2E/
