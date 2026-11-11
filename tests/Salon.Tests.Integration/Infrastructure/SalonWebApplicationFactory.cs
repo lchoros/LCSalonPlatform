@@ -35,8 +35,10 @@ public sealed class SalonWebApplicationFactory : WebApplicationFactory<Program>,
         Environment.SetEnvironmentVariable("ConnectionStrings__Default", TestConnectionString);
         Environment.SetEnvironmentVariable("Database__MigrateOnStartup", "false");
         Environment.SetEnvironmentVariable("Jobs__Enabled", "false");
-        // Flagged slices are exercised with their flag on; a test that needs it off overrides it per host.
-        Environment.SetEnvironmentVariable("Features__CatalogAdmin", "true");
+        // Cookies are re-checked against the user row on every request so deactivation and role changes show at once; the
+        // login rate limit is lifted so the suite never trips it (the rate-limit test runs its own host with the default).
+        Environment.SetEnvironmentVariable("Auth__ValidationInterval", "00:00:00");
+        Environment.SetEnvironmentVariable("Auth__LoginRateLimit__PermitLimit", "100000");
     }
 
     public async Task InitializeAsync()

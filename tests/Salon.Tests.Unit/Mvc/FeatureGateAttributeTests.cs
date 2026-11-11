@@ -15,9 +15,9 @@ public class FeatureGateAttributeTests
     [Fact]
     public void Flag_off_short_circuits_with_404()
     {
-        var context = Context(new FeaturesOptions { CatalogAdmin = false });
+        var context = Context(new FeaturesOptions { Preview = false });
 
-        new FeatureGateAttribute(nameof(FeaturesOptions.CatalogAdmin)).OnActionExecuting(context);
+        new FeatureGateAttribute(nameof(FeaturesOptions.Preview)).OnActionExecuting(context);
 
         context.Result.ShouldBeOfType<NotFoundResult>();
     }
@@ -25,9 +25,9 @@ public class FeatureGateAttributeTests
     [Fact]
     public void Flag_on_lets_the_action_run()
     {
-        var context = Context(new FeaturesOptions { CatalogAdmin = true });
+        var context = Context(new FeaturesOptions { Preview = true });
 
-        new FeatureGateAttribute(nameof(FeaturesOptions.CatalogAdmin)).OnActionExecuting(context);
+        new FeatureGateAttribute(nameof(FeaturesOptions.Preview)).OnActionExecuting(context);
 
         context.Result.ShouldBeNull();
     }
@@ -37,7 +37,7 @@ public class FeatureGateAttributeTests
     {
         var context = Context(new FeaturesOptions());
 
-        new FeatureGateAttribute(nameof(FeaturesOptions.CatalogAdmin)).OnActionExecuting(context);
+        new FeatureGateAttribute(nameof(FeaturesOptions.Preview)).OnActionExecuting(context);
 
         context.Result.ShouldBeOfType<NotFoundResult>();
     }
@@ -54,7 +54,7 @@ public class FeatureGateAttributeTests
     internal static ActionExecutingContext Context(FeaturesOptions options)
     {
         var services = new ServiceCollection();
-        services.AddOptions<FeaturesOptions>().Configure(o => o.CatalogAdmin = options.CatalogAdmin);
+        services.AddOptions<FeaturesOptions>().Configure(o => o.Preview = options.Preview);
         var httpContext = new DefaultHttpContext { RequestServices = services.BuildServiceProvider() };
         return new ActionExecutingContext(
             new ActionContext(httpContext, new RouteData(), new ActionDescriptor()),

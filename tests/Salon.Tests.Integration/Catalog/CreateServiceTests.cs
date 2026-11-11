@@ -1,17 +1,14 @@
 using System.Net;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using NodaTime;
 
 using Salon.Core.Catalog;
 using Salon.Core.Catalog.Events;
+using Salon.Core.Identity;
 using Salon.Core.Tenancy;
 using Salon.Data;
 using Salon.Tests.Integration.Infrastructure;
@@ -19,12 +16,12 @@ using Salon.Tests.Integration.Infrastructure;
 namespace Salon.Tests.Integration.Catalog;
 
 /// <summary>
-/// The CreateService slice end to end over HTTP: form, anti-forgery, pipeline validation with localized messages,
-/// the service row in the right tenant with the tenant's currency, the ServiceCreated outbox row, and the two gates
-/// (tenant required, CatalogAdmin flag).
+/// The CreateService slice end to end over HTTP as a signed-in Owner: form, anti-forgery, pipeline validation with
+/// localized messages, the service row in the right tenant with the tenant's currency, the ServiceCreated outbox row, and
+/// the two gates (tenant required, Catalog.Manage permission — the role matrix itself is covered in Identity/PermissionTests).
 /// </summary>
 [Collection(SharedDatabase.Name)]
-public partial class CreateServiceTests(SalonWebApplicationFactory factory) : IAsyncLifetime
+public class CreateServiceTests(SalonWebApplicationFactory factory) : IAsyncLifetime
 {
     private const string FormPath = "/admin/services/new";
 
@@ -44,8 +41,8 @@ public partial class CreateServiceTests(SalonWebApplicationFactory factory) : IA
     [Fact]
     public async Task The_form_renders_for_a_salon_in_its_language()
     {
-        using var english = ClientFor("studio-20.localhost");
-        using var polish = ClientFor("salon-pl.localhost");
+        using var english = await OwnerClientAsync("studio-20.localhost", _studio.Id);
+        using var polish = await OwnerClientAsync("salon-pl.localhost", _polish.Id);
 
         var englishHtml = await GetFormAsync(english);
         var polishHtml = await GetFormAsync(polish);
@@ -59,7 +56,7 @@ public partial class CreateServiceTests(SalonWebApplicationFactory factory) : IA
     [Fact]
     public async Task A_valid_post_creates_the_service_for_that_tenant_only_and_queues_ServiceCreated()
     {
-        using var client = ClientFor("studio-20.localhost");
+        using var client = await OwnerClientAsync("studio-20.localhost", _studio.Id);
 
         var response = await PostAsync(client, new()
         {
@@ -96,7 +93,7 @@ public partial class CreateServiceTests(SalonWebApplicationFactory factory) : IA
     [Fact]
     public async Task An_invalid_post_re_renders_the_form_with_messages_in_the_salon_language()
     {
-        using var client = ClientFor("salon-pl.localhost");
+        using var client = await OwnerClientAsync("salon-pl.localhost", _polish.Id);
 
         var response = await PostAsync(client, new()
         {
@@ -118,7 +115,7 @@ public partial class CreateServiceTests(SalonWebApplicationFactory factory) : IA
     [Fact]
     public async Task A_duplicate_name_is_a_form_message_not_a_server_error()
     {
-        using var client = ClientFor("studio-20.localhost");
+        using var client = await OwnerClientAsync("studio-20.localhost", _studio.Id);
 
         var response = await PostAsync(client, new() { ["Name"] = "existing ", ["DurationMinutes"] = "30", ["Price"] = "20" });
 
@@ -130,7 +127,7 @@ public partial class CreateServiceTests(SalonWebApplicationFactory factory) : IA
     [Fact]
     public async Task A_post_without_the_anti_forgery_token_is_refused()
     {
-        using var client = ClientFor("studio-20.localhost");
+        using var client = await OwnerClientAsync("studio-20.localhost", _studio.Id);
 
         var response = await client.PostAsync(
             new Uri(FormPath, UriKind.Relative),
@@ -143,20 +140,20 @@ public partial class CreateServiceTests(SalonWebApplicationFactory factory) : IA
     [Fact]
     public async Task The_bare_platform_domain_has_no_catalogue()
     {
-        using var client = ClientFor("localhost");
+        using var client = factory.ClientFor("localhost");
 
         (await client.GetAsync(new Uri(FormPath, UriKind.Relative))).StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
-    public async Task With_the_flag_off_the_screen_does_not_exist()
+    public async Task Without_a_sign_in_the_screen_asks_for_login()
     {
-        using var flaggedOff = factory.WithWebHostBuilder(b => b.ConfigureAppConfiguration(c =>
-            c.AddInMemoryCollection(new Dictionary<string, string?> { ["Features:CatalogAdmin"] = "false" })));
-        using var client = flaggedOff.CreateClient();
-        client.DefaultRequestHeaders.Host = "studio-20.localhost";
+        using var client = factory.ClientFor("studio-20.localhost");
 
-        (await client.GetAsync(new Uri(FormPath, UriKind.Relative))).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        var response = await client.GetAsync(new Uri(FormPath, UriKind.Relative));
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        response.Headers.Location.ShouldNotBeNull().AbsolutePath.ShouldBe("/account/login");
     }
 
     private static async Task<string> GetFormAsync(HttpClient client)
@@ -169,20 +166,12 @@ public partial class CreateServiceTests(SalonWebApplicationFactory factory) : IA
     /// <summary>GETs the form for its anti-forgery token (the cookie half rides on the client) and POSTs the fields with it.</summary>
     private static async Task<HttpResponseMessage> PostAsync(HttpClient client, Dictionary<string, string> fields)
     {
-        var html = await GetFormAsync(client);
-        var token = AntiForgeryTokenPattern().Match(html);
-        token.Success.ShouldBeTrue("the form has no anti-forgery token");
-        fields["__RequestVerificationToken"] = WebUtility.HtmlDecode(token.Groups["token"].Value);
+        fields["__RequestVerificationToken"] = IdentityTestClient.AntiForgeryToken(await GetFormAsync(client));
         return await client.PostAsync(new Uri(FormPath, UriKind.Relative), new FormUrlEncodedContent(fields));
     }
 
-    private HttpClient ClientFor(string host)
-    {
-        // The redirect target is asserted, not followed: the public list is another slice with its own tests.
-        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
-        client.DefaultRequestHeaders.Host = host;
-        return client;
-    }
+    /// <summary>A client signed in as an Owner of the tenant. Redirects are asserted, not followed: the public list is another slice.</summary>
+    private Task<HttpClient> OwnerClientAsync(string host, Guid tenantId) => factory.SignedInClientAsync(host, tenantId, Role.Owner);
 
     private async Task AddServiceAsync(Guid tenantId, string name, int sortOrder)
     {
@@ -197,7 +186,4 @@ public partial class CreateServiceTests(SalonWebApplicationFactory factory) : IA
         await using var scope = factory.CreateTenantScope(tenantId);
         return await scope.ServiceProvider.GetRequiredService<SalonDbContext>().Services.AsNoTracking().OrderBy(s => s.SortOrder).ToListAsync();
     }
-
-    [GeneratedRegex("name=\"__RequestVerificationToken\"[^>]*value=\"(?<token>[^\"]+)\"")]
-    private static partial Regex AntiForgeryTokenPattern();
 }
