@@ -10,7 +10,8 @@ using Salon.Web.Framework.Tenancy;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSalonFramework(builder.Configuration);
+// Slices live in this assembly; their handlers and validators are discovered from it.
+builder.Services.AddSalonFramework(builder.Configuration, typeof(Program).Assembly);
 
 // Phase 1 plugins: record-only payments, log + Mailpit SMS. Real gateways arrive at M3 behind the same interfaces.
 builder.Services.AddManualPaymentProvider();

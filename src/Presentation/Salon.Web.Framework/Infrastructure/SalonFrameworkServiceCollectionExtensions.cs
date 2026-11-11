@@ -1,3 +1,5 @@
+using System.Reflection;
+
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -7,14 +9,21 @@ using Salon.Data;
 using Salon.Data.Tenancy;
 using Salon.Services;
 using Salon.Web.Framework.Mvc;
+using Salon.Web.Framework.Pipeline;
 using Salon.Web.Framework.Tenancy;
 
 namespace Salon.Web.Framework.Infrastructure;
 
 public static class SalonFrameworkServiceCollectionExtensions
 {
-    /// <summary>Wires the data layer, cross-slice services and MVC with the Features/ view convention.</summary>
-    public static IServiceCollection AddSalonFramework(this IServiceCollection services, IConfiguration configuration)
+    /// <summary>
+    /// Wires the data layer, cross-slice services, the request pipeline and MVC with the Features/ view convention.
+    /// <paramref name="sliceAssemblies"/> are scanned for request handlers and validators (pass the host assembly).
+    /// </summary>
+    public static IServiceCollection AddSalonFramework(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        params Assembly[] sliceAssemblies)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
@@ -30,6 +39,7 @@ public static class SalonFrameworkServiceCollectionExtensions
                    .AddInterceptors(provider.GetRequiredService<TenantConnectionInterceptor>()));
 
         services.AddHttpContextAccessor();
+        services.AddSalonPipeline(sliceAssemblies);
 
         services.AddControllersWithViews();
         services.Configure<RazorViewEngineOptions>(options =>
