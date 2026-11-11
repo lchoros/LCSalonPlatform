@@ -19,7 +19,7 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Registers cross-slice services: clock, tenant context, cache, settings, schedule tasks, localization, email.
     /// Resource sources for localization are added per assembly with <see cref="LocalizationServiceCollectionExtensions.AddLocalizationResources"/>.
-    /// Events come later.
+    /// Events and the outbox are added per assembly with <see cref="Events.EventsServiceCollectionExtensions.AddSalonEvents"/>.
     /// </summary>
     public static IServiceCollection AddSalonServices(this IServiceCollection services)
     {
