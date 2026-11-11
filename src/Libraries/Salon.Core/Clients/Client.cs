@@ -19,7 +19,7 @@ public class Client : BaseEntity, ITenantEntity
     public const int NotesMaxLength = 4000;
 
     /// <summary>Plain-text ceiling for health notes; the cipher text column (<see cref="HealthNotesProtectedMaxLength"/>) is sized for it.</summary>
-    public const int HealthNotesMaxLength = 4000;
+    public const int HealthNotesMaxLength = 2000;
     public const int HealthNotesProtectedMaxLength = 8000;
     public const int MarketingConsentWordingMaxLength = 500;
 

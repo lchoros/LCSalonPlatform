@@ -21,7 +21,8 @@ phone from the front desk.
 ## Decision
 - **Option 3.** `Client : BaseEntity, ITenantEntity` — `FirstName`, `LastName` (≤ 100 each), `Phone` (E.164-style,
   ≤ 20, normalised before storage and search), `Email` (lower-case, ≤ 254), `Notes` (plain, ≤ 4000),
-  `HealthNotesProtected` (cipher text, ≤ 8000; plain text ≤ 4000), `LastPatchTestOn` (`LocalDate?`),
+  `HealthNotesProtected` (cipher text, ≤ 8000; plain text ≤ 2000, so even all-two-byte UTF-8 text fits once
+  encrypted and base64url-encoded), `LastPatchTestOn` (`LocalDate?`),
   `MarketingConsent`, `MarketingConsentAt` (`Instant?`), `MarketingConsentWording` (≤ 500), `IsActive`, `CreatedAt`,
   `UpdatedAt`. Table `clients` with forced RLS (ADR 0002), index on `(tenant_id, last_name, first_name)`, unique partial
   indexes on `(tenant_id, phone)` and `(tenant_id, email)` where not null.
