@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+
+using Salon.Data;
 using Salon.Plugin.Payments.Manual;
 using Salon.Plugin.Sms.Log;
 using Salon.Web.Framework.Infrastructure;
@@ -11,6 +14,13 @@ builder.Services.AddManualPaymentProvider();
 builder.Services.AddLogSmsProvider();
 
 var app = builder.Build();
+
+// Local development convenience; CI and tests migrate explicitly, production will use a migration bundle at M3.
+if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+{
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.GetRequiredService<SalonDbContext>().Database.MigrateAsync();
+}
 
 if (!app.Environment.IsDevelopment())
 {

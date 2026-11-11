@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Salon.Data;
+using Salon.Data.Tenancy;
 using Salon.Services;
 using Salon.Web.Framework.Mvc;
 
@@ -19,11 +20,13 @@ public static class SalonFrameworkServiceCollectionExtensions
         var connectionString = configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("ConnectionStrings:Default is not configured.");
 
-        services.AddDbContext<SalonDbContext>(options =>
-            options.UseNpgsql(connectionString, npgsql => npgsql.UseNodaTime())
-                   .UseSnakeCaseNamingConvention());
-
         services.AddSalonServices();
+        services.AddScoped<TenantConnectionInterceptor>();
+        services.AddDbContext<SalonDbContext>((provider, options) =>
+            options.UseNpgsql(connectionString, npgsql => npgsql.UseNodaTime())
+                   .UseSnakeCaseNamingConvention()
+                   .AddInterceptors(provider.GetRequiredService<TenantConnectionInterceptor>()));
+
         services.AddHttpContextAccessor();
 
         services.AddControllersWithViews();

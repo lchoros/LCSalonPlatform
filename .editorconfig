@@ -402,3 +402,8 @@ indent_size = 4
 
 [*.{json,yml,yaml,props,targets,csproj,slnx}]
 indent_size = 2
+
+# EF Core migrations and snapshots are generated; keep analyzers quiet there.
+[**/Migrations/*.cs]
+generated_code = true
+dotnet_diagnostic.CA1861.severity = none
