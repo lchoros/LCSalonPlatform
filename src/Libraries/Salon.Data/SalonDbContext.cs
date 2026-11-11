@@ -8,6 +8,7 @@ using Salon.Core.Events;
 using Salon.Core.Identity;
 using Salon.Core.Messaging;
 using Salon.Core.Settings;
+using Salon.Core.Staff;
 using Salon.Core.Tenancy;
 
 namespace Salon.Data;
@@ -31,6 +32,13 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     public DbSet<Setting> Settings => Set<Setting>();
 
     public DbSet<User> Users => Set<User>();
+
+    /// <summary>Bookable people of the salon (ADR 0010); their weekly rota is <see cref="WorkingHours"/>.</summary>
+    public DbSet<StaffMember> StaffMembers => Set<StaffMember>();
+
+    /// <summary>Weekly working-hour ranges per staff member, in the salon's local time (ADR 0010).</summary>
+    public DbSet<WorkingHours> WorkingHours => Set<WorkingHours>();
+
     /// <summary>Per-tenant overrides of the embedded message template defaults (ADR 0008).</summary>
     public DbSet<MessageTemplate> MessageTemplates => Set<MessageTemplate>();
 
