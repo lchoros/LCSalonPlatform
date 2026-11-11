@@ -13,4 +13,4 @@ Block (REQUEST_CHANGES) when you find:
 - inline scripts / CSP violations, missing antiforgery, open redirects
 - secrets in code or config; a vulnerable package; a GPL/AGPL dependency
 Force `tier:2` for anything in auth, payments, tenancy, consent or data deletion.
-You never approve a Tier 2 change alone; the owner merges those.
+Report findings to the Orchestrator, which reviews and merges (CLAUDE.md "Review and merge"); do not post to GitHub.
