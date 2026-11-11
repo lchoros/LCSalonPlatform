@@ -13,8 +13,8 @@ using Salon.Data;
 namespace Salon.Data.Migrations
 {
     [DbContext(typeof(SalonDbContext))]
-    [Migration("20261111192709_Users")]
-    partial class Users
+    [Migration("20261111191908_MessageTemplates")]
+    partial class MessageTemplates
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -151,76 +151,62 @@ namespace Salon.Data.Migrations
                     b.ToTable("outbox_messages", "salon");
                 });
 
-            modelBuilder.Entity("Salon.Core.Identity.User", b =>
+            modelBuilder.Entity("Salon.Core.Messaging.MessageTemplate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Instant>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("DisplayName")
+                    b.Property<string>("Body")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("display_name");
+                        .HasColumnType("text")
+                        .HasColumnName("body");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(254)
-                        .HasColumnType("character varying(254)")
-                        .HasColumnName("email");
-
-                    b.Property<int>("FailedLoginCount")
+                    b.Property<int>("Channel")
                         .HasColumnType("integer")
-                        .HasColumnName("failed_login_count");
+                        .HasColumnName("channel");
+
+                    b.Property<string>("Culture")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("culture");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
 
-                    b.Property<Instant?>("LastLoginAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_login_at");
-
-                    b.Property<Instant?>("LockedOutUntil")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("locked_out_until");
-
-                    b.Property<string>("PasswordHash")
+                    b.Property<string>("Key")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("password_hash");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("key");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("integer")
-                        .HasColumnName("role");
-
-                    b.Property<string>("SecurityStamp")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("security_stamp");
+                    b.Property<string>("Subject")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("subject");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
 
+                    b.Property<Instant>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
                     b.HasKey("Id")
-                        .HasName("pk_users");
+                        .HasName("pk_message_templates");
 
                     b.HasIndex("TenantId")
-                        .HasDatabaseName("ix_users_tenant_id");
+                        .HasDatabaseName("ix_message_templates_tenant_id");
 
-                    b.HasIndex("TenantId", "Email")
+                    b.HasIndex("TenantId", "Key", "Channel", "Culture")
                         .IsUnique()
-                        .HasDatabaseName("ix_users_tenant_id_email");
+                        .HasDatabaseName("ix_message_templates_tenant_id_key_channel_culture");
 
-                    b.ToTable("users", "salon");
+                    b.ToTable("message_templates", "salon");
                 });
 
             modelBuilder.Entity("Salon.Core.Settings.Setting", b =>
@@ -322,14 +308,14 @@ namespace Salon.Data.Migrations
                         .HasConstraintName("fk_services_tenants_tenant_id");
                 });
 
-            modelBuilder.Entity("Salon.Core.Identity.User", b =>
+            modelBuilder.Entity("Salon.Core.Messaging.MessageTemplate", b =>
                 {
                     b.HasOne("Salon.Core.Tenancy.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_users_tenants_tenant_id");
+                        .HasConstraintName("fk_message_templates_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Settings.Setting", b =>
