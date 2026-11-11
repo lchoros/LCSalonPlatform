@@ -4,7 +4,8 @@ using Salon.Tests.Integration.Infrastructure;
 
 namespace Salon.Tests.Integration.Home;
 
-public class HomePageTests(SalonWebApplicationFactory factory) : IClassFixture<SalonWebApplicationFactory>
+[Collection(SharedDatabase.Name)]
+public class HomePageTests(SalonWebApplicationFactory factory)
 {
     [Fact]
     public async Task Home_page_renders()
