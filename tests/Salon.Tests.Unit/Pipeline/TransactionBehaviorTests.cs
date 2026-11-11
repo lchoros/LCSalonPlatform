@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging.Abstractions;
+
 using NSubstitute;
 
 using Salon.Web.Framework.Pipeline;
@@ -15,7 +17,7 @@ public class TransactionBehaviorTests
         _unitOfWork.HasActiveTransaction.Returns(false);
         _unitOfWork.When(u => u.BeginTransactionAsync(Arg.Any<CancellationToken>())).Do(_ => order.Add("begin"));
         _unitOfWork.When(u => u.CommitAsync(Arg.Any<CancellationToken>())).Do(_ => order.Add("commit"));
-        var behavior = new TransactionBehavior<Ping, string>(_unitOfWork);
+        var behavior = new TransactionBehavior<Ping, string>(_unitOfWork, NullLogger<TransactionBehavior<Ping, string>>.Instance);
 
         var result = await behavior.HandleAsync(
             new Ping("x"),
@@ -35,7 +37,7 @@ public class TransactionBehaviorTests
     public async Task Failing_command_rolls_back_and_rethrows()
     {
         _unitOfWork.HasActiveTransaction.Returns(false);
-        var behavior = new TransactionBehavior<Ping, string>(_unitOfWork);
+        var behavior = new TransactionBehavior<Ping, string>(_unitOfWork, NullLogger<TransactionBehavior<Ping, string>>.Instance);
 
         await Should.ThrowAsync<InvalidOperationException>(
             () => behavior.HandleAsync(new Ping("x"), () => throw new InvalidOperationException("boom"), CancellationToken.None));
@@ -49,7 +51,7 @@ public class TransactionBehaviorTests
     public async Task Command_joins_an_already_open_transaction()
     {
         _unitOfWork.HasActiveTransaction.Returns(true);
-        var behavior = new TransactionBehavior<Ping, string>(_unitOfWork);
+        var behavior = new TransactionBehavior<Ping, string>(_unitOfWork, NullLogger<TransactionBehavior<Ping, string>>.Instance);
 
         (await behavior.HandleAsync(new Ping("x"), () => Task.FromResult("ok"), CancellationToken.None)).ShouldBe("ok");
 
@@ -67,5 +69,19 @@ public class TransactionBehaviorTests
 
         await _unitOfWork.DidNotReceive().BeginTransactionAsync(Arg.Any<CancellationToken>());
         await _unitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task A_failing_rollback_does_not_hide_the_handlers_exception()
+    {
+        _unitOfWork.HasActiveTransaction.Returns(false);
+        _unitOfWork.RollbackAsync(Arg.Any<CancellationToken>()).Returns(_ => throw new TimeoutException("rollback lost"));
+        var behavior = new TransactionBehavior<Ping, string>(_unitOfWork, NullLogger<TransactionBehavior<Ping, string>>.Instance);
+
+        var ex = await Should.ThrowAsync<InvalidOperationException>(
+            () => behavior.HandleAsync(new Ping("x"), () => throw new InvalidOperationException("handler failed"), CancellationToken.None));
+
+        ex.Message.ShouldBe("handler failed");
+        await _unitOfWork.Received(1).RollbackAsync(Arg.Any<CancellationToken>());
     }
 }
