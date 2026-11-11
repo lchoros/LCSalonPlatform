@@ -19,6 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Platform default message templates per culture (ADR 0008), read by EmbeddedMessageTemplateDefaults. -->
+    <EmbeddedResource Include="MessageTemplates\*.json" LogicalName="Salon.Services.MessageTemplates.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Salon.Tests.Unit" />
   </ItemGroup>
 
