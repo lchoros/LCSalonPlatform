@@ -16,4 +16,8 @@
     <PackageReference Include="Hangfire.PostgreSql" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Salon.Tests.Unit" />
+  </ItemGroup>
+
 </Project>
