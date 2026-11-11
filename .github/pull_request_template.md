@@ -3,10 +3,10 @@
 
 Closes #
 
-## Tier
-- [ ] tier:0 — auto (docs/tests/copy/refactor/slice bug fix)
-- [ ] tier:1 — auto, guarded (new slice behind flag, additive migration)
-- [ ] tier:2 — owner only (payments, auth, tenancy, destructive migration, GDPR, infra, deps, CI)
+## Tier (information for the owner; the Orchestrator reviews and merges all tiers)
+- [ ] tier:0 — docs/tests/copy/refactor/slice bug fix
+- [ ] tier:1 — new slice behind flag, additive migration, new screen
+- [ ] tier:2 — payments, auth, tenancy/RLS, destructive migration, GDPR, infra, deps, CI; listed in the run digest with its ADR
 
 ## Plan and decisions
 - Plan comment: <!-- link -->
