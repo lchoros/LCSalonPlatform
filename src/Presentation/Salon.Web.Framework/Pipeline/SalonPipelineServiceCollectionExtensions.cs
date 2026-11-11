@@ -38,6 +38,14 @@ public static class SalonPipelineServiceCollectionExtensions
             {
                 foreach (var handlerInterface in type.GetInterfaces().Where(IsRequestHandler))
                 {
+                    var other = services.FirstOrDefault(d => d.ServiceType == handlerInterface && d.ImplementationType != type);
+                    if (other is not null)
+                    {
+                        throw new InvalidOperationException(
+                            $"Request '{handlerInterface.GenericTypeArguments[0].Name}' has two handlers: {other.ImplementationType!.FullName} and {type.FullName}. "
+                            + "A request has exactly one handler (ADR 0003).");
+                    }
+
                     services.TryAddEnumerable(ServiceDescriptor.Scoped(handlerInterface, type));
                 }
             }

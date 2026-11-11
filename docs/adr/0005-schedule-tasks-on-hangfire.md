@@ -13,8 +13,8 @@ and must respect tenant isolation (ADR 0002) although jobs have no HTTP request 
   Respawn ignores it). The server runs in-process when `Jobs:Enabled` is true; tests keep storage and registrations but
   no server.
 - `UseSalonScheduleTasks()` calls `AddOrUpdate` once per task at startup with the task's SystemName as job id; the
-  single entry point `ScheduleTaskRunner.RunAsync(systemName)` carries `[DisableConcurrentExecution]` (Hangfire's
-  storage-backed distributed lock) and `[AutomaticRetry(Attempts = 0)]`, so a slow task never overlaps itself and a
+  single entry point `ScheduleTaskRunner.RunAsync(systemName)` carries `[DisableConcurrentExecution("Salon.ScheduleTask.{0}")]` (Hangfire's
+  storage-backed distributed lock, one resource per task SystemName) and `[AutomaticRetry(Attempts = 0)]`, so a slow task never overlaps itself and a
   failed occurrence waits for the next tick instead of retry storms.
 - Jobs run with no tenant. `ITenantScopeRunner.ForEachTenantAsync` opens a fresh DI scope per active tenant with
   `IMutableTenantContext` set, so the EF filter and Postgres RLS apply; one tenant's failure is logged and the loop continues.

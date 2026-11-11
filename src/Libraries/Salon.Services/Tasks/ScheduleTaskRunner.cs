@@ -17,7 +17,10 @@ public sealed class ScheduleTaskRunner(IEnumerable<IScheduleTask> tasks, ILogger
     /// <summary>Wait at most this long for a running instance of the same task before giving up this occurrence.</summary>
     public const int LockTimeoutSeconds = 30;
 
-    [DisableConcurrentExecution(LockTimeoutSeconds)]
+    /// <summary>One lock per task: Hangfire formats {0} with the first job argument (the SystemName). Without a resource every task would share one global lock.</summary>
+    public const string LockResource = "Salon.ScheduleTask.{0}";
+
+    [DisableConcurrentExecution(LockResource, LockTimeoutSeconds)]
     [AutomaticRetry(Attempts = 0)]
     public async Task RunAsync(string systemName, CancellationToken cancellationToken)
     {

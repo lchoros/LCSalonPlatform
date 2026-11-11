@@ -9,8 +9,9 @@ using Salon.Services.Tenancy;
 namespace Salon.Web.Framework.Tenancy;
 
 /// <summary>
-/// Sets the current tenant for the request. Order: the signed-in user's tenant claim (admin), then the subdomain
-/// (public booking). An unknown or inactive subdomain is a 404. The bare base domain has no tenant (platform pages).
+/// Sets the current tenant for the request. Order: the tenant claim of an <em>authenticated</em> user (admin), then
+/// the subdomain (public booking). Both paths verify the tenant exists and is active; otherwise the request is a 404.
+/// The bare base domain has no tenant (platform pages).
 /// </summary>
 public sealed class TenantResolutionMiddleware(
     RequestDelegate next,
@@ -24,25 +25,32 @@ public sealed class TenantResolutionMiddleware(
         ArgumentNullException.ThrowIfNull(lookup);
 
         var settings = options.Value;
+        TenantInfo? tenant = null;
 
-        var claim = context.User?.FindFirst(settings.TenantClaimType)?.Value;
-        if (claim is not null && Guid.TryParse(claim, out var claimedTenantId))
+        if (context.User?.Identity?.IsAuthenticated == true
+            && Guid.TryParse(context.User.FindFirst(settings.TenantClaimType)?.Value, out var claimedTenantId))
         {
-            tenantContext.SetTenant(claimedTenantId);
-            await next(context);
-            return;
-        }
-
-        if (SubdomainTenantSlugParser.TryGetSlug(context.Request.Host, settings.BaseDomains, out var slug))
-        {
-            var tenant = await lookup.FindBySlugAsync(slug, context.RequestAborted);
+            tenant = await lookup.FindByIdAsync(claimedTenantId, context.RequestAborted);
             if (tenant is null || !tenant.IsActive)
             {
-                logger.LogInformation("No active tenant for host {Host}", context.Request.Host.Value);
+                logger.LogWarning("Authenticated user carries tenant claim {TenantId} that is missing or inactive", claimedTenantId);
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
                 return;
             }
+        }
+        else if (SubdomainTenantSlugParser.TryGetSlug(context.Request.Host, settings.BaseDomains, out var slug))
+        {
+            tenant = await lookup.FindBySlugAsync(slug, context.RequestAborted);
+            if (tenant is null || !tenant.IsActive)
+            {
+                logger.LogDebug("No active tenant for slug {Slug}", slug);
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                return;
+            }
+        }
 
+        if (tenant is not null)
+        {
             tenantContext.SetTenant(tenant.Id);
         }
 

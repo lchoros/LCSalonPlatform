@@ -32,14 +32,15 @@ internal sealed class SettingService(SalonDbContext db, ITenantContext tenantCon
 
     public async Task<string?> GetRawAsync(string name, CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        SettingName.Validate(name);
         var rows = await GetAllAsync(RequireTenant(), cancellationToken).ConfigureAwait(false);
         return rows.GetValueOrDefault(name);
     }
 
     public Task SetRawAsync(string name, string? value, CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        SettingName.Validate(name);
+        SettingName.ValidateValue(value, name);
         return UpsertAsync(RequireTenant(), [KeyValuePair.Create(name, value)], cancellationToken);
     }
 
@@ -57,6 +58,11 @@ internal sealed class SettingService(SalonDbContext db, ITenantContext tenantCon
 
     private async Task UpsertAsync(Guid tenantId, IReadOnlyList<KeyValuePair<string, string?>> values, CancellationToken cancellationToken)
     {
+        foreach (var (name, value) in values)
+        {
+            SettingName.ValidateValue(value, name);
+        }
+
         var names = values.Select(v => v.Key).ToList();
         var existing = await db.Settings
             .Where(s => names.Contains(s.Name))

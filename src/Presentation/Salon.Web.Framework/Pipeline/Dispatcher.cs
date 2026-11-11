@@ -36,11 +36,17 @@ public sealed class Dispatcher(IServiceProvider serviceProvider) : IDispatcher
     {
         public override Task<TResult> HandleAsync(IRequest<TResult> request, IServiceProvider provider, CancellationToken cancellationToken)
         {
-            var handler = provider.GetService<IRequestHandler<TRequest, TResult>>()
-                ?? throw new InvalidOperationException(
+            var handlers = provider.GetServices<IRequestHandler<TRequest, TResult>>().ToList();
+            var handler = handlers.Count switch
+            {
+                1 => handlers[0],
+                0 => throw new InvalidOperationException(
                     $"No handler is registered for request '{typeof(TRequest).Name}'. "
                     + $"Add a class implementing IRequestHandler<{typeof(TRequest).Name}, {typeof(TResult).Name}> to the slice "
-                    + "and make sure its assembly is passed to AddSalonPipeline.");
+                    + "and make sure its assembly is passed to AddSalonPipeline."),
+                _ => throw new InvalidOperationException(
+                    $"Request '{typeof(TRequest).Name}' has {handlers.Count} handlers ({string.Join(", ", handlers.Select(h => h.GetType().Name))}); exactly one is allowed (ADR 0003)."),
+            };
 
             var typedRequest = (TRequest)request;
             RequestHandlerDelegate<TResult> pipeline = () => handler.HandleAsync(typedRequest, cancellationToken);
