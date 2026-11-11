@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Salon.Data;
 using Salon.Plugin.Payments.Manual;
 using Salon.Plugin.Sms.Log;
+using Salon.Services.Seeding;
 using Salon.Web.Framework.Infrastructure;
 using Salon.Web.Framework.Jobs;
 using Salon.Web.Framework.Localization;
@@ -27,6 +28,13 @@ if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
 {
     using var scope = app.Services.CreateScope();
     await scope.ServiceProvider.GetRequiredService<SalonDbContext>().Database.MigrateAsync();
+}
+
+// Development only: the studio-20 demo salon, created once and never touched again (see DemoSeeder).
+if (app.Configuration.GetValue<bool>("Database:SeedDemo"))
+{
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.GetRequiredService<DemoSeeder>().SeedAsync();
 }
 
 if (!app.Environment.IsDevelopment())
