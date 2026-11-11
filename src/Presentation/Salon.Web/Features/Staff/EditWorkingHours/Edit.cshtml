@@ -1,0 +1,55 @@
+@using Salon.Core.Staff
+@using Salon.Web.Features.Staff.EditWorkingHours
+@model EditWorkingHoursForm
+@{
+    ViewData["Title"] = T["Staff.Hours.Title"];
+    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 px-3 py-2 text-base tabular-nums shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
+    var stepSeconds = WorkingHoursRules.StepMinutes * 60;
+}
+<section class="mx-auto max-w-2xl space-y-6">
+    <header class="space-y-1">
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Staff.Hours.Title"]</h1>
+        <p class="text-lg text-stone-700" data-testid="staff-name">@Model.DisplayName</p>
+        <p class="text-sm text-stone-500">@T["Staff.Hours.Hint"]</p>
+    </header>
+    <form method="post" asp-action="Edit" asp-route-id="@Model.StaffMemberId" class="space-y-4" novalidate data-testid="hours-form">
+        <div asp-validation-summary="ModelOnly" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert"></div>
+
+        @for (var i = 0; i < Model.Days.Count; i++)
+        {
+            var day = Model.Days[i];
+            <fieldset class="space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" data-testid="day-row" data-day="@day.Day">
+                <legend class="px-1 font-semibold">@T[$"Common.Day.{day.Day}"]</legend>
+                <input type="hidden" asp-for="Days[i].Day" />
+                <div class="flex min-h-11 items-center gap-3">
+                    <input asp-for="Days[i].IsDayOff" type="checkbox" class="size-5 rounded border-stone-300" data-testid="day-off" />
+                    <label asp-for="Days[i].IsDayOff" class="text-sm font-medium">@T["Staff.Hours.DayOff"]</label>
+                </div>
+                @for (var j = 0; j < day.Ranges.Count; j++)
+                {
+                    <div class="space-y-1">
+                        <p class="text-xs font-medium uppercase tracking-wide text-stone-500">@(j == 0 ? T["Staff.Hours.Range1"] : T["Staff.Hours.Range2"])</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="space-y-1">
+                                <label asp-for="Days[i].Ranges[j].Start" class="block text-sm font-medium">@T["Staff.Hours.From"]</label>
+                                <input asp-for="Days[i].Ranges[j].Start" type="time" step="@stepSeconds" class="@inputClass" />
+                                <span asp-validation-for="Days[i].Ranges[j].Start" class="block text-sm text-red-700"></span>
+                            </div>
+                            <div class="space-y-1">
+                                <label asp-for="Days[i].Ranges[j].End" class="block text-sm font-medium">@T["Staff.Hours.To"]</label>
+                                <input asp-for="Days[i].Ranges[j].End" type="time" step="@stepSeconds" class="@inputClass" />
+                                <span asp-validation-for="Days[i].Ranges[j].End" class="block text-sm text-red-700"></span>
+                            </div>
+                        </div>
+                    </div>
+                }
+                <span asp-validation-for="Days[i].Ranges" class="block text-sm text-red-700" data-testid="day-error"></span>
+            </fieldset>
+        }
+
+        <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+            <a href="/admin/staff" class="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100">@T["Staff.Hours.Cancel"]</a>
+            <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700">@T["Staff.Hours.Submit"]</button>
+        </div>
+    </form>
+</section>
