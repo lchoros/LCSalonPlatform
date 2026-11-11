@@ -148,6 +148,64 @@ namespace Salon.Data.Migrations
                     b.ToTable("outbox_messages", "salon");
                 });
 
+            modelBuilder.Entity("Salon.Core.Messaging.MessageTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("body");
+
+                    b.Property<int>("Channel")
+                        .HasColumnType("integer")
+                        .HasColumnName("channel");
+
+                    b.Property<string>("Culture")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("culture");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("key");
+
+                    b.Property<string>("Subject")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("subject");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<Instant>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_message_templates");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_message_templates_tenant_id");
+
+                    b.HasIndex("TenantId", "Key", "Channel", "Culture")
+                        .IsUnique()
+                        .HasDatabaseName("ix_message_templates_tenant_id_key_channel_culture");
+
+                    b.ToTable("message_templates", "salon");
+                });
+
             modelBuilder.Entity("Salon.Core.Settings.Setting", b =>
                 {
                     b.Property<Guid>("Id")
@@ -245,6 +303,16 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_services_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Messaging.MessageTemplate", b =>
+                {
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_message_templates_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Settings.Setting", b =>

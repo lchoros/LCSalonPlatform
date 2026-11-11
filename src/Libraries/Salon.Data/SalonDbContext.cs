@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Salon.Core.Catalog;
 using Salon.Core.Events;
+using Salon.Core.Messaging;
 using Salon.Core.Settings;
 using Salon.Core.Tenancy;
 
@@ -27,6 +28,9 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     public DbSet<Service> Services => Set<Service>();
 
     public DbSet<Setting> Settings => Set<Setting>();
+
+    /// <summary>Per-tenant overrides of the embedded message template defaults (ADR 0008).</summary>
+    public DbSet<MessageTemplate> MessageTemplates => Set<MessageTemplate>();
 
     /// <summary>Platform-level (no tenant filter, no RLS): the dispatcher reads every tenant's pending events (ADR 0007).</summary>
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
