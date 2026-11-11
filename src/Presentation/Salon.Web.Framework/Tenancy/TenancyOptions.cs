@@ -1,3 +1,5 @@
+using Salon.Core.Identity;
+
 namespace Salon.Web.Framework.Tenancy;
 
 /// <summary>Host-level tenancy settings (section "Tenancy"). Per-tenant settings live in ISettingService, not here.</summary>
@@ -13,6 +15,9 @@ public sealed class TenancyOptions
     /// </summary>
     public IList<string> BaseDomains { get; set; } = [];
 
-    /// <summary>Claim carrying the tenant id for signed-in admin users. Wins over the subdomain.</summary>
-    public string TenantClaimType { get; set; } = "tenant_id";
+    /// <summary>
+    /// Claim carrying the tenant id for signed-in admin users; the sign-in cookie writes <see cref="UserClaimTypes.TenantId"/>,
+    /// so only change this together with a custom claims factory.
+    /// </summary>
+    public string TenantClaimType { get; set; } = UserClaimTypes.TenantId;
 }

@@ -1,6 +1,8 @@
 using System.Security.Claims;
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -8,6 +10,7 @@ using NSubstitute;
 
 using Salon.Core.Tenancy;
 using Salon.Services.Tenancy;
+using Salon.Web.Framework.Identity;
 using Salon.Web.Framework.Tenancy;
 
 namespace Salon.Tests.Unit.Tenancy;
@@ -19,6 +22,7 @@ public class TenantResolutionMiddlewareTests
 
     private readonly ITenantLookup _lookup = Substitute.For<ITenantLookup>();
     private readonly IMutableTenantContext _tenantContext = Substitute.For<IMutableTenantContext>();
+    private readonly IAuthenticationService _authentication = Substitute.For<IAuthenticationService>();
     private bool _nextCalled;
 
     private TenantResolutionMiddleware CreateMiddleware() => new(
@@ -30,9 +34,12 @@ public class TenantResolutionMiddlewareTests
         Options.Create(new TenancyOptions { BaseDomains = ["localhost"] }),
         NullLogger<TenantResolutionMiddleware>.Instance);
 
-    private static DefaultHttpContext Request(string host, Guid? claimTenant = null, bool authenticated = true)
+    private DefaultHttpContext Request(string host, Guid? claimTenant = null, bool authenticated = true)
     {
-        var context = new DefaultHttpContext();
+        var context = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection().AddSingleton(_authentication).BuildServiceProvider(),
+        };
         context.Request.Host = new HostString(host);
         if (claimTenant is { } id)
         {
@@ -92,12 +99,43 @@ public class TenantResolutionMiddlewareTests
     }
 
     [Fact]
-    public async Task Authenticated_tenant_claim_wins_over_the_subdomain_after_verification()
+    public async Task Authenticated_claim_matching_the_subdomain_keeps_the_user_signed_in()
+    {
+        _lookup.FindBySlugAsync("studio-20", Arg.Any<CancellationToken>()).Returns(Studio);
+        var context = Request("studio-20.localhost", TenantA);
+
+        await CreateMiddleware().InvokeAsync(context, _tenantContext, _lookup);
+
+        _tenantContext.Received(1).SetTenant(TenantA);
+        context.User.Identity!.IsAuthenticated.ShouldBeTrue();
+        await _authentication.DidNotReceive().SignOutAsync(Arg.Any<HttpContext>(), Arg.Any<string?>(), Arg.Any<AuthenticationProperties?>());
+        _nextCalled.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Authenticated_claim_for_another_tenant_than_the_subdomain_is_anonymous_and_signed_out()
+    {
+        var otherTenant = Guid.CreateVersion7();
+        _lookup.FindBySlugAsync("studio-20", Arg.Any<CancellationToken>()).Returns(Studio);
+        var context = Request("studio-20.localhost", otherTenant);
+
+        await CreateMiddleware().InvokeAsync(context, _tenantContext, _lookup);
+
+        // The host's tenant wins; the request runs as nobody and the browser is told to drop the cookie.
+        _tenantContext.Received(1).SetTenant(TenantA);
+        context.User.Identity!.IsAuthenticated.ShouldBeFalse();
+        await _authentication.Received(1).SignOutAsync(context, SalonAuthenticationDefaults.Scheme, Arg.Any<AuthenticationProperties?>());
+        await _lookup.DidNotReceive().FindByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        _nextCalled.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Authenticated_claim_on_the_bare_domain_resolves_the_tenant_after_verification()
     {
         var claimed = Guid.CreateVersion7();
         _lookup.FindByIdAsync(claimed, Arg.Any<CancellationToken>()).Returns(Studio with { Id = claimed });
 
-        await CreateMiddleware().InvokeAsync(Request("studio-20.localhost", claimed), _tenantContext, _lookup);
+        await CreateMiddleware().InvokeAsync(Request("localhost", claimed), _tenantContext, _lookup);
 
         _tenantContext.Received(1).SetTenant(claimed);
         await _lookup.DidNotReceive().FindBySlugAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
@@ -114,6 +152,7 @@ public class TenantResolutionMiddlewareTests
 
         _tenantContext.Received(1).SetTenant(TenantA);
         await _lookup.DidNotReceive().FindByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await _authentication.DidNotReceive().SignOutAsync(Arg.Any<HttpContext>(), Arg.Any<string?>(), Arg.Any<AuthenticationProperties?>());
     }
 
     [Fact]

@@ -1,0 +1,27 @@
+@using Salon.Web.Features.Identity.Login
+@model LoginForm
+@{
+    ViewData["Title"] = T["Identity.Login.Title"];
+    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 px-3 py-2 text-base shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
+}
+<section class="mx-auto max-w-sm space-y-6">
+    <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Identity.Login.Title"]</h1>
+    <form method="post" asp-action="Login" class="space-y-5" novalidate data-testid="login-form">
+        <div asp-validation-summary="ModelOnly" data-testid="login-error" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert"></div>
+        <input type="hidden" asp-for="ReturnUrl" />
+
+        <div class="space-y-1">
+            <label asp-for="Email" class="block text-sm font-medium">@T["Identity.Login.Email"]</label>
+            <input asp-for="Email" type="email" inputmode="email" autocomplete="username" spellcheck="false" aria-describedby="email-error" class="@inputClass" />
+            <span asp-validation-for="Email" id="email-error" class="block text-sm text-red-700"></span>
+        </div>
+
+        <div class="space-y-1">
+            <label asp-for="Password" class="block text-sm font-medium">@T["Identity.Login.Password"]</label>
+            <input asp-for="Password" type="password" autocomplete="current-password" aria-describedby="password-error" class="@inputClass" />
+            <span asp-validation-for="Password" id="password-error" class="block text-sm text-red-700"></span>
+        </div>
+
+        <button type="submit" class="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700">@T["Identity.Login.Submit"]</button>
+    </form>
+</section>

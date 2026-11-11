@@ -3,6 +3,7 @@
     // Invariant culture (e.g. a CI runner with no locale) has an empty name; the page must still declare a language.
     var uiCulture = System.Globalization.CultureInfo.CurrentUICulture.Name;
     var lang = string.IsNullOrEmpty(uiCulture) ? SupportedCultures.Default : uiCulture;
+    var signedIn = User.Identity?.IsAuthenticated == true;
 }
 <html lang="@lang" class="h-full bg-stone-50">
 <head>
@@ -13,8 +14,15 @@
 </head>
 <body class="min-h-full flex flex-col text-stone-900 antialiased">
     <header class="border-b border-stone-200 bg-white">
-        <nav class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+        <nav class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
             <a class="text-lg font-semibold tracking-tight" asp-area="" asp-controller="Home" asp-action="Index">@T["Layout.Brand"]</a>
+            @if (signedIn)
+            {
+                <form method="post" action="/account/logout" asp-antiforgery="true" class="flex items-center gap-3 text-sm">
+                    <span class="truncate max-w-40 sm:max-w-xs" data-testid="user-name">@User.Identity!.Name</span>
+                    <button type="submit" data-testid="sign-out" class="inline-flex min-h-11 items-center rounded-md border border-stone-300 px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.SignOut"]</button>
+                </form>
+            }
         </nav>
     </header>
     <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-6">

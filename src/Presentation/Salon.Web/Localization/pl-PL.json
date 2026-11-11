@@ -1,5 +1,6 @@
 {
   "Layout.Brand": "Salon Platform",
+  "Layout.SignOut": "Wyloguj się",
   "Home.DefaultTitle": "Strona główna",
   "Home.PlatformTagline": "Rezerwacje online i zarządzanie salonem dla Wielkiej Brytanii i Polski. Bez marketplace'u, bez prowizji, stała cena — dane należą do salonu.",
   "Home.PhaseNote": "Szkielet M0 · faza 1 działa wyłącznie lokalnie.",
@@ -29,5 +30,16 @@
   "Catalog.CreateService.Validation.DurationOutOfRange": "Czas trwania musi wynosić od {0} do {1} minut.",
   "Catalog.CreateService.Validation.DurationStep": "Czas trwania musi być wielokrotnością {0} minut.",
   "Catalog.CreateService.Validation.PriceOutOfRange": "Cena musi wynosić od 0 do {0}.",
-  "Catalog.CreateService.Validation.PriceTooPrecise": "Cena może mieć najwyżej dwa miejsca po przecinku."
+  "Catalog.CreateService.Validation.PriceTooPrecise": "Cena może mieć najwyżej dwa miejsca po przecinku.",
+  "Identity.Login.Title": "Zaloguj się",
+  "Identity.Login.Email": "E-mail",
+  "Identity.Login.Password": "Hasło",
+  "Identity.Login.Submit": "Zaloguj się",
+  "Identity.Login.Failed": "Nieprawidłowy e-mail lub hasło.",
+  "Identity.Login.LockedOut": "Zbyt wiele nieudanych prób. Spróbuj ponownie za {0} minut.",
+  "Identity.Login.Validation.EmailRequired": "Podaj adres e-mail.",
+  "Identity.Login.Validation.PasswordRequired": "Podaj hasło.",
+  "Identity.Denied.Title": "Brak dostępu",
+  "Identity.Denied.Description": "Twoja rola nie pozwala otworzyć tej strony. Jeśli potrzebujesz dostępu, poproś właściciela salonu.",
+  "Identity.Denied.Back": "Wróć do usług"
 }

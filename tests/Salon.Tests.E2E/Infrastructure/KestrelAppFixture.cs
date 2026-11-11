@@ -9,8 +9,10 @@ using Microsoft.Playwright;
 using NodaTime;
 
 using Salon.Core.Catalog;
+using Salon.Core.Identity;
 using Salon.Core.Tenancy;
 using Salon.Data;
+using Salon.Services.Identity;
 
 namespace Salon.Tests.E2E.Infrastructure;
 
@@ -111,6 +113,22 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         }
 
         return tenantId;
+    }
+
+    /// <summary>
+    /// Gives the salon a login with exactly this role and password. Any earlier user with the email (left by an
+    /// integration run, possibly locked out) is removed first, so the test never depends on what ran before.
+    /// </summary>
+    public async Task EnsureUserAsync(Guid tenantId, string email, string displayName, Role role, string password)
+    {
+        using var scope = _factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
+        var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+        var normalized = email.ToLowerInvariant();
+        db.Users.RemoveRange(await db.Users.Where(u => u.Email == normalized).ToListAsync());
+        await db.SaveChangesAsync();
+
+        await scope.ServiceProvider.GetRequiredService<IUserService>().CreateAsync(email, displayName, password, role);
     }
 
     public async Task DisposeAsync()

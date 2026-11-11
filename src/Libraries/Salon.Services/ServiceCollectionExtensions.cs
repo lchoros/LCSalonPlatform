@@ -39,6 +39,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ScheduleTaskRunner>();
         services.AddScoped<IScheduleTask, HeartbeatTask>();
         services.AddScoped<ISettingService, SettingService>();
+        services.AddOptions<DemoOptions>().BindConfiguration(DemoOptions.SectionName);
         services.AddSingleton<EmbeddedMessageTemplateDefaults>();
         services.AddScoped<IMessageTemplateService, MessageTemplateService>();
         services.AddScoped<DemoSeeder>();
