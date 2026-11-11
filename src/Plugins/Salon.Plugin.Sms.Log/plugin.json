@@ -1,0 +1,8 @@
+{
+  "systemName": "Sms.Log",
+  "displayNameKey": "Plugins.Sms.Log.DisplayName",
+  "group": "Sms",
+  "author": "Salon Platform",
+  "version": "0.1.0",
+  "description": "Writes SMS messages to the log and mirrors them to Mailpit. Sends nothing to a real phone."
+}
