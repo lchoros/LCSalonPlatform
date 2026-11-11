@@ -27,16 +27,19 @@ public class TenantResolutionMiddlewareTests
             _nextCalled = true;
             return Task.CompletedTask;
         },
-        Options.Create(new TenancyOptions()),
+        Options.Create(new TenancyOptions { BaseDomains = ["localhost"] }),
         NullLogger<TenantResolutionMiddleware>.Instance);
 
-    private static DefaultHttpContext Request(string host, Guid? claimTenant = null)
+    private static DefaultHttpContext Request(string host, Guid? claimTenant = null, bool authenticated = true)
     {
         var context = new DefaultHttpContext();
         context.Request.Host = new HostString(host);
         if (claimTenant is { } id)
         {
-            context.User = new ClaimsPrincipal(new ClaimsIdentity([new Claim("tenant_id", id.ToString())], "test"));
+            var identity = authenticated
+                ? new ClaimsIdentity([new Claim("tenant_id", id.ToString())], "test")
+                : new ClaimsIdentity([new Claim("tenant_id", id.ToString())]);
+            context.User = new ClaimsPrincipal(identity);
         }
 
         return context;
@@ -89,14 +92,41 @@ public class TenantResolutionMiddlewareTests
     }
 
     [Fact]
-    public async Task Signed_in_tenant_claim_wins_over_the_subdomain()
+    public async Task Authenticated_tenant_claim_wins_over_the_subdomain_after_verification()
     {
         var claimed = Guid.CreateVersion7();
+        _lookup.FindByIdAsync(claimed, Arg.Any<CancellationToken>()).Returns(Studio with { Id = claimed });
 
         await CreateMiddleware().InvokeAsync(Request("studio-20.localhost", claimed), _tenantContext, _lookup);
 
         _tenantContext.Received(1).SetTenant(claimed);
         await _lookup.DidNotReceive().FindBySlugAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
         _nextCalled.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Claim_on_an_unauthenticated_identity_is_ignored()
+    {
+        var claimed = Guid.CreateVersion7();
+        _lookup.FindBySlugAsync("studio-20", Arg.Any<CancellationToken>()).Returns(Studio);
+
+        await CreateMiddleware().InvokeAsync(Request("studio-20.localhost", claimed, authenticated: false), _tenantContext, _lookup);
+
+        _tenantContext.Received(1).SetTenant(TenantA);
+        await _lookup.DidNotReceive().FindByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Authenticated_claim_for_a_missing_or_inactive_tenant_is_404()
+    {
+        var claimed = Guid.CreateVersion7();
+        _lookup.FindByIdAsync(claimed, Arg.Any<CancellationToken>()).Returns((TenantInfo?)null);
+        var context = Request("localhost", claimed);
+
+        await CreateMiddleware().InvokeAsync(context, _tenantContext, _lookup);
+
+        context.Response.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
+        _tenantContext.DidNotReceive().SetTenant(Arg.Any<Guid?>());
+        _nextCalled.ShouldBeFalse();
     }
 }

@@ -19,8 +19,6 @@ namespace Salon.Tests.Integration.Tenancy;
 [Collection(SharedDatabase.Name)]
 public class RowLevelSecurityTests(SalonWebApplicationFactory factory) : IAsyncLifetime
 {
-    private const string AppRole = "salon_app_test";
-
     private Tenant _tenantA = null!;
     private Tenant _tenantB = null!;
 
@@ -35,7 +33,7 @@ public class RowLevelSecurityTests(SalonWebApplicationFactory factory) : IAsyncL
         db.Services.Add(new Service { Name = "Only A", Duration = Duration.FromMinutes(30), Price = 20m, Currency = "GBP" });
         await db.SaveChangesAsync();
 
-        await EnsureAppRoleAsync();
+        await AppRole.EnsureAsync();
     }
 
     public Task DisposeAsync() => Task.CompletedTask;
@@ -95,31 +93,9 @@ public class RowLevelSecurityTests(SalonWebApplicationFactory factory) : IAsyncL
         ex.SqlState.ShouldBe(PostgresErrorCodes.InsufficientPrivilege);
     }
 
-    private static async Task EnsureAppRoleAsync()
-    {
-        await using var connection = new NpgsqlConnection(SalonWebApplicationFactory.TestConnectionString);
-        await connection.OpenAsync();
-        await using var command = new NpgsqlCommand(
-            $"""
-            DO $$ BEGIN
-                IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '{AppRole}') THEN
-                    CREATE ROLE {AppRole} LOGIN PASSWORD '{AppRole}';
-                END IF;
-            END $$;
-            GRANT USAGE ON SCHEMA salon TO {AppRole};
-            GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA salon TO {AppRole};
-            """, connection);
-        await command.ExecuteNonQueryAsync();
-    }
-
     private static async Task<NpgsqlConnection> OpenAsAppRoleAsync(Guid? tenantId)
     {
-        var builder = new NpgsqlConnectionStringBuilder(SalonWebApplicationFactory.TestConnectionString)
-        {
-            Username = AppRole,
-            Password = AppRole,
-        };
-        var connection = new NpgsqlConnection(builder.ConnectionString);
+        var connection = new NpgsqlConnection(AppRole.ConnectionString);
         await connection.OpenAsync();
         await using var set = new NpgsqlCommand("SELECT set_config('app.tenant_id', @tenant, false)", connection);
         set.Parameters.AddWithValue("tenant", tenantId?.ToString() ?? string.Empty);

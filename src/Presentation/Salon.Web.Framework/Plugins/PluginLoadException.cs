@@ -1,6 +1,6 @@
 namespace Salon.Web.Framework.Plugins;
 
-/// <summary>A plugin assembly is mis-packaged (no plugin.json, bad JSON, or a SystemName mismatch). Fails startup on purpose.</summary>
+/// <summary>A plugin assembly is mis-packaged (no plugin.json, bad JSON, or a SystemName mismatch). UseSalonPlugins surfaces it at startup.</summary>
 public class PluginLoadException : InvalidOperationException
 {
     public PluginLoadException()
