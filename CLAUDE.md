@@ -84,5 +84,5 @@ dotnet ef migrations add <Name> -p src/Libraries/Salon.Data -s src/Presentation/
 ## Branches, commits, PRs
 - Branch: `agent/<issue>-<slug>`; one worktree per Builder (`git worktree add ../wt-<issue> -b agent/<issue>-<slug>`)
 - Conventional commits (`feat(booking): ...`), one slice per commit where possible
-- PR uses `.github/pull_request_template.md`; label `tier:0|1|2`
-- Daily digest issue at the end of each run: merged, waiting for owner, decisions made, blocked
+- PR uses `.github/pull_request_template.md`; label `tier:0|1|2`; stacked PRs merge bottom-up with merge commits
+- Digest in `docs/digests/` at the end of each run: merged (tier:2 called out with ADR links), decisions made, blocked
