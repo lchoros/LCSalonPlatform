@@ -5,6 +5,7 @@ using NodaTime;
 using Salon.Core.Messaging;
 using Salon.Core.Tasks;
 using Salon.Core.Tenancy;
+using Salon.Services.Caching;
 using Salon.Services.Notifications;
 using Salon.Services.Tasks;
 using Salon.Services.Tenancy;
@@ -13,7 +14,7 @@ namespace Salon.Services;
 
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Registers cross-slice services. Settings, localization, events and cache are added by later slices.</summary>
+    /// <summary>Registers cross-slice services: clock, tenant context, cache, schedule tasks, email. Settings, localization and events come later.</summary>
     public static IServiceCollection AddSalonServices(this IServiceCollection services)
     {
         services.AddSingleton<IClock>(SystemClock.Instance);
@@ -22,6 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
         services.AddScoped<IMutableTenantContext>(sp => sp.GetRequiredService<TenantContext>());
         services.AddMemoryCache();
+        services.AddSingleton<IStaticCacheManager, MemoryCacheManager>();
         services.AddScoped<ITenantLookup, TenantLookup>();
         services.AddSingleton<ITenantScopeRunner, TenantScopeRunner>();
 
