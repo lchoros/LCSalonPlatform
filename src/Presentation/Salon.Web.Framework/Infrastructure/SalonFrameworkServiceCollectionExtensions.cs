@@ -12,6 +12,7 @@ using Npgsql;
 using Salon.Data;
 using Salon.Data.Tenancy;
 using Salon.Services;
+using Salon.Services.Events;
 using Salon.Services.Localization;
 using Salon.Web.Framework.Mvc;
 using Salon.Web.Framework.Pipeline;
@@ -22,9 +23,9 @@ namespace Salon.Web.Framework.Infrastructure;
 public static class SalonFrameworkServiceCollectionExtensions
 {
     /// <summary>
-    /// Wires the data layer, cross-slice services, the request pipeline and MVC with the Features/ view convention.
-    /// <paramref name="sliceAssemblies"/> are scanned for request handlers and validators and read for embedded
-    /// localization resources (pass the host assembly).
+    /// Wires the data layer, cross-slice services, the request pipeline, the event outbox and MVC with the Features/
+    /// view convention. <paramref name="sliceAssemblies"/> are scanned for request handlers, validators, events and
+    /// consumers and read for embedded localization resources (pass the host assembly).
     /// </summary>
     public static IServiceCollection AddSalonFramework(
         this IServiceCollection services,
@@ -63,6 +64,7 @@ public static class SalonFrameworkServiceCollectionExtensions
 
         services.AddHttpContextAccessor();
         services.AddSalonPipeline(sliceAssemblies);
+        services.AddSalonEvents(sliceAssemblies);
 
         services.AddControllersWithViews();
         services.Configure<RazorViewEngineOptions>(options =>

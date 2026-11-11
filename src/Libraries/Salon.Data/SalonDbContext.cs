@@ -4,6 +4,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 
 using Salon.Core.Catalog;
+using Salon.Core.Events;
 using Salon.Core.Settings;
 using Salon.Core.Tenancy;
 
@@ -26,6 +27,9 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     public DbSet<Service> Services => Set<Service>();
 
     public DbSet<Setting> Settings => Set<Setting>();
+
+    /// <summary>Platform-level (no tenant filter, no RLS): the dispatcher reads every tenant's pending events (ADR 0007).</summary>
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     /// <summary>Read inside the query filter; EF turns it into a query parameter evaluated per execution.</summary>
     private Guid? CurrentTenantId => tenantContext.TenantId;
