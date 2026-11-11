@@ -4,6 +4,7 @@ using Salon.Data;
 using Salon.Plugin.Payments.Manual;
 using Salon.Plugin.Sms.Log;
 using Salon.Services.Seeding;
+using Salon.Web.Framework.Identity;
 using Salon.Web.Framework.Infrastructure;
 using Salon.Web.Framework.Jobs;
 using Salon.Web.Framework.Localization;
@@ -14,6 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Slices live in this assembly; their handlers and validators are discovered from it.
 builder.Services.AddSalonFramework(builder.Configuration, typeof(Program).Assembly);
+builder.Services.AddSalonAuthentication(builder.Configuration);
 
 // Phase 1 plugins: record-only payments, log + Mailpit SMS. Real gateways arrive at M3 behind the same interfaces.
 builder.Services.AddManualPaymentProvider();
@@ -45,7 +47,10 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseRateLimiter();
 app.UseSalonPlugins();
+// Authentication first, so the tenant middleware can compare the cookie's tenant claim with the host's tenant (ADR 0009).
+app.UseSalonAuthentication();
 app.UseSalonTenancy();
 app.UseSalonLocalization();
 app.UseSalonScheduleTasks();
