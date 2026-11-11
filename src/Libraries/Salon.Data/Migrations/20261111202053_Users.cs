@@ -54,11 +54,15 @@ namespace Salon.Data.Migrations
                 table: "users",
                 columns: new[] { "tenant_id", "email" },
                 unique: true);
+
+            RowLevelSecurity.Enable(migrationBuilder, "users");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            RowLevelSecurity.Disable(migrationBuilder, "users");
+
             migrationBuilder.DropTable(
                 name: "users",
                 schema: "salon");
