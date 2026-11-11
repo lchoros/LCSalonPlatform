@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +12,7 @@ using Npgsql;
 using Salon.Data;
 using Salon.Data.Tenancy;
 using Salon.Services;
+using Salon.Services.Localization;
 using Salon.Web.Framework.Mvc;
 using Salon.Web.Framework.Pipeline;
 using Salon.Web.Framework.Tenancy;
@@ -20,7 +23,8 @@ public static class SalonFrameworkServiceCollectionExtensions
 {
     /// <summary>
     /// Wires the data layer, cross-slice services, the request pipeline and MVC with the Features/ view convention.
-    /// <paramref name="sliceAssemblies"/> are scanned for request handlers and validators (pass the host assembly).
+    /// <paramref name="sliceAssemblies"/> are scanned for request handlers and validators and read for embedded
+    /// localization resources (pass the host assembly).
     /// </summary>
     public static IServiceCollection AddSalonFramework(
         this IServiceCollection services,
@@ -34,6 +38,15 @@ public static class SalonFrameworkServiceCollectionExtensions
         EnsureTenantSafeConnectionString(connectionString);
 
         services.AddSalonServices();
+        services.AddLocalizationResources(sliceAssemblies);
+
+        // Polish letters (ą, ś, ł, ...) and typographic punctuation ship as UTF-8 instead of &#x105; entities.
+        services.AddWebEncoders(o => o.TextEncoderSettings = new TextEncoderSettings(
+            UnicodeRanges.BasicLatin,
+            UnicodeRanges.Latin1Supplement,
+            UnicodeRanges.LatinExtendedA,
+            UnicodeRanges.LatinExtendedB,
+            UnicodeRanges.GeneralPunctuation));
         services.AddOptions<TenancyOptions>().BindConfiguration(TenancyOptions.SectionName)
             .PostConfigure(o =>
             {

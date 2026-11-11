@@ -5,6 +5,7 @@ using Salon.Plugin.Payments.Manual;
 using Salon.Plugin.Sms.Log;
 using Salon.Web.Framework.Infrastructure;
 using Salon.Web.Framework.Jobs;
+using Salon.Web.Framework.Localization;
 using Salon.Web.Framework.Plugins;
 using Salon.Web.Framework.Tenancy;
 
@@ -38,6 +39,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.UseSalonPlugins();
 app.UseSalonTenancy();
+app.UseSalonLocalization();
 app.UseSalonScheduleTasks();
 app.UseAuthorization();
 
