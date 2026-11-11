@@ -1,5 +1,10 @@
 <!DOCTYPE html>
-<html lang="@System.Globalization.CultureInfo.CurrentUICulture.Name" class="h-full bg-stone-50">
+@{
+    // Invariant culture (e.g. a CI runner with no locale) has an empty name; the page must still declare a language.
+    var uiCulture = System.Globalization.CultureInfo.CurrentUICulture.Name;
+    var lang = string.IsNullOrEmpty(uiCulture) ? "en-GB" : uiCulture;
+}
+<html lang="@lang" class="h-full bg-stone-50">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
