@@ -4,6 +4,7 @@ using Salon.Data;
 using Salon.Plugin.Payments.Manual;
 using Salon.Plugin.Sms.Log;
 using Salon.Web.Framework.Infrastructure;
+using Salon.Web.Framework.Jobs;
 using Salon.Web.Framework.Plugins;
 using Salon.Web.Framework.Tenancy;
 
@@ -15,6 +16,7 @@ builder.Services.AddSalonFramework(builder.Configuration);
 builder.Services.AddManualPaymentProvider();
 builder.Services.AddLogSmsProvider();
 builder.Services.AddSalonPlugins();
+builder.Services.AddSalonJobs(builder.Configuration);
 
 var app = builder.Build();
 
@@ -35,6 +37,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.UseSalonPlugins();
 app.UseSalonTenancy();
+app.UseSalonScheduleTasks();
 app.UseAuthorization();
 
 app.MapStaticAssets();
