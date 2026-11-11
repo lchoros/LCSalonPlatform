@@ -4,6 +4,7 @@ using Salon.Data;
 using Salon.Plugin.Payments.Manual;
 using Salon.Plugin.Sms.Log;
 using Salon.Web.Framework.Infrastructure;
+using Salon.Web.Framework.Tenancy;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseSalonTenancy();
 app.UseAuthorization();
 
 app.MapStaticAssets();
