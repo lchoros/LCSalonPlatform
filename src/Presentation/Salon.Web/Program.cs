@@ -33,6 +33,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseSalonPlugins();
 app.UseSalonTenancy();
 app.UseAuthorization();
 
