@@ -20,6 +20,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Fixtures for EmbeddedJsonResourceSourceTests; the logical names mimic a host assembly's "Localization" root. -->
+    <EmbeddedResource Include="Localization\Fixtures\Good\Localization\*.json" LogicalName="Salon.Tests.Unit.Fixtures.Good.Localization.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Localization\Fixtures\Bad\Localization\*.json" LogicalName="Salon.Tests.Unit.Fixtures.Bad.Localization.%(Filename)%(Extension)" />
+    <!-- Two resources for one culture under one root. -->
+    <EmbeddedResource Include="Localization\Fixtures\DupCulture\Localization\en-GB.json" LogicalName="Salon.Tests.Unit.Fixtures.DupCulture.Localization.en-GB.json" />
+    <EmbeddedResource Include="Localization\Fixtures\DupCulture\Localization\en-GB.second.json" LogicalName="Salon.Tests.Unit.Fixtures.Second.DupCulture.Localization.en-GB.json" />
+    <!-- A key repeated inside one file. -->
+    <EmbeddedResource Include="Localization\Fixtures\DupKey\Localization\*.json" LogicalName="Salon.Tests.Unit.Fixtures.DupKey.Localization.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="Shouldly" />
   </ItemGroup>
