@@ -1,15 +1,22 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Salon.Core.Catalog;
+using Salon.Core.Identity;
 using Salon.Core.Tenancy;
 using Salon.Data;
+using Salon.Services.Identity;
 using Salon.Services.Seeding;
 using Salon.Tests.Integration.Infrastructure;
 
 namespace Salon.Tests.Integration.Seeding;
 
-/// <summary>The Development-only demo seed: one studio-20 tenant with six GBP services, created once and left alone afterwards.</summary>
+/// <summary>
+/// The Development-only demo seed: one studio-20 tenant with six GBP services and, when Demo:OwnerPassword is set, two
+/// logins; created once and left alone afterwards.
+/// </summary>
 [Collection(SharedDatabase.Name)]
 public class DemoSeederTests(SalonWebApplicationFactory factory) : IAsyncLifetime
 {
@@ -74,6 +81,37 @@ public class DemoSeederTests(SalonWebApplicationFactory factory) : IAsyncLifetim
         html.ShouldContain("£140.00");
     }
 
+    [Fact]
+    public async Task Without_a_demo_password_the_salon_has_no_logins()
+    {
+        await SeedAsync();
+        var tenantId = (await TenantsAsync()).Single().Id;
+
+        (await UsersAsync(tenantId)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task With_a_demo_password_an_owner_and_a_receptionist_can_sign_in()
+    {
+        using var configured = factory.WithWebHostBuilder(b => b.ConfigureAppConfiguration(c =>
+            c.AddInMemoryCollection(new Dictionary<string, string?> { ["Demo:OwnerPassword"] = "Studio20!test" })));
+        await using (var scope = configured.Services.CreateAsyncScope())
+        {
+            (await scope.ServiceProvider.GetRequiredService<DemoSeeder>().SeedAsync()).ShouldBeTrue();
+        }
+
+        var tenantId = (await TenantsAsync()).Single().Id;
+        var users = await UsersAsync(tenantId);
+        users.Select(u => (u.Email, u.Role)).ShouldBe([("owner@studio-20.local", Role.Owner), ("desk@studio-20.local", Role.Receptionist)], ignoreOrder: true);
+        users.ShouldAllBe(u => u.TenantId == tenantId && u.IsActive);
+
+        await using var tenantScope = factory.CreateTenantScope(tenantId);
+        var signIn = tenantScope.ServiceProvider.GetRequiredService<ISignInService>();
+        (await signIn.AttemptAsync("owner@studio-20.local", "Studio20!test")).Succeeded.ShouldBeTrue();
+        (await signIn.AttemptAsync("desk@studio-20.local", "Studio20!test")).Succeeded.ShouldBeTrue();
+        (await signIn.AttemptAsync("desk@studio-20.local", "Studio20!dev")).Succeeded.ShouldBeFalse();
+    }
+
     private async Task<bool> SeedAsync()
     {
         await using var scope = factory.Services.CreateAsyncScope();
@@ -90,5 +128,11 @@ public class DemoSeederTests(SalonWebApplicationFactory factory) : IAsyncLifetim
     {
         await using var scope = factory.CreateTenantScope(tenantId);
         return await scope.ServiceProvider.GetRequiredService<SalonDbContext>().Services.AsNoTracking().OrderBy(s => s.SortOrder).ToListAsync();
+    }
+
+    private async Task<List<User>> UsersAsync(Guid tenantId)
+    {
+        await using var scope = factory.CreateTenantScope(tenantId);
+        return await scope.ServiceProvider.GetRequiredService<SalonDbContext>().Users.AsNoTracking().OrderBy(u => u.Email).ToListAsync();
     }
 }
