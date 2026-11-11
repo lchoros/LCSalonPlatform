@@ -11,6 +11,7 @@ using Respawn;
 
 using Salon.Core.Tenancy;
 using Salon.Data;
+using Salon.Services.Caching;
 using Salon.Services.Events;
 using Salon.Web.Framework.Pipeline;
 
@@ -34,6 +35,8 @@ public sealed class SalonWebApplicationFactory : WebApplicationFactory<Program>,
         Environment.SetEnvironmentVariable("ConnectionStrings__Default", TestConnectionString);
         Environment.SetEnvironmentVariable("Database__MigrateOnStartup", "false");
         Environment.SetEnvironmentVariable("Jobs__Enabled", "false");
+        // Flagged slices are exercised with their flag on; a test that needs it off overrides it per host.
+        Environment.SetEnvironmentVariable("Features__CatalogAdmin", "true");
     }
 
     public async Task InitializeAsync()
@@ -58,6 +61,9 @@ public sealed class SalonWebApplicationFactory : WebApplicationFactory<Program>,
         await using var connection = new NpgsqlConnection(TestConnectionString);
         await connection.OpenAsync();
         await _respawner!.ResetAsync(connection);
+
+        // Tenant rows are cached by slug and id; test classes reuse slugs, so a reset must also forget the old ids.
+        await Services.GetRequiredService<IStaticCacheManager>().ClearAsync();
     }
 
     /// <summary>Opens a DI scope whose tenant context is already set, as the middleware would for a request.</summary>
