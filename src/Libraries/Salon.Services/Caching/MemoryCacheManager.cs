@@ -91,5 +91,11 @@ public sealed class MemoryCacheManager(IMemoryCache cache) : IStaticCacheManager
         cache.Remove(key);
     }
 
-    private sealed record Tracked(MemoryCacheManager Owner, IReadOnlyList<string> Prefixes);
+    /// <summary>A class, not a record: the eviction callback must only remove the exact entry it was registered for (reference equality).</summary>
+    private sealed class Tracked(MemoryCacheManager owner, IReadOnlyList<string> prefixes)
+    {
+        public MemoryCacheManager Owner { get; } = owner;
+
+        public IReadOnlyList<string> Prefixes { get; } = prefixes;
+    }
 }
