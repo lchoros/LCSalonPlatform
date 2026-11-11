@@ -49,6 +49,27 @@ public class TenantResolutionTests(SalonWebApplicationFactory factory) : IAsyncL
         (await response.Content.ReadAsStringAsync()).ShouldNotContain("data-testid=\"tenant-name\"");
     }
 
+    [Fact]
+    public async Task A_subdomain_that_was_unknown_resolves_as_soon_as_the_tenant_exists()
+    {
+        using var client = ClientFor("new-salon.localhost");
+        (await client.GetAsync(new Uri("/", UriKind.Relative))).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+
+        await factory.CreateTenantAsync("new-salon", name: "New Salon");
+
+        var response = await client.GetAsync(new Uri("/", UriKind.Relative));
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await response.Content.ReadAsStringAsync()).ShouldContain("New Salon");
+    }
+
+    [Fact]
+    public async Task Subdomain_lookup_is_case_insensitive()
+    {
+        using var client = ClientFor("STUDIO-20.localhost");
+
+        (await client.GetAsync(new Uri("/", UriKind.Relative))).StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
     private HttpClient ClientFor(string host)
     {
         var client = factory.CreateClient();

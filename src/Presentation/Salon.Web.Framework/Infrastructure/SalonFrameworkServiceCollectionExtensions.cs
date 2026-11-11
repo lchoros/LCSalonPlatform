@@ -25,7 +25,14 @@ public static class SalonFrameworkServiceCollectionExtensions
         EnsureTenantSafeConnectionString(connectionString);
 
         services.AddSalonServices();
-        services.AddOptions<TenancyOptions>().BindConfiguration(TenancyOptions.SectionName);
+        services.AddOptions<TenancyOptions>().BindConfiguration(TenancyOptions.SectionName)
+            .PostConfigure(o =>
+            {
+                if (o.BaseDomains.Count == 0)
+                {
+                    o.BaseDomains.Add(TenancyOptions.DefaultBaseDomain);
+                }
+            });
         services.AddScoped<TenantConnectionInterceptor>();
         services.AddDbContext<SalonDbContext>((provider, options) =>
             options.UseNpgsql(connectionString, npgsql => npgsql.UseNodaTime())
