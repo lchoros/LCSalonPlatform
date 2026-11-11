@@ -1,10 +1,19 @@
+@model HomeViewModel
 @{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = Model.TenantName ?? "Home";
 }
 <section class="space-y-4">
-    <h1 class="text-3xl font-bold tracking-tight">Salon Platform</h1>
-    <p class="max-w-prose text-stone-600">
-        Booking and salon management for the UK and Poland. No marketplace, no commission, flat price, and the salon owns its data.
-    </p>
-    <p class="text-sm text-stone-500">M0 walking skeleton · phase 1 runs locally only.</p>
+    @if (Model.TenantName is { } tenantName)
+    {
+        <h1 class="text-3xl font-bold tracking-tight" data-testid="tenant-name">@tenantName</h1>
+        <p class="max-w-prose text-stone-600">Online booking opens here in M1.</p>
+    }
+    else
+    {
+        <h1 class="text-3xl font-bold tracking-tight">Salon Platform</h1>
+        <p class="max-w-prose text-stone-600">
+            Booking and salon management for the UK and Poland. No marketplace, no commission, flat price, and the salon owns its data.
+        </p>
+        <p class="text-sm text-stone-500">M0 walking skeleton · phase 1 runs locally only.</p>
+    }
 </section>

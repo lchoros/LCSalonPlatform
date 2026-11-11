@@ -19,6 +19,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<TenantContext>();
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
         services.AddScoped<IMutableTenantContext>(sp => sp.GetRequiredService<TenantContext>());
+        services.AddMemoryCache();
+        services.AddScoped<ITenantLookup, TenantLookup>();
 
         services.AddOptions<EmailOptions>().BindConfiguration(EmailOptions.SectionName);
         services.AddSingleton<IEmailSender, SmtpEmailSender>();

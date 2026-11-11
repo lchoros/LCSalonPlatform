@@ -65,14 +65,14 @@ public sealed class SalonWebApplicationFactory : WebApplicationFactory<Program>,
         return scope;
     }
 
-    public async Task<Tenant> CreateTenantAsync(string slug, string culture = "en-GB", string currency = "GBP")
+    public async Task<Tenant> CreateTenantAsync(string slug, string culture = "en-GB", string currency = "GBP", string? name = null)
     {
         await using var scope = CreateTenantScope(null);
         var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
         var tenant = new Tenant
         {
             Slug = slug,
-            Name = slug,
+            Name = name ?? slug,
             TimeZoneId = culture == "pl-PL" ? "Europe/Warsaw" : "Europe/London",
             Culture = culture,
             Currency = currency,

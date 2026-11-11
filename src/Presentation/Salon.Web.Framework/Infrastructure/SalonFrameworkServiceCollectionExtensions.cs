@@ -7,6 +7,7 @@ using Salon.Data;
 using Salon.Data.Tenancy;
 using Salon.Services;
 using Salon.Web.Framework.Mvc;
+using Salon.Web.Framework.Tenancy;
 
 namespace Salon.Web.Framework.Infrastructure;
 
@@ -21,6 +22,7 @@ public static class SalonFrameworkServiceCollectionExtensions
             ?? throw new InvalidOperationException("ConnectionStrings:Default is not configured.");
 
         services.AddSalonServices();
+        services.AddOptions<TenancyOptions>().BindConfiguration(TenancyOptions.SectionName);
         services.AddScoped<TenantConnectionInterceptor>();
         services.AddDbContext<SalonDbContext>((provider, options) =>
             options.UseNpgsql(connectionString, npgsql => npgsql.UseNodaTime())
