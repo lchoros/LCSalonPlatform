@@ -3,20 +3,20 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
 using Salon.Core.Cqrs;
+using Salon.Core.Identity;
 using Salon.Services.Localization;
 using Salon.Web.Framework.Controllers;
-using Salon.Web.Framework.Infrastructure;
 using Salon.Web.Framework.Mvc;
 
 namespace Salon.Web.Features.Catalog.CreateService;
 
 /// <summary>
-/// Admin form at <c>/admin/services/new</c>. Tenant only, behind <see cref="FeaturesOptions.CatalogAdmin"/> until
-/// permissions exist. Plain post-redirect-get: a valid post lands on the public list with a confirmation, an invalid
-/// one re-renders the form with the pipeline's failures next to their fields.
+/// Admin form at <c>/admin/services/new</c>. Tenant only, for signed-in users with <see cref="Permissions.CatalogManage"/>
+/// (ADR 0009). Plain post-redirect-get: a valid post lands on the public list with a confirmation, an invalid one
+/// re-renders the form with the pipeline's failures next to their fields.
 /// </summary>
 [RequireTenant]
-[FeatureGate(nameof(FeaturesOptions.CatalogAdmin))]
+[RequirePermission(Permissions.CatalogManage)]
 [Route("admin/services")]
 public sealed class CreateServiceController(IDispatcher dispatcher, ILocalizationService localizer) : SalonControllerBase
 {
