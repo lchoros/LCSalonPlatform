@@ -1,0 +1,44 @@
+@using Salon.Web.Features.Catalog.CreateService
+@model CreateServiceCommand
+@{
+    ViewData["Title"] = T["Catalog.CreateService.Title"];
+    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 px-3 py-2 text-base shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
+}
+<section class="mx-auto max-w-lg space-y-6">
+    <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Catalog.CreateService.Title"]</h1>
+    <form method="post" asp-action="New" class="space-y-5" novalidate data-testid="create-service-form">
+        <div asp-validation-summary="ModelOnly" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert"></div>
+
+        <div class="space-y-1">
+            <label asp-for="Name" class="block text-sm font-medium">@T["Catalog.CreateService.Name"]</label>
+            <input asp-for="Name" type="text" maxlength="200" autocomplete="off" aria-describedby="name-error" class="@inputClass" />
+            <span asp-validation-for="Name" id="name-error" class="block text-sm text-red-700"></span>
+        </div>
+
+        <div class="space-y-1">
+            <label asp-for="Description" class="block text-sm font-medium">@T["Catalog.CreateService.Description"]</label>
+            <textarea asp-for="Description" rows="3" maxlength="2000" aria-describedby="description-hint description-error" class="@inputClass"></textarea>
+            <p id="description-hint" class="text-sm text-stone-500">@T["Catalog.CreateService.DescriptionHint"]</p>
+            <span asp-validation-for="Description" id="description-error" class="block text-sm text-red-700"></span>
+        </div>
+
+        <div class="grid gap-5 sm:grid-cols-2">
+            <div class="space-y-1">
+                <label asp-for="DurationMinutes" class="block text-sm font-medium">@T["Catalog.CreateService.DurationMinutes"]</label>
+                <input asp-for="DurationMinutes" type="number" inputmode="numeric" min="5" max="600" step="5" aria-describedby="duration-error" class="@inputClass" />
+                <span asp-validation-for="DurationMinutes" id="duration-error" class="block text-sm text-red-700"></span>
+            </div>
+            <div class="space-y-1">
+                <label asp-for="Price" class="block text-sm font-medium">@T["Catalog.CreateService.Price"]</label>
+                <input asp-for="Price" type="text" inputmode="decimal" aria-describedby="price-hint price-error" class="@inputClass" />
+                <p id="price-hint" class="text-sm text-stone-500">@T["Catalog.CreateService.PriceHint"]</p>
+                <span asp-validation-for="Price" id="price-error" class="block text-sm text-red-700"></span>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+            <a href="/services" class="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100">@T["Catalog.CreateService.Cancel"]</a>
+            <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700">@T["Catalog.CreateService.Submit"]</button>
+        </div>
+    </form>
+</section>

@@ -2,3 +2,8 @@
    ./tools/tailwindcss -i src/Presentation/Salon.Web/Styles/app.css -o src/Presentation/Salon.Web/wwwroot/css/app.css --minify */
 @import "tailwindcss";
 @source "../**/*.cshtml";
+
+/* MVC marks a field whose ModelState has errors with this class; style it like the red message under it. */
+.input-validation-error {
+  @apply border-red-500;
+}

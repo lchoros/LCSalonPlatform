@@ -48,6 +48,7 @@ public static class SalonFrameworkServiceCollectionExtensions
             UnicodeRanges.LatinExtendedA,
             UnicodeRanges.LatinExtendedB,
             UnicodeRanges.GeneralPunctuation));
+        services.AddOptions<FeaturesOptions>().BindConfiguration(FeaturesOptions.SectionName);
         services.AddOptions<TenancyOptions>().BindConfiguration(TenancyOptions.SectionName)
             .PostConfigure(o =>
             {
@@ -66,7 +67,9 @@ public static class SalonFrameworkServiceCollectionExtensions
         services.AddSalonPipeline(sliceAssemblies);
         services.AddSalonEvents(sliceAssemblies);
 
-        services.AddControllersWithViews();
+        // Validation is FluentValidation's job (ADR 0003) with localized messages; MVC must not add its own English
+        // "The X field is required." for non-nullable reference properties before the pipeline runs.
+        services.AddControllersWithViews(o => o.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
         services.Configure<RazorViewEngineOptions>(options =>
             options.ViewLocationExpanders.Add(new FeatureViewLocationExpander()));
 
