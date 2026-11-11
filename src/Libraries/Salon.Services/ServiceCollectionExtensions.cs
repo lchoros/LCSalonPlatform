@@ -8,6 +8,7 @@ using Salon.Core.Tenancy;
 using Salon.Services.Caching;
 using Salon.Services.Localization;
 using Salon.Services.Notifications;
+using Salon.Services.Seeding;
 using Salon.Services.Settings;
 using Salon.Services.Tasks;
 using Salon.Services.Tenancy;
@@ -37,6 +38,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ScheduleTaskRunner>();
         services.AddScoped<IScheduleTask, HeartbeatTask>();
         services.AddScoped<ISettingService, SettingService>();
+        services.AddScoped<DemoSeeder>();
 
         services.AddOptions<EmailOptions>().BindConfiguration(EmailOptions.SectionName);
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
