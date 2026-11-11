@@ -25,20 +25,36 @@ jobs:
         with: { fetch-depth: 0 }
       - uses: actions/setup-dotnet@v4
         with: { dotnet-version: '10.0.x' }
+      # Caches keep a PR run short: NuGet restore and the Chromium download are the two slow, repeatable steps.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props', '**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-1.64.1
       - name: Format
         run: dotnet format --verify-no-changes
       - name: Build
         run: dotnet build -c Release -warnaserror
       - name: Unit + architecture tests
         run: |
-          dotnet test tests/Salon.Tests.Unit -c Release --no-build --collect:"XPlat Code Coverage"
+          dotnet test tests/Salon.Tests.Unit -c Release --no-build
           dotnet test tests/Salon.Tests.Architecture -c Release --no-build
       - name: Integration tests (Postgres service + Respawn)
         run: dotnet test tests/Salon.Tests.Integration -c Release --no-build
-      - name: E2E (Playwright, mobile + desktop, axe)
+      - name: Playwright browser (cached) and system dependencies
         run: |
-          pwsh tests/Salon.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
-          dotnet test tests/Salon.Tests.E2E -c Release --no-build
+          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
+            pwsh tests/Salon.Tests.E2E/bin/Release/net10.0/playwright.ps1 install-deps chromium
+          else
+            pwsh tests/Salon.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+          fi
+      - name: E2E (Playwright, mobile + desktop, axe)
+        run: dotnet test tests/Salon.Tests.E2E -c Release --no-build
       - name: Vulnerable packages
         run: |
           dotnet list package --vulnerable --include-transitive | tee vuln.txt
@@ -49,14 +65,25 @@ jobs:
 
   # Tier labels are informational (see CLAUDE.md "Review and merge"); the Orchestrator runs scripts/tier-check.sh locally.
 
-  security-scan:
+  # Secret scan on every PR and push (about a minute).
+  secret-scan:
     runs-on: ubuntu-24.04
-    permissions: { security-events: write, actions: read, contents: read, pull-requests: read }
+    permissions: { contents: read, pull-requests: read }
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - uses: gitleaks/gitleaks-action@v2
         env: { GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
+
+  # CodeQL rebuilds the solution (about five minutes), so it runs on pushes to main only; a finding on main is fixed
+  # forward by the next PR. The owner can run it on a PR by pushing to main first or via workflow_dispatch later.
+  security-scan:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    permissions: { security-events: write, actions: read, contents: read }
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
       - uses: github/codeql-action/init@v3
         with: { languages: csharp }
       - uses: actions/setup-dotnet@v4
