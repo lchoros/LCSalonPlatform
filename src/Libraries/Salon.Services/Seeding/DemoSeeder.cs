@@ -48,9 +48,11 @@ public sealed class DemoSeeder(
         await using (var scope = scopeFactory.CreateAsyncScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
-            if (await db.Tenants.AnyAsync(t => t.Slug == Slug, cancellationToken).ConfigureAwait(false))
+            var existing = await db.Tenants.Where(t => t.Slug == Slug).Select(t => (Guid?)t.Id).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+            if (existing is { } existingId)
             {
-                logger.LogDebug("Demo tenant {Slug} already exists; nothing to seed", Slug);
+                logger.LogDebug("Demo tenant {Slug} already exists; catalogue left alone", Slug);
+                await SeedMissingUsersAsync(existingId, cancellationToken).ConfigureAwait(false);
                 return false;
             }
 
@@ -93,6 +95,17 @@ public sealed class DemoSeeder(
         logger.LogInformation("Seeded demo tenant {Slug} with {Count} services", Slug, Services.Length);
         return true;
     }
+
+    /// <summary>A demo salon seeded before logins existed (or before the password was configured) gets its two logins on the next start.</summary>
+    private Task SeedMissingUsersAsync(Guid tenantId, CancellationToken cancellationToken)
+        => tenantScopes.RunAsync(tenantId, async (provider, ct) =>
+        {
+            var db = provider.GetRequiredService<SalonDbContext>();
+            if (!await db.Users.AnyAsync(ct).ConfigureAwait(false))
+            {
+                await SeedUsersAsync(provider.GetRequiredService<IUserService>(), ct).ConfigureAwait(false);
+            }
+        }, cancellationToken);
 
     private async Task SeedUsersAsync(IUserService users, CancellationToken cancellationToken)
     {
