@@ -58,7 +58,9 @@ slice, on a tenant-owned entity without `ITenantEntity`, and on any type outside
 
 ## 5. Data
 PostgreSQL 17, schema `salon`, snake_case names, UUIDv7 ids, `Instant` (timestamptz) for time, `decimal` + ISO
-currency for money. Tables so far: `tenants`, `services` (RLS), `settings` (RLS), `outbox_messages` (no RLS, see §3).
+currency for money. Tables so far: `tenants`, `services` (RLS), `settings` (RLS), `staff_members` and `working_hours`
+(RLS, ADR 0010; `LocalTime` as `time`, local to the salon), `outbox_messages` (no RLS, see §3). The demo salon also gets
+three staff with weekly hours (Anna Kowalska, Tom Reed, Priya Shah).
 Migrations are additive; rollback notes live in each PR. Local: `salon_dev` (app, migrates and seeds `studio-20` on
 start in Development) and `salon_test` (tests, reset by Respawn). The demo salon also gets two logins once ADR 0009 lands:
 `owner@studio-20.local` (Owner) and `desk@studio-20.local` (Receptionist), password from `Demo:OwnerPassword` in
@@ -68,6 +70,9 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
 - `Catalog/CreateService` — `/admin/services/new`, behind `Features:CatalogAdmin` (off by default until permissions
   exist), publishes `ServiceCreated`.
 - `Booking/ListServices` — `/services`, the public price list; one tap from the salon home page.
+- `Staff/ListStaff`, `Staff/CreateStaff`, `Staff/EditWorkingHours` — `/admin/staff`, `/admin/staff/new`,
+  `/admin/staff/{id}/hours`, all behind `Staff.Manage` (ADR 0010); `CreateStaff` publishes `StaffMemberCreated`, the
+  hours form replaces a person's whole weekly rota in one transaction.
 
 ## 7. Testing
 Unit (xUnit + Shouldly + NSubstitute), Architecture (NetArchTest + resource parity + outbox isolation), Integration
