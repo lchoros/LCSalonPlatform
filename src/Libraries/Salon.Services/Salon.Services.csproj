@@ -18,4 +18,8 @@
     <PackageReference Include="MailKit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Salon.Tests.Unit" />
+  </ItemGroup>
+
 </Project>

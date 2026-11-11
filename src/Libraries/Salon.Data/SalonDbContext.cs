@@ -4,6 +4,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 
 using Salon.Core.Catalog;
+using Salon.Core.Settings;
 using Salon.Core.Tenancy;
 
 namespace Salon.Data;
@@ -23,6 +24,8 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     public DbSet<Tenant> Tenants => Set<Tenant>();
 
     public DbSet<Service> Services => Set<Service>();
+
+    public DbSet<Setting> Settings => Set<Setting>();
 
     /// <summary>Read inside the query filter; EF turns it into a query parameter evaluated per execution.</summary>
     private Guid? CurrentTenantId => tenantContext.TenantId;

@@ -82,6 +82,40 @@ namespace Salon.Data.Migrations
                     b.ToTable("services", "salon");
                 });
 
+            modelBuilder.Entity("Salon.Core.Settings.Setting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("text")
+                        .HasColumnName("value");
+
+                    b.HasKey("Id")
+                        .HasName("pk_settings");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_settings_tenant_id");
+
+                    b.HasIndex("TenantId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_settings_tenant_id_name");
+
+                    b.ToTable("settings", "salon");
+                });
+
             modelBuilder.Entity("Salon.Core.Tenancy.Tenant", b =>
                 {
                     b.Property<Guid>("Id")
@@ -145,6 +179,16 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_services_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Settings.Setting", b =>
+                {
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_settings_tenants_tenant_id");
                 });
 #pragma warning restore 612, 618
         }
