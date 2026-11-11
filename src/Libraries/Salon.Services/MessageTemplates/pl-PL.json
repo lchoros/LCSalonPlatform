@@ -1,0 +1,17 @@
+{
+  "Booking.Confirmation": {
+    "Sms": "Cześć {{ClientFirstName}}, Twoja wizyta ({{ServiceName}}) w {{SalonName}}: {{AppointmentStart}}. Odwołanie: {{CancelUrl}}",
+    "EmailSubject": "Twoja wizyta w {{SalonName}} jest zarezerwowana",
+    "EmailBody": "Cześć {{ClientFirstName}},\nTwoja wizyta ({{ServiceName}}) u {{StaffName}} w {{SalonName}} jest zarezerwowana na {{AppointmentStart}}.\nJeśli chcesz ją odwołać, skorzystaj z tego linku: {{CancelUrl}}\nDo zobaczenia."
+  },
+  "Booking.Reminder": {
+    "Sms": "Przypomnienie z {{SalonName}}: {{ServiceName}}, {{AppointmentStart}}. Do zobaczenia.",
+    "EmailSubject": "Przypomnienie o wizycie w {{SalonName}}",
+    "EmailBody": "Cześć {{ClientFirstName}},\nprzypominamy o Twojej wizycie ({{ServiceName}}) u {{StaffName}} w {{SalonName}}: {{AppointmentStart}}.\nJeśli plany się zmieniły, możesz ją odwołać tutaj: {{CancelUrl}}"
+  },
+  "Booking.Cancelled": {
+    "Sms": "{{SalonName}}: Twoja wizyta ({{ServiceName}}) {{AppointmentStart}} została odwołana. Nowy termin: {{BookingUrl}}",
+    "EmailSubject": "Twoja wizyta w {{SalonName}} została odwołana",
+    "EmailBody": "Cześć {{ClientFirstName}},\nTwoja wizyta ({{ServiceName}}) w {{SalonName}} w terminie {{AppointmentStart}} została odwołana.\nNowy termin możesz zarezerwować tutaj: {{BookingUrl}}"
+  }
+}

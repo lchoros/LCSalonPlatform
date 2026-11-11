@@ -1,0 +1,17 @@
+{
+  "Booking.Confirmation": {
+    "Sms": "Hi {{ClientFirstName}}, your {{ServiceName}} at {{SalonName}} is booked for {{AppointmentStart}}. Need to cancel? {{CancelUrl}}",
+    "EmailSubject": "Your {{ServiceName}} at {{SalonName}} is booked",
+    "EmailBody": "Hi {{ClientFirstName}},\nyour {{ServiceName}} with {{StaffName}} at {{SalonName}} is booked for {{AppointmentStart}}.\nIf you need to cancel, use this link: {{CancelUrl}}\nSee you soon."
+  },
+  "Booking.Reminder": {
+    "Sms": "Reminder from {{SalonName}}: {{ServiceName}} on {{AppointmentStart}}. See you then.",
+    "EmailSubject": "Reminder: your {{ServiceName}} at {{SalonName}}",
+    "EmailBody": "Hi {{ClientFirstName}},\na quick reminder that your {{ServiceName}} with {{StaffName}} at {{SalonName}} is on {{AppointmentStart}}.\nIf your plans have changed, you can cancel here: {{CancelUrl}}"
+  },
+  "Booking.Cancelled": {
+    "Sms": "{{SalonName}}: your {{ServiceName}} on {{AppointmentStart}} has been cancelled. Rebook any time: {{BookingUrl}}",
+    "EmailSubject": "Your booking at {{SalonName}} has been cancelled",
+    "EmailBody": "Hi {{ClientFirstName}},\nyour {{ServiceName}} at {{SalonName}} on {{AppointmentStart}} has been cancelled.\nYou can book a new time here: {{BookingUrl}}"
+  }
+}
