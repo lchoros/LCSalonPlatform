@@ -4,6 +4,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 
 using Salon.Core.Catalog;
+using Salon.Core.Clients;
 using Salon.Core.Events;
 using Salon.Core.Identity;
 using Salon.Core.Messaging;
@@ -27,6 +28,9 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     public DbSet<Tenant> Tenants => Set<Tenant>();
 
     public DbSet<Service> Services => Set<Service>();
+
+    /// <summary>Client cards (ADR 0011). Health notes are cipher text here; decrypt only through the client service.</summary>
+    public DbSet<Client> Clients => Set<Client>();
 
     public DbSet<Setting> Settings => Set<Setting>();
 
