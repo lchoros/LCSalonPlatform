@@ -21,6 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- UI text (CLAUDE.md rule 6), read by EmbeddedJsonResourceSource as Salon.Web.Localization.{culture}.json. -->
+    <EmbeddedResource Include="Localization\*.json" LogicalName="$(RootNamespace).Localization.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Salon.Tests.Integration" />
     <InternalsVisibleTo Include="Salon.Tests.E2E" />
   </ItemGroup>

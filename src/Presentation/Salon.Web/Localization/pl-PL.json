@@ -1,0 +1,10 @@
+{
+  "Layout.Brand": "Salon Platform",
+  "Home.DefaultTitle": "Strona główna",
+  "Home.PlatformTagline": "Rezerwacje online i zarządzanie salonem dla Wielkiej Brytanii i Polski. Bez marketplace'u, bez prowizji, stała cena — dane należą do salonu.",
+  "Home.PhaseNote": "Szkielet M0 · faza 1 działa wyłącznie lokalnie.",
+  "Home.BookingOpensSoon": "Rezerwacje online ruszą tutaj w M1.",
+  "Error.Title": "Coś poszło nie tak",
+  "Error.Description": "Podczas przetwarzania żądania wystąpił błąd.",
+  "Error.RequestId": "Identyfikator żądania"
+}

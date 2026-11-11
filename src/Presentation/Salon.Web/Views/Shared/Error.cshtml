@@ -1,12 +1,12 @@
 @model ErrorViewModel
 @{
-    ViewData["Title"] = "Error";
+    ViewData["Title"] = T["Error.Title"];
 }
 <section class="space-y-3">
-    <h1 class="text-2xl font-bold text-red-700">Something went wrong</h1>
-    <p class="text-stone-600">An error occurred while processing your request.</p>
+    <h1 class="text-2xl font-bold text-red-700">@T["Error.Title"]</h1>
+    <p class="text-stone-600">@T["Error.Description"]</p>
     @if (Model.ShowRequestId)
     {
-        <p class="text-sm text-stone-500">Request id: <code>@Model.RequestId</code></p>
+        <p class="text-sm text-stone-500">@T["Error.RequestId"]: <code>@Model.RequestId</code></p>
     }
 </section>
