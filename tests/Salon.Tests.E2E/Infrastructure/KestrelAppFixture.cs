@@ -2,8 +2,15 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
+
+using NodaTime;
+
+using Salon.Core.Catalog;
+using Salon.Core.Tenancy;
+using Salon.Data;
 
 namespace Salon.Tests.E2E.Infrastructure;
 
@@ -15,22 +22,95 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
 
     public IBrowser Browser { get; private set; } = null!;
 
+    /// <summary>The platform site, e.g. http://127.0.0.1:54321.</summary>
     public string BaseUrl { get; private set; } = string.Empty;
 
     /// <summary>Screenshots land in tests/Salon.Tests.E2E/screenshots so CI can upload them and PRs can attach them.</summary>
     public static string ScreenshotDirectory { get; } =
         Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "screenshots"));
 
+    /// <summary>
+    /// The same server addressed as a salon: "{slug}.localhost" resolves to the loopback address in Chromium (and in
+    /// Windows and glibc resolvers), so the tenant middleware sees the subdomain exactly as in production.
+    /// </summary>
+    public string TenantUrl(string slug) => new UriBuilder(BaseUrl) { Host = $"{slug}.localhost" }.Uri.ToString().TrimEnd('/');
+
     public async Task InitializeAsync()
     {
-        _factory.UseKestrel();
+        // Port 0: xUnit runs test classes in parallel and each class owns a fixture, so two hosts must not share a port.
+        _factory.UseKestrel(0);
         _factory.StartServer();
         var addresses = _factory.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()?.Addresses;
         BaseUrl = (addresses?.FirstOrDefault() ?? throw new InvalidOperationException("Kestrel did not report an address.")).TrimEnd('/');
 
+        using (var scope = _factory.Services.CreateScope())
+        {
+            await scope.ServiceProvider.GetRequiredService<SalonDbContext>().Database.MigrateAsync();
+        }
+
         Directory.CreateDirectory(ScreenshotDirectory);
         _playwright = await Playwright.CreateAsync();
         Browser = await _playwright.Chromium.LaunchAsync();
+    }
+
+    /// <summary>
+    /// Makes sure the salon exists (en-GB, GBP, Europe/London unless told otherwise) and that its catalogue holds exactly
+    /// <paramref name="services"/>, in the given order. Safe to call repeatedly and after an integration run left other
+    /// rows behind: the tenant row is kept, its services are replaced.
+    /// </summary>
+    public async Task<Guid> EnsureTenantAsync(
+        string slug,
+        string name,
+        IReadOnlyList<(string Name, int Minutes, decimal Price)> services,
+        string culture = "en-GB",
+        string currency = "GBP")
+    {
+        Guid tenantId;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+            var tenant = await db.Tenants.SingleOrDefaultAsync(t => t.Slug == slug);
+            if (tenant is null)
+            {
+                tenant = new Tenant
+                {
+                    Slug = slug,
+                    Name = name,
+                    TimeZoneId = culture == "pl-PL" ? "Europe/Warsaw" : "Europe/London",
+                    Culture = culture,
+                    Currency = currency,
+                    CreatedAt = SystemClock.Instance.GetCurrentInstant(),
+                };
+                db.Tenants.Add(tenant);
+                await db.SaveChangesAsync();
+            }
+
+            tenantId = tenant.Id;
+        }
+
+        // A fresh scope with the tenant set before the connection opens, so the filter and RLS setting are both right.
+        using (var scope = _factory.Services.CreateScope())
+        {
+            scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
+            var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+            db.Services.RemoveRange(await db.Services.ToListAsync());
+            var sortOrder = 0;
+            foreach (var (serviceName, minutes, price) in services)
+            {
+                db.Services.Add(new Service
+                {
+                    Name = serviceName,
+                    Duration = Duration.FromMinutes(minutes),
+                    Price = price,
+                    Currency = currency,
+                    SortOrder = ++sortOrder,
+                });
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        return tenantId;
     }
 
     public async Task DisposeAsync()
@@ -58,6 +138,8 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
             Environment.SetEnvironmentVariable("Jobs__Enabled", "false");
         }
 
-        protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.UseEnvironment("Testing");
+        // UseStaticWebAssets maps the build-time content roots (including the pre-compressed css/app.css.gz under obj/);
+        // without it MapStaticAssets answers a gzip request with an empty body and the browser renders an unstyled page.
+        protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.UseEnvironment("Testing").UseStaticWebAssets();
     }
 }
