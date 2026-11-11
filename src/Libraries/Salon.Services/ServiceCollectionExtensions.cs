@@ -3,8 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
 
 using Salon.Core.Messaging;
+using Salon.Core.Tasks;
 using Salon.Core.Tenancy;
 using Salon.Services.Notifications;
+using Salon.Services.Tasks;
 using Salon.Services.Tenancy;
 
 namespace Salon.Services;
@@ -21,6 +23,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMutableTenantContext>(sp => sp.GetRequiredService<TenantContext>());
         services.AddMemoryCache();
         services.AddScoped<ITenantLookup, TenantLookup>();
+        services.AddSingleton<ITenantScopeRunner, TenantScopeRunner>();
+
+        services.AddScoped<ScheduleTaskRunner>();
+        services.AddScoped<IScheduleTask, HeartbeatTask>();
 
         services.AddOptions<EmailOptions>().BindConfiguration(EmailOptions.SectionName);
         services.AddSingleton<IEmailSender, SmtpEmailSender>();

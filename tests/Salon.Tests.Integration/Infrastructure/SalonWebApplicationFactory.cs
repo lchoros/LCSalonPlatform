@@ -31,6 +31,7 @@ public sealed class SalonWebApplicationFactory : WebApplicationFactory<Program>,
         // Environment variables are the one configuration source that reliably reaches WebApplication.CreateBuilder.
         Environment.SetEnvironmentVariable("ConnectionStrings__Default", TestConnectionString);
         Environment.SetEnvironmentVariable("Database__MigrateOnStartup", "false");
+        Environment.SetEnvironmentVariable("Jobs__Enabled", "false");
     }
 
     public async Task InitializeAsync()
