@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Salon.Core.Catalog;
 using Salon.Core.Events;
+using Salon.Core.Identity;
 using Salon.Core.Settings;
 using Salon.Core.Tenancy;
 
@@ -27,6 +28,8 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     public DbSet<Service> Services => Set<Service>();
 
     public DbSet<Setting> Settings => Set<Setting>();
+
+    public DbSet<User> Users => Set<User>();
 
     /// <summary>Platform-level (no tenant filter, no RLS): the dispatcher reads every tenant's pending events (ADR 0007).</summary>
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
