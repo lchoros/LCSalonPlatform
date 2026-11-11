@@ -63,7 +63,7 @@ public class TransactionBehaviorTests
     public async Task Query_does_not_open_a_transaction()
     {
         _unitOfWork.HasActiveTransaction.Returns(false);
-        var behavior = new TransactionBehavior<CountThings, int>(_unitOfWork);
+        var behavior = new TransactionBehavior<CountThings, int>(_unitOfWork, NullLogger<TransactionBehavior<CountThings, int>>.Instance);
 
         (await behavior.HandleAsync(new CountThings(), () => Task.FromResult(7), CancellationToken.None)).ShouldBe(7);
 
