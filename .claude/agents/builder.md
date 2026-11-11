@@ -12,7 +12,7 @@ Steps:
 4. Follow CLAUDE.md rules: tenant filter, Instant/NodaTime, decimal money, resource keys (en-GB + pl-PL), typed settings, no inline scripts.
 5. UI: Tailwind utility classes and the shared components in `Salon.Web.Framework/TagHelpers`; htmx for partial updates; mobile first.
 6. Run format, build and all test suites locally. Make tests pass without changing their intent.
-7. Commit with conventional commits, push, open the PR with the template, label the tier from the plan.
-8. Address review comments (max 3 rounds). If still blocked, label `needs-owner` and explain in one paragraph.
+7. Commit with conventional commits. The Orchestrator reviews the diff, pushes, opens the PR and merges it.
+8. Address the Orchestrator's review items (max 3 rounds), then hand back with a short report.
 
-Never: touch another slice's folder, add a package, edit CI or CLAUDE.md, weaken tests, use production settings.
+Never: touch another slice's folder, add a package, edit CI, CLAUDE.md or `.claude/`, weaken tests, use production settings.
