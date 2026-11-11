@@ -4,6 +4,7 @@ using Salon.Data;
 using Salon.Plugin.Payments.Manual;
 using Salon.Plugin.Sms.Log;
 using Salon.Web.Framework.Infrastructure;
+using Salon.Web.Framework.Plugins;
 using Salon.Web.Framework.Tenancy;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,7 @@ builder.Services.AddSalonFramework(builder.Configuration);
 // Phase 1 plugins: record-only payments, log + Mailpit SMS. Real gateways arrive at M3 behind the same interfaces.
 builder.Services.AddManualPaymentProvider();
 builder.Services.AddLogSmsProvider();
+builder.Services.AddSalonPlugins();
 
 var app = builder.Build();
 
@@ -31,6 +33,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseSalonPlugins();
 app.UseSalonTenancy();
 app.UseAuthorization();
 
