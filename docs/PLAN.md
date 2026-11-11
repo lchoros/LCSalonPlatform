@@ -3,7 +3,7 @@
 Status key: [ ] todo · [~] in progress · [x] done · [!] needs owner
 
 ## M0 Walking skeleton (weeks 1–2)
-Gate: CI green and agents merge a Tier 0 PR on their own.
+Gate: CI green and agents merge a Tier 0 PR on their own. — Met 2026-11-11: CI green on main after the run-1 stack merged (the owner clicks merge; see docs/digests/2026-11-11-m0-run-2.md).
 - [x] Solution layers + Directory.Build.props / Directory.Packages.props (2026-11-10: Salon.slnx, 7 src + 4 test projects, layer tests green)
 - [~] Tenancy: ITenantContext, global filter, Postgres RLS, tenant-isolation test helper — done on `agent/m0-02-tenancy`, `agent/m0-02b-tenancy-tests`, `agent/m0-03-tenant-resolution`; PRs wait for the owner (Tier 2)
 - [~] Platform services: settings, localization (en-GB, pl-PL), events + outbox, cache, schedule tasks, plugin loader, widget zones, permissions — done: settings (`agent/m0-05b-settings-impl`), cache (`agent/m0-05-cache`), schedule tasks (`agent/m0-07-schedule-tasks`), plugin loader + widget zones (`agent/m0-06-plugins-widgets`), localization (`agent/m0-09-localization`, ADR 0006), events + outbox (`agent/m0-10-events-outbox`, ADR 0007); todo: permissions, message templates
