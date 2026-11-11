@@ -91,6 +91,26 @@ public class DemoSeederTests(SalonWebApplicationFactory factory) : IAsyncLifetim
     }
 
     [Fact]
+    public async Task An_existing_demo_salon_without_logins_gets_them_once_the_password_is_configured()
+    {
+        await SeedAsync();
+        var tenantId = (await TenantsAsync()).Single().Id;
+        (await UsersAsync(tenantId)).ShouldBeEmpty();
+
+        using var configured = factory.WithWebHostBuilder(b => b.ConfigureAppConfiguration(c =>
+            c.AddInMemoryCollection(new Dictionary<string, string?> { ["Demo:OwnerPassword"] = "Studio20!test" })));
+        await using (var scope = configured.Services.CreateAsyncScope())
+        {
+            (await scope.ServiceProvider.GetRequiredService<DemoSeeder>().SeedAsync()).ShouldBeFalse();
+            (await scope.ServiceProvider.GetRequiredService<DemoSeeder>().SeedAsync()).ShouldBeFalse();
+        }
+
+        (await TenantsAsync()).Count.ShouldBe(1);
+        (await ServicesAsync(tenantId)).Count.ShouldBe(6);
+        (await UsersAsync(tenantId)).Select(u => u.Email).ShouldBe(["owner@studio-20.local", "desk@studio-20.local"], ignoreOrder: true);
+    }
+
+    [Fact]
     public async Task With_a_demo_password_an_owner_and_a_receptionist_can_sign_in()
     {
         using var configured = factory.WithWebHostBuilder(b => b.ConfigureAppConfiguration(c =>
