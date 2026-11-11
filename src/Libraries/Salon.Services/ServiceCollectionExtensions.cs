@@ -7,6 +7,7 @@ using Salon.Core.Tasks;
 using Salon.Core.Tenancy;
 using Salon.Services.Caching;
 using Salon.Services.Localization;
+using Salon.Services.Messaging;
 using Salon.Services.Notifications;
 using Salon.Services.Seeding;
 using Salon.Services.Settings;
@@ -18,7 +19,7 @@ namespace Salon.Services;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers cross-slice services: clock, tenant context, cache, settings, schedule tasks, localization, email.
+    /// Registers cross-slice services: clock, tenant context, cache, settings, schedule tasks, localization, message templates, email.
     /// Resource sources for localization are added per assembly with <see cref="LocalizationServiceCollectionExtensions.AddLocalizationResources"/>.
     /// Events and the outbox are added per assembly with <see cref="Events.EventsServiceCollectionExtensions.AddSalonEvents"/>.
     /// </summary>
@@ -38,6 +39,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ScheduleTaskRunner>();
         services.AddScoped<IScheduleTask, HeartbeatTask>();
         services.AddScoped<ISettingService, SettingService>();
+        services.AddSingleton<EmbeddedMessageTemplateDefaults>();
+        services.AddScoped<IMessageTemplateService, MessageTemplateService>();
         services.AddScoped<DemoSeeder>();
 
         services.AddOptions<EmailOptions>().BindConfiguration(EmailOptions.SectionName);
