@@ -60,7 +60,9 @@ slice, on a tenant-owned entity without `ITenantEntity`, and on any type outside
 PostgreSQL 17, schema `salon`, snake_case names, UUIDv7 ids, `Instant` (timestamptz) for time, `decimal` + ISO
 currency for money. Tables so far: `tenants`, `services` (RLS), `settings` (RLS), `outbox_messages` (no RLS, see §3).
 Migrations are additive; rollback notes live in each PR. Local: `salon_dev` (app, migrates and seeds `studio-20` on
-start in Development) and `salon_test` (tests, reset by Respawn).
+start in Development) and `salon_test` (tests, reset by Respawn). The demo salon also gets two logins once ADR 0009 lands:
+`owner@studio-20.local` (Owner) and `desk@studio-20.local` (Receptionist), password from `Demo:OwnerPassword` in
+`appsettings.Development.json` (a local value, not a secret).
 
 ## 6. Slices
 - `Catalog/CreateService` — `/admin/services/new`, behind `Features:CatalogAdmin` (off by default until permissions
