@@ -13,8 +13,8 @@ using Salon.Data;
 namespace Salon.Data.Migrations
 {
     [DbContext(typeof(SalonDbContext))]
-    [Migration("20261112091744_CatalogDepth")]
-    partial class CatalogDepth
+    [Migration("20261111211223_Clients")]
+    partial class Clients
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,14 +33,6 @@ namespace Salon.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    b.Property<int>("BufferAfterMinutes")
-                        .HasColumnType("integer")
-                        .HasColumnName("buffer_after_minutes");
-
-                    b.Property<Guid?>("CategoryId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("category_id");
 
                     b.Property<string>("Currency")
                         .IsRequired()
@@ -72,14 +64,6 @@ namespace Salon.Data.Migrations
                         .HasColumnType("numeric(12,2)")
                         .HasColumnName("price");
 
-                    b.Property<int>("ProcessingMinutes")
-                        .HasColumnType("integer")
-                        .HasColumnName("processing_minutes");
-
-                    b.Property<int>("ProcessingStartsAfterMinutes")
-                        .HasColumnType("integer")
-                        .HasColumnName("processing_starts_after_minutes");
-
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer")
                         .HasColumnName("sort_order");
@@ -91,9 +75,6 @@ namespace Salon.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_services");
 
-                    b.HasIndex("CategoryId")
-                        .HasDatabaseName("ix_services_category_id");
-
                     b.HasIndex("TenantId")
                         .HasDatabaseName("ix_services_tenant_id");
 
@@ -104,45 +85,98 @@ namespace Salon.Data.Migrations
                     b.ToTable("services", "salon");
                 });
 
-            modelBuilder.Entity("Salon.Core.Catalog.ServiceCategory", b =>
+            modelBuilder.Entity("Salon.Core.Clients.Client", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Instant>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("first_name");
+
+                    b.Property<string>("HealthNotesProtected")
+                        .HasMaxLength(8000)
+                        .HasColumnType("character varying(8000)")
+                        .HasColumnName("health_notes_protected");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("name");
+                        .HasColumnName("last_name");
 
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer")
-                        .HasColumnName("sort_order");
+                    b.Property<LocalDate?>("LastPatchTestOn")
+                        .HasColumnType("date")
+                        .HasColumnName("last_patch_test_on");
+
+                    b.Property<bool>("MarketingConsent")
+                        .HasColumnType("boolean")
+                        .HasColumnName("marketing_consent");
+
+                    b.Property<Instant?>("MarketingConsentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("marketing_consent_at");
+
+                    b.Property<string>("MarketingConsentWording")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("marketing_consent_wording");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("phone");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
 
+                    b.Property<Instant>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
                     b.HasKey("Id")
-                        .HasName("pk_service_categories");
+                        .HasName("pk_clients");
 
                     b.HasIndex("TenantId")
-                        .HasDatabaseName("ix_service_categories_tenant_id");
+                        .HasDatabaseName("ix_clients_tenant_id");
 
-                    b.HasIndex("TenantId", "Name")
+                    b.HasIndex("TenantId", "Email")
                         .IsUnique()
-                        .HasDatabaseName("ix_service_categories_tenant_id_name");
+                        .HasDatabaseName("ix_clients_tenant_id_email")
+                        .HasFilter("email IS NOT NULL");
 
-                    b.HasIndex("TenantId", "SortOrder")
-                        .HasDatabaseName("ix_service_categories_tenant_id_sort_order");
+                    b.HasIndex("TenantId", "Phone")
+                        .IsUnique()
+                        .HasDatabaseName("ix_clients_tenant_id_phone")
+                        .HasFilter("phone IS NOT NULL");
 
-                    b.ToTable("service_categories", "salon");
+                    b.HasIndex("TenantId", "LastName", "FirstName")
+                        .HasDatabaseName("ix_clients_tenant_id_last_name_first_name");
+
+                    b.ToTable("clients", "salon");
                 });
 
             modelBuilder.Entity("Salon.Core.Events.OutboxMessage", b =>
@@ -375,118 +409,6 @@ namespace Salon.Data.Migrations
                     b.ToTable("settings", "salon");
                 });
 
-            modelBuilder.Entity("Salon.Core.Staff.StaffMember", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Colour")
-                        .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("character varying(7)")
-                        .HasColumnName("colour");
-
-                    b.Property<Instant>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("DisplayName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("display_name");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(254)
-                        .HasColumnType("character varying(254)")
-                        .HasColumnName("email");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<bool>("IsBookable")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_bookable");
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("phone");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer")
-                        .HasColumnName("sort_order");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("tenant_id");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_staff_members");
-
-                    b.HasIndex("TenantId")
-                        .HasDatabaseName("ix_staff_members_tenant_id");
-
-                    b.HasIndex("TenantId", "SortOrder")
-                        .HasDatabaseName("ix_staff_members_tenant_id_sort_order");
-
-                    b.ToTable("staff_members", "salon");
-                });
-
-            modelBuilder.Entity("Salon.Core.Staff.WorkingHours", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Day")
-                        .HasColumnType("integer")
-                        .HasColumnName("day");
-
-                    b.Property<LocalTime>("End")
-                        .HasColumnType("time")
-                        .HasColumnName("end");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer")
-                        .HasColumnName("sort_order");
-
-                    b.Property<Guid>("StaffMemberId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("staff_member_id");
-
-                    b.Property<LocalTime>("Start")
-                        .HasColumnType("time")
-                        .HasColumnName("start");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("tenant_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_working_hours");
-
-                    b.HasIndex("StaffMemberId")
-                        .HasDatabaseName("ix_working_hours_staff_member_id");
-
-                    b.HasIndex("TenantId")
-                        .HasDatabaseName("ix_working_hours_tenant_id");
-
-                    b.HasIndex("TenantId", "StaffMemberId", "Day", "Start")
-                        .IsUnique()
-                        .HasDatabaseName("ix_working_hours_tenant_id_staff_member_id_day_start");
-
-                    b.ToTable("working_hours", "salon");
-                });
-
             modelBuilder.Entity("Salon.Core.Tenancy.Tenant", b =>
                 {
                     b.Property<Guid>("Id")
@@ -544,12 +466,6 @@ namespace Salon.Data.Migrations
 
             modelBuilder.Entity("Salon.Core.Catalog.Service", b =>
                 {
-                    b.HasOne("Salon.Core.Catalog.ServiceCategory", null)
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_services_service_categories_category_id");
-
                     b.HasOne("Salon.Core.Tenancy.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
@@ -558,14 +474,14 @@ namespace Salon.Data.Migrations
                         .HasConstraintName("fk_services_tenants_tenant_id");
                 });
 
-            modelBuilder.Entity("Salon.Core.Catalog.ServiceCategory", b =>
+            modelBuilder.Entity("Salon.Core.Clients.Client", b =>
                 {
                     b.HasOne("Salon.Core.Tenancy.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_service_categories_tenants_tenant_id");
+                        .HasConstraintName("fk_clients_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Identity.User", b =>
@@ -596,33 +512,6 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_settings_tenants_tenant_id");
-                });
-
-            modelBuilder.Entity("Salon.Core.Staff.StaffMember", b =>
-                {
-                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
-                        .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_staff_members_tenants_tenant_id");
-                });
-
-            modelBuilder.Entity("Salon.Core.Staff.WorkingHours", b =>
-                {
-                    b.HasOne("Salon.Core.Staff.StaffMember", null)
-                        .WithMany()
-                        .HasForeignKey("StaffMemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_working_hours_staff_members_staff_member_id");
-
-                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
-                        .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_working_hours_tenants_tenant_id");
                 });
 #pragma warning restore 612, 618
         }

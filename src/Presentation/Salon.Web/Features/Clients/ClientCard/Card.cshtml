@@ -1,0 +1,96 @@
+@using System.Globalization
+@using Salon.Web.Features.Clients.ClientCard
+@model ClientCardViewModel
+@{
+    var card = Model.Card;
+    var culture = CultureInfo.CurrentCulture;
+    ViewData["Title"] = T["Clients.Card.Title"];
+    const string labelClass = "text-sm text-stone-500";
+    const string valueClass = "text-base";
+}
+<section class="mx-auto max-w-2xl space-y-6" data-testid="client-card">
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+    }
+    <a href="/admin/clients" class="inline-flex min-h-11 items-center text-sm font-medium text-stone-700 hover:underline">&larr; @T["Clients.Card.Back"]</a>
+    <header class="space-y-1">
+        <p class="text-sm text-stone-500">@T["Clients.Card.Title"]</p>
+        <h1 class="flex flex-wrap items-center gap-2 text-2xl font-bold tracking-tight sm:text-3xl">
+            <span data-testid="client-name">@card.FullName</span>
+            @if (!card.IsActive)
+            {
+                <span class="rounded bg-stone-200 px-1.5 py-0.5 text-xs font-medium text-stone-700">@T["Clients.Card.Inactive"]</span>
+            }
+        </h1>
+        <p class="text-sm text-stone-500">@T.Format("Clients.Card.Since", card.CreatedAt.InZone(Model.Zone).Date.ToString("d", culture))</p>
+    </header>
+
+    <section class="space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
+        <h2 class="text-lg font-semibold">@T["Clients.Card.Contact"]</h2>
+        <dl class="grid gap-3 sm:grid-cols-3">
+            <div>
+                <dt class="@labelClass">@T["Clients.Card.Phone"]</dt>
+                <dd class="@valueClass" data-testid="client-phone">@if (card.Phone is { } phone) { <a href="tel:@phone" class="underline">@phone</a> } else { <text>—</text> }</dd>
+            </div>
+            <div>
+                <dt class="@labelClass">@T["Clients.Card.Email"]</dt>
+                <dd class="@valueClass break-all" data-testid="client-email">@if (card.Email is { } email) { <a href="mailto:@email" class="underline">@email</a> } else { <text>—</text> }</dd>
+            </div>
+            <div>
+                <dt class="@labelClass">@T["Clients.Card.LastVisit"]</dt>
+                <dd class="@valueClass">—</dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="space-y-2 rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
+        <h2 class="text-lg font-semibold">@T["Clients.Card.Notes"]</h2>
+        @if (card.Notes is { } notes)
+        {
+            <p class="whitespace-pre-line text-base" data-testid="client-notes">@notes</p>
+        }
+        else
+        {
+            <p class="text-sm text-stone-500">@T["Clients.Card.NoNotes"]</p>
+        }
+    </section>
+
+    <section class="space-y-3 rounded-lg border border-amber-300 bg-amber-50 p-4" data-testid="health-section">
+        <h2 class="text-lg font-semibold text-amber-900">@T["Clients.Card.HealthNotes"]</h2>
+        <p class="text-sm text-amber-900">@T["Clients.Card.HealthNotesHint"]</p>
+        @if (card.HealthNotesUnreadable)
+        {
+            <p role="alert" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" data-testid="health-notes-unreadable">@T["Clients.Card.HealthNotesUnreadable"]</p>
+        }
+        else if (card.HealthNotes is { } healthNotes)
+        {
+            <p class="whitespace-pre-line text-base" data-testid="health-notes">@healthNotes</p>
+        }
+        else
+        {
+            <p class="text-sm text-stone-600" data-testid="health-notes">@T["Clients.Card.NoHealthNotes"]</p>
+        }
+        <dl>
+            <dt class="text-sm text-stone-600">@T["Clients.Card.LastPatchTestOn"]</dt>
+            <dd class="text-base" data-testid="patch-test">@(card.LastPatchTestOn is { } patchTest ? patchTest.ToString("d", culture) : T["Clients.Card.NoPatchTest"])</dd>
+        </dl>
+    </section>
+
+    <section class="space-y-2 rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
+        <h2 class="text-lg font-semibold">@T["Clients.Card.MarketingConsent"]</h2>
+        @if (card.MarketingConsent && card.MarketingConsentAt is { } consentAt)
+        {
+            <p class="text-base font-medium text-green-800" data-testid="consent-status">@T.Format("Clients.Card.ConsentGranted", consentAt.InZone(Model.Zone).LocalDateTime.ToString("g", culture))</p>
+            @if (card.MarketingConsentWording is { } wording)
+            {
+                <p class="text-sm text-stone-500">@T["Clients.Card.ConsentWording"]</p>
+                <blockquote class="border-l-2 border-stone-300 pl-3 text-sm text-stone-700" data-testid="consent-wording">@wording</blockquote>
+            }
+        }
+        else
+        {
+            <p class="text-base text-stone-600" data-testid="consent-status">@T["Clients.Card.ConsentNotGranted"]</p>
+        }
+    </section>
+</section>
