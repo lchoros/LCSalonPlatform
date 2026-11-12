@@ -73,7 +73,7 @@ public class SettingServiceTests(SalonWebApplicationFactory factory) : IAsyncLif
         var rows = await scope.ServiceProvider.GetRequiredService<SalonDbContext>().Settings
             .OrderBy(s => s.Name).ToListAsync();
 
-        rows.Count.ShouldBe(4);
+        rows.Count.ShouldBe(typeof(BookingSettings).GetProperties().Length); // one row per public property
         rows.ShouldAllBe(r => r.TenantId == _tenantA.Id);
         rows.Single(r => r.Name == "BookingSettings.MinNoticeMinutes").Value.ShouldBe("20");
         rows.Single(r => r.Name == "BookingSettings.DefaultDepositPercent").Value.ShouldBe("0");
