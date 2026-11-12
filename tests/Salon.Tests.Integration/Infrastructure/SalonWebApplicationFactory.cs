@@ -39,6 +39,8 @@ public sealed class SalonWebApplicationFactory : WebApplicationFactory<Program>,
         // login rate limit is lifted so the suite never trips it (the rate-limit test runs its own host with the default).
         Environment.SetEnvironmentVariable("Auth__ValidationInterval", "00:00:00");
         Environment.SetEnvironmentVariable("Auth__LoginRateLimit__PermitLimit", "100000");
+        // Slices behind a flag (CLAUDE.md Tier 1) are on in the test host; the flag-off path has its own test with in-memory configuration.
+        Environment.SetEnvironmentVariable("Features__ClientImport", "true");
     }
 
     public async Task InitializeAsync()
