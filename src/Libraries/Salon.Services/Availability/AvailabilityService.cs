@@ -19,7 +19,10 @@ internal sealed class AvailabilityService(
     ISettingService settingService,
     IClock clock) : IAvailabilityService
 {
-    public async Task<IReadOnlyList<Slot>> GetSlotsAsync(Guid serviceId, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<Slot>> GetSlotsAsync(Guid serviceId, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, CancellationToken cancellationToken = default)
+        => GetSlotsAsync(serviceId, staffMemberId, fromDate, toDate, null, cancellationToken);
+
+    public async Task<IReadOnlyList<Slot>> GetSlotsAsync(Guid serviceId, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, Guid? excludeAppointmentId, CancellationToken cancellationToken = default)
     {
         if (toDate < fromDate)
         {
@@ -58,7 +61,7 @@ internal sealed class AvailabilityService(
         var busyFrom = windowStart.Minus(buffer);
         var active = AppointmentStateMachine.Active.ToArray();
         var appointments = await db.Appointments.AsNoTracking()
-            .Where(a => staffIds.Contains(a.StaffMemberId) && active.Contains(a.Status) && a.Start < windowEnd && a.End > busyFrom)
+            .Where(a => staffIds.Contains(a.StaffMemberId) && active.Contains(a.Status) && a.Start < windowEnd && a.End > busyFrom && (excludeAppointmentId == null || a.Id != excludeAppointmentId))
             .Select(a => new { a.StaffMemberId, a.Start, a.End })
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);

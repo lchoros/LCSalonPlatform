@@ -130,6 +130,71 @@ internal sealed class BookingService(
         return TransitionAsync(appointmentId, to, byUserId, reason, (a, at) => new AppointmentCancelled(a.Id, a.TenantId, at, a.Status), cancellationToken);
     }
 
+    public async Task<Appointment> MoveAsync(Guid appointmentId, Guid staffMemberId, Instant newStart, Guid? byUserId = null, CancellationToken cancellationToken = default)
+    {
+        var appointment = await db.Appointments.FirstOrDefaultAsync(a => a.Id == appointmentId, cancellationToken).ConfigureAwait(false)
+            ?? throw new AppointmentNotFoundException(appointmentId);
+        if (!AppointmentStateMachine.IsActive(appointment.Status))
+        {
+            throw new AppointmentNotActiveException(appointmentId, appointment.Status);
+        }
+
+        var staffExists = await db.StaffMembers
+            .AnyAsync(s => s.Id == staffMemberId && s.IsActive && s.IsBookable, cancellationToken)
+            .ConfigureAwait(false);
+        if (!staffExists)
+        {
+            throw new InvalidOperationException($"Staff member {staffMemberId} does not exist or is not bookable in this salon.");
+        }
+
+        // The same rules as a new booking, except that the time this visit holds now is free for it.
+        var zone = await TenantZone.ResolveAsync(tenantContext, tenantLookup, cancellationToken).ConfigureAwait(false);
+        var day = newStart.InZone(zone).Date;
+        var slots = await availability.GetSlotsAsync(appointment.ServiceId, staffMemberId, day, day, appointment.Id, cancellationToken).ConfigureAwait(false);
+        if (!slots.Any(s => s.Start == newStart))
+        {
+            throw new SlotNoLongerAvailableException();
+        }
+
+        var now = clock.GetCurrentInstant();
+        var oldStart = appointment.Start;
+        appointment.Start = newStart;
+        appointment.End = newStart.Plus(Duration.FromMinutes(appointment.DurationMinutes));
+        appointment.StaffMemberId = staffMemberId;
+        db.AppointmentStatusChanges.Add(new AppointmentStatusChange
+        {
+            TenantId = appointment.TenantId,
+            AppointmentId = appointment.Id,
+            From = appointment.Status,
+            To = appointment.Status,
+            At = now,
+            ByUserId = byUserId,
+            Reason = IBookingService.MoveReason,
+        });
+        try
+        {
+            await publisher.PublishAsync(
+                new AppointmentMoved(appointment.Id, appointment.TenantId, oldStart, newStart, staffMemberId),
+                cancellationToken).ConfigureAwait(false);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ExclusionViolation })
+        {
+            // Another booking of the new person won the race between the slot check and the update. Put the appointment back
+            // as loaded and forget the rows we added, so the scope stays usable for a fresh slot list.
+            var entry = db.Entry(appointment);
+            entry.CurrentValues.SetValues(entry.OriginalValues);
+            entry.State = EntityState.Unchanged;
+            foreach (var added in db.ChangeTracker.Entries().Where(e => e.State == EntityState.Added).ToList())
+            {
+                added.State = EntityState.Detached;
+            }
+
+            throw new SlotNoLongerAvailableException("The chosen time has just been taken; please pick another slot.", ex);
+        }
+
+        return appointment;
+    }
+
     public async Task<IReadOnlyList<Appointment>> GetDayAsync(LocalDate day, CancellationToken cancellationToken = default)
     {
         var zone = await TenantZone.ResolveAsync(tenantContext, tenantLookup, cancellationToken).ConfigureAwait(false);

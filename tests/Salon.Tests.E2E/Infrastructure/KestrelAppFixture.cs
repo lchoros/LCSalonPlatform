@@ -9,6 +9,7 @@ using Microsoft.Playwright;
 
 using NodaTime;
 
+using Salon.Core.Appointments;
 using Salon.Core.Catalog;
 using Salon.Core.Identity;
 using Salon.Core.Messaging;
@@ -187,6 +188,23 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         await db.SaveChangesAsync();
 
         await scope.ServiceProvider.GetRequiredService<IUserService>().CreateAsync(email, displayName, password, role);
+    }
+
+    /// <summary>The salon's earliest active appointment that has not started yet (the demo seed books a few over the coming days).</summary>
+    public async Task<(Guid Id, Instant Start, Guid StaffMemberId)> FirstUpcomingAppointmentAsync(Guid tenantId)
+    {
+        using var scope = _factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
+        var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+        var now = SystemClock.Instance.GetCurrentInstant();
+        var active = AppointmentStateMachine.Active.ToArray();
+        var appointment = await db.Appointments.AsNoTracking()
+            .Where(a => active.Contains(a.Status) && a.Start > now)
+            .OrderBy(a => a.Start)
+            .Select(a => new { a.Id, a.Start, a.StaffMemberId })
+            .FirstOrDefaultAsync();
+        appointment.ShouldNotBeNull("the demo seed left no upcoming appointment");
+        return (appointment.Id, appointment.Start, appointment.StaffMemberId);
     }
 
     public async Task DisposeAsync()

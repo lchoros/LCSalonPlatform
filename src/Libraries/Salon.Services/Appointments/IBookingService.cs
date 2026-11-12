@@ -30,8 +30,21 @@ public interface IBookingService
     /// <summary><paramref name="byClient"/> picks <see cref="AppointmentStatus.CancelledByClient"/> or <see cref="AppointmentStatus.CancelledBySalon"/>.</summary>
     Task<Appointment> CancelAsync(Guid appointmentId, bool byClient, string? reason, Guid? byUserId = null, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Moves an active appointment to <paramref name="newStart"/> with <paramref name="staffMemberId"/> (ADR 0016). The slot
+    /// is re-checked through the availability engine with the appointment itself not counted as busy; the duration and
+    /// price snapshot stay as booked. Writes a status-change row (<c>To</c> = the current status, reason
+    /// <see cref="MoveReason"/>) and publishes <see cref="Core.Appointments.Events.AppointmentMoved"/>. Throws
+    /// <see cref="AppointmentNotFoundException"/>, <see cref="AppointmentNotActiveException"/> for a finished or cancelled
+    /// visit, <see cref="SlotNoLongerAvailableException"/> when the slot is not offered or Postgres refuses the overlap.
+    /// </summary>
+    Task<Appointment> MoveAsync(Guid appointmentId, Guid staffMemberId, Instant newStart, Guid? byUserId = null, CancellationToken cancellationToken = default);
+
     /// <summary>The active (booked, confirmed, arrived) appointments starting on <paramref name="day"/> in the salon's zone, ordered by start.</summary>
     Task<IReadOnlyList<Appointment>> GetDayAsync(LocalDate day, CancellationToken cancellationToken = default);
+
+    /// <summary>The <see cref="AppointmentStatusChange.Reason"/> written by <see cref="MoveAsync"/>.</summary>
+    public const string MoveReason = "Moved";
 }
 
 /// <summary>What a booking needs; the client is referenced by id only (ADR 0011 owns the client record).</summary>
