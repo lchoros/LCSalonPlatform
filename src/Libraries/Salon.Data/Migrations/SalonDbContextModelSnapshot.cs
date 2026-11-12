@@ -76,6 +76,11 @@ namespace Salon.Data.Migrations
                         .HasColumnType("numeric(10,2)")
                         .HasColumnName("price_amount");
 
+                    b.Property<string>("PublicToken")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("public_token");
+
                     b.Property<Guid>("ServiceId")
                         .HasColumnType("uuid")
                         .HasColumnName("service_id");
@@ -102,6 +107,11 @@ namespace Salon.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_appointments");
+
+                    b.HasIndex("PublicToken")
+                        .IsUnique()
+                        .HasDatabaseName("ix_appointments_public_token")
+                        .HasFilter("public_token IS NOT NULL");
 
                     b.HasIndex("ServiceId")
                         .HasDatabaseName("ix_appointments_service_id");
@@ -164,6 +174,108 @@ namespace Salon.Data.Migrations
                         .HasDatabaseName("ix_appointment_status_changes_appointment_id_at");
 
                     b.ToTable("appointment_status_changes", "salon");
+                });
+
+            modelBuilder.Entity("Salon.Core.Booking.PhoneVerification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AppointmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("appointment_id");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempts");
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code_hash");
+
+                    b.Property<string>("CodeSalt")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code_salt");
+
+                    b.Property<string>("ConsentWording")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("consent_wording");
+
+                    b.Property<Instant>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("email");
+
+                    b.Property<Instant>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("first_name");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("last_name");
+
+                    b.Property<bool>("MarketingConsent")
+                        .HasColumnType("boolean")
+                        .HasColumnName("marketing_consent");
+
+                    b.Property<string>("PhoneE164")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("phone_e164");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_id");
+
+                    b.Property<Guid?>("StaffMemberId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("staff_member_id");
+
+                    b.Property<Instant>("Start")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start_at");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<Instant?>("VerifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("verified_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_phone_verifications");
+
+                    b.HasIndex("ServiceId")
+                        .HasDatabaseName("ix_phone_verifications_service_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_phone_verifications_tenant_id");
+
+                    b.HasIndex("TenantId", "PhoneE164", "CreatedAt")
+                        .HasDatabaseName("ix_phone_verifications_tenant_id_phone_e164_created_at");
+
+                    b.ToTable("phone_verifications", "salon");
                 });
 
             modelBuilder.Entity("Salon.Core.Catalog.Service", b =>
@@ -814,6 +926,23 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_appointment_status_changes_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Booking.PhoneVerification", b =>
+                {
+                    b.HasOne("Salon.Core.Catalog.Service", null)
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_phone_verifications_services_service_id");
+
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_phone_verifications_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Catalog.Service", b =>
