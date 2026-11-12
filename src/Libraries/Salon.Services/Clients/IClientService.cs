@@ -32,6 +32,9 @@ public interface IClientService
 
     /// <summary>Grants consent with the exact wording shown and the current instant, or withdraws it and clears both.</summary>
     Task SetMarketingConsentAsync(Guid clientId, bool granted, string? wording, CancellationToken cancellationToken = default);
+
+    /// <summary>Updates client details (name, phone, email, notes) ensuring uniqueness within the tenant.</summary>
+    Task UpdateDetailsAsync(Guid clientId, string firstName, string lastName, string? phone, string? email, string? notes, CancellationToken cancellationToken = default);
 }
 
 /// <summary>What the create form collects. Text is trimmed and normalised by the service.</summary>

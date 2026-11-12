@@ -1,0 +1,77 @@
+@using Salon.Web.Features.Clients.EditClient
+@model EditClientCommand
+@{
+    ViewData["Title"] = T["Clients.Edit.Title"];
+    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 px-3 py-2 text-base shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
+    var consentWording = ViewData[EditClientController.ConsentWordingKey] as string ?? string.Empty;
+    var cardPath = $"/admin/clients/{Model.Id}";
+}
+<section class="mx-auto max-w-lg space-y-6">
+    <a href="@cardPath" class="inline-flex min-h-11 items-center text-sm font-medium text-stone-700 hover:underline">&larr; @T["Clients.Card.Back"]</a>
+    <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Clients.Edit.Title"]</h1>
+    <form method="post" asp-action="Edit" asp-route-id="@Model.Id" class="space-y-5" novalidate data-testid="edit-client-form">
+        <div asp-validation-summary="ModelOnly" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert"></div>
+
+        <div class="grid gap-5 sm:grid-cols-2">
+            <div class="space-y-1">
+                <label asp-for="FirstName" class="block text-sm font-medium">@T["Clients.Create.FirstName"]</label>
+                <input asp-for="FirstName" type="text" maxlength="100" autocomplete="off" aria-describedby="first-name-error" class="@inputClass" />
+                <span asp-validation-for="FirstName" id="first-name-error" class="block text-sm text-red-700"></span>
+            </div>
+            <div class="space-y-1">
+                <label asp-for="LastName" class="block text-sm font-medium">@T["Clients.Create.LastName"]</label>
+                <input asp-for="LastName" type="text" maxlength="100" autocomplete="off" aria-describedby="last-name-error" class="@inputClass" />
+                <span asp-validation-for="LastName" id="last-name-error" class="block text-sm text-red-700"></span>
+            </div>
+        </div>
+
+        <div class="space-y-1">
+            <label asp-for="Phone" class="block text-sm font-medium">@T["Clients.Create.Phone"]</label>
+            <input asp-for="Phone" type="tel" inputmode="tel" maxlength="30" autocomplete="off" aria-describedby="phone-hint phone-error" class="@inputClass" />
+            <p id="phone-hint" class="text-sm text-stone-500">@T["Clients.Create.PhoneHint"]</p>
+            <span asp-validation-for="Phone" id="phone-error" class="block text-sm text-red-700"></span>
+        </div>
+
+        <div class="space-y-1">
+            <label asp-for="Email" class="block text-sm font-medium">@T["Clients.Create.Email"]</label>
+            <input asp-for="Email" type="email" inputmode="email" maxlength="254" autocomplete="off" spellcheck="false" aria-describedby="email-error" class="@inputClass" />
+            <span asp-validation-for="Email" id="email-error" class="block text-sm text-red-700"></span>
+        </div>
+
+        <div class="space-y-1">
+            <label asp-for="Notes" class="block text-sm font-medium">@T["Clients.Create.Notes"]</label>
+            <textarea asp-for="Notes" rows="3" maxlength="4000" aria-describedby="notes-hint notes-error" class="@inputClass"></textarea>
+            <p id="notes-hint" class="text-sm text-stone-500">@T["Clients.Create.NotesHint"]</p>
+            <span asp-validation-for="Notes" id="notes-error" class="block text-sm text-red-700"></span>
+        </div>
+
+        <fieldset class="space-y-4 rounded-lg border border-amber-300 bg-amber-50 p-4" data-testid="health-section">
+            <legend class="px-1 text-sm font-semibold text-amber-900">@T["Clients.Create.HealthNotes"]</legend>
+            <p id="health-notes-hint" class="text-sm text-amber-900">@T["Clients.Create.HealthNotesHint"]</p>
+            <div class="space-y-1">
+                <label asp-for="HealthNotes" class="block text-sm font-medium">@T["Clients.Create.HealthNotes"]</label>
+                <textarea asp-for="HealthNotes" rows="3" maxlength="2000" aria-describedby="health-notes-hint health-notes-error" class="@inputClass"></textarea>
+                <span asp-validation-for="HealthNotes" id="health-notes-error" class="block text-sm text-red-700"></span>
+            </div>
+            <div class="space-y-1">
+                <label asp-for="LastPatchTestOn" class="block text-sm font-medium">@T["Clients.Create.LastPatchTestOn"]</label>
+                <input asp-for="LastPatchTestOn" type="date" aria-describedby="patch-test-hint patch-test-error" class="@inputClass sm:max-w-xs" />
+                <p id="patch-test-hint" class="text-sm text-stone-600">@T["Clients.Create.LastPatchTestOnHint"]</p>
+                <span asp-validation-for="LastPatchTestOn" id="patch-test-error" class="block text-sm text-red-700"></span>
+            </div>
+        </fieldset>
+
+        <div class="space-y-2">
+            <p class="text-sm font-medium">@T["Clients.Create.MarketingConsent"]</p>
+            <label class="flex items-start gap-3 rounded-md border border-stone-300 p-3">
+                <input asp-for="MarketingConsent" type="checkbox" data-testid="marketing-consent" class="mt-1 size-5 shrink-0 rounded border-stone-300" />
+                <span class="text-sm" data-testid="consent-wording">@consentWording</span>
+            </label>
+        </div>
+
+        <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+            <a href="@cardPath" class="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100">@T["Clients.Edit.Cancel"]</a>
+            <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700">@T["Clients.Edit.Submit"]</button>
+        </div>
+    </form>
+</section>
