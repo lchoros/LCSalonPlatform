@@ -170,6 +170,38 @@ public class ClientServiceTests(SalonWebApplicationFactory factory) : IAsyncLife
     }
 
     [Fact]
+    public async Task Details_update_normalises_refuses_another_clients_phone_or_email_and_ignores_the_clients_own()
+    {
+        await using var scope = factory.CreateTenantScope(_uk.Id);
+        var clients = Clients(scope);
+        await clients.CreateAsync(new CreateClientRequest("Olivia", "Brown", "+44 7700 900123", "olivia@example.com"));
+        var id = await clients.CreateAsync(new CreateClientRequest("Oliver", "Twist", "07700 900999", "oliver@example.com", HealthNotes: HealthText));
+        var before = await RowAsync(_uk.Id, id);
+
+        var byPhone = await Should.ThrowAsync<DuplicateClientException>(() => clients.UpdateDetailsAsync(id, "Oliver", "Twist", "07700 900123", null, null));
+        byPhone.Field.ShouldBe("Phone");
+        var byEmail = await Should.ThrowAsync<DuplicateClientException>(() => clients.UpdateDetailsAsync(id, "Oliver", "Twist", null, "OLIVIA@example.com", null));
+        byEmail.Field.ShouldBe("Email");
+        await Should.ThrowAsync<ArgumentException>(() => clients.UpdateDetailsAsync(id, "", "Twist", null, null, null));
+        await Should.ThrowAsync<ArgumentException>(() => clients.UpdateDetailsAsync(id, "Oliver", "Twist", "call me", null, null));
+        (await RowAsync(_uk.Id, id)).Phone.ShouldBe("+447700900999", "nothing is written before the checks pass");
+
+        await clients.UpdateDetailsAsync(id, " Ollie ", " Twist ", "07700 900999", " OLIVER@Example.com ", " Likes tea. ");
+
+        var row = await RowAsync(_uk.Id, id);
+        row.FirstName.ShouldBe("Ollie");
+        row.LastName.ShouldBe("Twist");
+        row.Phone.ShouldBe("+447700900999");
+        row.Email.ShouldBe("oliver@example.com");
+        row.Notes.ShouldBe("Likes tea.");
+        row.HealthNotesProtected.ShouldBe(before.HealthNotesProtected, "details never touch the health notes");
+        row.UpdatedAt.ShouldBeGreaterThan(before.UpdatedAt);
+
+        await using var other = factory.CreateTenantScope(_pl.Id);
+        await Should.ThrowAsync<InvalidOperationException>(() => Clients(other).UpdateDetailsAsync(id, "Hacked", "Twist", null, null, null));
+    }
+
+    [Fact]
     public async Task Cipher_text_the_key_ring_cannot_open_is_flagged_and_never_shown()
     {
         Guid id;
