@@ -6,6 +6,7 @@ using Npgsql;
 
 using Salon.Core.Appointments;
 using Salon.Core.Appointments.Events;
+using Salon.Core.Booking;
 using Salon.Core.Events;
 using Salon.Core.Tenancy;
 using Salon.Data;
@@ -69,6 +70,8 @@ internal sealed class BookingService(
             ServiceId = request.ServiceId,
             Start = request.Start,
             End = request.Start.Plus(offering.Duration),
+            // Online bookings get the secret of their cancel link (ADR 0014); admin bookings have no public page yet.
+            PublicToken = request.Source == AppointmentSource.Online ? PublicBookingToken.Generate() : null,
             Status = AppointmentStatus.Booked,
             Source = request.Source,
             Notes = request.Notes,

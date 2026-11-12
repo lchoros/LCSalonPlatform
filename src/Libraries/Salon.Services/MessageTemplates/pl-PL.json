@@ -13,5 +13,10 @@
     "Sms": "{{SalonName}}: Twoja wizyta ({{ServiceName}}) {{AppointmentStart}} została odwołana. Nowy termin: {{BookingUrl}}",
     "EmailSubject": "Twoja wizyta w {{SalonName}} została odwołana",
     "EmailBody": "Cześć {{ClientFirstName}},\nTwoja wizyta ({{ServiceName}}) w {{SalonName}} w terminie {{AppointmentStart}} została odwołana.\nNowy termin możesz zarezerwować tutaj: {{BookingUrl}}"
+  },
+  "Booking.Code": {
+    "Sms": "{{SalonName}}: Twój kod to {{Code}}. Ważny przez 10 minut.",
+    "EmailSubject": "Twój kod rezerwacji w {{SalonName}}",
+    "EmailBody": "Twój kod rezerwacji w {{SalonName}} to {{Code}}. Ważny przez 10 minut."
   }
 }

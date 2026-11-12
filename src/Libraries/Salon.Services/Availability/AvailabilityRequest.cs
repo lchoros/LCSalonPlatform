@@ -24,7 +24,7 @@ public sealed record AvailabilityRequest(
 
 /// <summary>
 /// One candidate staff member: the weekly rota (ADR 0010, local times, several ranges per day for split shifts) and the
-/// intervals already taken (active appointments including their buffer, later also time off).
+/// intervals already taken (active appointments including their buffer, and time off as one interval per day, ADR 0015).
 /// </summary>
 /// <param name="ServiceDuration">This person's own duration for the service (ADR 0018); null means <see cref="AvailabilityRequest.ServiceDuration"/>.</param>
 public sealed record StaffAvailabilityInput(

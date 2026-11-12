@@ -4,6 +4,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 
 using Salon.Core.Appointments;
+using Salon.Core.Booking;
 using Salon.Core.Catalog;
 using Salon.Core.Clients;
 using Salon.Core.Events;
@@ -49,11 +50,17 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     /// <summary>Weekly working-hour ranges per staff member, in the salon's local time (ADR 0010).</summary>
     public DbSet<WorkingHours> WorkingHours => Set<WorkingHours>();
 
+    /// <summary>Planned absences per staff member: local dates and an optional daily time range (ADR 0015).</summary>
+    public DbSet<StaffTimeOff> StaffTimeOff => Set<StaffTimeOff>();
+
     /// <summary>Booked visits (ADR 0012); Postgres refuses overlapping active appointments of one staff member.</summary>
     public DbSet<Appointment> Appointments => Set<Appointment>();
 
     /// <summary>One row per status transition of an appointment (ADR 0012).</summary>
     public DbSet<AppointmentStatusChange> AppointmentStatusChanges => Set<AppointmentStatusChange>();
+
+    /// <summary>SMS codes sent to clients booking online, each carrying its pending booking (ADR 0014).</summary>
+    public DbSet<PhoneVerification> PhoneVerifications => Set<PhoneVerification>();
 
     /// <summary>Per-tenant overrides of the embedded message template defaults (ADR 0008).</summary>
     public DbSet<MessageTemplate> MessageTemplates => Set<MessageTemplate>();

@@ -1,0 +1,31 @@
+@using Salon.Web.Features.Booking.VerifyCode
+@model VerifyCodeViewModel
+@{
+    ViewData["Title"] = T["Booking.Public.Verify.Title"];
+}
+<section class="mx-auto max-w-sm space-y-6">
+    <header class="space-y-2">
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Booking.Public.Verify.Title"]</h1>
+        <p class="text-stone-700" data-testid="code-sent-to">@T.Format("Booking.Public.Verify.Sent", Model.MaskedPhone)</p>
+    </header>
+
+    @if (Model.State == VerifyState.Open)
+    {
+        <form method="post" asp-action="Verify" class="space-y-5" novalidate data-testid="verify-form">
+            <div asp-validation-summary="ModelOnly" class="notice notice-error" role="alert"></div>
+            <div class="space-y-1.5">
+                <label for="Code" class="field-label">@T["Booking.Public.Verify.Code"]</label>
+                <input id="Code" name="Code" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="7" aria-describedby="code-error" class="field min-h-16 text-center text-3xl font-semibold tracking-[0.4em] tabular-nums" data-testid="code" autofocus />
+                <span data-valmsg-for="Code" id="code-error" class="field-error" data-testid="code-error">@(ViewData.ModelState["Code"]?.Errors.FirstOrDefault()?.ErrorMessage)</span>
+            </div>
+            <button type="submit" data-testid="submit-code" class="btn btn-primary w-full">@T["Booking.Public.Verify.Submit"]</button>
+        </form>
+    }
+    else
+    {
+        <p role="alert" data-testid="verify-message" class="notice notice-warn">@Model.Message</p>
+        <a href="/book/@Model.ServiceId" data-testid="start-again" class="btn btn-primary w-full">
+            @(Model.State == VerifyState.PickAnother ? T["Booking.Public.Verify.PickAnother"] : T["Booking.Public.Verify.StartAgain"])
+        </a>
+    }
+</section>

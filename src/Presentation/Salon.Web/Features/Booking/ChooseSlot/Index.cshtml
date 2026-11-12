@@ -1,0 +1,84 @@
+@using System.Globalization
+@using NodaTime
+@using NodaTime.Text
+@using Salon.Web.Features.Booking.ChooseSlot
+@model ChooseSlotViewModel
+@{
+    var r = Model.Result;
+    var culture = CultureInfo.CurrentCulture;
+    ViewData["Title"] = T["Booking.Public.ChooseTime"];
+    var staffQuery = r.SelectedStaffId is { } sid ? $"&staff={sid}" : string.Empty;
+    var hasAnySlot = r.Days.Any(d => d.HasSlots);
+}
+@functions {
+    static string Iso(LocalDate date) => LocalDatePattern.Iso.Format(date);
+
+    static string Iso(Instant instant) => InstantPattern.ExtendedIso.Format(instant);
+
+    // Days without free times stay tappable but muted (.is-dim keeps AA contrast on white).
+    static string State(bool on, bool hasSlots) => on ? "is-on" : hasSlots ? "is-off" : "is-dim";
+}
+<section class="mx-auto max-w-2xl space-y-6">
+    <header class="space-y-3">
+        <p class="text-sm font-medium text-stone-600" data-testid="step">@T.Format("Booking.Public.Step", 2, 3)</p>
+        <div class="steps">
+            <span class="is-done"></span>
+            <span class="is-done"></span>
+            <span></span>
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Booking.Public.ChooseTime"]</h1>
+    </header>
+
+    <div class="summary-bar">
+        <div class="min-w-0">
+            <p class="truncate font-semibold" data-testid="service-name">@r.ServiceName</p>
+            <p class="text-sm text-stone-600">@T.Format("Booking.Public.DurationMinutes", (int)r.Duration.TotalMinutes) · <span class="tabular-nums">@r.Price.ToDisplayString(culture)</span></p>
+        </div>
+        <a href="/book" class="btn-link">@T["Booking.Public.ChangeService"]</a>
+    </div>
+
+    @if (r.Staff.Count > 1)
+    {
+        <nav aria-label="@T["Booking.Public.With"]" data-testid="staff-picker" class="scroll-row">
+            <a href="/book/@r.ServiceId?date=@Iso(r.SelectedDate)" class="pill @State(r.SelectedStaffId is null, true)" aria-current="@(r.SelectedStaffId is null ? "true" : null)" data-testid="staff-any">@T["Booking.Public.Anyone"]</a>
+            @foreach (var person in r.Staff)
+            {
+                var on = person.Id == r.SelectedStaffId;
+                <a href="/book/@r.ServiceId?date=@Iso(r.SelectedDate)&staff=@person.Id" class="pill @State(on, true)" aria-current="@(on ? "true" : null)" data-testid="staff-option">@person.DisplayName</a>
+            }
+        </nav>
+    }
+
+    <nav aria-label="@T["Booking.Public.Day"]" data-testid="date-strip" class="scroll-row">
+        @foreach (var day in r.Days)
+        {
+            var on = day.Date == r.SelectedDate;
+            <a href="/book/@r.ServiceId?date=@Iso(day.Date)@staffQuery" class="tile @State(on, day.HasSlots)" aria-current="@(on ? "date" : null)" data-testid="day" data-has-slots="@day.HasSlots.ToString().ToLowerInvariant()">
+                <span class="text-xs font-medium uppercase">@day.Date.ToString("ddd", culture)</span>
+                <span class="text-xl font-bold tabular-nums">@day.Date.Day</span>
+                <span class="text-xs">@day.Date.ToString("MMM", culture)</span>
+            </a>
+        }
+    </nav>
+
+    <div class="space-y-3">
+        <h2 class="text-lg font-semibold" data-testid="selected-day">@r.SelectedDate.ToString("dddd, d MMMM", culture)</h2>
+        @if (r.Slots.Count == 0)
+        {
+            <p data-testid="no-slots" class="rounded-xl border border-dashed border-stone-300 p-6 text-center text-stone-600">
+                @(hasAnySlot ? T["Booking.Public.NoSlotsOnDay"] : T.Format("Booking.Public.NoSlotsAtAll", r.Days.Count))
+            </p>
+        }
+        else
+        {
+            <ul class="grid grid-cols-3 gap-3 sm:grid-cols-4" data-testid="slot-list" aria-label="@T["Booking.Public.Times"]">
+                @foreach (var slot in r.Slots)
+                {
+                    <li>
+                        <a href="/book/@r.ServiceId/details?start=@Uri.EscapeDataString(Iso(slot.Start))@staffQuery" data-testid="slot" class="slot">@slot.LocalStart.ToString("HH:mm", culture)</a>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</section>
