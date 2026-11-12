@@ -25,7 +25,7 @@ Inputs already exist: services with durations (`Service`), staff with weekly wor
   catalogue edits do not rewrite history, `CreatedAt`, `CreatedByUserId?`, `CancelledAt?`, `CancellationReason?`
   (≤ 500). `AppointmentStatusChange : BaseEntity, ITenantEntity` — one row per transition (`AppointmentId`, `From`,
   `To`, `At`, `ByUserId?`, `Reason?`), so the card and the no-show policy (M2) have a history.
-- **State machine (Core, pure).** `Booked → Confirmed → Arrived → Completed`; `Booked|Confirmed → NoShow`;
+- **State machine (Core, pure).** `Booked → Confirmed → Arrived → Completed` (a walk-in may go `Booked → Arrived` directly); `Booked|Confirmed → NoShow`;
   `Booked|Confirmed|Arrived → CancelledByClient | CancelledBySalon`; terminal: `Completed`, `NoShow`, both cancelled.
   `AppointmentStateMachine.CanTransition(from, to)` and `Transition(appointment, to, now, byUserId, reason)` are the
   only way to change `Status`; a wrong transition throws `InvalidAppointmentTransitionException`. Every transition

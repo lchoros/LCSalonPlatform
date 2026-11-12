@@ -16,7 +16,7 @@ public static class AppointmentStateMachine
     private static readonly Dictionary<AppointmentStatus, AppointmentStatus[]> Allowed =
         new()
         {
-            [AppointmentStatus.Booked] = [AppointmentStatus.Confirmed, AppointmentStatus.NoShow, .. Cancelled],
+            [AppointmentStatus.Booked] = [AppointmentStatus.Confirmed, AppointmentStatus.Arrived, AppointmentStatus.NoShow, .. Cancelled],
             [AppointmentStatus.Confirmed] = [AppointmentStatus.Arrived, AppointmentStatus.NoShow, .. Cancelled],
             [AppointmentStatus.Arrived] = [AppointmentStatus.Completed, .. Cancelled],
             [AppointmentStatus.Completed] = [],

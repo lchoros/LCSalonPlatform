@@ -14,7 +14,7 @@ public class AppointmentStateMachineTests
 
     private static readonly HashSet<(AppointmentStatus From, AppointmentStatus To)> AllowedPairs =
     [
-        (Booked, Confirmed), (Booked, NoShow), (Booked, CancelledByClient), (Booked, CancelledBySalon),
+        (Booked, Confirmed), (Booked, Arrived), (Booked, NoShow), (Booked, CancelledByClient), (Booked, CancelledBySalon),
         (Confirmed, Arrived), (Confirmed, NoShow), (Confirmed, CancelledByClient), (Confirmed, CancelledBySalon),
         (Arrived, Completed), (Arrived, CancelledByClient), (Arrived, CancelledBySalon),
     ];
