@@ -66,13 +66,22 @@ internal sealed class AvailabilityService(
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
+        // Time off (ADR 0015) is busy time like an appointment: every entry whose local date span touches the window, one
+        // interval per day in the salon's zone. The pure calculator excludes busy intervals, so nothing else changes.
+        var timeOff = await db.StaffTimeOff.AsNoTracking()
+            .Where(t => staffIds.Contains(t.StaffMemberId) && t.FromDate <= toDate && t.ToDate >= fromDate)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
         var staff = staffIds
             .Select(id => new StaffAvailabilityInput(
                 id,
                 hours.Where(h => h.StaffMemberId == id)
                     .GroupBy(h => h.Day)
                     .ToDictionary(g => g.Key, g => (IReadOnlyList<TimeRange>)g.Select(h => h.Range).OrderBy(r => r.Start).ToArray()),
-                appointments.Where(a => a.StaffMemberId == id).Select(a => new Interval(a.Start, a.End.Plus(buffer))).ToArray()))
+                appointments.Where(a => a.StaffMemberId == id).Select(a => new Interval(a.Start, a.End.Plus(buffer)))
+                    .Concat(timeOff.Where(t => t.StaffMemberId == id).SelectMany(t => StaffTimeOffRules.ToIntervals(t, zone)))
+                    .ToArray()))
             .ToArray();
 
         var request = new AvailabilityRequest(

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Playwright;
 
 using NodaTime;
@@ -11,6 +12,7 @@ using NodaTime;
 using Salon.Core.Appointments;
 using Salon.Core.Catalog;
 using Salon.Core.Identity;
+using Salon.Core.Messaging;
 using Salon.Core.Tenancy;
 using Salon.Data;
 using Salon.Services.Identity;
@@ -28,6 +30,37 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
 
     /// <summary>The platform site, e.g. http://127.0.0.1:54321.</summary>
     public string BaseUrl { get; private set; } = string.Empty;
+
+    /// <summary>Every SMS the host "sent" (ADR 0014); the booking test reads the code from here.</summary>
+    public RecordingSmsSender Sms => _factory.Services.GetRequiredService<RecordingSmsSender>();
+
+    /// <summary>
+    /// Removes the salon's appointments, status history, phone verifications and clients (in that order, for the foreign
+    /// keys), so <see cref="EnsureTenantAsync"/> and <see cref="EnsureDemoStaffAsync"/> can replace services and staff after
+    /// a booking run left rows behind. No-op when the salon does not exist yet.
+    /// </summary>
+    public async Task ClearBookingDataAsync(string slug)
+    {
+        Guid? tenantId;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+            tenantId = await db.Tenants.Where(t => t.Slug == slug).Select(t => (Guid?)t.Id).SingleOrDefaultAsync();
+        }
+
+        if (tenantId is null)
+        {
+            return;
+        }
+
+        using var tenantScope = _factory.Services.CreateScope();
+        tenantScope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
+        var tenantDb = tenantScope.ServiceProvider.GetRequiredService<SalonDbContext>();
+        await tenantDb.AppointmentStatusChanges.ExecuteDeleteAsync();
+        await tenantDb.Appointments.ExecuteDeleteAsync();
+        await tenantDb.PhoneVerifications.ExecuteDeleteAsync();
+        await tenantDb.Clients.ExecuteDeleteAsync();
+    }
 
     /// <summary>Screenshots land in tests/Salon.Tests.E2E/screenshots so CI can upload them and PRs can attach them.</summary>
     public static string ScreenshotDirectory { get; } =
@@ -201,6 +234,16 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
 
         // UseStaticWebAssets maps the build-time content roots (including the pre-compressed css/app.css.gz under obj/);
         // without it MapStaticAssets answers a gzip request with an empty body and the browser renders an unstyled page.
-        protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.UseEnvironment("Testing").UseStaticWebAssets();
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            builder.UseEnvironment("Testing").UseStaticWebAssets();
+            // The browser test reads the SMS code the way a client reads their phone (ADR 0014): from the recording sender.
+            builder.ConfigureServices(services =>
+            {
+                services.RemoveAll<ISmsSender>();
+                services.AddSingleton<RecordingSmsSender>();
+                services.AddSingleton<ISmsSender>(sp => sp.GetRequiredService<RecordingSmsSender>());
+            });
+        }
     }
 }

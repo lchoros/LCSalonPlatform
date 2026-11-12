@@ -13,5 +13,10 @@
     "Sms": "{{SalonName}}: your {{ServiceName}} on {{AppointmentStart}} has been cancelled. Rebook any time: {{BookingUrl}}",
     "EmailSubject": "Your booking at {{SalonName}} has been cancelled",
     "EmailBody": "Hi {{ClientFirstName}},\nyour {{ServiceName}} at {{SalonName}} on {{AppointmentStart}} has been cancelled.\nYou can book a new time here: {{BookingUrl}}"
+  },
+  "Booking.Code": {
+    "Sms": "{{SalonName}}: your code is {{Code}}. It expires in 10 minutes.",
+    "EmailSubject": "Your {{SalonName}} booking code",
+    "EmailBody": "Your {{SalonName}} booking code is {{Code}}. It expires in 10 minutes."
   }
 }

@@ -4,7 +4,7 @@ namespace Salon.Services.Availability;
 
 /// <summary>
 /// Loads what the engine needs for the current tenant (ADR 0012) — the salon zone, the service, the bookable active
-/// staff with their rota, the active appointments in the window and <see cref="Core.Settings.BookingSettings"/> — and runs
+/// staff with their rota, the active appointments and time off in the window and <see cref="Core.Settings.BookingSettings"/> — and runs
 /// <see cref="AvailabilityCalculator"/>. Everything goes through the tenant filter, so another salon's bookings never
 /// shape the answer.
 /// </summary>
