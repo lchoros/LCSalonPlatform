@@ -5,11 +5,15 @@ using Microsoft.Extensions.Options;
 
 using NodaTime;
 
+using Salon.Core.Appointments;
 using Salon.Core.Catalog;
 using Salon.Core.Identity;
 using Salon.Core.Staff;
 using Salon.Core.Tenancy;
 using Salon.Data;
+using Salon.Services.Appointments;
+using Salon.Services.Availability;
+using Salon.Services.Clients;
 using Salon.Services.Identity;
 using Salon.Services.Tenancy;
 
@@ -17,10 +21,12 @@ namespace Salon.Services.Seeding;
 
 /// <summary>
 /// Creates the demo salon "studio-20" (Studio 20, Europe/London, en-GB, GBP) with six services, three staff members with
-/// their weekly hours (ADR 0010) and, when <c>Demo:OwnerPassword</c> is set, an Owner and a Receptionist login, so a fresh
-/// local database has something to show at studio-20.localhost. Runs when <c>Database:SeedDemo</c> is true (Development
-/// only). An existing demo salon is left alone — its catalogue and logins are never touched — with one exception: a salon
-/// seeded before M1 has no staff, and gets the same three people the first time the seeder sees it without any.
+/// their weekly hours (ADR 0010), twelve clients (ADR 0011, health notes encrypted through the client service), a handful
+/// of appointments over the coming working days (ADR 0012, booked through the booking service so the engine and the state
+/// machine apply) and, when <c>Demo:OwnerPassword</c> is set, an Owner and a Receptionist login, so a fresh local database
+/// has something to show at studio-20.localhost. Runs when <c>Database:SeedDemo</c> is true (Development only). An existing
+/// demo salon is left alone — its catalogue and logins are never touched — except that a salon seeded by an earlier
+/// milestone gets the pieces it lacks, each only when it has none of that kind: staff, clients, appointments.
 /// </summary>
 public sealed class DemoSeeder(
     IServiceScopeFactory scopeFactory,
@@ -32,6 +38,12 @@ public sealed class DemoSeeder(
     public const string Slug = "studio-20";
     public const string OwnerEmail = "owner@studio-20.local";
     public const string ReceptionistEmail = "desk@studio-20.local";
+
+    /// <summary>The checkbox text the demo clients "ticked"; the same shape of wording the create form records (ADR 0011).</summary>
+    public const string MarketingConsentWording = "I agree to Studio 20 contacting me about news and offers by SMS and email. I can withdraw this consent at any time.";
+
+    /// <summary>How far ahead the appointment seed looks for days with free times (a rota with weekend gaps needs a few).</summary>
+    private const int AppointmentLookaheadDays = 14;
 
     private static readonly (string Name, string Description, int Minutes, decimal Price)[] Services =
     [
@@ -57,7 +69,38 @@ public sealed class DemoSeeder(
             [new TimeRange(new LocalTime(9, 0), new LocalTime(15, 0))]),
     ];
 
-    /// <summary>Returns true when the tenant was created on this call, false when it already existed (even if staff were added to it).</summary>
+    /// <summary>Twelve regulars: UK numbers in E.164, a few with health notes and patch-test dates, two Polish names, eight with marketing consent.</summary>
+    private static readonly DemoClient[] Clients =
+    [
+        new("Sophie", "Smith", "+447700900011", "sophie.smith@example.com", "Prefers morning slots.", null, null, true),
+        new("James", "Brown", "+447700900012", "james.brown@example.com", null, "PPD sensitivity — patch test required before any colour.", new LocalDate(2026, 5, 15), false),
+        new("Lily", "Jones", "+447700900013", "lily.jones@example.com", "Loves the coffee machine.", null, null, true),
+        new("Oliver", "Williams", "+447700900014", "oliver.williams@example.com", "Preferred stylist: Sarah.", "Irritant contact dermatitis.", null, true),
+        new("Ava", "Taylor", "+447700900015", "ava.taylor@example.com", null, null, null, true),
+        new("Ethan", "Wilson", "+447700900016", "ethan.wilson@example.com", "Parking can be tricky.", "Allergic to certain hair products.", new LocalDate(2026, 7, 20), false),
+        new("Emma", "Moore", "+447700900017", "emma.moore@example.com", null, null, null, true),
+        new("Noah", "Jackson", "+447700900018", "noah.jackson@example.com", "Quick appointments preferred.", null, null, true),
+        new("Amelia", "White", "+447700900019", "amelia.white@example.com", null, "Sulfate sensitivity — patch test required.", new LocalDate(2026, 3, 10), true),
+        new("Mia", "Green", "+447700900020", "mia.green@example.com", null, null, null, false),
+        new("Mateusz", "Kowalski", "+447700900021", "mateusz.kowalski@example.com", "Lives in Salford.", null, null, true),
+        new("Katarzyna", "Nowak", "+447700900022", "katarzyna.nowak@example.com", "Speaks Polish.", "Alopecia areata — patch test required before any treatment.", new LocalDate(2026, 9, 5), false),
+    ];
+
+    /// <summary>
+    /// Upcoming visits: which of the next days with free times (0 = the first), which client (by name order), which of the
+    /// first three services, and the status to leave them in. Each takes the first free slot of a person without a visit
+    /// that day yet, so the day list shows every column in use.
+    /// </summary>
+    private static readonly (int Day, int Client, int Service, AppointmentStatus Status)[] UpcomingPlan =
+    [
+        (0, 1, 0, AppointmentStatus.Confirmed),
+        (0, 2, 1, AppointmentStatus.Booked),
+        (1, 3, 0, AppointmentStatus.Booked),
+        (1, 4, 2, AppointmentStatus.CancelledByClient),
+        (2, 5, 0, AppointmentStatus.Confirmed),
+    ];
+
+    /// <summary>Returns true when the tenant was created on this call, false when it already existed (even if pieces were added to it).</summary>
     public async Task<bool> SeedAsync(CancellationToken cancellationToken = default)
     {
         Guid tenantId;
@@ -67,13 +110,23 @@ public sealed class DemoSeeder(
             var existingId = await db.Tenants.Where(t => t.Slug == Slug).Select(t => (Guid?)t.Id).SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
             if (existingId is { } existing)
             {
-                logger.LogDebug("Demo tenant {Slug} already exists; only missing logins and staff are seeded", Slug);
+                logger.LogDebug("Demo tenant {Slug} already exists; only missing logins, staff, clients and appointments are seeded", Slug);
                 await SeedMissingUsersAsync(existing, cancellationToken).ConfigureAwait(false);
                 await tenantScopes.RunAsync(existing, async (provider, ct) =>
                 {
                     if (await SeedStaffAsync(provider.GetRequiredService<SalonDbContext>(), ct).ConfigureAwait(false))
                     {
                         logger.LogInformation("Seeded {Count} demo staff into the existing tenant {Slug}", Staff.Length, Slug);
+                    }
+
+                    if (await SeedClientsAsync(provider, ct).ConfigureAwait(false))
+                    {
+                        logger.LogInformation("Seeded {Count} demo clients into the existing tenant {Slug}", Clients.Length, Slug);
+                    }
+
+                    if (await SeedAppointmentsAsync(provider, ct).ConfigureAwait(false) is { } count)
+                    {
+                        logger.LogInformation("Seeded {Count} demo appointments into the existing tenant {Slug}", count, Slug);
                     }
                 }, cancellationToken).ConfigureAwait(false);
                 return false;
@@ -94,6 +147,7 @@ public sealed class DemoSeeder(
         }
 
         // A fresh scope with the tenant set before any connection opens, so the EF filter and the RLS setting both apply.
+        var appointments = 0;
         await tenantScopes.RunAsync(tenantId, async (provider, ct) =>
         {
             var db = provider.GetRequiredService<SalonDbContext>();
@@ -114,9 +168,13 @@ public sealed class DemoSeeder(
             await db.SaveChangesAsync(ct).ConfigureAwait(false);
             await SeedStaffAsync(db, ct).ConfigureAwait(false);
             await SeedUsersAsync(provider.GetRequiredService<IUserService>(), ct).ConfigureAwait(false);
+            await SeedClientsAsync(provider, ct).ConfigureAwait(false);
+            appointments = await SeedAppointmentsAsync(provider, ct).ConfigureAwait(false) ?? 0;
         }, cancellationToken).ConfigureAwait(false);
 
-        logger.LogInformation("Seeded demo tenant {Slug} with {ServiceCount} services and {StaffCount} staff", Slug, Services.Length, Staff.Length);
+        logger.LogInformation(
+            "Seeded demo tenant {Slug} with {ServiceCount} services, {StaffCount} staff, {ClientCount} clients and {AppointmentCount} appointments",
+            Slug, Services.Length, Staff.Length, Clients.Length, appointments);
         return true;
     }
 
@@ -149,6 +207,154 @@ public sealed class DemoSeeder(
         return true;
     }
 
+    /// <summary>
+    /// Adds the twelve demo clients through the client service (phones normalised, health notes encrypted, consent stamped
+    /// with its wording, ADR 0011) when the salon in scope has no clients at all; returns false otherwise.
+    /// </summary>
+    private static async Task<bool> SeedClientsAsync(IServiceProvider provider, CancellationToken cancellationToken)
+    {
+        var db = provider.GetRequiredService<SalonDbContext>();
+        if (await db.Clients.AnyAsync(cancellationToken).ConfigureAwait(false))
+        {
+            return false;
+        }
+
+        var clients = provider.GetRequiredService<IClientService>();
+        foreach (var client in Clients)
+        {
+            await clients.CreateAsync(
+                new CreateClientRequest(
+                    client.FirstName,
+                    client.LastName,
+                    client.Phone,
+                    client.Email,
+                    client.Notes,
+                    client.HealthNotes,
+                    client.LastPatchTestOn,
+                    client.MarketingConsent,
+                    client.MarketingConsent ? MarketingConsentWording : null),
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// When the salon in scope has no appointments at all: one visit completed yesterday (history rows written through the
+    /// state machine; the past has no slots, so it cannot go through the engine) and up to five upcoming visits over today
+    /// and the next two days with free times, each booked through the booking service and then confirmed or cancelled per
+    /// <see cref="UpcomingPlan"/>. Anything the engine refuses is skipped. Returns the number added, or null when nothing
+    /// was done (appointments exist already, or the salon lacks clients, services or bookable staff).
+    /// </summary>
+    private async Task<int?> SeedAppointmentsAsync(IServiceProvider provider, CancellationToken cancellationToken)
+    {
+        var db = provider.GetRequiredService<SalonDbContext>();
+        if (await db.Appointments.AnyAsync(cancellationToken).ConfigureAwait(false))
+        {
+            return null;
+        }
+
+        var clientIds = await db.Clients.AsNoTracking().OrderBy(c => c.LastName).ThenBy(c => c.FirstName).Select(c => c.Id).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var services = await db.Services.AsNoTracking().Where(s => s.IsActive).OrderBy(s => s.SortOrder).Take(3).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var staffIds = await db.StaffMembers.AsNoTracking().Where(s => s.IsActive && s.IsBookable).OrderBy(s => s.SortOrder).Select(s => s.Id).ToListAsync(cancellationToken).ConfigureAwait(false);
+        if (clientIds.Count == 0 || services.Count == 0 || staffIds.Count == 0)
+        {
+            return null;
+        }
+
+        var tenantId = provider.GetRequiredService<ITenantContext>().TenantId ?? throw new TenantViolationException("The demo seed runs inside a tenant scope.");
+        var tenant = await provider.GetRequiredService<ITenantLookup>().FindByIdAsync(tenantId, cancellationToken).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Tenant {tenantId} is in scope but has no row.");
+        var zone = DateTimeZoneProviders.Tzdb[tenant.TimeZoneId];
+        var today = clock.GetCurrentInstant().InZone(zone).Date;
+
+        AddCompletedYesterday(db, tenantId, clientIds[0], staffIds[0], services[0], zone.AtLeniently(today.PlusDays(-1).At(new LocalTime(10, 0))).ToInstant());
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        var added = 1;
+
+        var availability = provider.GetRequiredService<IAvailabilityService>();
+        var booking = provider.GetRequiredService<IBookingService>();
+        var days = new List<LocalDate>();
+        for (var day = today; day <= today.PlusDays(AppointmentLookaheadDays) && days.Count < 3; day = day.PlusDays(1))
+        {
+            if ((await availability.GetSlotsAsync(services[0].Id, null, day, day, cancellationToken).ConfigureAwait(false)).Count > 0)
+            {
+                days.Add(day);
+            }
+        }
+
+        var used = new HashSet<(LocalDate Day, Guid StaffMemberId)>();
+        foreach (var (dayIndex, clientIndex, serviceIndex, status) in UpcomingPlan)
+        {
+            if (dayIndex >= days.Count)
+            {
+                continue;
+            }
+
+            var day = days[dayIndex];
+            var service = services[serviceIndex % services.Count];
+            var slots = await availability.GetSlotsAsync(service.Id, null, day, day, cancellationToken).ConfigureAwait(false);
+            var slot = slots.FirstOrDefault(s => !used.Contains((day, s.StaffMemberId))) ?? (slots.Count > 0 ? slots[0] : null);
+            if (slot is null)
+            {
+                continue;
+            }
+
+            try
+            {
+                var appointment = await booking.BookAsync(
+                    new BookAppointmentRequest(clientIds[clientIndex % clientIds.Count], slot.StaffMemberId, service.Id, slot.Start, AppointmentSource.Admin),
+                    cancellationToken).ConfigureAwait(false);
+                switch (status)
+                {
+                    case AppointmentStatus.Confirmed:
+                        await booking.ConfirmAsync(appointment.Id, cancellationToken: cancellationToken).ConfigureAwait(false);
+                        break;
+                    case AppointmentStatus.CancelledByClient:
+                        await booking.CancelAsync(appointment.Id, byClient: true, "Cannot make it this week.", cancellationToken: cancellationToken).ConfigureAwait(false);
+                        break;
+                    default:
+                        break;
+                }
+
+                used.Add((day, slot.StaffMemberId));
+                added++;
+            }
+            catch (SlotNoLongerAvailableException)
+            {
+                // Someone (another seed, a test) took it between the slot list and the insert; the demo does not need that one.
+            }
+        }
+
+        return added;
+    }
+
+    /// <summary>A visit that ran its whole course yesterday: Booked two days before, Confirmed the day before, Arrived and Completed on the day.</summary>
+    private static void AddCompletedYesterday(SalonDbContext db, Guid tenantId, Guid clientId, Guid staffMemberId, Service service, Instant start)
+    {
+        var createdAt = start.Minus(Duration.FromDays(2));
+        var appointment = new Appointment
+        {
+            TenantId = tenantId,
+            ClientId = clientId,
+            StaffMemberId = staffMemberId,
+            ServiceId = service.Id,
+            Start = start,
+            End = start.Plus(service.Duration),
+            Status = AppointmentStatus.Booked,
+            Source = AppointmentSource.Admin,
+            PriceAmount = service.Price,
+            Currency = service.Currency,
+            DurationMinutes = (int)service.Duration.TotalMinutes,
+            CreatedAt = createdAt,
+        };
+        db.Appointments.Add(appointment);
+        db.AppointmentStatusChanges.Add(new AppointmentStatusChange { TenantId = tenantId, AppointmentId = appointment.Id, From = null, To = AppointmentStatus.Booked, At = createdAt });
+        db.AppointmentStatusChanges.Add(AppointmentStateMachine.Transition(appointment, AppointmentStatus.Confirmed, start.Minus(Duration.FromDays(1)), null, null));
+        db.AppointmentStatusChanges.Add(AppointmentStateMachine.Transition(appointment, AppointmentStatus.Arrived, start.Minus(Duration.FromMinutes(5)), null, null));
+        db.AppointmentStatusChanges.Add(AppointmentStateMachine.Transition(appointment, AppointmentStatus.Completed, appointment.End, null, null));
+    }
+
     /// <summary>A demo salon seeded before logins existed (or before the password was configured) gets its two logins on the next start.</summary>
     private Task SeedMissingUsersAsync(Guid tenantId, CancellationToken cancellationToken)
         => tenantScopes.RunAsync(tenantId, async (provider, ct) =>
@@ -175,4 +381,15 @@ public sealed class DemoSeeder(
     }
 
     private sealed record DemoStaff(string Name, string Colour, IReadOnlyList<IsoDayOfWeek> Days, IReadOnlyList<TimeRange> Ranges);
+
+    /// <param name="HealthNotes">Plain text here, in source; stored encrypted by the client service.</param>
+    private sealed record DemoClient(
+        string FirstName,
+        string LastName,
+        string Phone,
+        string Email,
+        string? Notes,
+        string? HealthNotes,
+        LocalDate? LastPatchTestOn,
+        bool MarketingConsent);
 }
