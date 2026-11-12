@@ -79,6 +79,7 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         var chosenTime = (await slots.First.TextContentAsync())!.Trim();
         interaction.Stop();
         await CaptureAsync(page, "book-slots-mobile-390.png");
+        await CaptureDesktopAsync(page.Url, "book-slots-desktop-1280.png");
         interaction.Start();
         await slots.First.TapAsync();
         await page.WaitForURLAsync("**/details?*");
@@ -100,6 +101,9 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         // Step 4: the code, read from the "phone".
         (await page.GetByTestId("code-sent-to").TextContentAsync()).ShouldNotBeNull().ShouldContain("+44•••••••" + suffix[^3..]);
         var code = app.Sms.LastCodeFor(phoneE164).ShouldNotBeNull("the code SMS went to the typed number");
+        interaction.Stop();
+        await CaptureAsync(page, "book-verify-mobile-390.png");
+        interaction.Start();
         await page.GetByTestId("code").FillAsync(code);
         await page.GetByTestId("submit-code").TapAsync();
         await page.WaitForURLAsync("**/book/done/*");
@@ -119,12 +123,22 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
             $"interaction {interaction.Elapsed.TotalSeconds:F1} s; with screenshots and axe {total.Elapsed.TotalSeconds:F1} s");
     }
 
+    /// <summary>The same step on a 1280 px desktop (goal 4 of the UX pass): a centred column of the same components, axe clean.</summary>
+    private async Task CaptureDesktopAsync(string url, string fileName)
+    {
+        const int desktopWidth = 1280;
+        await using var desktop = await app.Browser.NewContextAsync(new BrowserNewContextOptions { ViewportSize = new ViewportSize { Width = desktopWidth, Height = 800 } });
+        var page = await desktop.NewPageAsync();
+        (await page.GotoAsync(url)).ShouldNotBeNull().Ok.ShouldBeTrue();
+        await CaptureAsync(page, fileName, desktopWidth);
+    }
+
     /// <summary>Full-page screenshot, no horizontal scroll (when the stylesheet is present), axe clean.</summary>
-    private static async Task CaptureAsync(IPage page, string fileName)
+    private static async Task CaptureAsync(IPage page, string fileName, int width = Width)
     {
         if (await page.EvaluateAsync<bool>("() => Array.from(document.styleSheets).some(s => s.href && s.cssRules.length > 0)"))
         {
-            (await page.EvaluateAsync<int>("() => document.documentElement.scrollWidth")).ShouldBeLessThanOrEqualTo(Width, fileName);
+            (await page.EvaluateAsync<int>("() => document.documentElement.scrollWidth")).ShouldBeLessThanOrEqualTo(width, fileName);
         }
 
         await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(KestrelAppFixture.ScreenshotDirectory, fileName), FullPage = true });
