@@ -1,0 +1,165 @@
+@using System.Globalization
+@using NodaTime
+@using NodaTime.Text
+@using Salon.Web.Features.Appointments.BookForClient
+@model BookForClientViewModel
+@{
+    var form = Model.Form;
+    var day = LocalDatePattern.Iso.Format(form.Day);
+    ViewData["Title"] = T["Appointments.Book.Title"];
+    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 bg-white px-3 py-2 text-base shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
+    const string secondaryClass = "inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100";
+    const string cardClass = "space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm";
+}
+@functions {
+    static string Time(LocalTime time) => time.ToString("t", CultureInfo.CurrentCulture);
+
+    /// <summary>The page with a different client (or none) and the same service, staff and day.</summary>
+    string Link(Guid? clientId)
+    {
+        var form = Model.Form;
+        var parts = new List<string> { $"date={LocalDatePattern.Iso.Format(form.Day)}" };
+        if (clientId is { } client) { parts.Add($"clientId={client}"); }
+        if (form.ServiceId is { } service) { parts.Add($"serviceId={service}"); }
+        if (form.StaffMemberId is { } staff) { parts.Add($"staffId={staff}"); }
+        return $"{BookForClientController.FormPath}?{string.Join("&", parts)}";
+    }
+}
+<section class="mx-auto max-w-lg space-y-6">
+    <a href="/admin/appointments?date=@day" class="inline-flex min-h-11 items-center text-sm font-medium text-stone-700 hover:underline">&larr; @T["Appointments.Book.Back"]</a>
+    <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Appointments.Book.Title"]</h1>
+    @if (Model.Error is { } error)
+    {
+        <p role="alert" data-testid="error" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">@error</p>
+    }
+    <div asp-validation-summary="All" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert" data-testid="validation-summary"></div>
+
+    <section class="@cardClass" data-testid="client-step">
+        <h2 class="text-lg font-semibold">@T["Appointments.Book.Client"]</h2>
+        @if (form.Client is { } client)
+        {
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <p class="text-base" data-testid="selected-client">
+                    <span class="font-semibold">@client.FullName</span>
+                    @if (client.Phone is { } phone)
+                    {
+                        <span class="text-sm text-stone-600">· @phone</span>
+                    }
+                </p>
+                <a href="@Link(null)" data-testid="change-client" class="@secondaryClass text-sm">@T["Appointments.Book.ChangeClient"]</a>
+            </div>
+        }
+        else
+        {
+            <form method="get" action="@BookForClientController.FormPath" role="search" class="flex flex-col gap-3 sm:flex-row sm:items-end" data-testid="client-search-form">
+                <input type="hidden" name="date" value="@day" />
+                @if (form.ServiceId is { } searchService)
+                {
+                    <input type="hidden" name="serviceId" value="@searchService" />
+                }
+                @if (form.StaffMemberId is { } searchStaff)
+                {
+                    <input type="hidden" name="staffId" value="@searchStaff" />
+                }
+                <div class="flex-1 space-y-1">
+                    <label for="q" class="block text-sm font-medium">@T["Appointments.Book.ClientSearch"]</label>
+                    <input id="q" name="q" type="search" value="@form.Query" maxlength="100" autocomplete="off" enterkeyhint="search" data-testid="client-search" class="@inputClass" />
+                </div>
+                <button type="submit" data-testid="client-search-submit" class="@secondaryClass">@T["Appointments.Book.Search"]</button>
+            </form>
+            @if (form.Query is { } query)
+            {
+                if (form.ClientMatches.Count == 0)
+                {
+                    <p class="text-sm text-stone-600" data-testid="no-match">
+                        @T.Format("Appointments.Book.NoMatch", query)
+                        <a href="/admin/clients/new" class="ml-1 font-medium underline">@T["Appointments.Book.NewClient"]</a>
+                    </p>
+                }
+                else
+                {
+                    <ul class="divide-y divide-stone-200 rounded-md border border-stone-200" data-testid="client-matches">
+                        @foreach (var match in form.ClientMatches)
+                        {
+                            <li>
+                                <a href="@Link(match.Id)" data-testid="client-match" class="flex min-h-11 flex-col gap-0.5 px-3 py-2 hover:bg-stone-50 sm:flex-row sm:items-center sm:justify-between">
+                                    <span class="font-medium">@match.FullName</span>
+                                    <span class="text-sm text-stone-600">@(match.Phone ?? "—")</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                }
+            }
+        }
+    </section>
+
+    <form method="get" action="@BookForClientController.FormPath" class="@cardClass" data-testid="slot-form">
+        @if (form.Client is { } chosenClient)
+        {
+            <input type="hidden" name="clientId" value="@chosenClient.Id" />
+        }
+        <div class="space-y-1">
+            <label for="serviceId" class="block text-sm font-medium">@T["Appointments.Book.Service"]</label>
+            <select id="serviceId" name="serviceId" data-testid="service-select" class="@inputClass">
+                <option value="">@T["Appointments.Book.ChooseService"]</option>
+                @foreach (var service in form.Services)
+                {
+                    <option value="@service.Id" selected="@(service.Id == form.ServiceId)">@service.Name (@T.Format("Appointments.Book.DurationMinutes", service.DurationMinutes))</option>
+                }
+            </select>
+        </div>
+        <div class="space-y-1">
+            <label for="staffId" class="block text-sm font-medium">@T["Appointments.Book.Staff"]</label>
+            <select id="staffId" name="staffId" data-testid="staff-select" class="@inputClass">
+                <option value="" selected="@(form.StaffMemberId is null)">@T["Appointments.Book.AnyStaff"]</option>
+                @foreach (var person in form.Staff)
+                {
+                    <option value="@person.Id" selected="@(person.Id == form.StaffMemberId)">@person.DisplayName</option>
+                }
+            </select>
+        </div>
+        <div class="space-y-1">
+            <label for="date" class="block text-sm font-medium">@T["Appointments.Book.Date"]</label>
+            <input id="date" name="date" type="date" value="@day" data-testid="date-input" class="@inputClass" />
+        </div>
+        <button type="submit" data-testid="show-slots" class="@secondaryClass w-full sm:w-auto">@T["Appointments.Book.ShowSlots"]</button>
+    </form>
+
+    <section class="@cardClass" data-testid="slots-step">
+        <h2 class="text-lg font-semibold">@T["Appointments.Book.Slots"]</h2>
+        @if (!form.ShowSlots)
+        {
+            <p class="text-sm text-stone-600" data-testid="slots-hint">@T["Appointments.Book.ChooseServiceHint"]</p>
+        }
+        else if (form.Slots.Count == 0)
+        {
+            <p class="text-sm text-stone-600" data-testid="no-slots">@T["Appointments.Book.NoSlots"]</p>
+        }
+        else
+        {
+            <ul class="grid grid-cols-3 gap-2 sm:grid-cols-4" data-testid="slot-list">
+                @foreach (var slot in form.Slots)
+                {
+                    <li>
+                        <form method="post" action="@BookForClientController.FormPath" asp-antiforgery="true">
+                            <input type="hidden" name="ClientId" value="@(form.Client?.Id)" />
+                            <input type="hidden" name="ServiceId" value="@form.ServiceId" />
+                            <input type="hidden" name="StaffMemberId" value="@slot.StaffMemberId" />
+                            <input type="hidden" name="Start" value="@InstantPattern.ExtendedIso.Format(slot.Start)" />
+                            <input type="hidden" name="Date" value="@day" />
+                            <input type="hidden" name="AnyStaff" value="@(form.StaffMemberId is null ? "true" : "false")" />
+                            <button type="submit" data-testid="slot" class="flex min-h-11 w-full flex-col items-center justify-center rounded-md border border-stone-300 px-2 py-2 text-base font-semibold tabular-nums hover:bg-stone-100">
+                                @Time(slot.LocalStart)
+                                @if (form.StaffMemberId is null)
+                                {
+                                    <span class="block truncate text-xs font-normal text-stone-600">@slot.StaffName</span>
+                                }
+                            </button>
+                        </form>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+</section>
