@@ -72,7 +72,7 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
 
 ## 6. Slices
 - `Catalog/ListServices`, `Catalog/CreateService`, `Catalog/EditService`, `Catalog/ManageCategories` — `/admin/services`,
-  `/admin/services/new`, `/admin/services/{id}/edit`, `/admin/services/categories`, behind `Catalog.Manage` (ADR 0009,
+  `/admin/services/new`, `/admin/services/{id}`, `/admin/services/categories`, behind `Catalog.Manage` (ADR 0009,
   0013); `CreateService` publishes `ServiceCreated`.
 - `Booking/ListServices` — `/services`, the public price list grouped by category; one tap from the salon home page.
 - `Booking/ChooseService`, `Booking/ChooseSlot`, `Booking/EnterDetails`, `Booking/VerifyCode`, `Booking/Confirmation`,
