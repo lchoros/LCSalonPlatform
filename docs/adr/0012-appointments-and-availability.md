@@ -67,9 +67,9 @@ Inputs already exist: services with durations (`Service`), staff with weekly wor
 - The calculator is pure, so availability can be tested exhaustively and later cached per staff/day.
 - Processing time (the client waits while colour develops, the stylist is free) is deliberately not modelled yet;
   when the catalogue slice adds it, the engine gains "split" busy intervals without changing the constraint.
-- `appointments.client_id` has no foreign key yet: the clients table (ADR 0011) is built in a parallel slice. A small
-  additive migration adds `FK → clients (Restrict)` once both are merged; until then the booking slice is responsible
-  for passing an existing client id.
+- `appointments.client_id` was a plain column while the clients table (ADR 0011) was built in a parallel slice; migration
+  `AppointmentClientFk` (admin booking slice) adds `FK → clients (Restrict)` and an index on `(tenant_id, client_id)`, so a
+  client with visits is deactivated rather than deleted and the client card can list its history.
 - `MaxAdvanceDays` is read as "the last bookable local day is today plus N days", so a salon open 60 days ahead shows
   the whole of that sixtieth day rather than cutting it at the current time of day.
 - "Any staff" ties (two people free at the same start with the same number of bookings that day) go to the staff member
