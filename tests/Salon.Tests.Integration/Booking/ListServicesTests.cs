@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.RegularExpressions;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 using NodaTime;
@@ -100,6 +101,37 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
         (await client.GetAsync(new Uri("/services", UriKind.Relative))).StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
+    [Fact]
+    public async Task Without_categories_the_list_is_flat_and_with_them_it_is_grouped_with_other_services_last()
+    {
+        var flat = await GetHtmlAsync("studio-20.localhost");
+        flat.ShouldNotContain("data-testid=\"group-heading\"");
+        flat.ShouldContain("<h2 class=\"text-lg font-semibold leading-snug\">Cut &amp; blow-dry</h2>");
+
+        await using (var scope = factory.CreateTenantScope(_studio.Id))
+        {
+            var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+            var hair = new ServiceCategory { Name = "Hair", SortOrder = 1 };
+            db.ServiceCategories.Add(hair);
+            (await db.Services.SingleAsync(s => s.Name == "Colour")).CategoryId = hair.Id;
+            await db.SaveChangesAsync();
+        }
+
+        var grouped = await GetHtmlAsync("studio-20.localhost");
+
+        GroupHeadings(grouped).ShouldBe(["Hair", "Other services"]);
+        CardNames(grouped).ShouldBe(["Colour", "Cut &amp; blow-dry"]);
+        grouped.ShouldContain("<h3 class=\"text-lg font-semibold leading-snug\">Colour</h3>");
+        grouped.ShouldNotContain("Retired perm");
+
+        var polish = await GetHtmlAsync("salon-pl.localhost");
+        // Another salon's categories do not leak into this list.
+        polish.ShouldNotContain("data-testid=\"group-heading\"");
+    }
+
+    private static List<string> GroupHeadings(string html)
+        => GroupHeadingPattern().Matches(html).Select(m => m.Groups["name"].Value).ToList();
+
     private static List<string> CardNames(string html)
         => CardNamePattern().Matches(html).Select(m => m.Groups["name"].Value).ToList();
 
@@ -135,7 +167,11 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
         await db.SaveChangesAsync();
     }
 
-    /// <summary>The h2 inside each service card, in document order.</summary>
-    [GeneratedRegex("data-testid=\"service-card\">\\s*<div[^>]*>\\s*<h2[^>]*>(?<name>[^<]+)</h2>")]
+    /// <summary>The heading inside each service card, in document order (h2 on a flat list, h3 under a category heading).</summary>
+    [GeneratedRegex("data-testid=\"service-card\">\\s*<div[^>]*>\\s*<h[23][^>]*>(?<name>[^<]+)</h[23]>")]
     private static partial Regex CardNamePattern();
+
+    /// <summary>The text of each category heading, in document order.</summary>
+    [GeneratedRegex("data-testid=\"group-heading\">(?<name>[^<]+)</h2>")]
+    private static partial Regex GroupHeadingPattern();
 }

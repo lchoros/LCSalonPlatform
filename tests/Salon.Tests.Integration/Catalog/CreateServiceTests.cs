@@ -67,7 +67,7 @@ public class CreateServiceTests(SalonWebApplicationFactory factory) : IAsyncLife
         });
 
         response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-        response.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe("/services");
+        response.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe("/admin/services");
 
         var created = (await ServicesAsync(_studio.Id)).Single(s => s.Name == "Cut & blow-dry");
         created.TenantId.ShouldBe(_studio.Id);
@@ -88,6 +88,75 @@ public class CreateServiceTests(SalonWebApplicationFactory factory) : IAsyncLife
         payload.RootElement.GetProperty("serviceId").GetGuid().ShouldBe(created.Id);
         payload.RootElement.GetProperty("tenantId").GetGuid().ShouldBe(_studio.Id);
         payload.RootElement.GetProperty("name").GetString().ShouldBe("Cut & blow-dry");
+    }
+
+    [Fact]
+    public async Task The_form_offers_the_salons_active_categories_and_stores_category_buffer_and_processing_time()
+    {
+        Guid hairId;
+        await using (var scope = factory.CreateTenantScope(_studio.Id))
+        {
+            var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+            var hair = new ServiceCategory { Name = "Hair", SortOrder = 1 };
+            db.ServiceCategories.Add(hair);
+            db.ServiceCategories.Add(new ServiceCategory { Name = "Retired", SortOrder = 2, IsActive = false });
+            await db.SaveChangesAsync();
+            hairId = hair.Id;
+        }
+        using var client = await OwnerClientAsync("studio-20.localhost", _studio.Id);
+
+        var form = await GetFormAsync(client);
+        form.ShouldContain($"value=\"{hairId}\">Hair</option>");
+        form.ShouldNotContain("Retired");
+        form.ShouldContain("data-testid=\"buffer-input\"");
+
+        var response = await PostAsync(client, new()
+        {
+            ["Name"] = "Colour (roots)",
+            ["DurationMinutes"] = "90",
+            ["Price"] = "65",
+            ["CategoryId"] = hairId.ToString(),
+            ["BufferAfterMinutes"] = "15",
+            ["ProcessingMinutes"] = "30",
+            ["ProcessingStartsAfterMinutes"] = "20",
+        });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        var created = (await ServicesAsync(_studio.Id)).Single(s => s.Name == "Colour (roots)");
+        created.CategoryId.ShouldBe(hairId);
+        created.BufferAfterMinutes.ShouldBe(15);
+        created.ProcessingMinutes.ShouldBe(30);
+        created.ProcessingStartsAfterMinutes.ShouldBe(20);
+
+        var list = await client.GetAsync(response.Headers.Location!);
+        var html = await list.Content.ReadAsStringAsync();
+        html.ShouldContain("Service “Colour (roots)” has been added.");
+        html.ShouldContain("30 min processing");
+    }
+
+    [Fact]
+    public async Task Timing_fields_off_the_grid_or_outside_the_duration_are_refused()
+    {
+        using var client = await OwnerClientAsync("studio-20.localhost", _studio.Id);
+
+        var response = await PostAsync(client, new()
+        {
+            ["Name"] = "Perm",
+            ["DurationMinutes"] = "60",
+            ["Price"] = "60",
+            ["BufferAfterMinutes"] = "125",
+            ["ProcessingMinutes"] = "45",
+            ["ProcessingStartsAfterMinutes"] = "20",
+            ["CategoryId"] = Guid.NewGuid().ToString(),
+        });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var html = await response.Content.ReadAsStringAsync();
+        html.ShouldContain("The buffer must be between 0 and 120 minutes.");
+        html.ShouldContain("The processing time must fit inside the duration");
+        // The encoder writes the apostrophe as &#x27;.
+        html.ShouldContain("Choose one of the salon&#x27;s categories.");
+        (await ServicesAsync(_studio.Id)).Count.ShouldBe(1);
     }
 
     [Fact]
