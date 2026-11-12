@@ -59,7 +59,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
     /// <summary>
     /// Makes sure the salon exists (en-GB, GBP, Europe/London unless told otherwise) and that its catalogue holds exactly
     /// <paramref name="services"/>, in the given order. Safe to call repeatedly and after an integration run left other
-    /// rows behind: the tenant row is kept, its services are replaced.
+    /// rows behind: the tenant row is kept, its services are replaced (appointments go first, they hold the services).
     /// </summary>
     public async Task<Guid> EnsureTenantAsync(
         string slug,
@@ -96,6 +96,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         {
             scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
             var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+            db.Appointments.RemoveRange(await db.Appointments.ToListAsync());
             db.Services.RemoveRange(await db.Services.ToListAsync());
             var sortOrder = 0;
             foreach (var (serviceName, minutes, price) in services)
@@ -118,7 +119,8 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
 
     /// <summary>
     /// Replaces the salon's staff with the three demo people and their rota (ADR 0010) through the real DemoSeeder, which
-    /// only adds staff to a salon that has none; the salon must be the demo slug. Safe to call repeatedly.
+    /// only adds staff, clients and appointments to a salon that has none of each; the salon must be the demo slug. Safe to
+    /// call repeatedly: appointments, staff and clients left by an earlier run go first, so the demo data is the same every time.
     /// </summary>
     public async Task EnsureDemoStaffAsync(Guid tenantId)
     {
@@ -126,7 +128,9 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         {
             scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
             var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+            db.Appointments.RemoveRange(await db.Appointments.ToListAsync());
             db.StaffMembers.RemoveRange(await db.StaffMembers.ToListAsync());
+            db.Clients.RemoveRange(await db.Clients.ToListAsync());
             await db.SaveChangesAsync();
         }
 

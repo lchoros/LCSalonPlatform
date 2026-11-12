@@ -61,6 +61,7 @@ public class DemoSeederStaffTests(SalonWebApplicationFactory factory) : IAsyncLi
         await using (var scope = factory.CreateTenantScope(tenantId))
         {
             var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+            db.Appointments.RemoveRange(await db.Appointments.ToListAsync()); // appointments hold their staff member (Restrict)
             db.StaffMembers.RemoveRange(await db.StaffMembers.ToListAsync());
             db.Services.Remove(await db.Services.SingleAsync(s => s.Name == "Pedicure"));
             await db.SaveChangesAsync();
@@ -88,6 +89,7 @@ public class DemoSeederStaffTests(SalonWebApplicationFactory factory) : IAsyncLi
         await using (var scope = factory.CreateTenantScope(tenantId))
         {
             var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+            db.Appointments.RemoveRange(await db.Appointments.ToListAsync());
             db.StaffMembers.RemoveRange(await db.StaffMembers.Where(s => s.DisplayName != "Tom Reed").ToListAsync());
             await db.SaveChangesAsync();
         }

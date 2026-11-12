@@ -58,9 +58,13 @@ slice, on a tenant-owned entity without `ITenantEntity`, and on any type outside
 
 ## 5. Data
 PostgreSQL 17, schema `salon`, snake_case names, UUIDv7 ids, `Instant` (timestamptz) for time, `decimal` + ISO
-currency for money. Tables so far: `tenants`, `services` (RLS), `settings` (RLS), `staff_members` and `working_hours`
-(RLS, ADR 0010; `LocalTime` as `time`, local to the salon), `outbox_messages` (no RLS, see §3). The demo salon also gets
-three staff with weekly hours (Anna Kowalska, Tom Reed, Priya Shah).
+currency for money. Tables so far: `tenants`, `services` (RLS), `settings` (RLS), `users` (RLS, ADR 0009),
+`message_templates` (ADR 0008), `staff_members` and `working_hours` (RLS, ADR 0010; `LocalTime` as `time`, local to the
+salon), `clients` (RLS, ADR 0011; health notes as Data Protection cipher text), `appointments` and
+`appointment_status_changes` (RLS, ADR 0012; GiST exclusion constraint against overlapping active visits of one staff
+member, `client_id` FK to `clients` with Restrict), `outbox_messages` (no RLS, see §3). The demo salon also gets three
+staff with weekly hours (Anna Kowalska, Tom Reed, Priya Shah), twelve clients and a few appointments over the coming
+working days.
 Migrations are additive; rollback notes live in each PR. Local: `salon_dev` (app, migrates and seeds `studio-20` on
 start in Development) and `salon_test` (tests, reset by Respawn). The demo salon also gets two logins once ADR 0009 lands:
 `owner@studio-20.local` (Owner) and `desk@studio-20.local` (Receptionist), password from `Demo:OwnerPassword` in
@@ -73,6 +77,13 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
 - `Staff/ListStaff`, `Staff/CreateStaff`, `Staff/EditWorkingHours` — `/admin/staff`, `/admin/staff/new`,
   `/admin/staff/{id}/hours`, all behind `Staff.Manage` (ADR 0010); `CreateStaff` publishes `StaffMemberCreated`, the
   hours form replaces a person's whole weekly rota in one transaction.
+- `Clients/SearchClients`, `Clients/CreateClient`, `Clients/ClientCard` — `/admin/clients`, `/admin/clients/new`,
+  `/admin/clients/{id}`, behind `Clients.View` (ADR 0011); the card is the only read path that decrypts health notes.
+- `Appointments/DayList`, `Appointments/BookForClient` — `/admin/appointments?date=` (one column per bookable staff
+  member, status buttons posting to `/admin/appointments/{id}/{confirm|arrived|complete|no-show|cancel}`) and
+  `/admin/appointments/new` (client picker, service, staff or any, date, slots from `IAvailabilityService` as small POST
+  forms, booked through `IBookingService` as `Source.Admin`), behind `Bookings.Manage` + `Clients.View` because both
+  show client names (ADR 0012). Precursor to the FullCalendar admin calendar.
 
 ## 7. Testing
 Unit (xUnit + Shouldly + NSubstitute), Architecture (NetArchTest + resource parity + outbox isolation), Integration
@@ -81,5 +92,5 @@ role), E2E (Playwright, 390 px and 1280 px, axe, screenshots). CI runs all four 
 service container, plus gitleaks and CodeQL (findings fail the job).
 
 ## 8. Not yet built (M0 remainder and M1)
-Authentication, permissions and `[RequirePermission]`; message templates; staff, locations, availability and the
-booking flow; payments beyond the record-only provider; real SMS/email; deployment (M3).
+Locations, staff exceptions and breaks, the public booking page (service → staff → slot → SMS code), the FullCalendar admin
+calendar; payments beyond the record-only provider; real SMS/email; deployment (M3).

@@ -103,6 +103,9 @@ namespace Salon.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_appointments");
 
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("ix_appointments_client_id");
+
                     b.HasIndex("ServiceId")
                         .HasDatabaseName("ix_appointments_service_id");
 
@@ -111,6 +114,9 @@ namespace Salon.Data.Migrations
 
                     b.HasIndex("TenantId")
                         .HasDatabaseName("ix_appointments_tenant_id");
+
+                    b.HasIndex("TenantId", "ClientId")
+                        .HasDatabaseName("ix_appointments_tenant_id_client_id");
 
                     b.HasIndex("TenantId", "StaffMemberId", "Start")
                         .HasDatabaseName("ix_appointments_tenant_id_staff_member_id_start_at");
@@ -777,6 +783,13 @@ namespace Salon.Data.Migrations
 
             modelBuilder.Entity("Salon.Core.Appointments.Appointment", b =>
                 {
+                    b.HasOne("Salon.Core.Clients.Client", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_appointments_clients_client_id");
+
                     b.HasOne("Salon.Core.Catalog.Service", null)
                         .WithMany()
                         .HasForeignKey("ServiceId")
