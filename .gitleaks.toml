@@ -1,0 +1,11 @@
+# gitleaks runs on every PR (ci.yml, secret-scan). Default rules plus allowlists for known fake values in tests.
+title = "Salon Platform"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Fake tokens and codes used by tests; never real credentials."
+paths = [
+  '''tests/Salon\.Tests\.Unit/Tenancy/PublicUrlBuilderTests\.cs''',
+]

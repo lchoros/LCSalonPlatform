@@ -10,7 +10,7 @@ namespace Salon.Tests.Unit.Tenancy;
 /// <summary>Links in SMS and email (ADR 0014) come from configuration, not from the request: scheme, first base domain, slug, optional port.</summary>
 public class PublicUrlBuilderTests
 {
-    private const string Token = "q7Zt3vY1kP9xW2aB4cD6eF8gH0jK1lM3nO5pQ7rS9tU";
+    private const string Token = "test-cancel-token-not-a-secret";
 
     [Fact]
     public void Https_and_the_first_base_domain_by_default()

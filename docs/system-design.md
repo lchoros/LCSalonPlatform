@@ -71,19 +71,31 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
 `appsettings.Development.json` (a local value, not a secret).
 
 ## 6. Slices
-- `Catalog/CreateService` — `/admin/services/new`, behind `Features:CatalogAdmin` (off by default until permissions
-  exist), publishes `ServiceCreated`.
-- `Booking/ListServices` — `/services`, the public price list; one tap from the salon home page.
-- `Staff/ListStaff`, `Staff/CreateStaff`, `Staff/EditWorkingHours` — `/admin/staff`, `/admin/staff/new`,
-  `/admin/staff/{id}/hours`, all behind `Staff.Manage` (ADR 0010); `CreateStaff` publishes `StaffMemberCreated`, the
-  hours form replaces a person's whole weekly rota in one transaction.
-- `Clients/SearchClients`, `Clients/CreateClient`, `Clients/ClientCard` — `/admin/clients`, `/admin/clients/new`,
-  `/admin/clients/{id}`, behind `Clients.View` (ADR 0011); the card is the only read path that decrypts health notes.
+- `Catalog/ListServices`, `Catalog/CreateService`, `Catalog/EditService`, `Catalog/ManageCategories` — `/admin/services`,
+  `/admin/services/new`, `/admin/services/{id}`, `/admin/services/categories`, behind `Catalog.Manage` (ADR 0009,
+  0013); `CreateService` publishes `ServiceCreated`.
+- `Booking/ListServices` — `/services`, the public price list grouped by category; one tap from the salon home page.
+- `Booking/ChooseService`, `Booking/ChooseSlot`, `Booking/EnterDetails`, `Booking/VerifyCode`, `Booking/Confirmation`,
+  `Booking/CancelBooking` — the public flow under `/book` (ADR 0014): service → staff or any → day and slot → name and
+  phone → 6-digit SMS code → booked, with a signed cancel link (`/book/cancel/{token}`) in the confirmation SMS. Three
+  taps to a slot on a phone; server-rendered, no JavaScript needed.
+- `Staff/ListStaff`, `Staff/CreateStaff`, `Staff/EditStaff`, `Staff/EditWorkingHours`, `Staff/TimeOff` — `/admin/staff`,
+  `/admin/staff/new`, `/admin/staff/{id}/edit`, `/admin/staff/{id}/hours`, `/admin/staff/{id}/time-off`, all behind
+  `Staff.Manage` (ADR 0010, 0015); `CreateStaff` publishes `StaffMemberCreated`, the hours form replaces a person's
+  whole weekly rota in one transaction, time off becomes busy intervals for the availability engine.
+- `Clients/SearchClients`, `Clients/CreateClient`, `Clients/EditClient`, `Clients/ClientCard` — `/admin/clients`,
+  `/admin/clients/new`, `/admin/clients/{id}/edit`, `/admin/clients/{id}`, behind `Clients.View` (ADR 0011); the card
+  and the edit form are the only read paths that decrypt health notes.
 - `Appointments/DayList`, `Appointments/BookForClient` — `/admin/appointments?date=` (one column per bookable staff
   member, status buttons posting to `/admin/appointments/{id}/{confirm|arrived|complete|no-show|cancel}`) and
   `/admin/appointments/new` (client picker, service, staff or any, date, slots from `IAvailabilityService` as small POST
   forms, booked through `IBookingService` as `Source.Admin`), behind `Bookings.Manage` + `Clients.View` because both
-  show client names (ADR 0012). Precursor to the FullCalendar admin calendar.
+  show client names (ADR 0012).
+- `Appointments/Calendar` — `/admin/appointments/calendar?view=day|week&date=&staff=` (ADR 0016): a CSS-grid timetable
+  computed by the pure `CalendarLayout` in Services, an appointment card at `calendar/{id}` with the day list's status
+  buttons and a move form posting to `calendar/{id}/move` (`IBookingService.MoveAsync`, re-checked through the engine,
+  publishes `AppointmentMoved`). Same permissions as the day list. FullCalendar drag-and-drop is deferred until the
+  library is vendored.
 
 ## 7. Testing
 Unit (xUnit + Shouldly + NSubstitute), Architecture (NetArchTest + resource parity + outbox isolation), Integration
@@ -91,6 +103,7 @@ Unit (xUnit + Shouldly + NSubstitute), Architecture (NetArchTest + resource pari
 role), E2E (Playwright, 390 px and 1280 px, axe, screenshots). CI runs all four on `ubuntu-24.04` with a Postgres 17
 service container, plus gitleaks and CodeQL (findings fail the job).
 
-## 8. Not yet built (M0 remainder and M1)
-Locations, staff exceptions and breaks, the public booking page (service → staff → slot → SMS code), the FullCalendar admin
-calendar; payments beyond the record-only provider; real SMS/email; deployment (M3).
+## 8. Not yet built (M1 remainder)
+Locations, staff breaks inside a working day, staff-specific price and duration (in progress), client visit history and
+duplicate merge (in progress), FullCalendar drag-and-drop with live updates; payments beyond the record-only provider;
+real SMS/email; deployment (M3).
