@@ -6,16 +6,25 @@ using Salon.Core.Localization;
 namespace Salon.Services.Localization;
 
 /// <summary>
-/// Reads the flat JSON resource files an assembly embeds under <c>{resourceRoot}/{culture}.json</c>, i.e. manifest
-/// names ending in <c>.{resourceRoot}.{culture}.json</c> such as <c>Salon.Web.Localization.en-GB.json</c>. Each file is
-/// one object of <c>"Area.Key": "text"</c>. Packaging mistakes fail the load: a culture outside
-/// <see cref="SupportedCultures.All"/>, two resources for one culture, a key repeated inside one file, or invalid JSON.
+/// Reads the flat JSON resource files an assembly embeds under its localization root (ADR 0006). Two layouts are
+/// accepted and merged per culture:
+/// <list type="bullet">
+/// <item><c>{resourceRoot}/{culture}/{Module}.json</c>, manifest name <c>…{resourceRoot}.{culture}.{Module}.json</c>
+/// (e.g. <c>Salon.Web.Localization.en-GB.Catalog.json</c>) — one file per module and culture, so a slice touches only
+/// its module's files;</item>
+/// <item><c>{resourceRoot}/{culture}.json</c>, manifest name <c>…{resourceRoot}.{culture}.json</c> — the legacy single
+/// file, still used by assemblies with little text.</item>
+/// </list>
+/// Each file is one object of <c>"Area.Key": "text"</c>. Packaging mistakes fail the load: a culture outside
+/// <see cref="SupportedCultures.All"/>, a key repeated inside one file, a key defined in two files of the same culture,
+/// or invalid JSON.
 /// </summary>
 public sealed class EmbeddedJsonResourceSource : IResourceSource
 {
     private const string Extension = ".json";
 
     private readonly Assembly _assembly;
+    private readonly string _resourceRoot;
     private readonly string _marker;
 
     public EmbeddedJsonResourceSource(Assembly assembly, string resourceRoot = "Localization")
@@ -23,6 +32,7 @@ public sealed class EmbeddedJsonResourceSource : IResourceSource
         ArgumentNullException.ThrowIfNull(assembly);
         ArgumentException.ThrowIfNullOrWhiteSpace(resourceRoot);
         _assembly = assembly;
+        _resourceRoot = resourceRoot;
         _marker = $".{resourceRoot}.";
         Name = $"{assembly.GetName().Name} ({resourceRoot})";
     }
@@ -31,8 +41,45 @@ public sealed class EmbeddedJsonResourceSource : IResourceSource
 
     public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> Load()
     {
-        var result = new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        var resourceByCulture = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var merged = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+        var owners = new Dictionary<(string Culture, string Key), string>();
+
+        foreach (var file in ReadFiles())
+        {
+            // ReadFiles already rejected unsupported cultures, so Match never returns null here.
+            var culture = SupportedCultures.Match(file.Culture)!;
+            if (!merged.TryGetValue(culture, out var target))
+            {
+                target = new Dictionary<string, string>(StringComparer.Ordinal);
+                merged[culture] = target;
+            }
+
+            foreach (var (key, value) in file.Entries)
+            {
+                if (owners.TryGetValue((culture, key), out var owner))
+                {
+                    throw new InvalidOperationException(
+                        $"{Name}: key '{key}' for culture '{culture}' is defined in both '{owner}' and '{file.ResourceName}'; a key lives in exactly one file per culture.");
+                }
+
+                owners[(culture, key)] = file.ResourceName;
+                target[key] = value;
+            }
+        }
+
+        return merged.ToDictionary(
+            pair => pair.Key,
+            IReadOnlyDictionary<string, string> (pair) => pair.Value,
+            StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Every resource under the root, parsed but not merged, in manifest-name order. Lets a test check parity file by file
+    /// (a module present for one culture only) rather than key by key. Rejects unsupported cultures and invalid files.
+    /// </summary>
+    public IReadOnlyList<LocalizationResourceFile> ReadFiles()
+    {
+        var files = new List<LocalizationResourceFile>();
 
         // Sorted so that an error names the same pair of resources on every run.
         foreach (var resourceName in _assembly.GetManifestResourceNames().Order(StringComparer.Ordinal))
@@ -48,23 +95,27 @@ public sealed class EmbeddedJsonResourceSource : IResourceSource
                 continue;
             }
 
-            var culture = resourceName[(markerAt + _marker.Length)..^Extension.Length];
+            // "en-GB" (legacy flat file) or "en-GB.Catalog" (module file under the culture folder).
+            var path = resourceName[(markerAt + _marker.Length)..^Extension.Length];
+            var dot = path.IndexOf('.', StringComparison.Ordinal);
+            var culture = dot < 0 ? path : path[..dot];
+            var module = dot < 0 ? null : path[(dot + 1)..];
+
             if (!SupportedCultures.IsSupported(culture))
             {
                 throw new InvalidOperationException(
-                    $"{Name}: embedded resource '{resourceName}' is for culture '{culture}', which is not one of: {string.Join(", ", SupportedCultures.All)}.");
+                    $"{Name}: embedded resource '{resourceName}' is for culture '{culture}', which is not one of: {string.Join(", ", SupportedCultures.All)}. Expected {_resourceRoot}/<culture>/<Module>.json or {_resourceRoot}/<culture>.json.");
             }
 
-            if (!resourceByCulture.TryAdd(culture, resourceName))
+            if (module is { Length: 0 })
             {
-                throw new InvalidOperationException(
-                    $"{Name}: embedded resources '{resourceByCulture[culture]}' and '{resourceName}' are both for culture '{culture}'; an assembly ships one file per culture.");
+                throw new InvalidOperationException($"{Name}: embedded resource '{resourceName}' has an empty module name.");
             }
 
-            result[culture] = Read(resourceName);
+            files.Add(new LocalizationResourceFile(resourceName, culture, module, Read(resourceName)));
         }
 
-        return result;
+        return files;
     }
 
     private Dictionary<string, string> Read(string resourceName)
