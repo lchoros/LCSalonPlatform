@@ -156,6 +156,53 @@ internal sealed class ClientService(
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task UpdateDetailsAsync(Guid clientId, string firstName, string lastName, string? phone, string? email, string? notes, CancellationToken cancellationToken = default)
+    {
+        var tenantId = tenantContext.TenantId ?? throw new TenantViolationException("Updating a client requires a tenant in scope.");
+        var tenant = await tenantLookup.FindByIdAsync(tenantId, cancellationToken).ConfigureAwait(false);
+
+        if (!ClientName.TryNormalise(firstName, out var first))
+        {
+            throw new ArgumentException($"First name is required and can have at most {Client.NameMaxLength} characters.", nameof(firstName));
+        }
+
+        if (!ClientName.TryNormalise(lastName, out var last))
+        {
+            throw new ArgumentException($"Last name is required and can have at most {Client.NameMaxLength} characters.", nameof(lastName));
+        }
+
+        if (!PhoneNumber.TryNormalise(phone, tenant?.Currency, out var normalisedPhone))
+        {
+            throw new ArgumentException("The phone number is not valid; use the country code for numbers from abroad.", nameof(phone));
+        }
+
+        if (!EmailAddress.TryNormalise(email, out var normalisedEmail))
+        {
+            throw new ArgumentException($"The email must look like name@domain and have at most {Client.EmailMaxLength} characters.", nameof(email));
+        }
+
+        var plainNotes = OptionalText(notes, Client.NotesMaxLength, "Notes");
+        var client = await RequireAsync(clientId, cancellationToken).ConfigureAwait(false);
+
+        if (normalisedPhone is not null && await db.Clients.AnyAsync(c => c.Phone == normalisedPhone && c.Id != clientId, cancellationToken).ConfigureAwait(false))
+        {
+            throw new DuplicateClientException(nameof(Client.Phone), normalisedPhone);
+        }
+
+        if (normalisedEmail is not null && await db.Clients.AnyAsync(c => c.Email == normalisedEmail && c.Id != clientId, cancellationToken).ConfigureAwait(false))
+        {
+            throw new DuplicateClientException(nameof(Client.Email), normalisedEmail);
+        }
+
+        client.FirstName = first!;
+        client.LastName = last!;
+        client.Phone = normalisedPhone;
+        client.Email = normalisedEmail;
+        client.Notes = plainNotes;
+        client.UpdatedAt = clock.GetCurrentInstant();
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task SetMarketingConsentAsync(Guid clientId, bool granted, string? wording, CancellationToken cancellationToken = default)
     {
         var recorded = granted ? RequireWording(wording) : null;
