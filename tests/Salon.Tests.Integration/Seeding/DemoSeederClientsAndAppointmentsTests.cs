@@ -39,9 +39,9 @@ public class DemoSeederClientsAndAppointmentsTests(SalonWebApplicationFactory fa
         clients.ShouldAllBe(c => c.TenantId == tenantId && c.IsActive);
         clients.Select(c => c.FullName).ShouldContain("Sophie Smith");
         clients.Select(c => c.FullName).ShouldContain("Katarzyna Nowak");
-        clients.Select(c => c.Phone).ShouldAllBe(p => p != null && p.StartsWith("+447700900"));
+        clients.Select(c => c.Phone).ShouldAllBe(p => p != null && p.StartsWith("+447700900", StringComparison.Ordinal));
         clients.Select(c => c.Phone).Distinct().Count().ShouldBe(12);
-        clients.Select(c => c.Email).ShouldAllBe(e => e != null && e.EndsWith("@example.com") && e == e.ToLowerInvariant());
+        clients.Select(c => c.Email).ShouldAllBe(e => e != null && e.EndsWith("@example.com", StringComparison.Ordinal) && string.Equals(e, e.ToLowerInvariant(), StringComparison.Ordinal));
 
         var sophie = clients.Single(c => c.FirstName == "Sophie");
         sophie.Notes.ShouldBe("Prefers morning slots.");

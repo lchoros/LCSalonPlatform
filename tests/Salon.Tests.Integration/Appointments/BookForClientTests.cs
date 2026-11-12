@@ -118,7 +118,7 @@ public partial class BookForClientTests(SalonWebApplicationFactory factory) : IA
         row.CreatedByUserId.ShouldBe(owner.Id);
         (await db.AppointmentStatusChanges.CountAsync()).ShouldBe(1);
         await using var platformScope = factory.CreateTenantScope(null);
-        (await platformScope.ServiceProvider.GetRequiredService<SalonDbContext>().OutboxMessages.AsNoTracking().Select(m => m.EventType).ToListAsync()).ShouldBe([typeof(AppointmentBooked).FullName]);
+        (await platformScope.ServiceProvider.GetRequiredService<SalonDbContext>().OutboxMessages.AsNoTracking().Select(m => m.EventType).ToListAsync()).ShouldBe([typeof(AppointmentBooked).FullName!]);
 
         var day = await GetAsync(client, response.Headers.Location.OriginalString);
         day.ShouldContain("data-testid=\"flash\"");
@@ -233,7 +233,7 @@ public partial class BookForClientTests(SalonWebApplicationFactory factory) : IA
     {
         ["ClientId"] = salon.ClientId.ToString(),
         ["ServiceId"] = salon.ServiceId.ToString(),
-        ["StaffId"] = salon.StaffId.ToString(),
+        ["StaffMemberId"] = salon.StaffId.ToString(),
         ["Start"] = InstantPattern.ExtendedIso.Format(start),
         ["Date"] = Iso(_day),
         ["AnyStaff"] = anyStaff ? "true" : "false",

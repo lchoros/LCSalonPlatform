@@ -78,12 +78,12 @@ public class DayListTests(SalonWebApplicationFactory factory) : IAsyncLifetime
         html.ShouldContain("data-testid=\"action-arrived\"");
         html.ShouldContain("data-testid=\"action-no-show\"");
         html.ShouldContain("data-testid=\"action-cancel\"");
-        html.ShouldNotContain("data-testid=\"action-complete\"", "Booked cannot go straight to Completed");
+        html.ShouldNotContain("data-testid=\"action-complete\"", Case.Sensitive, "Booked cannot go straight to Completed");
         html.ShouldContain("__RequestVerificationToken");
 
         var today = SystemClock.Instance.GetCurrentInstant().InZone(London).Date;
         var defaultDay = await GetAsync(client, ListPath);
-        defaultDay.ShouldContain($"href=\"{ListPath}?date={Iso(today.PlusDays(1))}\"", "without a date the list shows today in the salon zone");
+        defaultDay.ShouldContain($"href=\"{ListPath}?date={Iso(today.PlusDays(1))}\"", Case.Sensitive, "without a date the list shows today in the salon zone");
         defaultDay.ShouldNotContain("Olivia Brown");
     }
 
