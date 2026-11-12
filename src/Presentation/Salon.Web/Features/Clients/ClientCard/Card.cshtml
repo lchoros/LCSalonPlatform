@@ -1,17 +1,29 @@
 @using System.Globalization
+@using Salon.Core.Identity
+@using Salon.Services.Clients
 @using Salon.Web.Features.Clients.ClientCard
 @model ClientCardViewModel
 @{
     var card = Model.Card;
+    var history = Model.History;
     var culture = CultureInfo.CurrentCulture;
     ViewData["Title"] = T["Clients.Card.Title"];
+    var canMerge = !card.IsMerged && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsMerge);
     const string labelClass = "text-sm text-stone-500";
     const string valueClass = "text-base";
+    const string secondaryButtonClass = "inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100";
 }
 <section class="mx-auto max-w-2xl space-y-6" data-testid="client-card">
     @if (Model.Flash is { } flash)
     {
         <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+    }
+    @if (card.IsMerged)
+    {
+        <p role="status" data-testid="merged-banner" class="flex flex-col gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+            <span>@T.Format("Clients.Card.MergedInto", Model.MergedIntoName ?? string.Empty)</span>
+            <a href="/admin/clients/@card.MergedIntoClientId" data-testid="merged-into-link" class="inline-flex min-h-11 items-center font-medium underline">@T["Clients.Card.OpenMergedInto"]</a>
+        </p>
     }
     <a href="/admin/clients" class="inline-flex min-h-11 items-center text-sm font-medium text-stone-700 hover:underline">&larr; @T["Clients.Card.Back"]</a>
     <header class="space-y-1">
@@ -39,9 +51,53 @@
             </div>
             <div>
                 <dt class="@labelClass">@T["Clients.Card.LastVisit"]</dt>
-                <dd class="@valueClass">—</dd>
+                <dd class="@valueClass" data-testid="last-visit">@(history.LastVisitOn is { } lastVisit ? lastVisit.ToString("d", culture) : "—")</dd>
             </div>
         </dl>
+    </section>
+
+    <section class="space-y-4 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" data-testid="history">
+        <h2 class="text-lg font-semibold">@T["Clients.History.Title"]</h2>
+        <dl class="grid grid-cols-2 gap-3">
+            <div class="rounded-md bg-stone-50 p-3">
+                <dt class="@labelClass">@T["Clients.History.VisitsCompleted"]</dt>
+                <dd class="text-2xl font-bold tabular-nums" data-testid="visits-completed">@history.VisitsCompleted</dd>
+            </div>
+            <div class="rounded-md bg-stone-50 p-3">
+                <dt class="@labelClass">@T["Clients.History.NoShows"]</dt>
+                <dd class="text-2xl font-bold tabular-nums" data-testid="no-shows">@history.NoShows</dd>
+            </div>
+        </dl>
+
+        <h3 class="text-base font-semibold">@T["Clients.History.Upcoming"]</h3>
+        @if (history.Upcoming.Count == 0)
+        {
+            <p class="text-sm text-stone-500" data-testid="no-upcoming">@T["Clients.History.NoUpcoming"]</p>
+        }
+        else
+        {
+            <ul class="divide-y divide-stone-200 rounded-md border border-stone-200" data-testid="upcoming-list">
+                @foreach (var visit in history.Upcoming)
+                {
+                    <partial name="_Visit" model="visit" />
+                }
+            </ul>
+        }
+
+        <h3 class="text-base font-semibold">@T["Clients.History.Past"]</h3>
+        @if (history.Past.Count == 0)
+        {
+            <p class="text-sm text-stone-500" data-testid="no-past">@T["Clients.History.NoPast"]</p>
+        }
+        else
+        {
+            <ul class="divide-y divide-stone-200 rounded-md border border-stone-200" data-testid="past-list">
+                @foreach (var visit in history.Past)
+                {
+                    <partial name="_Visit" model="visit" />
+                }
+            </ul>
+        }
     </section>
 
     <section class="space-y-2 rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
@@ -94,7 +150,11 @@
         }
     </section>
 
-    <div class="flex justify-end">
-        <a href="/admin/clients/@card.Id/edit" class="inline-flex min-h-11 items-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100">@T["Clients.Card.Edit"]</a>
+    <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+        @if (canMerge)
+        {
+            <a href="/admin/clients/@card.Id/merge" data-testid="merge-link" class="@secondaryButtonClass">@T["Clients.Card.Merge"]</a>
+        }
+        <a href="/admin/clients/@card.Id/edit" class="@secondaryButtonClass">@T["Clients.Card.Edit"]</a>
     </div>
 </section>

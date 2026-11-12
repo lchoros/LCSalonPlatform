@@ -1,0 +1,45 @@
+@using Salon.Web.Features.Clients.MergeClients
+@model MergeCandidatesViewModel
+@{
+    ViewData["Title"] = T["Clients.Merge.Title"];
+    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 px-3 py-2 text-base shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
+}
+<section class="mx-auto max-w-2xl space-y-6" data-testid="merge-pick">
+    <a href="/admin/clients/@Model.Source.Id" class="inline-flex min-h-11 items-center text-sm font-medium text-stone-700 hover:underline">&larr; @T["Clients.Merge.Back"]</a>
+    <header class="space-y-1">
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Clients.Merge.Title"]</h1>
+        <p class="text-base text-stone-600">@T.Format("Clients.Merge.Lead", Model.Source.FullName)</p>
+    </header>
+
+    <form method="get" role="search" class="flex flex-col gap-3 sm:flex-row sm:items-end" data-testid="merge-search-form">
+        <div class="flex-1 space-y-1">
+            <label for="q" class="block text-sm font-medium">@T["Clients.Merge.Query"]</label>
+            <input id="q" name="q" type="search" value="@Model.Query" maxlength="100" autocomplete="off" enterkeyhint="search" class="@inputClass" data-testid="merge-search" />
+        </div>
+        <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100" data-testid="merge-search-submit">@T["Clients.Merge.Submit"]</button>
+    </form>
+
+    @if (Model.Query is null)
+    {
+        <p data-testid="merge-hint" class="rounded-md border border-dashed border-stone-300 p-6 text-center text-stone-600">@T["Clients.Merge.Empty"]</p>
+    }
+    else if (Model.Matches.Count == 0)
+    {
+        <p data-testid="empty-state" class="rounded-md border border-dashed border-stone-300 p-6 text-center text-stone-600">@T.Format("Clients.Merge.NoMatch", Model.Query)</p>
+    }
+    else
+    {
+        <ul class="divide-y divide-stone-200 rounded-lg border border-stone-200 bg-white shadow-sm" data-testid="merge-candidates">
+            @foreach (var client in Model.Matches)
+            {
+                <li class="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between" data-testid="merge-candidate">
+                    <span class="flex flex-col">
+                        <span class="font-semibold">@client.FullName</span>
+                        <span class="text-sm text-stone-600">@(client.Phone ?? client.Email ?? "—")</span>
+                    </span>
+                    <a href="/admin/clients/@Model.Source.Id/merge/@client.Id" data-testid="choose-target" class="inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700">@T["Clients.Merge.Choose"]</a>
+                </li>
+            }
+        </ul>
+    }
+</section>

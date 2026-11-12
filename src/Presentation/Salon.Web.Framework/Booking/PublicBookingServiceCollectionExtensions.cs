@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
+using Salon.Core.Tasks;
 using Salon.Services.Notifications;
 using Salon.Web.Framework.Tenancy;
 
@@ -26,6 +27,8 @@ public static class PublicBookingServiceCollectionExtensions
 
         services.AddOptions<PublicBookingOptions>().BindConfiguration(PublicBookingOptions.SectionName);
         services.AddSingleton<IPublicUrlBuilder, PublicUrlBuilder>();
+        // Retention of verification rows (ADR 0017): one recurring job like every IScheduleTask (ADR 0005).
+        services.AddScoped<IScheduleTask, PhoneVerificationCleanupTask>();
 
         services.AddRateLimiter(limiter =>
         {
