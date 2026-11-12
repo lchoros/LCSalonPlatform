@@ -312,6 +312,118 @@ namespace Salon.Data.Migrations
                     b.ToTable("settings", "salon");
                 });
 
+            modelBuilder.Entity("Salon.Core.Staff.StaffMember", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Colour")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)")
+                        .HasColumnName("colour");
+
+                    b.Property<Instant>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("display_name");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("email");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("IsBookable")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_bookable");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("phone");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_staff_members");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_staff_members_tenant_id");
+
+                    b.HasIndex("TenantId", "SortOrder")
+                        .HasDatabaseName("ix_staff_members_tenant_id_sort_order");
+
+                    b.ToTable("staff_members", "salon");
+                });
+
+            modelBuilder.Entity("Salon.Core.Staff.WorkingHours", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Day")
+                        .HasColumnType("integer")
+                        .HasColumnName("day");
+
+                    b.Property<LocalTime>("End")
+                        .HasColumnType("time")
+                        .HasColumnName("end");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<Guid>("StaffMemberId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("staff_member_id");
+
+                    b.Property<LocalTime>("Start")
+                        .HasColumnType("time")
+                        .HasColumnName("start");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_working_hours");
+
+                    b.HasIndex("StaffMemberId")
+                        .HasDatabaseName("ix_working_hours_staff_member_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_working_hours_tenant_id");
+
+                    b.HasIndex("TenantId", "StaffMemberId", "Day", "Start")
+                        .IsUnique()
+                        .HasDatabaseName("ix_working_hours_tenant_id_staff_member_id_day_start");
+
+                    b.ToTable("working_hours", "salon");
+                });
+
             modelBuilder.Entity("Salon.Core.Tenancy.Tenant", b =>
                 {
                     b.Property<Guid>("Id")
@@ -405,6 +517,33 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_settings_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Staff.StaffMember", b =>
+                {
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_staff_members_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Staff.WorkingHours", b =>
+                {
+                    b.HasOne("Salon.Core.Staff.StaffMember", null)
+                        .WithMany()
+                        .HasForeignKey("StaffMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_working_hours_staff_members_staff_member_id");
+
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_working_hours_tenants_tenant_id");
                 });
 #pragma warning restore 612, 618
         }
