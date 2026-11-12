@@ -24,7 +24,7 @@ public sealed record AvailabilityRequest(
 
 /// <summary>
 /// One candidate staff member: the weekly rota (ADR 0010, local times, several ranges per day for split shifts) and the
-/// intervals already taken (active appointments including their buffer, later also time off).
+/// intervals already taken (active appointments including their buffer, and time off as one interval per day, ADR 0015).
 /// </summary>
 public sealed record StaffAvailabilityInput(
     Guid StaffMemberId,

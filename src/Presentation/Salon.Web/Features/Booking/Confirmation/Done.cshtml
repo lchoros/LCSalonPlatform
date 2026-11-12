@@ -8,25 +8,27 @@
     ViewData["Title"] = T["Booking.Public.Done.Title"];
 }
 <section class="mx-auto max-w-lg space-y-6">
-    <header class="space-y-2">
-        <p class="inline-flex size-12 items-center justify-center rounded-full bg-green-100 text-2xl text-green-800" aria-hidden="true">✓</p>
+    <header class="space-y-3">
+        <span class="inline-flex size-12 items-center justify-center rounded-full bg-green-100 text-green-800" aria-hidden="true">
+            <svg class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+        </span>
         <h1 class="text-2xl font-bold tracking-tight sm:text-3xl" data-testid="done-title">@T["Booking.Public.Done.Title"]</h1>
-        <p class="text-stone-600">@T["Booking.Public.Done.Lead"]</p>
+        <p class="text-stone-700">@T["Booking.Public.Done.Lead"]</p>
     </header>
 
-    <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" data-testid="booking-details">
-        <dt class="text-sm text-stone-500">@T["Booking.Public.Done.Service"]</dt>
-        <dd class="font-medium" data-testid="done-service">@a.ServiceName</dd>
-        <dt class="text-sm text-stone-500">@T["Booking.Public.Done.Staff"]</dt>
-        <dd class="font-medium" data-testid="done-staff">@a.StaffName</dd>
-        <dt class="text-sm text-stone-500">@T["Booking.Public.Done.When"]</dt>
-        <dd class="font-medium tabular-nums" data-testid="done-when">@local.ToString("dddd, d MMMM yyyy", culture), @local.ToString("HH:mm", culture)</dd>
-        <dt class="text-sm text-stone-500">@T["Booking.Public.Done.Where"]</dt>
-        <dd class="font-medium" data-testid="done-salon">@Model.SalonName</dd>
+    <dl class="facts" data-testid="booking-details">
+        <dt>@T["Booking.Public.Done.Service"]</dt>
+        <dd data-testid="done-service">@a.ServiceName</dd>
+        <dt>@T["Booking.Public.Done.Staff"]</dt>
+        <dd data-testid="done-staff">@a.StaffName</dd>
+        <dt>@T["Booking.Public.Done.When"]</dt>
+        <dd class="tabular-nums" data-testid="done-when">@local.ToString("dddd, d MMMM yyyy", culture), @local.ToString("HH:mm", culture)</dd>
+        <dt>@T["Booking.Public.Done.Where"]</dt>
+        <dd data-testid="done-salon">@Model.SalonName</dd>
     </dl>
 
-    <div class="flex flex-col gap-3 sm:flex-row">
-        <a href="/book" data-testid="book-another" class="inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700">@T["Booking.Public.Done.BookAnother"]</a>
-        <a href="@Model.CancelPath" data-testid="cancel-link" class="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100">@T["Booking.Public.Done.Cancel"]</a>
+    <div class="flex flex-col gap-3">
+        <a href="/book" data-testid="book-another" class="btn btn-primary w-full">@T["Booking.Public.Done.BookAnother"]</a>
+        <a href="@Model.CancelPath" data-testid="cancel-link" class="btn btn-secondary w-full">@T["Booking.Public.Done.Cancel"]</a>
     </div>
 </section>

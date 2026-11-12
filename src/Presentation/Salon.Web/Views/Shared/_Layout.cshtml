@@ -1,22 +1,38 @@
 <!DOCTYPE html>
 @using Salon.Core.Identity
+@using Salon.Core.Tenancy
+@using Salon.Services.Tenancy
+@inject ITenantContext TenantContext
+@inject ITenantLookup TenantLookup
 @{
     // Invariant culture (e.g. a CI runner with no locale) has an empty name; the page must still declare a language.
     var uiCulture = System.Globalization.CultureInfo.CurrentUICulture.Name;
     var lang = string.IsNullOrEmpty(uiCulture) ? SupportedCultures.Default : uiCulture;
     var signedIn = User.Identity?.IsAuthenticated == true;
+    // A client on a salon's host sees the salon's name where staff see the platform brand (ADR 0014: trust first).
+    // The lookup is cached per tenant, so this costs nothing on a hot path.
+    var salonName = !signedIn && TenantContext.TenantId is { } tenantId
+        ? (await TenantLookup.FindByIdAsync(tenantId))?.Name
+        : null;
 }
 <html lang="@lang" class="h-full bg-stone-50">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] · @T["Layout.Brand"]</title>
+    <title>@ViewData["Title"] · @(salonName ?? T["Layout.Brand"])</title>
     <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
 </head>
 <body class="min-h-full flex flex-col text-stone-900 antialiased">
     <header class="border-b border-stone-200 bg-white">
-        <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
-            <a class="text-lg font-semibold tracking-tight" asp-area="" asp-controller="Home" asp-action="Index">@T["Layout.Brand"]</a>
+        <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2">
+            @if (salonName is not null)
+            {
+                <a href="/" data-testid="header-salon-name" class="inline-flex min-h-11 items-center text-lg font-semibold tracking-tight">@salonName</a>
+            }
+            else
+            {
+                <a class="inline-flex min-h-11 items-center text-lg font-semibold tracking-tight" asp-area="" asp-controller="Home" asp-action="Index">@T["Layout.Brand"]</a>
+            }
             @if (signedIn)
             {
                 <form method="post" action="/account/logout" asp-antiforgery="true" class="flex items-center gap-3 text-sm">
@@ -48,7 +64,7 @@
     <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
         @RenderBody()
     </main>
-    <footer class="border-t border-stone-200 py-4 text-center text-sm text-stone-500">
+    <footer class="border-t border-stone-200 py-4 text-center text-sm text-stone-600">
         &copy; @DateTime.UtcNow.Year @T["Layout.Brand"]
     </footer>
     @await RenderSectionAsync("Scripts", required: false)

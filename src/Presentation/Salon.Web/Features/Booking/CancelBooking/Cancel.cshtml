@@ -11,38 +11,38 @@
     @if (Model.Appointment is { } a && Model.State is CancelState.Confirm or CancelState.Cancelled)
     {
         var local = a.Start.InZone(Model.Zone).LocalDateTime;
-        <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" data-testid="booking-details">
-            <dt class="text-sm text-stone-500">@T["Booking.Public.Done.Service"]</dt>
-            <dd class="font-medium">@a.ServiceName</dd>
-            <dt class="text-sm text-stone-500">@T["Booking.Public.Done.Staff"]</dt>
-            <dd class="font-medium">@a.StaffName</dd>
-            <dt class="text-sm text-stone-500">@T["Booking.Public.Done.When"]</dt>
-            <dd class="font-medium tabular-nums">@local.ToString("dddd, d MMMM yyyy", culture), @local.ToString("HH:mm", culture)</dd>
-            <dt class="text-sm text-stone-500">@T["Booking.Public.Done.Where"]</dt>
-            <dd class="font-medium">@Model.SalonName</dd>
+        <dl class="facts" data-testid="booking-details">
+            <dt>@T["Booking.Public.Done.Service"]</dt>
+            <dd>@a.ServiceName</dd>
+            <dt>@T["Booking.Public.Done.Staff"]</dt>
+            <dd>@a.StaffName</dd>
+            <dt>@T["Booking.Public.Done.When"]</dt>
+            <dd class="tabular-nums">@local.ToString("dddd, d MMMM yyyy", culture), @local.ToString("HH:mm", culture)</dd>
+            <dt>@T["Booking.Public.Done.Where"]</dt>
+            <dd>@Model.SalonName</dd>
         </dl>
     }
 
     @switch (Model.State)
     {
         case CancelState.Confirm:
-            <form method="post" asp-action="CancelConfirmed" class="flex flex-col gap-3 sm:flex-row" data-testid="cancel-form">
-                <button type="submit" data-testid="confirm-cancel" class="inline-flex min-h-12 items-center justify-center rounded-md bg-red-700 px-4 py-2 text-base font-medium text-white hover:bg-red-800">@T["Booking.Public.Cancel.Confirm"]</button>
-                <a href="/book" class="inline-flex min-h-12 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100">@T["Booking.Public.Cancel.Keep"]</a>
+            <form method="post" asp-action="CancelConfirmed" class="flex flex-col gap-3" data-testid="cancel-form">
+                <button type="submit" data-testid="confirm-cancel" class="btn btn-danger w-full">@T["Booking.Public.Cancel.Confirm"]</button>
+                <a href="/book" class="btn btn-secondary w-full">@T["Booking.Public.Cancel.Keep"]</a>
             </form>
             break;
         case CancelState.Cancelled:
-            <p role="status" data-testid="cancel-result" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@T["Booking.Public.Cancel.Done"]</p>
-            <a href="/book" data-testid="book-another" class="inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700">@T["Booking.Public.Done.BookAnother"]</a>
+            <p role="status" data-testid="cancel-result" class="notice notice-ok">@T["Booking.Public.Cancel.Done"]</p>
+            <a href="/book" data-testid="book-another" class="btn btn-primary w-full">@T["Booking.Public.Done.BookAnother"]</a>
             break;
         case CancelState.Already:
-            <p role="status" data-testid="cancel-result" class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">@T["Booking.Public.Cancel.Already"]</p>
+            <p role="status" data-testid="cancel-result" class="notice notice-warn">@T["Booking.Public.Cancel.Already"]</p>
             break;
         case CancelState.TooLate:
-            <p role="status" data-testid="cancel-result" class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">@T["Booking.Public.Cancel.TooLate"]</p>
+            <p role="status" data-testid="cancel-result" class="notice notice-warn">@T["Booking.Public.Cancel.TooLate"]</p>
             break;
         default:
-            <p role="status" data-testid="cancel-result" class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">@T["Booking.Public.Cancel.Invalid"]</p>
+            <p role="status" data-testid="cancel-result" class="notice notice-warn">@T["Booking.Public.Cancel.Invalid"]</p>
             break;
     }
 </section>

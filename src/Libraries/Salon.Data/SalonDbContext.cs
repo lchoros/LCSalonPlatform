@@ -47,6 +47,9 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     /// <summary>Weekly working-hour ranges per staff member, in the salon's local time (ADR 0010).</summary>
     public DbSet<WorkingHours> WorkingHours => Set<WorkingHours>();
 
+    /// <summary>Planned absences per staff member: local dates and an optional daily time range (ADR 0015).</summary>
+    public DbSet<StaffTimeOff> StaffTimeOff => Set<StaffTimeOff>();
+
     /// <summary>Booked visits (ADR 0012); Postgres refuses overlapping active appointments of one staff member.</summary>
     public DbSet<Appointment> Appointments => Set<Appointment>();
 

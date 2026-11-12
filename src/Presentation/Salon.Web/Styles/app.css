@@ -7,3 +7,131 @@
 .input-validation-error {
   @apply border-red-500;
 }
+
+/* Shared vocabulary for the public booking flow (ADR 0014). Every control is a tap target of at least 44 px, shows a
+   visible focus ring, and keeps WCAG AA contrast on the stone-50 page background. Views compose these with utilities. */
+@layer components {
+  /* Buttons: one primary per screen, 48 px tall, full width on a phone. */
+  .btn {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-lg px-4 py-2 text-base font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+  }
+
+  .btn-primary {
+    @apply bg-stone-900 text-white hover:bg-stone-700;
+  }
+
+  .btn-secondary {
+    @apply border border-stone-300 bg-white text-stone-900 hover:bg-stone-100;
+  }
+
+  .btn-danger {
+    @apply bg-red-700 text-white hover:bg-red-800;
+  }
+
+  /* Quiet in-flow links ("Change service", "Change time"): 44 px tall even though they read as text. */
+  .btn-link {
+    @apply inline-flex min-h-11 shrink-0 items-center rounded-md px-2 text-sm font-medium text-stone-700 underline underline-offset-4 hover:text-stone-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900;
+  }
+
+  /* Form fields: 48 px tall, 16 px text so iOS does not zoom, ring on focus, red border when MVC flags an error. */
+  .field {
+    @apply block min-h-12 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 shadow-sm focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-900/20;
+  }
+
+  .field-label {
+    @apply block text-sm font-medium text-stone-800;
+  }
+
+  .field-hint {
+    @apply text-sm text-stone-600;
+  }
+
+  .field-error {
+    @apply block text-sm font-medium text-red-700;
+  }
+
+  /* Tappable card (a service): the whole surface is the link; the border darkens on hover, the ring shows on focus. */
+  .choice-card {
+    @apply flex min-h-14 flex-col gap-1 rounded-xl border border-stone-200 bg-white p-4 shadow-sm transition-colors hover:border-stone-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+  }
+
+  /* Horizontal rows (people, days): scroll inside their own box, snap to items, bleed to the screen edge on a phone. */
+  .scroll-row {
+    @apply -mx-4 flex snap-x gap-2 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pb-2 sm:mx-0 sm:scroll-px-0 sm:px-0;
+  }
+
+  /* Pills (people) and tiles (days) share three states: selected, free, and muted-but-tappable (no free time). */
+  .pill {
+    @apply inline-flex min-h-11 shrink-0 snap-start items-center justify-center rounded-full border px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+  }
+
+  .tile {
+    @apply inline-flex min-h-16 w-16 shrink-0 snap-start flex-col items-center justify-center rounded-xl border px-1 py-2 leading-tight transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+  }
+
+  .is-on {
+    @apply border-stone-900 bg-stone-900 text-white;
+  }
+
+  .is-off {
+    @apply border-stone-300 bg-white text-stone-900 hover:bg-stone-100;
+  }
+
+  /* stone-600 keeps AA contrast on white (axe color-contrast); the dashed border says "nothing free" at a glance. */
+  .is-dim {
+    @apply border-dashed border-stone-300 bg-white text-stone-600 hover:bg-stone-50;
+  }
+
+  /* A free time: 48 px tall, large tabular digits, fills its grid cell. */
+  .slot {
+    @apply flex min-h-12 items-center justify-center rounded-lg border border-stone-300 bg-white px-2 py-2 text-lg font-semibold tabular-nums transition-colors hover:border-stone-900 hover:bg-stone-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+  }
+
+  /* The compact "what you chose" bar shown on every step after the first. */
+  .summary-bar {
+    @apply flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white py-2 pr-2 pl-4 shadow-sm;
+  }
+
+  /* Three progress segments under the "Step n of 3" row. */
+  .steps {
+    @apply flex gap-1.5;
+  }
+
+  .steps > span {
+    @apply h-1.5 flex-1 rounded-full bg-stone-200;
+  }
+
+  .steps > .is-done {
+    @apply bg-stone-900;
+  }
+
+  /* Outcome notices: colour plus text, so colour alone never carries the meaning. */
+  .notice {
+    @apply rounded-lg border p-3 text-sm;
+  }
+
+  .notice-ok {
+    @apply border-green-200 bg-green-50 text-green-800;
+  }
+
+  .notice-warn {
+    @apply border-amber-300 bg-amber-50 text-amber-900;
+  }
+
+  .notice-error {
+    @apply border-red-200 bg-red-50 text-red-700;
+  }
+
+  /* Label/value rows of a booking (details, confirmation, cancel). */
+  .facts {
+    @apply grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-xl border border-stone-200 bg-white p-4 shadow-sm;
+  }
+
+  .facts > dt {
+    @apply text-sm text-stone-600;
+  }
+
+  .facts > dd {
+    @apply font-medium text-stone-900;
+  }
+}
