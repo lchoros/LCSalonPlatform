@@ -7,6 +7,8 @@
 @{
     var culture = CultureInfo.CurrentCulture;
     var dayPath = "/admin/appointments?date=" + LocalDatePattern.Iso.Format(Model.Start.Date);
+    // The status labels are the day list's Appointments.Status.* keys, one per enum member.
+    var statusKey = "Appointments.Status." + Model.Status;
     var badgeClass = Model.Status switch
     {
         AppointmentStatus.Completed => "bg-green-100 text-green-900",
@@ -23,7 +25,7 @@
             <span class="text-sm text-stone-600" data-testid="visit-what">@Model.ServiceName · @Model.StaffName</span>
         </span>
         <span class="flex items-center gap-3 text-sm">
-            <span class="rounded px-1.5 py-0.5 text-xs font-medium @badgeClass" data-testid="visit-status">@T["Appointments.Status." + Model.Status]</span>
+            <span class="rounded px-1.5 py-0.5 text-xs font-medium @badgeClass" data-testid="visit-status">@T[statusKey]</span>
             <span class="tabular-nums" data-testid="visit-price">@(new Money(Model.PriceAmount, Model.Currency).ToDisplayString(culture))</span>
         </span>
     </a>
