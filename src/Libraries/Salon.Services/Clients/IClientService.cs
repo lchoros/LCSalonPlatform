@@ -24,6 +24,12 @@ public interface IClientService
     /// </summary>
     Task<IReadOnlyList<ClientSummary>> SearchAsync(string? query, int take = 20, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// The client whose stored phone equals <paramref name="phone"/> once normalised with the salon's country (ADR 0011), or
+    /// null. The public booking flow (ADR 0014) uses it to recognise a returning client; an unusable number is null too.
+    /// </summary>
+    Task<ClientSummary?> FindByPhoneAsync(string? phone, CancellationToken cancellationToken = default);
+
     /// <summary>The full card including decrypted health notes; null when the id is not a client of the current tenant.</summary>
     Task<ClientCard?> GetCardAsync(Guid clientId, CancellationToken cancellationToken = default);
 

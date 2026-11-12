@@ -1,0 +1,76 @@
+@using System.Globalization
+@using NodaTime
+@using NodaTime.Text
+@using Salon.Web.Features.Booking.ChooseSlot
+@model ChooseSlotViewModel
+@{
+    var r = Model.Result;
+    var culture = CultureInfo.CurrentCulture;
+    ViewData["Title"] = T["Booking.Public.ChooseTime"];
+    const string pillOn = "inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white";
+    const string pillOff = "inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100";
+    const string pillDim = "inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-dashed border-stone-200 bg-white px-4 py-2 text-sm text-stone-400 hover:bg-stone-50";
+    var staffQuery = r.SelectedStaffId is { } sid ? $"&staff={sid}" : string.Empty;
+    var hasAnySlot = r.Days.Any(d => d.HasSlots);
+}
+@functions {
+    static string Iso(LocalDate date) => LocalDatePattern.Iso.Format(date);
+
+    static string Iso(Instant instant) => InstantPattern.ExtendedIso.Format(instant);
+}
+<section class="mx-auto max-w-2xl space-y-6">
+    <header class="space-y-1">
+        <p class="text-sm font-medium uppercase tracking-wide text-stone-500" data-testid="step">@T.Format("Booking.Public.Step", 2, 3)</p>
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Booking.Public.ChooseTime"]</h1>
+        <p class="text-stone-600">
+            <span class="font-medium text-stone-900" data-testid="service-name">@r.ServiceName</span>
+            · @T.Format("Booking.Public.DurationMinutes", (int)r.Duration.TotalMinutes)
+            · <span class="tabular-nums">@r.Price.ToDisplayString(culture)</span>
+            · <a href="/book" class="underline hover:text-stone-900">@T["Booking.Public.ChangeService"]</a>
+        </p>
+    </header>
+
+    @if (r.Staff.Count > 1)
+    {
+        <nav aria-label="@T["Booking.Public.With"]" data-testid="staff-picker" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+            <a href="/book/@r.ServiceId?date=@Iso(r.SelectedDate)" class="@(r.SelectedStaffId is null ? pillOn : pillOff)" aria-current="@(r.SelectedStaffId is null ? "true" : null)" data-testid="staff-any">@T["Booking.Public.Anyone"]</a>
+            @foreach (var person in r.Staff)
+            {
+                var on = person.Id == r.SelectedStaffId;
+                <a href="/book/@r.ServiceId?date=@Iso(r.SelectedDate)&staff=@person.Id" class="@(on ? pillOn : pillOff)" aria-current="@(on ? "true" : null)" data-testid="staff-option">@person.DisplayName</a>
+            }
+        </nav>
+    }
+
+    <nav aria-label="@T["Booking.Public.Day"]" data-testid="date-strip" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+        @foreach (var day in r.Days)
+        {
+            var on = day.Date == r.SelectedDate;
+            <a href="/book/@r.ServiceId?date=@Iso(day.Date)@staffQuery" class="@(on ? pillOn : day.HasSlots ? pillOff : pillDim) flex-col leading-tight" aria-current="@(on ? "date" : null)" data-testid="day" data-has-slots="@day.HasSlots.ToString().ToLowerInvariant()">
+                <span class="text-xs uppercase">@day.Date.ToString("ddd", culture)</span>
+                <span class="tabular-nums">@day.Date.ToString("d MMM", culture)</span>
+            </a>
+        }
+    </nav>
+
+    <div class="space-y-3">
+        <h2 class="text-lg font-semibold" data-testid="selected-day">@r.SelectedDate.ToString("dddd, d MMMM", culture)</h2>
+        @if (r.Slots.Count == 0)
+        {
+            <p data-testid="no-slots" class="rounded-md border border-dashed border-stone-300 p-6 text-center text-stone-600">
+                @(hasAnySlot ? T["Booking.Public.NoSlotsOnDay"] : T.Format("Booking.Public.NoSlotsAtAll", r.Days.Count))
+            </p>
+        }
+        else
+        {
+            <ul class="grid grid-cols-3 gap-2 sm:grid-cols-4" data-testid="slot-list" aria-label="@T["Booking.Public.Times"]">
+                @foreach (var slot in r.Slots)
+                {
+                    <li>
+                        <a href="/book/@r.ServiceId/details?start=@Uri.EscapeDataString(Iso(slot.Start))@staffQuery" data-testid="slot" class="flex min-h-11 items-center justify-center rounded-md border border-stone-300 bg-white px-3 py-2 text-base font-medium tabular-nums hover:border-stone-900 hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-stone-900">@slot.LocalStart.ToString("HH:mm", culture)</a>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</section>
