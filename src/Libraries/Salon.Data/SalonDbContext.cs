@@ -3,7 +3,9 @@ using System.Reflection;
 
 using Microsoft.EntityFrameworkCore;
 
+using Salon.Core.Appointments;
 using Salon.Core.Catalog;
+using Salon.Core.Clients;
 using Salon.Core.Events;
 using Salon.Core.Identity;
 using Salon.Core.Messaging;
@@ -29,6 +31,11 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
 
     public DbSet<Service> Services => Set<Service>();
 
+    /// <summary>Headings the salon groups its services under (ADR 0013).</summary>
+    public DbSet<ServiceCategory> ServiceCategories => Set<ServiceCategory>();
+    /// <summary>Client cards (ADR 0011). Health notes are cipher text here; decrypt only through the client service.</summary>
+    public DbSet<Client> Clients => Set<Client>();
+
     public DbSet<Setting> Settings => Set<Setting>();
 
     public DbSet<User> Users => Set<User>();
@@ -38,6 +45,12 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
 
     /// <summary>Weekly working-hour ranges per staff member, in the salon's local time (ADR 0010).</summary>
     public DbSet<WorkingHours> WorkingHours => Set<WorkingHours>();
+
+    /// <summary>Booked visits (ADR 0012); Postgres refuses overlapping active appointments of one staff member.</summary>
+    public DbSet<Appointment> Appointments => Set<Appointment>();
+
+    /// <summary>One row per status transition of an appointment (ADR 0012).</summary>
+    public DbSet<AppointmentStatusChange> AppointmentStatusChanges => Set<AppointmentStatusChange>();
 
     /// <summary>Per-tenant overrides of the embedded message template defaults (ADR 0008).</summary>
     public DbSet<MessageTemplate> MessageTemplates => Set<MessageTemplate>();
