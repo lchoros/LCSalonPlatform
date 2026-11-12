@@ -22,10 +22,7 @@ public class Appointment : BaseEntity, ITenantEntity
 
     public Guid TenantId { get; set; }
 
-    /// <summary>
-    /// The client (ADR 0011). A plain column without a foreign key in this slice: the clients table is built in parallel,
-    /// so the constraint follows in a small additive migration once both slices are merged (ADR 0012, consequences).
-    /// </summary>
+    /// <summary>The client (ADR 0011); a foreign key with <c>Restrict</c>, so a client with history is deactivated rather than deleted.</summary>
     public Guid ClientId { get; set; }
 
     public Guid StaffMemberId { get; set; }

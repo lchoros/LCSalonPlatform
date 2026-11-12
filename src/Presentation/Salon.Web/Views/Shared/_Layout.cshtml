@@ -45,6 +45,14 @@
                     {
                         <a href="/admin/services" data-testid="nav-services" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Services"]</a>
                     }
+                    @if (User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView))
+                    {
+                        <a href="/admin/clients" data-testid="nav-clients" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Clients"]</a>
+                    }
+                    @if (User.HasClaim(UserClaimTypes.Permission, Permissions.BookingsManage) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView))
+                    {
+                        <a href="/admin/appointments" data-testid="nav-appointments" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Appointments"]</a>
+                    }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.StaffManage))
                     {
                         <a href="/admin/staff" data-testid="nav-staff" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Staff"]</a>

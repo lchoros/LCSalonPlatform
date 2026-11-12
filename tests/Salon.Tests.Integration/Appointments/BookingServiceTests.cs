@@ -10,6 +10,7 @@ using Npgsql;
 using Salon.Core.Appointments;
 using Salon.Core.Appointments.Events;
 using Salon.Core.Catalog;
+using Salon.Core.Clients;
 using Salon.Core.Events;
 using Salon.Core.Staff;
 using Salon.Core.Tenancy;
@@ -23,18 +24,18 @@ namespace Salon.Tests.Integration.Appointments;
 /// <summary>
 /// ADR 0012 end to end against Postgres: booking writes the appointment, its history and an outbox event; the exclusion
 /// constraint settles races; cancelling frees the slot; transitions go through the state machine; tenants never see each
-/// other's appointments. The salon has one stylist (Anna, every day 09:00–17:00) and one 30-minute service; bookings are
+/// other's appointments. The salon has one stylist (Anna, every day 09:00–17:00), one client and one 30-minute service; bookings are
 /// made for tomorrow so the default notice and advance rules never interfere.
 /// </summary>
 [Collection(SharedDatabase.Name)]
 public class BookingServiceTests(SalonWebApplicationFactory factory) : IAsyncLifetime
 {
     private static readonly DateTimeZone London = DateTimeZoneProviders.Tzdb["Europe/London"];
-    private static readonly Guid ClientId = Guid.Parse("0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b");
     private static readonly Guid UserId = Guid.Parse("0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5c");
 
     private Tenant _tenantA = null!;
     private Tenant _tenantB = null!;
+    private Guid _clientId;
     private Guid _annaId;
     private Guid _serviceId;
     private LocalDate _day;
@@ -44,7 +45,7 @@ public class BookingServiceTests(SalonWebApplicationFactory factory) : IAsyncLif
         await factory.ResetDatabaseAsync();
         _tenantA = await factory.CreateTenantAsync("appt-a");
         _tenantB = await factory.CreateTenantAsync("appt-b", "pl-PL", "PLN");
-        (_annaId, _serviceId) = await SeedSalonAsync(_tenantA.Id);
+        (_clientId, _annaId, _serviceId) = await SeedSalonAsync(_tenantA.Id);
         _day = SystemClock.Instance.GetCurrentInstant().InZone(London).Date.PlusDays(1);
     }
 
@@ -62,7 +63,7 @@ public class BookingServiceTests(SalonWebApplicationFactory factory) : IAsyncLif
         var row = await db.Appointments.SingleAsync();
         row.Id.ShouldBe(appointment.Id);
         row.TenantId.ShouldBe(_tenantA.Id);
-        row.ClientId.ShouldBe(ClientId);
+        row.ClientId.ShouldBe(_clientId);
         row.StaffMemberId.ShouldBe(_annaId);
         row.ServiceId.ShouldBe(_serviceId);
         row.Start.ShouldBe(At(10, 0));
@@ -90,7 +91,7 @@ public class BookingServiceTests(SalonWebApplicationFactory factory) : IAsyncLif
         message.EventType.ShouldBe(typeof(AppointmentBooked).FullName);
         using var payload = JsonDocument.Parse(message.Payload);
         payload.RootElement.GetProperty("appointmentId").GetGuid().ShouldBe(appointment.Id);
-        payload.RootElement.GetProperty("clientId").GetGuid().ShouldBe(ClientId);
+        payload.RootElement.GetProperty("clientId").GetGuid().ShouldBe(_clientId);
         payload.RootElement.GetProperty("start").GetString().ShouldBe(At(10, 0).ToString());
         payload.RootElement.EnumerateObject().Select(p => p.Name)
             .ShouldBe(["appointmentId", "tenantId", "clientId", "staffMemberId", "serviceId", "start", "end", "source"], ignoreOrder: true);
@@ -313,7 +314,7 @@ public class BookingServiceTests(SalonWebApplicationFactory factory) : IAsyncLif
     private Instant At(int hour, int minute) => London.AtLeniently(_day.At(new LocalTime(hour, minute))).ToInstant();
 
     private BookAppointmentRequest Request(Instant start, string? notes = null)
-        => new(ClientId, _annaId, _serviceId, start, AppointmentSource.Admin, notes, UserId);
+        => new(_clientId, _annaId, _serviceId, start, AppointmentSource.Admin, notes, UserId);
 
     private Task<Appointment> BookAsync(Guid tenantId, Instant start, string? notes = null)
         => InTenantAsync(tenantId, sp => sp.GetRequiredService<IBookingService>().BookAsync(Request(start, notes)));
@@ -339,7 +340,7 @@ public class BookingServiceTests(SalonWebApplicationFactory factory) : IAsyncLif
         return await scope.ServiceProvider.GetRequiredService<SalonDbContext>().OutboxMessages.AsNoTracking().OrderBy(m => m.Id).ToListAsync();
     }
 
-    private async Task<(Guid StaffId, Guid ServiceId)> SeedSalonAsync(Guid tenantId)
+    private async Task<(Guid ClientId, Guid StaffId, Guid ServiceId)> SeedSalonAsync(Guid tenantId)
     {
         await using var scope = factory.CreateTenantScope(tenantId);
         var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
@@ -351,9 +352,11 @@ public class BookingServiceTests(SalonWebApplicationFactory factory) : IAsyncLif
         }
 
         var cut = new Service { Name = "Cut", Duration = Duration.FromMinutes(30), Price = 20m, Currency = "GBP" };
+        var client = new Client { FirstName = "Olivia", LastName = "Brown", CreatedAt = anna.CreatedAt, UpdatedAt = anna.CreatedAt };
+        db.Clients.Add(client);
         db.Services.Add(cut);
         await db.SaveChangesAsync();
-        return (anna.Id, cut.Id);
+        return (client.Id, anna.Id, cut.Id);
     }
 
     private async Task InsertRawAsync(NpgsqlConnection connection, Instant start, Instant end, AppointmentStatus status)
@@ -366,7 +369,7 @@ public class BookingServiceTests(SalonWebApplicationFactory factory) : IAsyncLif
             """, connection);
         command.Parameters.AddWithValue("id", Guid.CreateVersion7());
         command.Parameters.AddWithValue("tenant", _tenantA.Id);
-        command.Parameters.AddWithValue("client", ClientId);
+        command.Parameters.AddWithValue("client", _clientId);
         command.Parameters.AddWithValue("staff", _annaId);
         command.Parameters.AddWithValue("service", _serviceId);
         command.Parameters.AddWithValue("start", start.ToDateTimeUtc());
