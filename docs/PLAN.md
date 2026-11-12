@@ -17,11 +17,12 @@ Gate: CI green and agents merge a Tier 0 PR on their own. — Met 2026-11-11: CI
 Gate: a test client books on a phone in under 60 seconds.
 - [ ] Catalog: categories, services, staff-specific price/duration, processing time, buffers
 - [~] Staff: working hours, exceptions, breaks, roles — done: `StaffMember` + `WorkingHours` (ADR 0010), `Staff/ListStaff`, `Staff/CreateStaff`, `Staff/EditWorkingHours` under `/admin/staff` behind `Staff.Manage`, admin nav, demo staff (`agent/m1-01-staff`); remaining: exceptions/time off, breaks, roles, edit/deactivate staff
-- [ ] Availability engine + exclusion constraint + property tests
 - [~] Public booking page (service → staff/any → slot → SMS code → confirm) — `agent/m1-08-public-booking` (ADR 0014): `/book` → `/book/{serviceId}` (date strip, "anyone"/person, slots) → details → SMS code (`PhoneVerification`, hashed, 5 attempts, 10 min) → `/book/done/{id}` with cancel link (`Appointment.PublicToken`), `/book/cancel/{token}`; confirmation SMS consumer, `IPublicUrlBuilder`, `Booking.Code` template, per-phone and per-address limits; mobile E2E timed under 60 s; remaining: prefill for returning clients, verification retention clean-up
+- [x] Availability engine + exclusion constraint + property tests — pure `AvailabilityCalculator` (FsCheck properties), `IAvailabilityService`, GiST exclusion constraint on `appointments` (ADR 0012, PR #41)
 - [ ] Admin calendar (FullCalendar day/week, drag to move, block time) with live updates
-- [ ] Clients: card, history, notes, allergies, patch test, merge duplicates
-- [ ] Appointment state machine + history + events
+  - [x] Day list + book for client (precursor to FullCalendar) — `Appointments/DayList` (status actions through the state machine) and `Appointments/BookForClient` (client picker, live slots) under `/admin/appointments` behind `Bookings.Manage` + `Clients.View`; FK `appointments.client_id → clients`; demo clients and appointments (`agent/m1-07-admin-booking`)
+- [~] Clients: card, history, notes, allergies, patch test, merge duplicates — done: `Client` with encrypted health notes and consent record (ADR 0011), `Clients/SearchClients`, `Clients/CreateClient`, `Clients/ClientCard` under `/admin/clients` behind `Clients.View` (PR #42); remaining: visit history on the card, merge duplicates
+- [x] Appointment state machine + history + events — `Appointment`, `AppointmentStatusChange`, `AppointmentStateMachine`, `IBookingService` publishing `AppointmentBooked/Confirmed/Arrived/Completed/NoShow/Cancelled` through the outbox (ADR 0012, PR #41)
 
 ## M2 Money and messages (weeks 7–9)
 Gate: deposits, no-show fees and the cash-up add up with the Manual payment provider. Nothing is really charged.

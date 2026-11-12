@@ -1,0 +1,96 @@
+@using System.Globalization
+@using NodaTime
+@using Salon.Core.Appointments
+@using Salon.Web.Features.Appointments.DayList
+@model DayListViewModel
+@{
+    var board = Model.Board;
+    var culture = CultureInfo.CurrentCulture;
+    ViewData["Title"] = T["Appointments.Day.Title"];
+    const string buttonClass = "inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700";
+    const string navClass = "inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-stone-300 px-3 py-2 text-sm font-medium hover:bg-stone-100";
+    const string actionClass = "inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium hover:bg-stone-100";
+}
+@functions {
+    static string Time(LocalTime time) => time.ToString("t", CultureInfo.CurrentCulture);
+
+    static string BadgeClass(AppointmentStatus status) => status switch
+    {
+        AppointmentStatus.Confirmed => "bg-blue-100 text-blue-900",
+        AppointmentStatus.Arrived => "bg-green-100 text-green-900",
+        _ => "bg-stone-100 text-stone-700",
+    };
+}
+<section class="space-y-6">
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+    }
+    @if (Model.Error is { } error)
+    {
+        <p role="alert" data-testid="error" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">@error</p>
+    }
+    <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div class="space-y-2">
+            <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Appointments.Day.Title"]</h1>
+            <nav aria-label="@T["Appointments.Day.Title"]" class="flex items-center gap-2">
+                <a href="@DayListController.DayPath(board.Day.PlusDays(-1))" data-testid="prev-day" class="@navClass" aria-label="@T["Appointments.Day.Previous"]">&larr;</a>
+                <time datetime="@board.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-testid="day" class="min-w-0 flex-1 text-center text-base font-medium sm:text-lg">@board.Day.ToString("D", culture)</time>
+                <a href="@DayListController.DayPath(board.Day.PlusDays(1))" data-testid="next-day" class="@navClass" aria-label="@T["Appointments.Day.Next"]">&rarr;</a>
+                <a href="@DayListController.ListPath" data-testid="today" class="@navClass">@T["Appointments.Day.Today"]</a>
+            </nav>
+        </div>
+        <a href="@(DayListController.ListPath)/new?date=@board.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-testid="book" class="@buttonClass">@T["Appointments.Day.Book"]</a>
+    </header>
+
+    @if (board.Staff.Count == 0)
+    {
+        <p data-testid="empty-state" class="rounded-md border border-dashed border-stone-300 p-6 text-center text-stone-600">@T["Appointments.Day.NoStaff"]</p>
+    }
+    else
+    {
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-testid="day-board">
+            @foreach (var column in board.Staff)
+            {
+                <section class="flex flex-col gap-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" data-testid="staff-column" data-staff-id="@column.StaffMemberId">
+                    <h2 class="flex items-center gap-2 text-lg font-semibold">
+                        <span class="size-3 shrink-0 rounded-full" style="background-color: @column.Colour" aria-hidden="true"></span>
+                        <span data-testid="staff-name">@column.DisplayName</span>
+                    </h2>
+                    @if (column.Appointments.Count == 0)
+                    {
+                        <p data-testid="column-empty" class="text-sm italic text-stone-500">@T["Appointments.Day.Empty"]</p>
+                    }
+                    else
+                    {
+                        <ul class="space-y-3">
+                            @foreach (var appointment in column.Appointments)
+                            {
+                                <li class="space-y-2 rounded-md border border-stone-200 p-3" data-testid="appointment" data-status="@appointment.Status">
+                                    <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                                        <span class="font-semibold tabular-nums" data-testid="appointment-time">@Time(appointment.Start)–@Time(appointment.End)</span>
+                                        <span class="rounded px-1.5 py-0.5 text-xs font-medium @BadgeClass(appointment.Status)" data-testid="status-badge">@T[$"Appointments.Status.{appointment.Status}"]</span>
+                                    </div>
+                                    <p class="text-base" data-testid="appointment-client">@appointment.ClientName</p>
+                                    <p class="text-sm text-stone-600" data-testid="appointment-service">@appointment.ServiceName</p>
+                                    @if (appointment.Actions.Count > 0)
+                                    {
+                                        <div class="flex flex-wrap gap-2 pt-1">
+                                            @foreach (var action in appointment.Actions)
+                                            {
+                                                var segment = AppointmentTransitions.Segment(action);
+                                                <form method="post" action="@(DayListController.ListPath)/@appointment.Id/@segment" asp-antiforgery="true" data-testid="action-@segment">
+                                                    <button type="submit" class="@actionClass">@T[$"Appointments.Action.{action}"]</button>
+                                                </form>
+                                            }
+                                        </div>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                </section>
+            }
+        </div>
+    }
+</section>
