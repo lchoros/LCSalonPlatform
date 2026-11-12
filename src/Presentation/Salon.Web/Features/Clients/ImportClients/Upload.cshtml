@@ -1,0 +1,37 @@
+@using Salon.Core.Import
+@using Salon.Web.Features.Clients.ImportClients
+@model UploadViewModel
+@{
+    ViewData["Title"] = T["Clients.Import.Title"];
+}
+<section class="mx-auto max-w-lg space-y-6">
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">@flash</p>
+    }
+    <header class="space-y-2">
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Clients.Import.Title"]</h1>
+        <p class="text-stone-600">@T["Clients.Import.Intro"]</p>
+    </header>
+
+    <form method="post" asp-action="Upload" enctype="multipart/form-data" class="space-y-5" data-testid="import-upload-form">
+        @if (Model.Error is { } error)
+        {
+            <p role="alert" data-testid="import-error" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">@error</p>
+        }
+
+        <div class="space-y-1">
+            <label for="File" class="block text-sm font-medium">@T["Clients.Import.File"]</label>
+            <input id="File" name="File" type="file" accept=".csv,.txt,text/csv,text/plain" aria-describedby="file-hint"
+                   class="block w-full min-h-11 rounded-md border border-stone-300 bg-white px-3 py-2 text-base shadow-sm file:mr-3 file:rounded file:border-0 file:bg-stone-900 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900" />
+            <p id="file-hint" class="text-sm text-stone-500">@T.Format("Clients.Import.FileHint", ClientImportLimits.MaxRows, ImportClientsController.MaxMegabytes)</p>
+        </div>
+
+        <p class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">@T["Clients.Import.NotImported"]</p>
+
+        <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+            <a href="/admin/clients" class="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100">@T["Clients.Import.Cancel"]</a>
+            <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700">@T["Clients.Import.Upload"]</button>
+        </div>
+    </form>
+</section>

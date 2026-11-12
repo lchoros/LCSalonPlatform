@@ -297,7 +297,7 @@ public partial class ImportClientsTests(SalonWebApplicationFactory factory) : IA
     {
         var response = await client.GetAsync(new Uri(path, UriKind.Relative));
         response.StatusCode.ShouldBe(HttpStatusCode.OK, path);
-        return await response.Content.ReadAsStringAsync();
+        return WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
     }
 
     private static async Task<string> TokenAsync(HttpClient client)

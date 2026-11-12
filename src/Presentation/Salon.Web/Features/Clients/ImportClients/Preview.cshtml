@@ -1,0 +1,108 @@
+@using Salon.Core.Clients
+@using Salon.Core.Import
+@using Salon.Services.Clients.Import
+@using Salon.Web.Features.Clients.ImportClients
+@model PreviewViewModel
+@{
+    ViewData["Title"] = T["Clients.Import.Preview.Title"];
+}
+@functions {
+    string StatusText(ImportRowStatus status) => status switch
+    {
+        ImportRowStatus.New => T["Clients.Import.Status.New"],
+        ImportRowStatus.Duplicate => T["Clients.Import.Status.Duplicate"],
+        _ => T["Clients.Import.Status.Invalid"],
+    };
+
+    string StatusClass(ImportRowStatus status) => status switch
+    {
+        ImportRowStatus.New => "bg-green-100 text-green-900",
+        ImportRowStatus.Duplicate => "bg-stone-200 text-stone-800",
+        _ => "bg-red-100 text-red-900",
+    };
+
+    string ProblemText(ImportProblem problem) => problem switch
+    {
+        ImportProblem.WrongColumnCount => T["Clients.Import.Problem.WrongColumnCount"],
+        ImportProblem.MissingFirstName => T["Clients.Import.Problem.MissingFirstName"],
+        ImportProblem.MissingLastName => T["Clients.Import.Problem.MissingLastName"],
+        ImportProblem.NameTooLong => T.Format("Clients.Import.Problem.NameTooLong", Client.NameMaxLength),
+        ImportProblem.InvalidPhone => T["Clients.Import.Problem.InvalidPhone"],
+        ImportProblem.InvalidEmail => T["Clients.Import.Problem.InvalidEmail"],
+        ImportProblem.DuplicatePhone => T["Clients.Import.Problem.DuplicatePhone"],
+        ImportProblem.DuplicateEmail => T["Clients.Import.Problem.DuplicateEmail"],
+        ImportProblem.DuplicateName => T["Clients.Import.Problem.DuplicateName"],
+        ImportProblem.DuplicateInFile => T["Clients.Import.Problem.DuplicateInFile"],
+        _ => problem.ToString(),
+    };
+
+    static string Contact(ClassifiedImportRow row)
+    {
+        var parts = new[] { row.NormalisedPhone ?? row.Row.Phone, row.NormalisedEmail ?? row.Row.Email }.Where(p => !string.IsNullOrEmpty(p));
+        var text = string.Join(" · ", parts);
+        return text.Length == 0 ? "—" : text;
+    }
+}
+<section class="space-y-6" data-testid="import-preview">
+    <header class="space-y-2">
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Clients.Import.Preview.Title"]</h1>
+        <p class="text-sm text-stone-600" data-testid="import-summary">@T.Format("Clients.Import.Preview.Summary", Model.FileName, Model.Format, Model.Total)</p>
+    </header>
+
+    <dl class="grid grid-cols-3 gap-2 sm:gap-4">
+        <div class="rounded-lg border border-green-200 bg-green-50 p-3">
+            <dt class="text-xs font-medium text-green-800">@T["Clients.Import.Preview.New"]</dt>
+            <dd data-testid="count-new" class="text-2xl font-bold text-green-900">@Model.NewCount</dd>
+        </div>
+        <div class="rounded-lg border border-stone-200 bg-stone-100 p-3">
+            <dt class="text-xs font-medium text-stone-700">@T["Clients.Import.Preview.Duplicate"]</dt>
+            <dd data-testid="count-duplicate" class="text-2xl font-bold text-stone-900">@Model.DuplicateCount</dd>
+        </div>
+        <div class="rounded-lg border border-red-200 bg-red-50 p-3">
+            <dt class="text-xs font-medium text-red-800">@T["Clients.Import.Preview.Invalid"]</dt>
+            <dd data-testid="count-invalid" class="text-2xl font-bold text-red-900">@Model.InvalidCount</dd>
+        </div>
+    </dl>
+
+    <ul class="divide-y divide-stone-200 rounded-lg border border-stone-200 bg-white shadow-sm" aria-label="@T["Clients.Import.Preview.Rows"]">
+        @foreach (var row in Model.Rows)
+        {
+            <li data-testid="import-row" data-status="@row.Status" class="flex flex-col gap-2 p-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                <div class="min-w-0 space-y-1">
+                    <p class="text-xs text-stone-500">@T["Clients.Import.Preview.Row"] @row.Row.SourceRow</p>
+                    <p class="font-semibold break-words">@row.Row.FirstName @row.Row.LastName</p>
+                    <p class="text-sm text-stone-600 break-words">@Contact(row)</p>
+                    @if (row.Problems.Count > 0)
+                    {
+                        <ul class="space-y-0.5 text-sm text-red-700">
+                            @foreach (var problem in row.Problems)
+                            {
+                                <li>@ProblemText(problem)</li>
+                            }
+                        </ul>
+                    }
+                </div>
+                <span class="inline-flex w-fit shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold @StatusClass(row.Status)">@StatusText(row.Status)</span>
+            </li>
+        }
+    </ul>
+
+    @if (Model.HiddenCount > 0)
+    {
+        <p data-testid="import-more" class="text-sm text-stone-600">@T.Format("Clients.Import.Preview.More", Model.HiddenCount)</p>
+    }
+
+    <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
+        <a href="/admin/clients/import" class="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100">@T["Clients.Import.Preview.Back"]</a>
+        @if (Model.NewCount > 0)
+        {
+            <form method="post" action="/admin/clients/import/@Model.Token/confirm" asp-antiforgery="true" class="flex">
+                <button type="submit" data-testid="import-confirm" class="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700 sm:w-auto">@T.Format("Clients.Import.Preview.Confirm", Model.NewCount)</button>
+            </form>
+        }
+        else
+        {
+            <p data-testid="nothing-new" class="rounded-md border border-dashed border-stone-300 p-3 text-center text-sm text-stone-600">@T["Clients.Import.Preview.NothingToImport"]</p>
+        }
+    </div>
+</section>
