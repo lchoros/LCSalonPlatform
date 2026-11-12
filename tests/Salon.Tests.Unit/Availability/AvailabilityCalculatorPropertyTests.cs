@@ -138,6 +138,26 @@ public class AvailabilityCalculatorPropertyTests
             AvailabilityCalculator.Slots(request).SequenceEqual(AvailabilityCalculator.Slots(request)));
     }
 
+    /// <summary>ADR 0018: a staff-specific duration replaces the service duration for that person's slots and nobody else's.</summary>
+    [Property(MaxTest = 200)]
+    public Property Every_slot_lasts_the_effective_duration_of_its_staff_member()
+    {
+        var gen =
+            from request in RequestGen()
+            from overrides in Gen.ArrayOf(Gen.OneOf(Gen.Constant((Duration?)null), Gen.Elements(10, 20, 30, 40, 50, 60, 75, 90, 120).Select(m => (Duration?)Duration.FromMinutes(m))), request.Staff.Count)
+            select request with { Staff = request.Staff.Select((s, i) => s with { ServiceDuration = overrides[i] }).ToArray() };
+
+        return Prop.ForAll(gen.ToArbitrary(), request =>
+        {
+            var effective = request.Staff.ToDictionary(s => s.StaffMemberId, s => s.ServiceDuration ?? request.ServiceDuration);
+            var perStaff = AvailabilityCalculator.Slots(request);
+            var any = AvailabilityCalculator.ForAnyStaff(request);
+            return perStaff.All(s => s.End - s.Start == effective[s.StaffMemberId])
+                && any.All(s => s.End - s.Start == effective[s.StaffMemberId])
+                && perStaff.All(s => !request.Staff.Single(x => x.StaffMemberId == s.StaffMemberId).Busy.Any(b => Overlaps(b, new Interval(s.Start, s.End.Plus(request.Buffer)))));
+        });
+    }
+
     private static Gen<AvailabilityRequest> RequestGen()
         => from zone in ZoneGen
            from firstDay in DateGen
