@@ -13,6 +13,7 @@ using Salon.Core.Identity;
 using Salon.Core.Tenancy;
 using Salon.Data;
 using Salon.Services.Identity;
+using Salon.Services.Seeding;
 
 namespace Salon.Tests.E2E.Infrastructure;
 
@@ -113,6 +114,26 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         }
 
         return tenantId;
+    }
+
+    /// <summary>
+    /// Replaces the salon's staff with the three demo people and their rota (ADR 0010) through the real DemoSeeder, which
+    /// only adds staff to a salon that has none; the salon must be the demo slug. Safe to call repeatedly.
+    /// </summary>
+    public async Task EnsureDemoStaffAsync(Guid tenantId)
+    {
+        using (var scope = _factory.Services.CreateScope())
+        {
+            scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
+            var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+            db.StaffMembers.RemoveRange(await db.StaffMembers.ToListAsync());
+            await db.SaveChangesAsync();
+        }
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            await scope.ServiceProvider.GetRequiredService<DemoSeeder>().SeedAsync();
+        }
     }
 
     /// <summary>
