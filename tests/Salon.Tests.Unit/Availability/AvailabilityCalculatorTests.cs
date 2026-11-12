@@ -210,6 +210,36 @@ public class AvailabilityCalculatorTests
     }
 
     [Fact]
+    public void A_staff_member_with_their_own_duration_gets_slots_of_that_length_and_fewer_of_them()
+    {
+        // Anna takes an hour over a service the list says takes 30 minutes (ADR 0018); Tom works at the list speed.
+        var anna = Staff(Anna, Day(IsoDayOfWeek.Monday, "09:00", "11:00")) with { ServiceDuration = Duration.FromMinutes(60) };
+        var tom = Staff(Tom, Day(IsoDayOfWeek.Monday, "09:00", "11:00"));
+
+        var slots = AvailabilityCalculator.Slots(Request(Monday, Monday, [anna, tom], serviceMinutes: 30, bufferMinutes: 10));
+
+        var annas = slots.Where(s => s.StaffMemberId == Anna).ToList();
+        var toms = slots.Where(s => s.StaffMemberId == Tom).ToList();
+        annas.ShouldAllBe(s => s.End - s.Start == Duration.FromMinutes(60));
+        toms.ShouldAllBe(s => s.End - s.Start == Duration.FromMinutes(30));
+        // 60 + 10 buffer must fit before 11:00: 09:00 … 09:45; 30 + 10 fits until 10:15.
+        LocalTimes(annas).ShouldBe([new LocalTime(9, 0), new LocalTime(9, 15), new LocalTime(9, 30), new LocalTime(9, 45)]);
+        LocalTimes(toms).Last().ShouldBe(new LocalTime(10, 15));
+
+        // "Any staff" keeps each person's own length on the slot it hands out.
+        var any = AvailabilityCalculator.ForAnyStaff(Request(Monday, Monday, [anna, tom], serviceMinutes: 30, bufferMinutes: 10));
+        any.ShouldAllBe(s => s.End - s.Start == (s.StaffMemberId == Anna ? Duration.FromMinutes(60) : Duration.FromMinutes(30)));
+    }
+
+    [Fact]
+    public void A_non_positive_staff_duration_is_rejected()
+    {
+        var staff = Staff(Anna, Day(IsoDayOfWeek.Monday, "09:00", "10:00")) with { ServiceDuration = Duration.Zero };
+
+        Should.Throw<ArgumentOutOfRangeException>(() => AvailabilityCalculator.Slots(Request(Monday, Monday, staff)));
+    }
+
+    [Fact]
     public void Invalid_inputs_are_rejected()
     {
         var staff = Staff(Anna, Day(IsoDayOfWeek.Monday, "09:00", "10:00"));

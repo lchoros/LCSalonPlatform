@@ -9,6 +9,7 @@ using Salon.Services.Appointments;
 using Salon.Services.Availability;
 using Salon.Services.Booking;
 using Salon.Services.Caching;
+using Salon.Services.Catalog;
 using Salon.Services.Localization;
 using Salon.Services.Messaging;
 using Salon.Services.Notifications;
@@ -42,6 +43,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ScheduleTaskRunner>();
         services.AddScoped<IScheduleTask, HeartbeatTask>();
         services.AddScoped<ISettingService, SettingService>();
+        services.AddScoped<IServiceOfferingResolver, ServiceOfferingResolver>();
         services.AddScoped<IAvailabilityService, AvailabilityService>();
         services.AddScoped<IBookingService, BookingService>();
         // Needs IClientService (registered by the host next to the field encryptor) and IPublicUrlBuilder (Web.Framework) at resolve time.
