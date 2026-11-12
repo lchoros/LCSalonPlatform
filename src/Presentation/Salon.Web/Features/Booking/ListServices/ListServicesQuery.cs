@@ -12,4 +12,7 @@ public sealed record ListServicesQuery : IQuery<IReadOnlyList<ServiceListGroup>>
 public sealed record ServiceListGroup(string? CategoryName, IReadOnlyList<ServiceListItem> Services);
 
 /// <summary>One row of the public list; the price carries its currency so the view can format it for the reader.</summary>
-public sealed record ServiceListItem(Guid Id, string Name, string? Description, Duration Duration, Money Price);
+/// <param name="Duration">The list duration; a staff member's own duration shows once a person is chosen (ADR 0018).</param>
+/// <param name="Price">The price every bookable person charges, or the cheapest when <paramref name="IsFromPrice"/>.</param>
+/// <param name="IsFromPrice">True when staff charge differently for this service, so the view says "from".</param>
+public sealed record ServiceListItem(Guid Id, string Name, string? Description, Duration Duration, Money Price, bool IsFromPrice = false);

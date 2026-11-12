@@ -151,7 +151,7 @@ public partial class StaffOverridesTests(SalonWebApplicationFactory factory) : I
         html.ShouldContain("Ceny i czasy pracowników");
         InputTag(html, "Rows[0].DurationMinutes").ShouldContain("input-validation-error");
         InputTag(html, "Rows[0].Price").ShouldContain("input-validation-error");
-        html.ShouldContain("Anna Nowak", "the re-rendered form still names the person");
+        html.ShouldContain("Anna Nowak", Case.Sensitive, "the re-rendered form still names the person");
         (await OverridesAsync(_polish.Id)).ShouldBeEmpty();
         (await OutboxAsync()).ShouldBeEmpty();
 

@@ -3,9 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using NodaTime;
 
 using Salon.Core.Cqrs;
+using Salon.Core.Domain;
 using Salon.Core.Tenancy;
 using Salon.Data;
 using Salon.Services.Availability;
+using Salon.Services.Catalog;
 using Salon.Services.Clients;
 using Salon.Services.Tenancy;
 
@@ -20,6 +22,7 @@ public sealed class BookForClientFormHandler(
     SalonDbContext db,
     IClientService clients,
     IAvailabilityService availability,
+    IServiceOfferingResolver offerings,
     ITenantContext tenantContext,
     ITenantLookup tenantLookup,
     IClock clock) : IRequestHandler<BookForClientFormQuery, BookForClientForm>
@@ -53,7 +56,7 @@ public sealed class BookForClientFormHandler(
         var services = await db.Services.AsNoTracking()
             .Where(s => s.IsActive)
             .OrderBy(s => s.SortOrder).ThenBy(s => s.Name)
-            .Select(s => new ServiceOption(s.Id, s.Name, (int)s.Duration.TotalMinutes))
+            .Select(s => new ServiceOption(s.Id, s.Name, (int)s.Duration.TotalMinutes, s.Price, s.Currency))
             .ToListAsync(cancellationToken);
         var staff = await db.StaffMembers.AsNoTracking()
             .Where(s => s.IsActive && s.IsBookable)
@@ -68,7 +71,23 @@ public sealed class BookForClientFormHandler(
                 .Select(s => new SlotOption(s.StaffMemberId, staff.First(p => p.Id == s.StaffMemberId).DisplayName, s.Start, s.Start.InZone(zone).TimeOfDay))
                 .ToArray()
             : [];
+        var offering = serviceId is { } chosen
+            ? await SummarizeAsync(services.First(s => s.Id == chosen), staffMemberId is { } id ? staff.First(p => p.Id == id) : null, cancellationToken)
+            : null;
 
-        return new BookForClientForm(request.Query, matches, client, services, staff, serviceId, staffMemberId, day, slots);
+        return new BookForClientForm(request.Query, matches, client, services, staff, serviceId, staffMemberId, day, slots, offering);
+    }
+
+    /// <summary>The chosen person's own duration and price (ADR 0018); under "any", the list duration and the cheapest price with "from" when staff differ.</summary>
+    private async Task<OfferingSummary> SummarizeAsync(ServiceOption service, StaffOption? person, CancellationToken cancellationToken)
+    {
+        if (person is null)
+        {
+            var span = (await offerings.PriceSpansAsync([service.Id], cancellationToken)).GetValueOrDefault(service.Id, new PriceSpan(service.Price, service.Price));
+            return new OfferingSummary(service.DurationMinutes, new Money(span.Min, service.Currency), span.IsRange, true, null);
+        }
+
+        var offering = await offerings.ResolveAsync(service.Id, person.Id, cancellationToken);
+        return new OfferingSummary((int)offering.Duration.TotalMinutes, new Money(offering.Price, offering.Currency), false, offering.Offers, person.DisplayName);
     }
 }

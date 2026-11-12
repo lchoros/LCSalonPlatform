@@ -1,0 +1,72 @@
+@using System.Globalization
+@using Salon.Core.Catalog
+@using Salon.Core.Domain
+@using Salon.Web.Features.Catalog.StaffOverrides
+@model StaffOverridesForm
+@{
+    ViewData["Title"] = T["Catalog.StaffOverrides.Title"];
+    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 px-2 py-2 text-base tabular-nums shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
+    var defaultPrice = new Money(Model.DefaultPrice, Model.Currency).ToDisplayString(CultureInfo.CurrentCulture);
+    var pricePlaceholder = Model.DefaultPrice.ToString("0.00", CultureInfo.CurrentCulture);
+}
+<section class="mx-auto max-w-2xl space-y-6">
+    <header class="space-y-1">
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Catalog.StaffOverrides.Title"]</h1>
+        <p class="text-lg text-stone-700" data-testid="service-name">@Model.ServiceName</p>
+        <p class="text-sm text-stone-500" data-testid="service-defaults">@T.Format("Catalog.StaffOverrides.Default", Model.DefaultDurationMinutes, defaultPrice)</p>
+        <p class="text-sm text-stone-500">@T["Catalog.StaffOverrides.Hint"]</p>
+    </header>
+    @if (Model.Rows.Count == 0)
+    {
+        <p data-testid="empty-state" class="rounded-md border border-dashed border-stone-300 p-6 text-center text-stone-600">@T["Catalog.StaffOverrides.Empty"]</p>
+    }
+    else
+    {
+        <form method="post" asp-action="Edit" asp-route-id="@Model.ServiceId" class="space-y-4" novalidate data-testid="staff-overrides-form">
+            <div asp-validation-summary="ModelOnly" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert"></div>
+
+            <table class="w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-lg border border-stone-200 bg-white text-left text-sm shadow-sm">
+                <thead class="bg-stone-50 text-xs font-medium uppercase tracking-wide text-stone-500">
+                    <tr>
+                        <th scope="col" class="w-2/5 px-3 py-2">@T["Catalog.StaffOverrides.StaffMember"]</th>
+                        <th scope="col" class="px-2 py-2">@T["Catalog.StaffOverrides.DurationMinutes"]</th>
+                        <th scope="col" class="px-2 py-2">@T["Catalog.StaffOverrides.Price"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.Rows.Count; i++)
+                    {
+                        var row = Model.Rows[i];
+                        <tr class="border-t border-stone-200 align-top" data-testid="override-row" data-staff="@row.StaffMemberId">
+                            <th scope="row" class="px-3 py-3 font-normal">
+                                <input type="hidden" asp-for="Rows[i].StaffMemberId" />
+                                <div class="flex min-h-11 items-start gap-3">
+                                    <input asp-for="Rows[i].Offers" type="checkbox" class="mt-0.5 size-5 shrink-0 rounded border-stone-300" data-testid="override-offers" aria-label="@T.Format("Catalog.StaffOverrides.OffersFor", row.DisplayName)" />
+                                    <label asp-for="Rows[i].Offers" class="space-y-0.5">
+                                        <span class="block font-medium text-stone-900">@row.DisplayName</span>
+                                        <span class="block text-xs text-stone-500">@T["Catalog.StaffOverrides.Offers"]</span>
+                                    </label>
+                                </div>
+                            </th>
+                            <td class="px-2 py-3">
+                                <label asp-for="Rows[i].DurationMinutes" class="sr-only">@T.Format("Catalog.StaffOverrides.DurationFor", row.DisplayName)</label>
+                                <input asp-for="Rows[i].DurationMinutes" type="number" inputmode="numeric" min="@ServiceRules.MinDurationMinutes" max="@ServiceRules.MaxDurationMinutes" step="@ServiceRules.StepMinutes" placeholder="@Model.DefaultDurationMinutes" class="@inputClass" data-testid="override-duration" />
+                                <span asp-validation-for="Rows[i].DurationMinutes" class="block pt-1 text-xs text-red-700"></span>
+                            </td>
+                            <td class="px-2 py-3">
+                                <label asp-for="Rows[i].Price" class="sr-only">@T.Format("Catalog.StaffOverrides.PriceFor", row.DisplayName)</label>
+                                <input asp-for="Rows[i].Price" type="text" inputmode="decimal" placeholder="@pricePlaceholder" class="@inputClass" data-testid="override-price" />
+                                <span asp-validation-for="Rows[i].Price" class="block pt-1 text-xs text-red-700"></span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+                <a href="/admin/services/@Model.ServiceId" class="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100">@T["Catalog.StaffOverrides.Cancel"]</a>
+                <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700">@T["Catalog.StaffOverrides.Submit"]</button>
+            </div>
+        </form>
+    }
+</section>

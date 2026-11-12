@@ -30,7 +30,7 @@ public class DemoSeederOverridesTests(SalonWebApplicationFactory factory) : IAsy
 
         var rows = await OverridesAsync(tenantId);
         rows.Count.ShouldBe(2);
-        rows.ShouldAllBe(o => o.TenantId == tenantId);
+        rows.ShouldAllBe(o => o.Row.TenantId == tenantId);
         var (anna, priya) = (rows.Single(o => o.Staff == "Anna Kowalska"), rows.Single(o => o.Staff == "Priya Shah"));
         anna.Service.ShouldBe("Cut & blow-dry");
         anna.Row.Offers.ShouldBeTrue();

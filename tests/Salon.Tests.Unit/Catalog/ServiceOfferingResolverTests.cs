@@ -60,7 +60,7 @@ public class ServiceOfferingResolverTests
         var other = new StaffServiceOverride { StaffMemberId = Tom, ServiceId = Cut.Id, Price = 30m };
 
         Should.Throw<ArgumentException>(() => ServiceOfferingResolver.Resolve(Cut, Anna, other));
-        Should.Throw<ArgumentException>(() => ServiceOfferingResolver.Resolve(Cut, Tom, other with { ServiceId = Guid.NewGuid() }));
+        Should.Throw<ArgumentException>(() => ServiceOfferingResolver.Resolve(Cut, Tom, new StaffServiceOverride { StaffMemberId = Tom, ServiceId = Guid.NewGuid(), Price = 30m }));
     }
 
     [Fact]

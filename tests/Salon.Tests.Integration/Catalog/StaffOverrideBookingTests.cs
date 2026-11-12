@@ -153,7 +153,7 @@ public partial class StaffOverrideBookingTests(SalonWebApplicationFactory factor
         var withOverride = await GetAsync(visitor, "/services");
         PriceTag(withOverride).ShouldBe("from £40.00");
         withOverride.ShouldContain("data-from=\"true\"");
-        withOverride.ShouldContain("45 min", "the default duration stays on the card");
+        withOverride.ShouldContain("45 min", Case.Sensitive, "the default duration stays on the card");
 
         // Tom stops offering it: only Anna is left, so her price is the price.
         await AddOverrideAsync(_studio.Id, _tomId, _cutId, null, null, offers: false);
