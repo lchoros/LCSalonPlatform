@@ -40,7 +40,7 @@ public class MergeClientsE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
         await page.WaitForURLAsync("**/admin/clients?q=Brown");
 
         // The demo client with history: one visit completed yesterday.
-        await page.GetByTestId("client-row").Filter(new LocatorFilterOptions { HasText = "James Brown" }).First.ClickAsync();
+        await page.GetByTestId("client-row").Filter(new LocatorFilterOptions { HasText = "James Brown" }).First.GetByRole(AriaRole.Link).First.ClickAsync(); // the link, not the row: unstyled pages (CI has no CSS) put the row centre outside it
         await page.WaitForURLAsync(url => url.Contains("/admin/clients/", StringComparison.Ordinal) && !url.Contains('?', StringComparison.Ordinal));
         var targetUrl = page.Url;
         (await page.GetByTestId("history").IsVisibleAsync()).ShouldBeTrue();
