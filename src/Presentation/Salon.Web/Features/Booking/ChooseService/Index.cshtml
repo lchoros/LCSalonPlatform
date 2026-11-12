@@ -10,29 +10,38 @@
         <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Booking.Public.ChooseService"]</h1>
         <p class="text-stone-600" data-testid="salon-name">@Model.SalonName</p>
     </header>
-    @if (Model.Services.Count == 0)
+    @if (Model.Groups.Count == 0)
     {
         <p data-testid="empty-state" class="rounded-md border border-dashed border-stone-300 p-6 text-center text-stone-600">@T["Booking.Public.NoServices"]</p>
     }
     else
     {
-        <ul class="grid gap-3 sm:grid-cols-2" data-testid="service-list">
-            @foreach (var service in Model.Services)
-            {
-                <li>
-                    <a href="/book/@service.Id" data-testid="book-service" class="flex min-h-14 flex-col gap-1 rounded-lg border border-stone-200 bg-white p-4 shadow-sm hover:border-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-900">
-                        <span class="flex items-start justify-between gap-3">
-                            <span class="text-lg font-semibold leading-snug">@service.Name</span>
-                            <span class="shrink-0 font-semibold tabular-nums">@service.Price.ToDisplayString(CultureInfo.CurrentCulture)</span>
-                        </span>
-                        @if (service.Description is { } description)
-                        {
-                            <span class="text-sm text-stone-600">@description</span>
-                        }
-                        <span class="text-sm text-stone-500">@T.Format("Booking.Public.DurationMinutes", (int)service.Duration.TotalMinutes)</span>
-                    </a>
-                </li>
-            }
-        </ul>
+        @foreach (var group in Model.Groups)
+        {
+            <section class="space-y-3" data-testid="service-group" data-category="@(group.CategoryName ?? string.Empty)">
+                @if (Model.ShowHeadings)
+                {
+                    <h2 class="text-lg font-semibold" data-testid="group-heading">@(group.CategoryName ?? T["Booking.Public.OtherServices"])</h2>
+                }
+                <ul class="grid gap-3 sm:grid-cols-2" data-testid="service-list">
+                    @foreach (var service in group.Services)
+                    {
+                        <li>
+                            <a href="/book/@service.Id" data-testid="book-service" class="flex min-h-14 flex-col gap-1 rounded-lg border border-stone-200 bg-white p-4 shadow-sm hover:border-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-900">
+                                <span class="flex items-start justify-between gap-3">
+                                    <span class="text-lg font-semibold leading-snug">@service.Name</span>
+                                    <span class="shrink-0 font-semibold tabular-nums">@service.Price.ToDisplayString(CultureInfo.CurrentCulture)</span>
+                                </span>
+                                @if (service.Description is { } description)
+                                {
+                                    <span class="text-sm text-stone-600">@description</span>
+                                }
+                                <span class="text-sm text-stone-500">@T.Format("Booking.Public.DurationMinutes", (int)service.Duration.TotalMinutes)</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
     }
 </section>

@@ -300,5 +300,6 @@
   "Booking.Public.Cancel.Done": "Twoja wizyta została odwołana.",
   "Booking.Public.Cancel.Invalid": "Ten link jest nieprawidłowy lub został już wykorzystany.",
   "Booking.Public.Cancel.Already": "Ta wizyta została już odwołana lub już się odbyła.",
-  "Booking.Public.Cancel.TooLate": "Ta wizyta już się rozpoczęła i nie można jej odwołać online. Zadzwoń do salonu."
+  "Booking.Public.Cancel.TooLate": "Ta wizyta już się rozpoczęła i nie można jej odwołać online. Zadzwoń do salonu.",
+  "Booking.Public.OtherServices": "Inne usługi"
 }
