@@ -40,7 +40,14 @@
                                 {
                                     <h2 class="text-lg font-semibold leading-snug">@service.Name</h2>
                                 }
-                                <span class="shrink-0 font-semibold tabular-nums" data-testid="service-price">@service.Price.ToDisplayString(CultureInfo.CurrentCulture)</span>
+                                @if (service.IsFromPrice)
+                                {
+                                    <span class="shrink-0 font-semibold tabular-nums" data-testid="service-price" data-from="true">@T.Format("Booking.ListServices.FromPrice", service.Price.ToDisplayString(CultureInfo.CurrentCulture))</span>
+                                }
+                                else
+                                {
+                                    <span class="shrink-0 font-semibold tabular-nums" data-testid="service-price">@service.Price.ToDisplayString(CultureInfo.CurrentCulture)</span>
+                                }
                             </div>
                             @if (service.Description is { } description)
                             {

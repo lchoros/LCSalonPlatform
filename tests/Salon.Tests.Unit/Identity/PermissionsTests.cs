@@ -7,13 +7,13 @@ namespace Salon.Tests.Unit.Identity;
 public class PermissionsTests
 {
     [Fact]
-    public void The_catalogue_holds_the_nine_names_once_each()
+    public void The_catalogue_holds_the_ten_names_once_each()
     {
-        Permissions.All.Count.ShouldBe(9);
-        Permissions.All.Distinct(StringComparer.Ordinal).Count().ShouldBe(9);
+        Permissions.All.Count.ShouldBe(10);
+        Permissions.All.Distinct(StringComparer.Ordinal).Count().ShouldBe(10);
         Permissions.All.ShouldBe(
         [
-            "Catalog.Manage", "Staff.Manage", "Bookings.Manage", "Clients.View", "Clients.Manage",
+            "Catalog.Manage", "Staff.Manage", "Bookings.Manage", "Clients.View", "Clients.Merge", "Clients.Manage",
             "Payments.Record", "Settings.Manage", "Templates.Manage", "Users.Manage",
         ], ignoreOrder: true);
     }
@@ -31,6 +31,7 @@ public class PermissionsTests
 
         manager.ShouldNotContain(Permissions.UsersManage);
         manager.ShouldNotContain(Permissions.SettingsManage);
+        manager.ShouldContain(Permissions.ClientsMerge);
         manager.ShouldBe(Permissions.All.Except([Permissions.UsersManage, Permissions.SettingsManage]), ignoreOrder: true);
     }
 

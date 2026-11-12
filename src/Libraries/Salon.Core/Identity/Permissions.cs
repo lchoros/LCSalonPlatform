@@ -13,6 +13,8 @@ public static class Permissions
 
     /// <summary>Bulk changes to the client list, such as importing a CSV (ADR 0019); Owner and Manager only.</summary>
     public const string ClientsManage = "Clients.Manage";
+    /// <summary>Merge a duplicate client card into another (ADR 0017): Owner and Manager only, it cannot be undone.</summary>
+    public const string ClientsMerge = "Clients.Merge";
     public const string PaymentsRecord = "Payments.Record";
     public const string SettingsManage = "Settings.Manage";
     public const string TemplatesManage = "Templates.Manage";
@@ -26,6 +28,7 @@ public static class Permissions
         BookingsManage,
         ClientsView,
         ClientsManage,
+        ClientsMerge,
         PaymentsRecord,
         SettingsManage,
         TemplatesManage,

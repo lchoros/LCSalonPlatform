@@ -7,6 +7,7 @@ using Salon.Core.Settings;
 using Salon.Core.Staff;
 using Salon.Core.Tenancy;
 using Salon.Data;
+using Salon.Services.Catalog;
 using Salon.Services.Settings;
 using Salon.Services.Tenancy;
 
@@ -17,9 +18,13 @@ internal sealed class AvailabilityService(
     ITenantContext tenantContext,
     ITenantLookup tenantLookup,
     ISettingService settingService,
+    IServiceOfferingResolver offerings,
     IClock clock) : IAvailabilityService
 {
-    public async Task<IReadOnlyList<Slot>> GetSlotsAsync(Guid serviceId, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<Slot>> GetSlotsAsync(Guid serviceId, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, CancellationToken cancellationToken = default)
+        => GetSlotsAsync(serviceId, staffMemberId, fromDate, toDate, null, cancellationToken);
+
+    public async Task<IReadOnlyList<Slot>> GetSlotsAsync(Guid serviceId, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, Guid? excludeAppointmentId, CancellationToken cancellationToken = default)
     {
         if (toDate < fromDate)
         {
@@ -41,6 +46,9 @@ internal sealed class AvailabilityService(
             .Select(s => s.Id)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
+        // Staff-specific durations; people who do not offer this service drop out here, also under "any staff" (ADR 0018).
+        var offered = await offerings.ResolveAsync(serviceId, staffIds, cancellationToken).ConfigureAwait(false);
+        staffIds = staffIds.Where(id => offered[id].Offers).ToList();
         if (staffIds.Count == 0)
         {
             return [];
@@ -58,8 +66,15 @@ internal sealed class AvailabilityService(
         var busyFrom = windowStart.Minus(buffer);
         var active = AppointmentStateMachine.Active.ToArray();
         var appointments = await db.Appointments.AsNoTracking()
-            .Where(a => staffIds.Contains(a.StaffMemberId) && active.Contains(a.Status) && a.Start < windowEnd && a.End > busyFrom)
+            .Where(a => staffIds.Contains(a.StaffMemberId) && active.Contains(a.Status) && a.Start < windowEnd && a.End > busyFrom && (excludeAppointmentId == null || a.Id != excludeAppointmentId))
             .Select(a => new { a.StaffMemberId, a.Start, a.End })
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        // Time off (ADR 0015) is busy time like an appointment: every entry whose local date span touches the window, one
+        // interval per day in the salon's zone. The pure calculator excludes busy intervals, so nothing else changes.
+        var timeOff = await db.StaffTimeOff.AsNoTracking()
+            .Where(t => staffIds.Contains(t.StaffMemberId) && t.FromDate <= toDate && t.ToDate >= fromDate)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -69,7 +84,10 @@ internal sealed class AvailabilityService(
                 hours.Where(h => h.StaffMemberId == id)
                     .GroupBy(h => h.Day)
                     .ToDictionary(g => g.Key, g => (IReadOnlyList<TimeRange>)g.Select(h => h.Range).OrderBy(r => r.Start).ToArray()),
-                appointments.Where(a => a.StaffMemberId == id).Select(a => new Interval(a.Start, a.End.Plus(buffer))).ToArray()))
+                appointments.Where(a => a.StaffMemberId == id).Select(a => new Interval(a.Start, a.End.Plus(buffer)))
+                    .Concat(timeOff.Where(t => t.StaffMemberId == id).SelectMany(t => StaffTimeOffRules.ToIntervals(t, zone)))
+                    .ToArray(),
+                offered[id].Duration))
             .ToArray();
 
         var request = new AvailabilityRequest(

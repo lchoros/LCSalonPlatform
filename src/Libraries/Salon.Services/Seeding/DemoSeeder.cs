@@ -74,6 +74,13 @@ public sealed class DemoSeeder(
             [new TimeRange(new LocalTime(9, 0), new LocalTime(15, 0))]),
     ];
 
+    /// <summary>Anna, the senior stylist, takes an hour and charges more for a cut; Priya, the nail technician, does not cut hair (ADR 0018).</summary>
+    private static readonly DemoOverride[] Overrides =
+    [
+        new("Anna Kowalska", "Cut & blow-dry", 60, 55m, Offers: true),
+        new("Priya Shah", "Cut & blow-dry", null, null, Offers: false),
+    ];
+
     /// <summary>Twelve regulars: UK numbers in E.164, a few with health notes and patch-test dates, two Polish names, eight with marketing consent.</summary>
     private static readonly DemoClient[] Clients =
     [
@@ -130,6 +137,11 @@ public sealed class DemoSeeder(
                         logger.LogInformation("Seeded {Count} demo categories into the existing tenant {Slug}", Categories.Length, Slug);
                     }
 
+                    if (await SeedStaffOverridesAsync(tenantDb, ct).ConfigureAwait(false))
+                    {
+                        logger.LogInformation("Seeded {Count} demo staff overrides into the existing tenant {Slug}", Overrides.Length, Slug);
+                    }
+
                     if (await SeedClientsAsync(provider, ct).ConfigureAwait(false))
                     {
                         logger.LogInformation("Seeded {Count} demo clients into the existing tenant {Slug}", Clients.Length, Slug);
@@ -179,6 +191,7 @@ public sealed class DemoSeeder(
             await db.SaveChangesAsync(ct).ConfigureAwait(false);
             await SeedCategoriesAsync(db, ct).ConfigureAwait(false);
             await SeedStaffAsync(db, ct).ConfigureAwait(false);
+            await SeedStaffOverridesAsync(db, ct).ConfigureAwait(false);
             await SeedUsersAsync(provider.GetRequiredService<IUserService>(), ct).ConfigureAwait(false);
             await SeedClientsAsync(provider, ct).ConfigureAwait(false);
             appointments = await SeedAppointmentsAsync(provider, ct).ConfigureAwait(false) ?? 0;
@@ -248,6 +261,47 @@ public sealed class DemoSeeder(
                     db.WorkingHours.Add(new WorkingHours { StaffMemberId = member.Id, Day = day, Start = range.Start, End = range.End, SortOrder = ++rangeOrder });
                 }
             }
+        }
+
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return true;
+    }
+
+    /// <summary>
+    /// Adds the two demo overrides (matched by staff and service name) when the salon in scope has no override at all and
+    /// both people and the service exist; returns false otherwise, so a salon that has set its own prices is never touched.
+    /// </summary>
+    private static async Task<bool> SeedStaffOverridesAsync(SalonDbContext db, CancellationToken cancellationToken)
+    {
+        if (await db.StaffServiceOverrides.AnyAsync(cancellationToken).ConfigureAwait(false))
+        {
+            return false;
+        }
+
+        var staff = await db.StaffMembers.AsNoTracking().ToDictionaryAsync(s => s.DisplayName, s => s.Id, StringComparer.Ordinal, cancellationToken).ConfigureAwait(false);
+        var services = await db.Services.AsNoTracking().ToDictionaryAsync(s => s.Name, s => s.Id, StringComparer.Ordinal, cancellationToken).ConfigureAwait(false);
+        var added = 0;
+        foreach (var demo in Overrides)
+        {
+            if (!staff.TryGetValue(demo.Staff, out var staffId) || !services.TryGetValue(demo.Service, out var serviceId))
+            {
+                continue;
+            }
+
+            db.StaffServiceOverrides.Add(new StaffServiceOverride
+            {
+                StaffMemberId = staffId,
+                ServiceId = serviceId,
+                Duration = demo.Minutes is { } minutes ? Duration.FromMinutes(minutes) : null,
+                Price = demo.Price,
+                Offers = demo.Offers,
+            });
+            added++;
+        }
+
+        if (added == 0)
+        {
+            return false;
         }
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -433,6 +487,10 @@ public sealed class DemoSeeder(
     private sealed record DemoService(string Name, string Description, int Minutes, decimal Price, string Category, int Buffer = 0, int Processing = 0, int ProcessingStartsAfter = 0);
 
     private sealed record DemoStaff(string Name, string Colour, IReadOnlyList<IsoDayOfWeek> Days, IReadOnlyList<TimeRange> Ranges);
+
+    /// <param name="Minutes">This person's duration for the service; null for the list duration.</param>
+    /// <param name="Price">This person's price; null for the list price.</param>
+    private sealed record DemoOverride(string Staff, string Service, int? Minutes, decimal? Price, bool Offers);
 
     /// <param name="HealthNotes">Plain text here, in source; stored encrypted by the client service.</param>
     private sealed record DemoClient(

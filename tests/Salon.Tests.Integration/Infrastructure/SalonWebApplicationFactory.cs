@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using NodaTime;
 
@@ -9,6 +10,7 @@ using Npgsql;
 
 using Respawn;
 
+using Salon.Core.Messaging;
 using Salon.Core.Tenancy;
 using Salon.Data;
 using Salon.Services.Caching;
@@ -41,6 +43,9 @@ public sealed class SalonWebApplicationFactory : WebApplicationFactory<Program>,
         Environment.SetEnvironmentVariable("Auth__LoginRateLimit__PermitLimit", "100000");
         // Slices behind a flag (CLAUDE.md Tier 1) are on in the test host; the flag-off path has its own test with in-memory configuration.
         Environment.SetEnvironmentVariable("Features__ClientImport", "true");
+        // Likewise for the public booking limits (ADR 0014); the per-phone limit is a domain rule and stays.
+        Environment.SetEnvironmentVariable("PublicBooking__SmsCodeRateLimit__PermitLimit", "100000");
+        Environment.SetEnvironmentVariable("PublicBooking__CodeVerifyRateLimit__PermitLimit", "100000");
     }
 
     public async Task InitializeAsync()
@@ -104,6 +109,16 @@ public sealed class SalonWebApplicationFactory : WebApplicationFactory<Program>,
 
         // Test-only events, consumers and request handlers (Events/OutboxProbe.cs) join the host's own registrations.
         var testAssembly = typeof(SalonWebApplicationFactory).Assembly;
-        builder.ConfigureServices(services => services.AddSalonEvents(testAssembly).AddSalonPipeline(testAssembly));
+        builder.ConfigureServices(services =>
+        {
+            services.AddSalonEvents(testAssembly).AddSalonPipeline(testAssembly);
+            // Tests read the SMS code and the confirmation text from memory instead of the log/Mailpit mirror (ADR 0014).
+            services.RemoveAll<ISmsSender>();
+            services.AddSingleton<RecordingSmsSender>();
+            services.AddSingleton<ISmsSender>(sp => sp.GetRequiredService<RecordingSmsSender>());
+        });
     }
+
+    /// <summary>Every SMS the host "sent" since the last <see cref="RecordingSmsSender.Clear"/>.</summary>
+    public RecordingSmsSender Sms => Services.GetRequiredService<RecordingSmsSender>();
 }

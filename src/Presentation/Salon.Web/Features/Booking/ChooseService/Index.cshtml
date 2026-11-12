@@ -1,0 +1,51 @@
+@using System.Globalization
+@using Salon.Web.Features.Booking.ChooseService
+@model ChooseServiceViewModel
+@{
+    ViewData["Title"] = T["Booking.Public.ChooseService"];
+}
+<section class="mx-auto max-w-2xl space-y-6">
+    <header class="space-y-3">
+        <p class="text-sm font-medium text-stone-600" data-testid="step">@T.Format("Booking.Public.Step", 1, 3)</p>
+        <div class="steps">
+            <span class="is-done"></span>
+            <span></span>
+            <span></span>
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Booking.Public.ChooseService"]</h1>
+    </header>
+    @if (Model.Groups.Count == 0)
+    {
+        <p data-testid="empty-state" class="rounded-xl border border-dashed border-stone-300 p-6 text-center text-stone-600">@T["Booking.Public.NoServices"]</p>
+    }
+    else
+    {
+        @foreach (var group in Model.Groups)
+        {
+            <section class="space-y-3" data-testid="service-group" data-category="@(group.CategoryName ?? string.Empty)">
+                @if (Model.ShowHeadings)
+                {
+                    <h2 class="text-lg font-semibold" data-testid="group-heading">@(group.CategoryName ?? T["Booking.Public.OtherServices"])</h2>
+                }
+                <ul class="grid gap-3 sm:grid-cols-2" data-testid="service-list">
+                    @foreach (var service in group.Services)
+                    {
+                        <li>
+                            <a href="/book/@service.Id" data-testid="book-service" class="choice-card">
+                                <span class="flex items-start justify-between gap-3">
+                                    <span class="text-lg font-semibold leading-snug">@service.Name</span>
+                                    <span class="shrink-0 text-lg font-semibold tabular-nums">@service.Price.ToDisplayString(CultureInfo.CurrentCulture)</span>
+                                </span>
+                                @if (service.Description is { } description)
+                                {
+                                    <span class="text-sm text-stone-600">@description</span>
+                                }
+                                <span class="text-sm text-stone-600">@T.Format("Booking.Public.DurationMinutes", (int)service.Duration.TotalMinutes)</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+    }
+</section>

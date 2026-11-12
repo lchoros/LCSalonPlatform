@@ -1,7 +1,7 @@
 namespace Salon.Core.Identity;
 
 /// <summary>
-/// Role → permissions, fixed in code for M0 (ADR 0009): Owner has everything; Manager everything but users and settings;
+/// Role → permissions, fixed in code for M0 (ADR 0009): Owner has everything; Manager everything but users and settings (so merging clients, ADR 0017, is theirs too);
 /// Receptionist books, sees clients and records payments; Staff only books.
 /// </summary>
 public static class RolePermissions

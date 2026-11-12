@@ -1,5 +1,7 @@
 using NodaTime;
 
+using Salon.Core.Appointments;
+
 namespace Salon.Services.Clients;
 
 /// <summary>
@@ -24,6 +26,12 @@ public interface IClientService
     /// </summary>
     Task<IReadOnlyList<ClientSummary>> SearchAsync(string? query, int take = 20, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// The client whose stored phone equals <paramref name="phone"/> once normalised with the salon's country (ADR 0011), or
+    /// null. The public booking flow (ADR 0014) uses it to recognise a returning client; an unusable number is null too.
+    /// </summary>
+    Task<ClientSummary?> FindByPhoneAsync(string? phone, CancellationToken cancellationToken = default);
+
     /// <summary>The full card including decrypted health notes; null when the id is not a client of the current tenant.</summary>
     Task<ClientCard?> GetCardAsync(Guid clientId, CancellationToken cancellationToken = default);
 
@@ -35,6 +43,25 @@ public interface IClientService
 
     /// <summary>Updates client details (name, phone, email, notes) ensuring uniqueness within the tenant.</summary>
     Task UpdateDetailsAsync(Guid clientId, string firstName, string lastName, string? phone, string? email, string? notes, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// The client's visits (ADR 0017): up to <paramref name="take"/> upcoming (active, starting from now, soonest first) and
+    /// up to <paramref name="take"/> past (everything else, newest first) with service and staff names resolved through the
+    /// tenant filter and starts in the salon's zone, plus counters over every visit. Null when the id is not a client of
+    /// the current tenant.
+    /// </summary>
+    Task<ClientHistory?> GetHistoryAsync(Guid clientId, int take = 20, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Merges the duplicate <paramref name="sourceId"/> into <paramref name="targetId"/> in one transaction (ADR 0017,
+    /// <see cref="Salon.Core.Clients.ClientMergeRules"/>): the source's appointments (and so their status history) move to
+    /// the target, notes are joined, health notes, patch test, phone and email of the target are kept and only filled from
+    /// the source where empty, consent is never gained, and the source becomes inactive with
+    /// <see cref="Salon.Core.Clients.Client.MergedIntoClientId"/> set and its contact details cleared (they are unique per
+    /// salon). Publishes <see cref="Salon.Core.Clients.Events.ClientsMerged"/>. An id the tenant does not own throws
+    /// <see cref="InvalidOperationException"/>; self-merge or an already merged card <see cref="ClientMergeRefusedException"/>.
+    /// </summary>
+    Task MergeAsync(Guid targetId, Guid sourceId, Guid? byUserId, CancellationToken cancellationToken = default);
 }
 
 /// <summary>What the create form collects. Text is trimmed and normalised by the service.</summary>
@@ -77,10 +104,39 @@ public sealed record ClientCard(
     string? MarketingConsentWording,
     bool IsActive,
     Instant CreatedAt,
-    Instant UpdatedAt)
+    Instant UpdatedAt,
+    Guid? MergedIntoClientId = null,
+    Instant? MergedAt = null)
 {
     public string FullName => $"{FirstName} {LastName}";
+
+    /// <summary>True once the card was merged into another (ADR 0017); the card then only points at the target.</summary>
+    public bool IsMerged => MergedIntoClientId is not null;
 
     /// <summary>Never prints the health notes.</summary>
     public override string ToString() => $"{nameof(ClientCard)} {{ Id = {Id} }}";
 }
+
+/// <summary>A client's visits (ADR 0017). Starts carry the salon's zone; the counters cover every appointment, not only the rows listed.</summary>
+/// <param name="Upcoming">Active visits from now on, soonest first.</param>
+/// <param name="Past">Everything else (completed, no-show, cancelled, or already started), newest first.</param>
+/// <param name="VisitsTotal">Every appointment row of the client, whatever its status.</param>
+/// <param name="LastVisitOn">The day of the most recent completed visit, in the salon's zone.</param>
+public sealed record ClientHistory(
+    IReadOnlyList<ClientVisit> Upcoming,
+    IReadOnlyList<ClientVisit> Past,
+    int VisitsTotal,
+    int VisitsCompleted,
+    int NoShows,
+    LocalDate? LastVisitOn);
+
+/// <summary>One row of the history: what, with whom, when (salon zone), how it ended and the price as booked.</summary>
+public sealed record ClientVisit(
+    Guid AppointmentId,
+    ZonedDateTime Start,
+    int DurationMinutes,
+    string ServiceName,
+    string StaffName,
+    AppointmentStatus Status,
+    decimal PriceAmount,
+    string Currency);

@@ -16,6 +16,7 @@ using Salon.Services.Clients;
 using Salon.Services.Events;
 using Salon.Services.Localization;
 using Salon.Services.Security;
+using Salon.Web.Framework.Booking;
 using Salon.Web.Framework.Mvc;
 using Salon.Web.Framework.Pipeline;
 using Salon.Web.Framework.Security;
@@ -69,6 +70,8 @@ public static class SalonFrameworkServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.AddSalonPipeline(sliceAssemblies);
         services.AddSalonEvents(sliceAssemblies);
+        // Public booking (ADR 0014): absolute links for SMS/email and the per-address limits on the code endpoints.
+        services.AddSalonPublicBooking();
 
         // Field encryption for client health notes (ADR 0011) rides on the Data Protection key ring that cookies and
         // anti-forgery already use, under its own purpose string; the client service needs it, so both register here.

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 
 using NodaTime;
 
+using Salon.Core.Appointments;
 using Salon.Core.Clients;
 using Salon.Core.Clients.Events;
 using Salon.Core.Events;
@@ -95,7 +96,8 @@ internal sealed class ClientService(
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(take);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(take, MaxSearchTake);
 
-        var clients = db.Clients.AsNoTracking();
+        // A card merged into another (ADR 0017) is a pointer, not a client the desk should pick.
+        var clients = db.Clients.AsNoTracking().Where(c => c.MergedIntoClientId == null);
         var trimmed = query?.Trim() ?? string.Empty;
         if (trimmed.Length > 0)
         {
@@ -108,6 +110,22 @@ internal sealed class ClientService(
             .Take(take)
             .Select(c => new ClientSummary(c.Id, c.FirstName, c.LastName, c.Phone, c.Email, c.IsActive))
             .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<ClientSummary?> FindByPhoneAsync(string? phone, CancellationToken cancellationToken = default)
+    {
+        var tenantId = tenantContext.TenantId ?? throw new TenantViolationException("Looking up a client requires a tenant in scope.");
+        var tenant = await tenantLookup.FindByIdAsync(tenantId, cancellationToken).ConfigureAwait(false);
+        if (!PhoneNumber.TryNormalise(phone, tenant?.Currency, out var normalised) || normalised is null)
+        {
+            return null;
+        }
+
+        return await db.Clients.AsNoTracking()
+            .Where(c => c.Phone == normalised)
+            .Select(c => new ClientSummary(c.Id, c.FirstName, c.LastName, c.Phone, c.Email, c.IsActive))
+            .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -143,7 +161,9 @@ internal sealed class ClientService(
             client.MarketingConsentWording,
             client.IsActive,
             client.CreatedAt,
-            client.UpdatedAt);
+            client.UpdatedAt,
+            client.MergedIntoClientId,
+            client.MergedAt);
     }
 
     public async Task UpdateHealthNotesAsync(Guid clientId, string? healthNotes, LocalDate? lastPatchTestOn, CancellationToken cancellationToken = default)
@@ -213,6 +233,141 @@ internal sealed class ClientService(
         client.MarketingConsentWording = recorded;
         client.UpdatedAt = now;
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<ClientHistory?> GetHistoryAsync(Guid clientId, int take = 20, CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(take);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(take, MaxSearchTake);
+
+        if (!await db.Clients.AsNoTracking().AnyAsync(c => c.Id == clientId, cancellationToken).ConfigureAwait(false))
+        {
+            return null;
+        }
+
+        var tenantId = tenantContext.TenantId ?? throw new TenantViolationException("Reading a client's history requires a tenant in scope.");
+        var tenant = await tenantLookup.FindByIdAsync(tenantId, cancellationToken).ConfigureAwait(false);
+        var zone = (tenant is null ? null : DateTimeZoneProviders.Tzdb.GetZoneOrNull(tenant.TimeZoneId)) ?? DateTimeZone.Utc;
+        var now = clock.GetCurrentInstant();
+
+        var visits = db.Appointments.AsNoTracking().Where(a => a.ClientId == clientId);
+        var upcoming = await ProjectVisitsAsync(
+            visits.Where(a => a.Start >= now && (a.Status == AppointmentStatus.Booked || a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Arrived))
+                .OrderBy(a => a.Start),
+            take, zone, cancellationToken).ConfigureAwait(false);
+        var past = await ProjectVisitsAsync(
+            visits.Where(a => a.Start < now || (a.Status != AppointmentStatus.Booked && a.Status != AppointmentStatus.Confirmed && a.Status != AppointmentStatus.Arrived))
+                .OrderByDescending(a => a.Start),
+            take, zone, cancellationToken).ConfigureAwait(false);
+
+        var counts = await visits
+            .GroupBy(a => a.Status)
+            .Select(g => new { Status = g.Key, Count = g.Count() })
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        var lastCompleted = await visits
+            .Where(a => a.Status == AppointmentStatus.Completed)
+            .Select(a => (Instant?)a.Start)
+            .MaxAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return new ClientHistory(
+            upcoming,
+            past,
+            counts.Sum(c => c.Count),
+            counts.Where(c => c.Status == AppointmentStatus.Completed).Sum(c => c.Count),
+            counts.Where(c => c.Status == AppointmentStatus.NoShow).Sum(c => c.Count),
+            lastCompleted?.InZone(zone).Date);
+    }
+
+    public async Task MergeAsync(Guid targetId, Guid sourceId, Guid? byUserId, CancellationToken cancellationToken = default)
+    {
+        var tenantId = tenantContext.TenantId ?? throw new TenantViolationException("Merging clients requires a tenant in scope.");
+        var target = await RequireAsync(targetId, cancellationToken).ConfigureAwait(false);
+        var source = targetId == sourceId ? target : await RequireAsync(sourceId, cancellationToken).ConfigureAwait(false);
+        if (ClientMergeRules.Refusal(target, source) is { } refusal)
+        {
+            throw new ClientMergeRefusedException(refusal);
+        }
+
+        // Joins the command's transaction when there is one (ADR 0003); otherwise the writes below share their own.
+        var transaction = db.Database.CurrentTransaction is null
+            ? await db.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false)
+            : null;
+        try
+        {
+            var now = clock.GetCurrentInstant();
+            var sourcePhone = source.Phone;
+            var sourceEmail = source.Email;
+
+            // The source goes first: phone and email are unique per salon, so they must be free before the target may take them.
+            source.Phone = null;
+            source.Email = null;
+            source.IsActive = false;
+            source.MergedIntoClientId = target.Id;
+            source.MergedAt = now;
+            source.UpdatedAt = now;
+            await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+            target.Notes = ClientMergeRules.UnionNotes(target.Notes, source.Notes);
+            target.HealthNotesProtected = ClientMergeRules.ChooseHealthNotes(target.HealthNotesProtected, source.HealthNotesProtected);
+            target.LastPatchTestOn = ClientMergeRules.ChoosePatchTest(target.LastPatchTestOn, source.LastPatchTestOn);
+            target.Phone = ClientMergeRules.ChooseContact(target.Phone, sourcePhone);
+            target.Email = ClientMergeRules.ChooseContact(target.Email, sourceEmail);
+            var consent = ClientMergeRules.ChooseConsent(
+                new ConsentState(target.MarketingConsent, target.MarketingConsentAt, target.MarketingConsentWording),
+                new ConsentState(source.MarketingConsent, source.MarketingConsentAt, source.MarketingConsentWording));
+            target.MarketingConsent = consent.Granted;
+            target.MarketingConsentAt = consent.At;
+            target.MarketingConsentWording = consent.Wording;
+            target.UpdatedAt = now;
+            await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+            // Status-change rows hang off the appointment, so they follow it.
+            var moved = await db.Appointments
+                .Where(a => a.ClientId == source.Id)
+                .ExecuteUpdateAsync(a => a.SetProperty(x => x.ClientId, target.Id), cancellationToken)
+                .ConfigureAwait(false);
+
+            await publisher.PublishAsync(new ClientsMerged(target.Id, source.Id, tenantId), cancellationToken).ConfigureAwait(false);
+            if (transaction is not null)
+            {
+                await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            // Ids only: who merged what, never names or contact details.
+            logger.LogInformation("Client {SourceId} merged into {TargetId} by user {UserId}; {Count} appointments moved", source.Id, target.Id, byUserId, moved);
+        }
+        finally
+        {
+            if (transaction is not null)
+            {
+                await transaction.DisposeAsync().ConfigureAwait(false);
+            }
+        }
+    }
+
+    private async Task<IReadOnlyList<ClientVisit>> ProjectVisitsAsync(IQueryable<Appointment> ordered, int take, DateTimeZone zone, CancellationToken cancellationToken)
+    {
+        // No navigations on Appointment (ADR 0012): two joins through the tenant filter resolve the names.
+        var rows = await ordered
+            .Take(take)
+            .Join(db.Services.AsNoTracking(), a => a.ServiceId, s => s.Id, (a, s) => new { Appointment = a, ServiceName = s.Name })
+            .Join(db.StaffMembers.AsNoTracking(), x => x.Appointment.StaffMemberId, m => m.Id, (x, m) => new
+            {
+                x.Appointment.Id,
+                x.Appointment.Start,
+                x.Appointment.DurationMinutes,
+                x.Appointment.Status,
+                x.Appointment.PriceAmount,
+                x.Appointment.Currency,
+                x.ServiceName,
+                StaffName = m.DisplayName,
+            })
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return rows.Select(r => new ClientVisit(r.Id, r.Start.InZone(zone), r.DurationMinutes, r.ServiceName, r.StaffName, r.Status, r.PriceAmount, r.Currency)).ToArray();
     }
 
     /// <summary>Digits with optional +, spaces, dashes, dots and parentheses, and at least a few digits to match on.</summary>

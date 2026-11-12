@@ -1,0 +1,199 @@
+@using System.Globalization
+@using NodaTime
+@using NodaTime.Text
+@using Salon.Core.Appointments
+@using Salon.Services.Appointments
+@using Salon.Web.Features.Appointments.Calendar
+@model CalendarViewModel
+@{
+    var board = Model.Board;
+    var grid = board.Grid;
+    var culture = CultureInfo.CurrentCulture;
+    var isWeek = board.View == CalendarView.Week;
+    var allStaffDay = !isWeek && board.SelectedStaffId is null;
+    var step = isWeek ? 7 : 1;
+    var isoDay = LocalDatePattern.Iso.Format(board.Day);
+    ViewData["Title"] = T["Appointments.Calendar.Title"];
+    const string buttonClass = "inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700";
+    const string navClass = "inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-stone-300 px-3 py-2 text-sm font-medium hover:bg-stone-100";
+    const string chipClass = "inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium";
+    const string chipOn = "border-stone-900 bg-stone-900 text-white";
+    const string chipOff = "border-stone-300 bg-white hover:bg-stone-100";
+    var rowsStyle = $"grid-template-rows: repeat({grid.RowCount}, 1rem)";
+}
+@functions {
+    static string Time(LocalTime time) => time.ToString("t", CultureInfo.CurrentCulture);
+
+    static string Iso(LocalDate day) => LocalDatePattern.Iso.Format(day);
+
+    static string Percent(int part, int whole) => (part * 100m / whole).ToString("0.##", CultureInfo.InvariantCulture);
+
+    /// <summary>Row placement, lane offset and the staff colour as a light fill with a solid edge.</summary>
+    static string BlockStyle(CalendarBlock block, string colour)
+        => $"grid-row: {block.Row} / span {block.Span}; grid-column: 1; margin-left: {Percent(block.Lane, block.Lanes)}%; width: {Percent(1, block.Lanes)}%; background-color: {colour}26; border-color: {colour}";
+
+    static string BadgeClass(AppointmentStatus status) => status switch
+    {
+        AppointmentStatus.Confirmed => "bg-blue-100 text-blue-900",
+        AppointmentStatus.Arrived => "bg-green-100 text-green-900",
+        _ => "bg-stone-100 text-stone-700",
+    };
+}
+<section class="space-y-4">
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+    }
+    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div class="space-y-2">
+            <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Appointments.Calendar.Title"]</h1>
+            <nav aria-label="@T["Appointments.Calendar.Title"]" class="flex items-center gap-2">
+                <a href="@CalendarController.Path(board.View, board.Day.PlusDays(-step), board.SelectedStaffId)" data-testid="prev" class="@navClass" aria-label="@T["Appointments.Calendar.Previous"]">&larr;</a>
+                @if (isWeek)
+                {
+                    <span data-testid="range" class="min-w-0 flex-1 text-center text-base font-medium sm:text-lg">
+                        <time datetime="@Iso(board.From)">@T.Format("Appointments.Calendar.WeekOf", board.From.ToString("d", culture))</time>
+                        <span class="text-stone-500">&ndash; <time datetime="@Iso(board.To)">@board.To.ToString("d", culture)</time></span>
+                    </span>
+                }
+                else
+                {
+                    <time datetime="@isoDay" data-testid="range" class="min-w-0 flex-1 text-center text-base font-medium sm:text-lg">@board.Day.ToString("D", culture)</time>
+                }
+                <a href="@CalendarController.Path(board.View, board.Day.PlusDays(step), board.SelectedStaffId)" data-testid="next" class="@navClass" aria-label="@T["Appointments.Calendar.Next"]">&rarr;</a>
+                <a href="@CalendarController.TodayPath(board.View, board.SelectedStaffId)" data-testid="today" class="@navClass">@T["Appointments.Calendar.Today"]</a>
+            </nav>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <nav aria-label="@T["Appointments.Calendar.ViewSwitch"]" class="inline-flex rounded-md border border-stone-300" data-testid="view-switch">
+                <a href="@CalendarController.Path(CalendarView.Day, board.Day, board.SelectedStaffId)" data-testid="view-day" aria-current="@(isWeek ? null : "page")" class="inline-flex min-h-11 items-center px-4 py-2 text-sm font-medium @(isWeek ? "hover:bg-stone-100" : "bg-stone-900 text-white") rounded-l-md">@T["Appointments.Calendar.Day"]</a>
+                <a href="@CalendarController.Path(CalendarView.Week, board.Day, board.SelectedStaffId)" data-testid="view-week" aria-current="@(isWeek ? "page" : null)" class="inline-flex min-h-11 items-center px-4 py-2 text-sm font-medium @(isWeek ? "bg-stone-900 text-white" : "hover:bg-stone-100") rounded-r-md">@T["Appointments.Calendar.Week"]</a>
+            </nav>
+            <a href="@(CalendarController.DayListPath)?date=@isoDay" data-testid="day-list" class="@navClass">@T["Appointments.Calendar.DayList"]</a>
+            <a href="@(CalendarController.DayListPath)/new?date=@isoDay@(board.SelectedStaffId is { } bookStaff ? $"&staffId={bookStaff}" : string.Empty)" data-testid="book" class="@buttonClass">@T["Appointments.Calendar.Book"]</a>
+        </div>
+    </header>
+
+    @if (board.Staff.Count == 0)
+    {
+        <p data-testid="empty-state" class="rounded-md border border-dashed border-stone-300 p-6 text-center text-stone-600">@T["Appointments.Calendar.NoStaff"]</p>
+    }
+    else
+    {
+        <nav aria-label="@T["Appointments.Calendar.StaffFilter"]" class="flex flex-wrap gap-2" data-testid="staff-chips">
+            @if (!isWeek)
+            {
+                <a href="@CalendarController.Path(board.View, board.Day, null)" data-testid="staff-chip-all" aria-current="@(allStaffDay ? "page" : null)" class="@chipClass @(allStaffDay ? chipOn : chipOff)">@T["Appointments.Calendar.All"]</a>
+            }
+            @foreach (var person in board.Staff)
+            {
+                var on = person.Id == board.SelectedStaffId;
+                <a href="@CalendarController.Path(board.View, board.Day, person.Id)" data-testid="staff-chip" data-staff-id="@person.Id" aria-current="@(on ? "page" : null)" class="@chipClass @(on ? chipOn : chipOff)">
+                    <span class="size-3 shrink-0 rounded-full" style="background-color: @person.Colour" aria-hidden="true"></span>
+                    @person.DisplayName
+                </a>
+            }
+        </nav>
+
+        @* The timetable. Week view scrolls sideways inside this box only; the day view with every person is replaced by a list on a phone. *@
+        <div data-testid="calendar-grid" data-view="@CalendarController.ViewSegment(board.View)" class="rounded-lg border border-stone-200 bg-white shadow-sm @(isWeek ? "overflow-x-auto" : string.Empty) @(allStaffDay ? "hidden sm:block" : string.Empty)">
+            <div class="flex @(isWeek ? "min-w-[42rem]" : string.Empty)">
+                <div class="w-12 shrink-0 border-r border-stone-200" aria-hidden="true">
+                    <div class="h-10 border-b border-stone-200"></div>
+                    <div class="grid" style="@rowsStyle">
+                        @for (var row = 1; row <= grid.RowCount; row++)
+                        {
+                            var minute = CalendarLayout.MinuteOfRow(grid, row);
+                            if (minute % 60 == 0)
+                            {
+                                <div class="relative" style="grid-row: @row">
+                                    <span class="absolute -top-2 right-1 text-xs tabular-nums text-stone-500">@Time(LocalTime.FromMinutesSinceMidnight(minute))</span>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+                <div class="grid min-w-0 flex-1" style="grid-template-columns: repeat(@board.Columns.Count, minmax(0, 1fr))">
+                    @foreach (var column in board.Columns)
+                    {
+                        <div class="min-w-0 border-l border-stone-200 first:border-l-0" data-testid="calendar-column" data-staff-id="@column.Staff.Id" data-date="@Iso(column.Date)">
+                            <div class="flex h-10 items-center gap-2 overflow-hidden border-b border-stone-200 px-2 text-sm font-semibold">
+                                @if (isWeek)
+                                {
+                                    <a href="@CalendarController.Path(CalendarView.Day, column.Date, column.Staff.Id)" class="truncate hover:underline" aria-current="@(column.Date == board.Day ? "date" : null)">
+                                        <time datetime="@Iso(column.Date)">@column.Date.ToString("ddd d MMM", culture)</time>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="size-3 shrink-0 rounded-full" style="background-color: @column.Staff.Colour" aria-hidden="true"></span>
+                                    <a href="@CalendarController.Path(CalendarView.Day, column.Date, column.Staff.Id)" class="truncate hover:underline" data-testid="column-staff">@column.Staff.DisplayName</a>
+                                }
+                            </div>
+                            <div class="grid" style="@rowsStyle">
+                                @for (var row = 1; row <= grid.RowCount; row++)
+                                {
+                                    var minute = CalendarLayout.MinuteOfRow(grid, row);
+                                    var working = CalendarLayout.IsWorking(column.WorkingRanges, minute);
+                                    <div class="col-start-1 border-t @(minute % 60 == 0 ? "border-stone-200" : "border-stone-100") @(working ? "bg-white" : "bg-stone-100")" style="grid-row: @row" data-working="@(working ? "true" : "false")" aria-hidden="true"></div>
+                                }
+                                @foreach (var block in column.Blocks)
+                                {
+                                    <a href="@CalendarController.CardPath(block.Id)"
+                                       data-testid="calendar-block"
+                                       data-appointment-id="@block.Id"
+                                       data-staff-id="@column.Staff.Id"
+                                       data-status="@block.Status"
+                                       class="relative z-10 flex min-w-0 flex-col overflow-hidden rounded border-l-4 px-1 py-0.5 text-[11px] leading-tight text-stone-900 hover:ring-2 hover:ring-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900"
+                                       style="@BlockStyle(block, column.Staff.Colour)"
+                                       title="@Time(block.Start)–@Time(block.End) @block.ClientFirstName · @block.ServiceName">
+                                        <span class="truncate"><span class="font-semibold tabular-nums">@Time(block.Start)</span> @block.ClientFirstName</span>
+                                        <span class="truncate">@block.ServiceName</span>
+                                        <span class="mt-auto self-start rounded px-1 text-[10px] font-medium @BadgeClass(block.Status)" data-testid="status-badge">@T[$"Appointments.Status.{block.Status}"]</span>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @if (allStaffDay)
+        {
+            <div class="space-y-4 sm:hidden" data-testid="calendar-list">
+                @foreach (var column in board.Columns)
+                {
+                    <section class="space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" data-testid="calendar-list-staff" data-staff-id="@column.Staff.Id">
+                        <h2 class="flex items-center gap-2 text-lg font-semibold">
+                            <span class="size-3 shrink-0 rounded-full" style="background-color: @column.Staff.Colour" aria-hidden="true"></span>
+                            <a href="@CalendarController.Path(CalendarView.Day, column.Date, column.Staff.Id)" class="hover:underline">@column.Staff.DisplayName</a>
+                        </h2>
+                        @if (column.Blocks.Count == 0)
+                        {
+                            <p class="text-sm italic text-stone-500">@T["Appointments.Calendar.Empty"]</p>
+                        }
+                        else
+                        {
+                            <ul class="divide-y divide-stone-200">
+                                @foreach (var block in column.Blocks)
+                                {
+                                    <li>
+                                        <a href="@CalendarController.CardPath(block.Id)" data-testid="calendar-list-item" data-status="@block.Status" class="flex min-h-11 items-center gap-3 py-2">
+                                            <span class="w-24 shrink-0 font-semibold tabular-nums">@Time(block.Start)–@Time(block.End)</span>
+                                            <span class="min-w-0 flex-1">
+                                                <span class="block truncate">@block.ClientFirstName</span>
+                                                <span class="block truncate text-sm text-stone-600">@block.ServiceName</span>
+                                            </span>
+                                            <span class="rounded px-1.5 py-0.5 text-xs font-medium @BadgeClass(block.Status)">@T[$"Appointments.Status.{block.Status}"]</span>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </section>
+                }
+            </div>
+        }
+    }
+</section>

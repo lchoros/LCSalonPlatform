@@ -20,4 +20,13 @@ public sealed class TenancyOptions
     /// so only change this together with a custom claims factory.
     /// </summary>
     public string TenantClaimType { get; set; } = UserClaimTypes.TenantId;
+
+    /// <summary>
+    /// Scheme of links in SMS and email (ADR 0014): <c>https</c> unless set. Null means "https, or http in Development";
+    /// production never sets it to http.
+    /// </summary>
+    public string? PublicScheme { get; set; }
+
+    /// <summary>Port of those links when the host is not on the scheme's default port (a local Kestrel on 5227); null omits it.</summary>
+    public int? PublicPort { get; set; }
 }
