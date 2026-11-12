@@ -34,6 +34,7 @@ internal sealed class PublicUrlBuilder(IOptions<TenancyOptions> options, IHostEn
             builder.Port = port;
         }
 
-        return builder.Uri.ToString();
+        // AbsoluteUri keeps the path escaped; ToString() would unescape it.
+        return builder.Uri.AbsoluteUri;
     }
 }

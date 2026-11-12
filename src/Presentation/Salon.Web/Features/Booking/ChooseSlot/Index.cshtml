@@ -9,7 +9,8 @@
     ViewData["Title"] = T["Booking.Public.ChooseTime"];
     const string pillOn = "inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white";
     const string pillOff = "inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100";
-    const string pillDim = "inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-dashed border-stone-200 bg-white px-4 py-2 text-sm text-stone-400 hover:bg-stone-50";
+    // Days without free times stay tappable but muted; stone-600 keeps WCAG AA contrast on white (axe color-contrast).
+    const string pillDim = "inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-dashed border-stone-300 bg-white px-4 py-2 text-sm text-stone-600 hover:bg-stone-50";
     var staffQuery = r.SelectedStaffId is { } sid ? $"&staff={sid}" : string.Empty;
     var hasAnySlot = r.Days.Any(d => d.HasSlots);
 }
