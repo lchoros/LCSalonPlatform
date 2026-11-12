@@ -1,0 +1,124 @@
+@using System.Globalization
+@using NodaTime
+@using NodaTime.Text
+@using Salon.Core.Appointments
+@using Salon.Web.Features.Appointments.Calendar
+@model AppointmentCardViewModel
+@{
+    var card = Model.Card;
+    var culture = CultureInfo.CurrentCulture;
+    var moveDay = LocalDatePattern.Iso.Format(card.MoveDate);
+    ViewData["Title"] = T["Appointments.Calendar.Card.Title"];
+    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 bg-white px-3 py-2 text-base shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
+    const string secondaryClass = "inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100";
+    const string actionClass = "inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium hover:bg-stone-100";
+    const string cardClass = "space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm";
+}
+@functions {
+    static string Time(LocalTime time) => time.ToString("t", CultureInfo.CurrentCulture);
+
+    static string BadgeClass(AppointmentStatus status) => status switch
+    {
+        AppointmentStatus.Confirmed => "bg-blue-100 text-blue-900",
+        AppointmentStatus.Arrived => "bg-green-100 text-green-900",
+        AppointmentStatus.Completed => "bg-stone-200 text-stone-800",
+        AppointmentStatus.NoShow or AppointmentStatus.CancelledByClient or AppointmentStatus.CancelledBySalon => "bg-red-100 text-red-900",
+        _ => "bg-stone-100 text-stone-700",
+    };
+}
+<section class="mx-auto max-w-lg space-y-6">
+    <a href="@CalendarController.Path(CalendarView.Day, card.Day, card.StaffMemberId)" data-testid="back" class="inline-flex min-h-11 items-center text-sm font-medium text-stone-700 hover:underline">&larr; @T["Appointments.Calendar.Back"]</a>
+    <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Appointments.Calendar.Card.Title"]</h1>
+    @if (Model.Error is { } error)
+    {
+        <p role="alert" data-testid="error" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">@error</p>
+    }
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert" data-testid="validation-summary"></div>
+    }
+
+    <section class="@cardClass border-l-4" style="border-left-color: @card.Colour" data-testid="appointment-card" data-status="@card.Status">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-lg font-semibold" data-testid="card-client">@card.ClientName</h2>
+            <span class="rounded px-1.5 py-0.5 text-xs font-medium @BadgeClass(card.Status)" data-testid="status-badge">@T[$"Appointments.Status.{card.Status}"]</span>
+        </div>
+        <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-base">
+            <dt class="text-sm text-stone-600">@T["Appointments.Calendar.Card.When"]</dt>
+            <dd data-testid="card-when"><time datetime="@LocalDatePattern.Iso.Format(card.Day)">@card.Day.ToString("D", culture)</time>, <span class="tabular-nums">@Time(card.Start)–@Time(card.End)</span></dd>
+            <dt class="text-sm text-stone-600">@T["Appointments.Calendar.Card.Service"]</dt>
+            <dd data-testid="card-service">@card.ServiceName</dd>
+            <dt class="text-sm text-stone-600">@T["Appointments.Calendar.Card.Staff"]</dt>
+            <dd data-testid="card-staff" class="flex items-center gap-2">
+                <span class="size-3 shrink-0 rounded-full" style="background-color: @card.Colour" aria-hidden="true"></span>
+                @card.StaffName
+            </dd>
+            <dt class="text-sm text-stone-600">@T["Appointments.Calendar.Card.Price"]</dt>
+            <dd data-testid="card-price" class="tabular-nums">@card.Price.ToDisplayString(culture)</dd>
+            @if (card.Notes is { Length: > 0 } notes)
+            {
+                <dt class="text-sm text-stone-600">@T["Appointments.Calendar.Card.Notes"]</dt>
+                <dd data-testid="card-notes" class="whitespace-pre-line">@notes</dd>
+            }
+        </dl>
+        @if (card.Actions.Count > 0)
+        {
+            <div class="space-y-2 border-t border-stone-200 pt-3">
+                <h3 class="text-sm font-medium text-stone-600">@T["Appointments.Calendar.Card.Actions"]</h3>
+                <div class="flex flex-wrap gap-2" data-testid="card-actions">
+                    @foreach (var action in card.Actions)
+                    {
+                        <form method="post" action="@(CalendarController.DayListPath)/@card.Id/@action.Segment" asp-antiforgery="true" data-testid="action-@action.Segment">
+                            <button type="submit" class="@actionClass">@T[action.LabelKey]</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        }
+    </section>
+
+    @if (card.IsActive)
+    {
+        <section class="@cardClass" data-testid="move-step">
+            <h2 class="text-lg font-semibold">@T["Appointments.Calendar.Move.Title"]</h2>
+            <p class="text-sm text-stone-600">@T["Appointments.Calendar.Move.Hint"]</p>
+            <form method="get" action="@CalendarController.CardPath(card.Id)" class="space-y-3" data-testid="move-form">
+                <div class="space-y-1">
+                    <label for="staffId" class="block text-sm font-medium">@T["Appointments.Calendar.Move.Staff"]</label>
+                    <select id="staffId" name="staffId" data-testid="move-staff" class="@inputClass">
+                        @foreach (var person in card.Staff)
+                        {
+                            <option value="@person.Id" selected="@(person.Id == card.MoveStaffId)">@person.DisplayName</option>
+                        }
+                    </select>
+                </div>
+                <div class="space-y-1">
+                    <label for="date" class="block text-sm font-medium">@T["Appointments.Calendar.Move.Date"]</label>
+                    <input id="date" name="date" type="date" value="@moveDay" data-testid="move-date" class="@inputClass" />
+                </div>
+                <button type="submit" data-testid="move-show-slots" class="@secondaryClass w-full sm:w-auto">@T["Appointments.Calendar.Move.ShowSlots"]</button>
+            </form>
+            <h3 class="text-base font-semibold">@T["Appointments.Calendar.Move.Slots"]</h3>
+            @if (card.Slots.Count == 0)
+            {
+                <p class="text-sm text-stone-600" data-testid="move-no-slots">@T["Appointments.Calendar.Move.NoSlots"]</p>
+            }
+            else
+            {
+                <ul class="grid grid-cols-3 gap-2 sm:grid-cols-4" data-testid="move-slot-list">
+                    @foreach (var slot in card.Slots)
+                    {
+                        <li>
+                            <form method="post" action="@(CalendarController.CalendarPath)/@card.Id/move" asp-antiforgery="true">
+                                <input type="hidden" name="staffMemberId" value="@card.MoveStaffId" />
+                                <input type="hidden" name="start" value="@InstantPattern.ExtendedIso.Format(slot.Start)" />
+                                <input type="hidden" name="date" value="@moveDay" />
+                                <button type="submit" data-testid="move-slot" class="flex min-h-11 w-full items-center justify-center rounded-md border border-stone-300 px-2 py-2 text-base font-semibold tabular-nums hover:bg-stone-100">@Time(slot.LocalStart)</button>
+                            </form>
+                        </li>
+                    }
+                </ul>
+            }
+        </section>
+    }
+</section>
