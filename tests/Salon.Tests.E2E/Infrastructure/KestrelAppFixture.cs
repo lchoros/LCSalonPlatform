@@ -119,8 +119,8 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
 
     /// <summary>
     /// Replaces the salon's staff with the three demo people and their rota (ADR 0010) through the real DemoSeeder, which
-    /// only adds staff to a salon that has none; the salon must be the demo slug. Safe to call repeatedly. Appointments go
-    /// with the staff (they hold them); the seeder then adds demo clients and appointments when the salon has none.
+    /// only adds staff, clients and appointments to a salon that has none of each; the salon must be the demo slug. Safe to
+    /// call repeatedly: appointments, staff and clients left by an earlier run go first, so the demo data is the same every time.
     /// </summary>
     public async Task EnsureDemoStaffAsync(Guid tenantId)
     {
@@ -130,6 +130,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
             var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
             db.Appointments.RemoveRange(await db.Appointments.ToListAsync());
             db.StaffMembers.RemoveRange(await db.StaffMembers.ToListAsync());
+            db.Clients.RemoveRange(await db.Clients.ToListAsync());
             await db.SaveChangesAsync();
         }
 
