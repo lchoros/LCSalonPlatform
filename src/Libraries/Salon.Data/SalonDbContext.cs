@@ -32,6 +32,8 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
 
     public DbSet<Service> Services => Set<Service>();
 
+    /// <summary>Headings the salon groups its services under (ADR 0013).</summary>
+    public DbSet<ServiceCategory> ServiceCategories => Set<ServiceCategory>();
     /// <summary>Client cards (ADR 0011). Health notes are cipher text here; decrypt only through the client service.</summary>
     public DbSet<Client> Clients => Set<Client>();
 

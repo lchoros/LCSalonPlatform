@@ -26,6 +26,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$BuildProjects = @($BuildProjects | ForEach-Object { $_ -split ',' } | Where-Object { $_ })
 if (-not $WorkDir) { $WorkDir = Join-Path ([IO.Path]::GetTempPath()) ("ollama-loop-" + [guid]::NewGuid().ToString('N').Substring(0, 8)) }
 New-Item -ItemType Directory -Force -Path $WorkDir | Out-Null
 $system = Get-Content -Raw $SystemFile
