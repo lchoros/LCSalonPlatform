@@ -36,7 +36,12 @@ public class CsvRoundTripPropertyTests
 
             var document = CsvReader.Read(text);
 
-            document.Separator.ShouldBe(separator);
+            if (width > 1)
+            {
+                // A single column has no separator in its header; the reader then defaults to a comma, which is fine.
+                document.Separator.ShouldBe(separator);
+            }
+
             document.Header.ShouldBe(header);
             document.Records.Count.ShouldBe(rows.Length);
             for (var i = 0; i < rows.Length; i++)
@@ -73,31 +78,45 @@ public class CsvRoundTripPropertyTests
             var parsed = new BooksyCsvParser().Parse(document.Header, document.Records);
 
             parsed.Count.ShouldBe(rows.Length);
+            var previousSourceRow = 1;
             for (var i = 0; i < rows.Length; i++)
             {
-                parsed[i].ShouldBe(rows[i] with { SourceRow = parsed[i].SourceRow }, $"row {i}");
-                parsed[i].Problems.ShouldBeEmpty();
+                var expected = rows[i];
+                var actual = parsed[i];
+                // Notes may hold line breaks, so a record can span lines; the line numbers still only go up.
+                actual.SourceRow.ShouldBeGreaterThan(previousSourceRow, $"row {i}");
+                previousSourceRow = actual.SourceRow;
+                actual.FirstName.ShouldBe(expected.FirstName, $"row {i}");
+                actual.LastName.ShouldBe(expected.LastName, $"row {i}");
+                actual.Phone.ShouldBe(expected.Phone, $"row {i}");
+                actual.Email.ShouldBe(expected.Email, $"row {i}");
+                actual.Notes.ShouldBe(expected.Notes, $"row {i}");
+                actual.MarketingConsent.ShouldBe(expected.MarketingConsent, $"row {i}");
+                actual.Problems.ShouldBeEmpty($"row {i}");
             }
         });
     }
 
-    /// <summary>RFC 4180 writer: quotes a field that holds the separator, a quote, a line break or edge whitespace, and every empty field.</summary>
+    /// <summary>
+    /// RFC 4180 writer: quotes a field that holds any candidate separator (so a one-column file stays unambiguous), a quote,
+    /// a line break or edge whitespace, and every empty field. Quoting more than strictly needed is still RFC 4180.
+    /// </summary>
     private static string Write(char separator, string[] header, string[][] rows)
     {
         var builder = new StringBuilder();
         builder.Append(string.Join(separator, header)).Append("\r\n");
         foreach (var row in rows)
         {
-            builder.Append(string.Join(separator, row.Select(f => Quote(f, separator)))).Append("\r\n");
+            builder.Append(string.Join(separator, row.Select(Quote))).Append("\r\n");
         }
 
         return builder.ToString();
     }
 
-    private static string Quote(string field, char separator)
+    private static string Quote(string field)
     {
         var needsQuotes = field.Length == 0
-            || field.Contains(separator, StringComparison.Ordinal)
+            || field.IndexOfAny(Separators) >= 0
             || field.Contains('"', StringComparison.Ordinal)
             || field.Contains('\r', StringComparison.Ordinal)
             || field.Contains('\n', StringComparison.Ordinal)
