@@ -29,6 +29,9 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
 
     public DbSet<Service> Services => Set<Service>();
 
+    /// <summary>Headings the salon groups its services under (ADR 0013).</summary>
+    public DbSet<ServiceCategory> ServiceCategories => Set<ServiceCategory>();
+
     public DbSet<Setting> Settings => Set<Setting>();
 
     public DbSet<User> Users => Set<User>();

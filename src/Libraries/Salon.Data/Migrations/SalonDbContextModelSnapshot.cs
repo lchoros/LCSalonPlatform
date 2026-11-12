@@ -31,6 +31,14 @@ namespace Salon.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<int>("BufferAfterMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("buffer_after_minutes");
+
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
+
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasMaxLength(3)
@@ -61,6 +69,14 @@ namespace Salon.Data.Migrations
                         .HasColumnType("numeric(12,2)")
                         .HasColumnName("price");
 
+                    b.Property<int>("ProcessingMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("processing_minutes");
+
+                    b.Property<int>("ProcessingStartsAfterMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("processing_starts_after_minutes");
+
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer")
                         .HasColumnName("sort_order");
@@ -72,6 +88,9 @@ namespace Salon.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_services");
 
+                    b.HasIndex("CategoryId")
+                        .HasDatabaseName("ix_services_category_id");
+
                     b.HasIndex("TenantId")
                         .HasDatabaseName("ix_services_tenant_id");
 
@@ -80,6 +99,47 @@ namespace Salon.Data.Migrations
                         .HasDatabaseName("ix_services_tenant_id_name");
 
                     b.ToTable("services", "salon");
+                });
+
+            modelBuilder.Entity("Salon.Core.Catalog.ServiceCategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_categories");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_service_categories_tenant_id");
+
+                    b.HasIndex("TenantId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_service_categories_tenant_id_name");
+
+                    b.HasIndex("TenantId", "SortOrder")
+                        .HasDatabaseName("ix_service_categories_tenant_id_sort_order");
+
+                    b.ToTable("service_categories", "salon");
                 });
 
             modelBuilder.Entity("Salon.Core.Events.OutboxMessage", b =>
@@ -481,12 +541,28 @@ namespace Salon.Data.Migrations
 
             modelBuilder.Entity("Salon.Core.Catalog.Service", b =>
                 {
+                    b.HasOne("Salon.Core.Catalog.ServiceCategory", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_services_service_categories_category_id");
+
                     b.HasOne("Salon.Core.Tenancy.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_services_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Catalog.ServiceCategory", b =>
+                {
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_categories_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Identity.User", b =>
