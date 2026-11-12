@@ -18,7 +18,7 @@ Gate: a test client books on a phone in under 60 seconds.
 - [ ] Catalog: categories, services, staff-specific price/duration, processing time, buffers
 - [~] Staff: working hours, exceptions, breaks, roles — done: `StaffMember` + `WorkingHours` (ADR 0010), `Staff/ListStaff`, `Staff/CreateStaff`, `Staff/EditWorkingHours` under `/admin/staff` behind `Staff.Manage`, admin nav, demo staff (`agent/m1-01-staff`); remaining: exceptions/time off, breaks, roles, edit/deactivate staff
 - [ ] Availability engine + exclusion constraint + property tests
-- [ ] Public booking page (service → staff/any → slot → SMS code → confirm)
+- [~] Public booking page (service → staff/any → slot → SMS code → confirm) — `agent/m1-08-public-booking` (ADR 0014): `/book` → `/book/{serviceId}` (date strip, "anyone"/person, slots) → details → SMS code (`PhoneVerification`, hashed, 5 attempts, 10 min) → `/book/done/{id}` with cancel link (`Appointment.PublicToken`), `/book/cancel/{token}`; confirmation SMS consumer, `IPublicUrlBuilder`, `Booking.Code` template, per-phone and per-address limits; mobile E2E timed under 60 s; remaining: prefill for returning clients, verification retention clean-up
 - [ ] Admin calendar (FullCalendar day/week, drag to move, block time) with live updates
 - [ ] Clients: card, history, notes, allergies, patch test, merge duplicates
 - [ ] Appointment state machine + history + events

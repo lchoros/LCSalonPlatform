@@ -13,7 +13,11 @@ public static class MessageTemplateCatalog
     public const string BookingReminder = "Booking.Reminder";
     public const string BookingCancelled = "Booking.Cancelled";
 
+    /// <summary>The SMS verification code sent before an online booking (ADR 0014). SMS only.</summary>
+    public const string BookingCode = "Booking.Code";
+
     private static readonly MessageChannel[] SmsAndEmail = [MessageChannel.Sms, MessageChannel.Email];
+    private static readonly MessageChannel[] SmsOnly = [MessageChannel.Sms];
 
     private static readonly string[] BookingTokens = ["SalonName", "ClientFirstName", "ServiceName", "StaffName", "AppointmentStart"];
 
@@ -22,6 +26,7 @@ public static class MessageTemplateCatalog
         new(BookingConfirmation, SmsAndEmail, [.. BookingTokens, "CancelUrl"]),
         new(BookingReminder, SmsAndEmail, [.. BookingTokens, "CancelUrl"]),
         new(BookingCancelled, SmsAndEmail, [.. BookingTokens, "BookingUrl"]),
+        new(BookingCode, SmsOnly, ["SalonName", "Code"]),
     }.ToDictionary(d => d.Key, StringComparer.Ordinal);
 
     public static IReadOnlyList<MessageTemplateDefinition> All { get; } = [.. Definitions.Values];

@@ -4,6 +4,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 
 using Salon.Core.Appointments;
+using Salon.Core.Booking;
 using Salon.Core.Catalog;
 using Salon.Core.Clients;
 using Salon.Core.Events;
@@ -49,6 +50,9 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
 
     /// <summary>One row per status transition of an appointment (ADR 0012).</summary>
     public DbSet<AppointmentStatusChange> AppointmentStatusChanges => Set<AppointmentStatusChange>();
+
+    /// <summary>SMS codes sent to clients booking online, each carrying its pending booking (ADR 0014).</summary>
+    public DbSet<PhoneVerification> PhoneVerifications => Set<PhoneVerification>();
 
     /// <summary>Per-tenant overrides of the embedded message template defaults (ADR 0008).</summary>
     public DbSet<MessageTemplate> MessageTemplates => Set<MessageTemplate>();

@@ -18,6 +18,7 @@ public class Appointment : BaseEntity, ITenantEntity
     public const int NotesMaxLength = 2000;
     public const int CancellationReasonMaxLength = 500;
     public const int CurrencyLength = 3;
+    public const int PublicTokenMaxLength = 64;
 
     public Guid TenantId { get; set; }
 
@@ -60,6 +61,12 @@ public class Appointment : BaseEntity, ITenantEntity
     public Instant? CancelledAt { get; set; }
 
     public string? CancellationReason { get; set; }
+
+    /// <summary>
+    /// Secret of the client's cancel link (ADR 0014, <see cref="Booking.PublicBookingToken"/>); set for online bookings,
+    /// null for appointments the salon made in the admin. Unique when present.
+    /// </summary>
+    public string? PublicToken { get; set; }
 
     public Money Price => new(PriceAmount, Currency);
 
