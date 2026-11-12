@@ -7,6 +7,7 @@ using Salon.Core.Settings;
 using Salon.Core.Staff;
 using Salon.Core.Tenancy;
 using Salon.Data;
+using Salon.Services.Catalog;
 using Salon.Services.Settings;
 using Salon.Services.Tenancy;
 
@@ -17,6 +18,7 @@ internal sealed class AvailabilityService(
     ITenantContext tenantContext,
     ITenantLookup tenantLookup,
     ISettingService settingService,
+    IServiceOfferingResolver offerings,
     IClock clock) : IAvailabilityService
 {
     public async Task<IReadOnlyList<Slot>> GetSlotsAsync(Guid serviceId, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, CancellationToken cancellationToken = default)
@@ -41,6 +43,9 @@ internal sealed class AvailabilityService(
             .Select(s => s.Id)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
+        // Staff-specific durations; people who do not offer this service drop out here, also under "any staff" (ADR 0018).
+        var offered = await offerings.ResolveAsync(serviceId, staffIds, cancellationToken).ConfigureAwait(false);
+        staffIds = staffIds.Where(id => offered[id].Offers).ToList();
         if (staffIds.Count == 0)
         {
             return [];
@@ -69,7 +74,8 @@ internal sealed class AvailabilityService(
                 hours.Where(h => h.StaffMemberId == id)
                     .GroupBy(h => h.Day)
                     .ToDictionary(g => g.Key, g => (IReadOnlyList<TimeRange>)g.Select(h => h.Range).OrderBy(r => r.Start).ToArray()),
-                appointments.Where(a => a.StaffMemberId == id).Select(a => new Interval(a.Start, a.End.Plus(buffer))).ToArray()))
+                appointments.Where(a => a.StaffMemberId == id).Select(a => new Interval(a.Start, a.End.Plus(buffer))).ToArray(),
+                offered[id].Duration))
             .ToArray();
 
         var request = new AvailabilityRequest(
