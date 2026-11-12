@@ -1,0 +1,13 @@
+{
+  "Identity.Login.Title": "Sign in",
+  "Identity.Login.Email": "Email",
+  "Identity.Login.Password": "Password",
+  "Identity.Login.Submit": "Sign in",
+  "Identity.Login.Failed": "The email or password is incorrect.",
+  "Identity.Login.LockedOut": "Too many failed attempts. Try again in {0} minutes.",
+  "Identity.Login.Validation.EmailRequired": "Enter your email.",
+  "Identity.Login.Validation.PasswordRequired": "Enter your password.",
+  "Identity.Denied.Title": "Access denied",
+  "Identity.Denied.Description": "Your role does not allow this page. Ask the salon owner if you need access.",
+  "Identity.Denied.Back": "Back to services"
+}

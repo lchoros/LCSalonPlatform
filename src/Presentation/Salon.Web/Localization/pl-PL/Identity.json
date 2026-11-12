@@ -1,0 +1,13 @@
+{
+  "Identity.Login.Title": "Zaloguj się",
+  "Identity.Login.Email": "E-mail",
+  "Identity.Login.Password": "Hasło",
+  "Identity.Login.Submit": "Zaloguj się",
+  "Identity.Login.Failed": "Nieprawidłowy e-mail lub hasło.",
+  "Identity.Login.LockedOut": "Zbyt wiele nieudanych prób. Spróbuj ponownie za {0} minut.",
+  "Identity.Login.Validation.EmailRequired": "Podaj adres e-mail.",
+  "Identity.Login.Validation.PasswordRequired": "Podaj hasło.",
+  "Identity.Denied.Title": "Brak dostępu",
+  "Identity.Denied.Description": "Twoja rola nie pozwala otworzyć tej strony. Jeśli potrzebujesz dostępu, poproś właściciela salonu.",
+  "Identity.Denied.Back": "Wróć do usług"
+}

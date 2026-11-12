@@ -1,0 +1,10 @@
+{
+  "Layout.Brand": "Salon Platform",
+  "Layout.SignOut": "Sign out",
+  "Layout.Nav.Admin": "Salon admin",
+  "Layout.Nav.Services": "Services",
+  "Layout.Nav.Staff": "Staff",
+  "Layout.Nav.Clients": "Clients",
+  "Layout.Nav.Appointments": "Appointments",
+  "Layout.Nav.Calendar": "Calendar"
+}
