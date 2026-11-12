@@ -7,6 +7,7 @@ using Salon.Core.Tasks;
 using Salon.Core.Tenancy;
 using Salon.Services.Appointments;
 using Salon.Services.Availability;
+using Salon.Services.Booking;
 using Salon.Services.Caching;
 using Salon.Services.Localization;
 using Salon.Services.Messaging;
@@ -43,6 +44,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISettingService, SettingService>();
         services.AddScoped<IAvailabilityService, AvailabilityService>();
         services.AddScoped<IBookingService, BookingService>();
+        // Needs IClientService (registered by the host next to the field encryptor) and IPublicUrlBuilder (Web.Framework) at resolve time.
+        services.AddScoped<IPublicBookingService, PublicBookingService>();
         services.AddOptions<DemoOptions>().BindConfiguration(DemoOptions.SectionName);
         services.AddSingleton<EmbeddedMessageTemplateDefaults>();
         services.AddScoped<IMessageTemplateService, MessageTemplateService>();

@@ -65,6 +65,23 @@ public static class PhoneNumber
     public static string Digits(string? raw)
         => raw is null ? string.Empty : new string(raw.Where(char.IsAsciiDigit).ToArray());
 
+    /// <summary>
+    /// A normalised number with its middle hidden for a public page (ADR 0014): the country code and the last three digits
+    /// stay (<c>+44•••••••123</c>), so the client recognises the number without the page revealing it to a shoulder-surfer.
+    /// </summary>
+    public static string Mask(string e164)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(e164);
+        const int visibleHead = 3;
+        const int visibleTail = 3;
+        if (e164.Length <= visibleHead + visibleTail)
+        {
+            return e164;
+        }
+
+        return string.Concat(e164.AsSpan(0, visibleHead), new string('•', e164.Length - visibleHead - visibleTail), e164.AsSpan(e164.Length - visibleTail));
+    }
+
     private static string Compact(string raw)
     {
         var withoutTrunk = raw.Replace("(0)", string.Empty, StringComparison.Ordinal);
