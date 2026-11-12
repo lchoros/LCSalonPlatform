@@ -60,5 +60,6 @@
   "Booking.Public.Cancel.Invalid": "This link is not valid or has already been used.",
   "Booking.Public.Cancel.Already": "This appointment has already been cancelled or has taken place.",
   "Booking.Public.Cancel.TooLate": "This appointment has already started and cannot be cancelled online. Please call the salon.",
-  "Booking.Public.OtherServices": "Other services"
+  "Booking.Public.OtherServices": "Other services",
+  "Booking.ListServices.FromPrice": "from {0}"
 }

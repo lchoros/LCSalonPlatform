@@ -86,5 +86,8 @@
   "Appointments.Calendar.Move.Moved": "Moved {0} to {1} at {2} with {3}.",
   "Appointments.Calendar.Move.Validation.StaffRequired": "Choose a staff member.",
   "Appointments.Calendar.Move.Validation.StartInvalid": "Pick one of the offered times.",
-  "Appointments.Calendar.Move.Validation.DateInvalid": "Enter a date as YYYY-MM-DD."
+  "Appointments.Calendar.Move.Validation.DateInvalid": "Enter a date as YYYY-MM-DD.",
+  "Appointments.Book.Offering": "{0} min · {1}",
+  "Appointments.Book.OfferingFrom": "{0} min · from {1}",
+  "Appointments.Book.NotOffered": "{0} does not offer this service."
 }

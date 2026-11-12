@@ -26,6 +26,29 @@ public static class PhoneVerificationRules
 
     public static Duration CodeRateWindow { get; } = Duration.FromHours(1);
 
+    /// <summary>How long a row is kept after it was created before the clean-up task deletes it (ADR 0017): a day, well past its life.</summary>
+    public static Duration DefaultRetention { get; } = Duration.FromHours(24);
+
+    /// <summary>
+    /// Rows created before this instant may be deleted, whatever their state: after <paramref name="retention"/> a row is
+    /// spent, dead or expired anyway. The retention must be at least <see cref="Lifetime"/> so a code still in play is never removed.
+    /// </summary>
+    public static Instant RetentionCutOff(Instant now, Duration retention)
+    {
+        if (retention < Lifetime)
+        {
+            throw new ArgumentOutOfRangeException(nameof(retention), retention, $"The retention must be at least the code lifetime ({Lifetime}).");
+        }
+
+        return now - retention;
+    }
+
+    public static bool IsPastRetention(PhoneVerification verification, Instant now, Duration retention)
+    {
+        ArgumentNullException.ThrowIfNull(verification);
+        return verification.CreatedAt < RetentionCutOff(now, retention);
+    }
+
     /// <summary>A uniformly random code "000000"–"999999".</summary>
     public static string GenerateCode()
         => RandomNumberGenerator.GetInt32(CodeSpace).ToString("D6", CultureInfo.InvariantCulture);

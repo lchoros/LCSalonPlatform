@@ -86,5 +86,8 @@
   "Appointments.Calendar.Move.Moved": "Przeniesiono wizytę: {0}, {1} o {2}, {3}.",
   "Appointments.Calendar.Move.Validation.StaffRequired": "Wybierz pracownika.",
   "Appointments.Calendar.Move.Validation.StartInvalid": "Wybierz jedną z proponowanych godzin.",
-  "Appointments.Calendar.Move.Validation.DateInvalid": "Podaj datę w formacie RRRR-MM-DD."
+  "Appointments.Calendar.Move.Validation.DateInvalid": "Podaj datę w formacie RRRR-MM-DD.",
+  "Appointments.Book.Offering": "{0} min · {1}",
+  "Appointments.Book.OfferingFrom": "{0} min · od {1}",
+  "Appointments.Book.NotOffered": "{0} nie wykonuje tej usługi."
 }

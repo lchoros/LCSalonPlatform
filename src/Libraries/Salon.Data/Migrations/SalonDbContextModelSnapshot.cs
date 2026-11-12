@@ -402,6 +402,60 @@ namespace Salon.Data.Migrations
                     b.ToTable("service_categories", "salon");
                 });
 
+            modelBuilder.Entity("Salon.Core.Catalog.StaffServiceOverride", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Duration?>("Duration")
+                        .HasColumnType("interval")
+                        .HasColumnName("duration");
+
+                    b.Property<bool>("Offers")
+                        .HasColumnType("boolean")
+                        .HasColumnName("offers");
+
+                    b.Property<decimal?>("Price")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("price");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_id");
+
+                    b.Property<Guid>("StaffMemberId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("staff_member_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_staff_service_overrides");
+
+                    b.HasIndex("ServiceId")
+                        .HasDatabaseName("ix_staff_service_overrides_service_id");
+
+                    b.HasIndex("StaffMemberId")
+                        .HasDatabaseName("ix_staff_service_overrides_staff_member_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_staff_service_overrides_tenant_id");
+
+                    b.HasIndex("TenantId", "ServiceId")
+                        .HasDatabaseName("ix_staff_service_overrides_tenant_id_service_id");
+
+                    b.HasIndex("TenantId", "StaffMemberId", "ServiceId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_staff_service_overrides_tenant_id_staff_member_id_service_id");
+
+                    b.ToTable("staff_service_overrides", "salon");
+                });
+
             modelBuilder.Entity("Salon.Core.Clients.Client", b =>
                 {
                     b.Property<Guid>("Id")
@@ -456,6 +510,14 @@ namespace Salon.Data.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("marketing_consent_wording");
 
+                    b.Property<Instant?>("MergedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("merged_at");
+
+                    b.Property<Guid?>("MergedIntoClientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("merged_into_client_id");
+
                     b.Property<string>("Notes")
                         .HasMaxLength(4000)
                         .HasColumnType("character varying(4000)")
@@ -476,6 +538,9 @@ namespace Salon.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_clients");
+
+                    b.HasIndex("MergedIntoClientId")
+                        .HasDatabaseName("ix_clients_merged_into_client_id");
 
                     b.HasIndex("TenantId")
                         .HasDatabaseName("ix_clients_tenant_id");
@@ -1039,8 +1104,38 @@ namespace Salon.Data.Migrations
                         .HasConstraintName("fk_service_categories_tenants_tenant_id");
                 });
 
+            modelBuilder.Entity("Salon.Core.Catalog.StaffServiceOverride", b =>
+                {
+                    b.HasOne("Salon.Core.Catalog.Service", null)
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_staff_service_overrides_services_service_id");
+
+                    b.HasOne("Salon.Core.Staff.StaffMember", null)
+                        .WithMany()
+                        .HasForeignKey("StaffMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_staff_service_overrides_staff_members_staff_member_id");
+
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_staff_service_overrides_tenants_tenant_id");
+                });
+
             modelBuilder.Entity("Salon.Core.Clients.Client", b =>
                 {
+                    b.HasOne("Salon.Core.Clients.Client", null)
+                        .WithMany()
+                        .HasForeignKey("MergedIntoClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_clients_clients_merged_into_client_id");
+
                     b.HasOne("Salon.Core.Tenancy.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")

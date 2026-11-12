@@ -1,6 +1,7 @@
 using NodaTime;
 
 using Salon.Core.Cqrs;
+using Salon.Core.Domain;
 using Salon.Services.Clients;
 
 namespace Salon.Web.Features.Appointments.BookForClient;
@@ -24,6 +25,7 @@ public sealed record BookForClientFormQuery(string? Query, Guid? ClientId, Guid?
 /// <param name="StaffMemberId">The chosen staff member; null is "any available".</param>
 /// <param name="Day">The day the slots are for.</param>
 /// <param name="Slots">Free starts for the selection; empty when no service is chosen or nothing is free.</param>
+/// <param name="Offering">What the chosen person (or, for "any", the salon) charges and how long it takes (ADR 0018); null until a service is chosen.</param>
 public sealed record BookForClientForm(
     string? Query,
     IReadOnlyList<ClientSummary> ClientMatches,
@@ -33,13 +35,21 @@ public sealed record BookForClientForm(
     Guid? ServiceId,
     Guid? StaffMemberId,
     LocalDate Day,
-    IReadOnlyList<SlotOption> Slots)
+    IReadOnlyList<SlotOption> Slots,
+    OfferingSummary? Offering = null)
 {
     /// <summary>True once a service is chosen, so the page shows the slot section (with its empty state when nothing is free).</summary>
     public bool ShowSlots => ServiceId is not null;
 }
 
-public sealed record ServiceOption(Guid Id, string Name, int DurationMinutes);
+/// <summary>The duration and price the slots are for: the chosen person's own, or the list duration and the cheapest price under "any".</summary>
+/// <param name="IsFromPrice">True when bookable staff charge differently and no one person is chosen, so the page says "from".</param>
+/// <param name="Offered">False when the chosen person does not offer the service; the page then explains instead of listing slots.</param>
+/// <param name="StaffName">The chosen person, for the "does not offer" line; null under "any".</param>
+public sealed record OfferingSummary(int DurationMinutes, Money Price, bool IsFromPrice, bool Offered, string? StaffName);
+
+/// <param name="DurationMinutes">The list duration; the offering summary shows a person's own.</param>
+public sealed record ServiceOption(Guid Id, string Name, int DurationMinutes, decimal Price, string Currency);
 
 public sealed record StaffOption(Guid Id, string DisplayName);
 
