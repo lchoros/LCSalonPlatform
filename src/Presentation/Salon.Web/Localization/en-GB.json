@@ -103,5 +103,11 @@
   "Staff.Hours.Validation.Step": "Times must be in {0}-minute steps.",
   "Staff.Hours.Validation.EndAfterStart": "The end time must be after the start time.",
   "Staff.Hours.Validation.Overlap": "The ranges on this day overlap.",
-  "Staff.Hours.Validation.TooManyRanges": "At most {0} ranges per day."
+  "Staff.Hours.Validation.TooManyRanges": "At most {0} ranges per day.",
+  "Staff.Edit.Title": "Edit staff member",
+  "Staff.Edit.Submit": "Save changes",
+  "Staff.Edit.Saved": "Changes to “{0}” saved.",
+  "Staff.Edit.IsActive": "Active (shown in lists and bookable when ticked below)",
+  "Staff.Edit.Cancel": "Cancel",
+  "Staff.List.Edit": "Edit"
 }

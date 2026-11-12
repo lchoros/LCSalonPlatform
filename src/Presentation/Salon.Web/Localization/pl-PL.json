@@ -103,5 +103,11 @@
   "Staff.Hours.Validation.Step": "Godziny muszą być wielokrotnością {0} minut.",
   "Staff.Hours.Validation.EndAfterStart": "Godzina zakończenia musi być późniejsza niż godzina rozpoczęcia.",
   "Staff.Hours.Validation.TooManyRanges": "Najwyżej {0} przedziały dziennie.",
-  "Staff.Hours.Validation.Overlap": "Przedziały w tym dniu nakładają się."
+  "Staff.Hours.Validation.Overlap": "Przedziały w tym dniu nakładają się.",
+  "Staff.Edit.Title": "Edytuj pracownika",
+  "Staff.Edit.Submit": "Zapisz zmiany",
+  "Staff.Edit.Saved": "Zapisano zmiany dla „{0}”.",
+  "Staff.Edit.IsActive": "Aktywny (widoczny na listach, do rezerwacji po zaznaczeniu poniżej)",
+  "Staff.Edit.Cancel": "Anuluj",
+  "Staff.List.Edit": "Edytuj"
 }

@@ -46,6 +46,7 @@ kept for tenancy, authentication, migrations and anything that needs design judg
   FsCheck-2 habits (`Gen` passed straight to `Prop.ForAll`, `Gen.OneOf` without type arguments, `Sample()`). Ask the
   local model for plain xunit `[Theory]`/`[Fact]` tests; write property tests by hand or give it a complete
   compiling FsCheck example to copy from.
+- Fourth run (edit-staff slice through the loop, 2026-11-12): the slice itself was right first time apart from four API-level slips (missing usings, a non-existent property, an unused parameter) and analyzer rules in the test; but asked to output the COMPLETE resource files it silently "improved" a dozen existing Polish strings and broke two. Never ask it for whole resource files: ask for the new keys only and append them programmatically. Also keep the project list to the loop as separate arguments (fixed in the script).
 - Second run (message-template renderer): the texts and tests were usable after one round; the renderer logic was not
   (a regex group under `ExplicitCapture` captured nothing, output assembled in the wrong order). For logic with
   edge cases, have the model write the tests first and let the loop's failures expose a wrong implementation, or
