@@ -47,3 +47,41 @@ plugins without letting a plugin silently rewrite host text.
 - `TenantCultureProvider` looks the tenant up by id, a second (cached) lookup after the middleware's slug lookup on the
   first request per tenant. A later refactor can stash the `TenantInfo` on the request instead.
 - Plugins get their own resource files and the same parity rules once they carry UI text; today none do.
+
+## Amendment 2026-11-12 — one resource file per module and culture
+
+**Why.** Every slice appended its keys to the end of the two flat files, so every pair of parallel branches conflicted
+on `en-GB.json` and `pl-PL.json` even when the slices had nothing in common. The merge conflicts were mechanical but
+cost a review round each time.
+
+**Decision.**
+- The host keeps `src/Presentation/Salon.Web/Localization/<culture>/<Module>.json`, e.g. `Localization/en-GB/Catalog.json`
+  and `Localization/pl-PL/Catalog.json`. The module is the first segment of the key (`Catalog.CreateService.Title` lives
+  in `Catalog.json`); a key without a dot goes to `Common.json`. A slice edits only its module's two files; a new module
+  adds both files.
+- The csproj embeds `Localization\**\*.json` with
+  `LogicalName="$(RootNamespace).Localization.$([System.String]::Copy('%(RecursiveDir)').Replace('\', '.').Replace('/', '.'))%(Filename)%(Extension)"`.
+  MSBuild expands `%(RecursiveDir)` before it evaluates the property function, so the culture folder (`en-GB\` on
+  Windows, `en-GB/` on Linux) becomes a dot segment and the manifest name is `Salon.Web.Localization.en-GB.Catalog.json`.
+  No flat-file fallback was needed.
+- `EmbeddedJsonResourceSource` accepts several resources per culture and merges them: `…Localization.<culture>.<Module>.json`
+  and the legacy `…Localization.<culture>.json` (plugins with little text may keep one file per culture). A key present in
+  two files of the same culture is a startup error naming both files and the key. `ReadFiles()` exposes the parsed files
+  so tests can check parity file by file. `ILocalizationService`, `LocalizationService` and the `T` view helper are
+  unchanged; no slice or view changed.
+- Architecture tests (`LocalizationResourceTests`) additionally assert: every module file exists for both cultures (the
+  message names the missing `Localization/<culture>/<Module>.json`), every key sits in the file named after its first
+  segment, module names are one PascalCase segment, manifest names carry no path separator, and no flat culture file is
+  embedded in the host.
+- `tools/split-localization.ps1` (PowerShell 7) splits a flat `<culture>.json` into module files preserving key order,
+  merges into existing module files (new keys are appended, existing keys are kept; `-Overwrite` takes the flat file's
+  text; differences are reported either way), deletes the flat file unless `-KeepFlat`, and is a no-op when no flat file
+  exists. It is the fix when a branch from before the split brings a flat file back: `pwsh tools/split-localization.ps1`,
+  then commit.
+
+**Consequences.**
+- Two slices in different modules no longer touch the same resource files; two slices in the same module still can, and
+  Git merges line-level additions inside one module file without a conflict unless both append at the very end.
+- Key order inside a module file is the order of first appearance in the old flat file and then append order; the files
+  are not alphabetised, so a rebase diff stays small.
+- The CLAUDE.md rule 6 wording does not name file paths, so it is unchanged.
