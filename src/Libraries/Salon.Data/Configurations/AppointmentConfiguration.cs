@@ -22,6 +22,9 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
         builder.Property(a => a.PriceAmount).HasPrecision(10, 2);
         builder.Property(a => a.Currency).HasMaxLength(Appointment.CurrencyLength).IsRequired();
         builder.Property(a => a.CancellationReason).HasMaxLength(Appointment.CancellationReasonMaxLength);
+        builder.Property(a => a.PublicToken).HasMaxLength(Appointment.PublicTokenMaxLength);
+        // The cancel link resolves by token alone (ADR 0014); the tenant filter still applies on top.
+        builder.HasIndex(a => a.PublicToken).IsUnique().HasFilter("public_token IS NOT NULL");
         builder.Ignore(a => a.Price);
         builder.Ignore(a => a.Interval);
         // The client card lists its visits; ADR 0012 added the FK once the clients slice (ADR 0011) was merged.

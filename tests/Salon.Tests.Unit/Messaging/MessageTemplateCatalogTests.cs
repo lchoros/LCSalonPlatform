@@ -8,10 +8,19 @@ public class MessageTemplateCatalogTests
     private static readonly string[] BookingTokens = ["SalonName", "ClientFirstName", "ServiceName", "StaffName", "AppointmentStart"];
 
     [Fact]
-    public void Lists_exactly_the_three_booking_templates()
+    public void Lists_exactly_the_three_booking_templates_and_the_code()
     {
         MessageTemplateCatalog.All.Select(d => d.Key).Order(StringComparer.Ordinal)
-            .ShouldBe(["Booking.Cancelled", "Booking.Confirmation", "Booking.Reminder"]);
+            .ShouldBe(["Booking.Cancelled", "Booking.Code", "Booking.Confirmation", "Booking.Reminder"]);
+    }
+
+    [Fact]
+    public void The_code_template_is_sms_only_with_the_salon_name_and_the_code()
+    {
+        var definition = MessageTemplateCatalog.Get(MessageTemplateCatalog.BookingCode);
+
+        definition.Channels.ShouldBe([MessageChannel.Sms]);
+        definition.TokenNames.Order(StringComparer.Ordinal).ShouldBe(["Code", "SalonName"]);
     }
 
     [Theory]

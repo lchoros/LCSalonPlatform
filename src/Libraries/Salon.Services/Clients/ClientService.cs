@@ -111,6 +111,22 @@ internal sealed class ClientService(
             .ConfigureAwait(false);
     }
 
+    public async Task<ClientSummary?> FindByPhoneAsync(string? phone, CancellationToken cancellationToken = default)
+    {
+        var tenantId = tenantContext.TenantId ?? throw new TenantViolationException("Looking up a client requires a tenant in scope.");
+        var tenant = await tenantLookup.FindByIdAsync(tenantId, cancellationToken).ConfigureAwait(false);
+        if (!PhoneNumber.TryNormalise(phone, tenant?.Currency, out var normalised) || normalised is null)
+        {
+            return null;
+        }
+
+        return await db.Clients.AsNoTracking()
+            .Where(c => c.Phone == normalised)
+            .Select(c => new ClientSummary(c.Id, c.FirstName, c.LastName, c.Phone, c.Email, c.IsActive))
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     public async Task<ClientCard?> GetCardAsync(Guid clientId, CancellationToken cancellationToken = default)
     {
         var client = await db.Clients.AsNoTracking().FirstOrDefaultAsync(c => c.Id == clientId, cancellationToken).ConfigureAwait(false);
