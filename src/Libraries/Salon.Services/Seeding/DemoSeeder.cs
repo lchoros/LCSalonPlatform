@@ -16,11 +16,13 @@ using Salon.Services.Tenancy;
 namespace Salon.Services.Seeding;
 
 /// <summary>
-/// Creates the demo salon "studio-20" (Studio 20, Europe/London, en-GB, GBP) with six services, three staff members with
-/// their weekly hours (ADR 0010) and, when <c>Demo:OwnerPassword</c> is set, an Owner and a Receptionist login, so a fresh
-/// local database has something to show at studio-20.localhost. Runs when <c>Database:SeedDemo</c> is true (Development
-/// only). An existing demo salon is left alone — its catalogue and logins are never touched — with one exception: a salon
-/// seeded before M1 has no staff, and gets the same three people the first time the seeder sees it without any.
+/// Creates the demo salon "studio-20" (Studio 20, Europe/London, en-GB, GBP) with six services in three categories and
+/// realistic buffers and processing time (ADR 0013), three staff members with their weekly hours (ADR 0010) and, when
+/// <c>Demo:OwnerPassword</c> is set, an Owner and a Receptionist login, so a fresh local database has something to show at
+/// studio-20.localhost. Runs when <c>Database:SeedDemo</c> is true (Development only). An existing demo salon is left
+/// alone — its services and logins are never re-seeded — with two exceptions: a salon seeded before M1 has no staff and
+/// gets the same three people the first time the seeder sees it without any, and a salon without categories gets the
+/// three categories once, with the six demo services (matched by name) filed under them and given their timing.
 /// </summary>
 public sealed class DemoSeeder(
     IServiceScopeFactory scopeFactory,
@@ -33,14 +35,17 @@ public sealed class DemoSeeder(
     public const string OwnerEmail = "owner@studio-20.local";
     public const string ReceptionistEmail = "desk@studio-20.local";
 
-    private static readonly (string Name, string Description, int Minutes, decimal Price)[] Services =
+    /// <summary>In display order; the sort order of each category is its position here.</summary>
+    private static readonly string[] Categories = ["Hair", "Barbering", "Nails"];
+
+    private static readonly DemoService[] Services =
     [
-        ("Cut & blow-dry", "Consultation, wash, cut and finish.", 45, 45m),
-        ("Colour (roots)", "Regrowth tint up to 2 cm, blow-dry included.", 90, 65m),
-        ("Balayage", "Hand-painted lightening, toner and blow-dry.", 150, 140m),
-        ("Beard trim", "Shape, trim and hot-towel finish.", 20, 15m),
-        ("Manicure", "File, cuticle care and polish.", 45, 28m),
-        ("Pedicure", "Soak, file, cuticle care and polish.", 60, 35m),
+        new("Cut & blow-dry", "Consultation, wash, cut and finish.", 45, 45m, "Hair", Buffer: 5),
+        new("Colour (roots)", "Regrowth tint up to 2 cm, blow-dry included.", 90, 65m, "Hair", Buffer: 15, Processing: 30, ProcessingStartsAfter: 20),
+        new("Balayage", "Hand-painted lightening, toner and blow-dry.", 150, 140m, "Hair", Buffer: 15, Processing: 45, ProcessingStartsAfter: 45),
+        new("Beard trim", "Shape, trim and hot-towel finish.", 20, 15m, "Barbering", Buffer: 5),
+        new("Manicure", "File, cuticle care and polish.", 45, 28m, "Nails", Buffer: 5),
+        new("Pedicure", "Soak, file, cuticle care and polish.", 60, 35m, "Nails", Buffer: 5),
     ];
 
     /// <summary>A colourist, a barber with a lunch break (two ranges) and a nail technician on alternate days: the shapes the rota screens must show.</summary>
@@ -57,7 +62,7 @@ public sealed class DemoSeeder(
             [new TimeRange(new LocalTime(9, 0), new LocalTime(15, 0))]),
     ];
 
-    /// <summary>Returns true when the tenant was created on this call, false when it already existed (even if staff were added to it).</summary>
+    /// <summary>Returns true when the tenant was created on this call, false when it already existed (even if staff or categories were added to it).</summary>
     public async Task<bool> SeedAsync(CancellationToken cancellationToken = default)
     {
         Guid tenantId;
@@ -67,13 +72,19 @@ public sealed class DemoSeeder(
             var existingId = await db.Tenants.Where(t => t.Slug == Slug).Select(t => (Guid?)t.Id).SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
             if (existingId is { } existing)
             {
-                logger.LogDebug("Demo tenant {Slug} already exists; only missing logins and staff are seeded", Slug);
+                logger.LogDebug("Demo tenant {Slug} already exists; only missing logins, staff and categories are seeded", Slug);
                 await SeedMissingUsersAsync(existing, cancellationToken).ConfigureAwait(false);
                 await tenantScopes.RunAsync(existing, async (provider, ct) =>
                 {
-                    if (await SeedStaffAsync(provider.GetRequiredService<SalonDbContext>(), ct).ConfigureAwait(false))
+                    var tenantDb = provider.GetRequiredService<SalonDbContext>();
+                    if (await SeedStaffAsync(tenantDb, ct).ConfigureAwait(false))
                     {
                         logger.LogInformation("Seeded {Count} demo staff into the existing tenant {Slug}", Staff.Length, Slug);
+                    }
+
+                    if (await SeedCategoriesAsync(tenantDb, ct).ConfigureAwait(false))
+                    {
+                        logger.LogInformation("Seeded {Count} demo categories into the existing tenant {Slug}", Categories.Length, Slug);
                     }
                 }, cancellationToken).ConfigureAwait(false);
                 return false;
@@ -98,25 +109,61 @@ public sealed class DemoSeeder(
         {
             var db = provider.GetRequiredService<SalonDbContext>();
             var sortOrder = 0;
-            foreach (var (name, description, minutes, price) in Services)
+            foreach (var service in Services)
             {
                 db.Services.Add(new Service
                 {
-                    Name = name,
-                    Description = description,
-                    Duration = Duration.FromMinutes(minutes),
-                    Price = price,
+                    Name = service.Name,
+                    Description = service.Description,
+                    Duration = Duration.FromMinutes(service.Minutes),
+                    Price = service.Price,
                     Currency = "GBP",
                     SortOrder = ++sortOrder,
                 });
             }
 
             await db.SaveChangesAsync(ct).ConfigureAwait(false);
+            await SeedCategoriesAsync(db, ct).ConfigureAwait(false);
             await SeedStaffAsync(db, ct).ConfigureAwait(false);
             await SeedUsersAsync(provider.GetRequiredService<IUserService>(), ct).ConfigureAwait(false);
         }, cancellationToken).ConfigureAwait(false);
 
         logger.LogInformation("Seeded demo tenant {Slug} with {ServiceCount} services and {StaffCount} staff", Slug, Services.Length, Staff.Length);
+        return true;
+    }
+
+    /// <summary>
+    /// Adds the three demo categories when the salon in scope has none at all, and files the demo services (matched by
+    /// name, only those still uncategorised) under them with their buffer and processing time; returns false otherwise.
+    /// </summary>
+    private static async Task<bool> SeedCategoriesAsync(SalonDbContext db, CancellationToken cancellationToken)
+    {
+        if (await db.ServiceCategories.AnyAsync(cancellationToken).ConfigureAwait(false))
+        {
+            return false;
+        }
+
+        var categories = Categories
+            .Select((name, index) => new ServiceCategory { Name = name, SortOrder = index + 1 })
+            .ToDictionary(c => c.Name, StringComparer.Ordinal);
+        db.ServiceCategories.AddRange(categories.Values);
+
+        var existing = await db.Services.Where(s => s.CategoryId == null).ToListAsync(cancellationToken).ConfigureAwait(false);
+        foreach (var service in existing)
+        {
+            var demo = Services.FirstOrDefault(d => string.Equals(d.Name, service.Name, StringComparison.Ordinal));
+            if (demo is null)
+            {
+                continue;
+            }
+
+            service.CategoryId = categories[demo.Category].Id;
+            service.BufferAfterMinutes = demo.Buffer;
+            service.ProcessingMinutes = demo.Processing;
+            service.ProcessingStartsAfterMinutes = demo.ProcessingStartsAfter;
+        }
+
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return true;
     }
 
@@ -173,6 +220,11 @@ public sealed class DemoSeeder(
         await users.CreateAsync(ReceptionistEmail, "Studio 20 Front Desk", password, Role.Receptionist, cancellationToken).ConfigureAwait(false);
         logger.LogInformation("Seeded {Count} demo logins for tenant {Slug} (roles: Owner, Receptionist)", 2, Slug);
     }
+
+    /// <param name="Buffer">Clean-up minutes after the service (ADR 0013).</param>
+    /// <param name="Processing">Minutes the client waits while the stylist is free; 0 for none.</param>
+    /// <param name="ProcessingStartsAfter">Where inside the service the processing window starts.</param>
+    private sealed record DemoService(string Name, string Description, int Minutes, decimal Price, string Category, int Buffer = 0, int Processing = 0, int ProcessingStartsAfter = 0);
 
     private sealed record DemoStaff(string Name, string Colour, IReadOnlyList<IsoDayOfWeek> Days, IReadOnlyList<TimeRange> Ranges);
 }
