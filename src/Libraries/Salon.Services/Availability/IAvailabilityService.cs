@@ -16,4 +16,11 @@ public interface IAvailabilityService
     /// start). Throws <see cref="InvalidOperationException"/> when the service does not exist or is inactive.
     /// </summary>
     Task<IReadOnlyList<Slot>> GetSlotsAsync(Guid serviceId, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// As <see cref="GetSlotsAsync(Guid, Guid?, LocalDate, LocalDate, CancellationToken)"/>, but the appointment
+    /// <paramref name="excludeAppointmentId"/> does not count as busy: the slots a visit could be moved to, including the
+    /// time it holds now (ADR 0016).
+    /// </summary>
+    Task<IReadOnlyList<Slot>> GetSlotsAsync(Guid serviceId, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, Guid? excludeAppointmentId, CancellationToken cancellationToken = default);
 }
