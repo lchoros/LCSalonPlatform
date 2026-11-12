@@ -1,0 +1,69 @@
+@using Salon.Services.Clients
+@using Salon.Web.Features.Clients.MergeClients
+@model MergePreview
+@{
+    ViewData["Title"] = T["Clients.Merge.Confirm.Title"];
+    const string labelClass = "text-xs uppercase tracking-wide text-stone-500";
+    var cards = new[] { (Card: Model.Source, History: Model.SourceHistory, Kept: false), (Card: Model.Target, History: Model.TargetHistory, Kept: true) };
+}
+@functions {
+    static string Dash(string? value) => string.IsNullOrEmpty(value) ? "—" : value;
+}
+<section class="mx-auto max-w-3xl space-y-6" data-testid="merge-confirm">
+    <a href="/admin/clients/@Model.Source.Id/merge" class="inline-flex min-h-11 items-center text-sm font-medium text-stone-700 hover:underline">&larr; @T["Clients.Merge.Title"]</a>
+    <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Clients.Merge.Confirm.Title"]</h1>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+        @foreach (var (card, history, kept) in cards)
+        {
+            <article class="space-y-3 rounded-lg border p-4 shadow-sm @(kept ? "border-green-300 bg-green-50" : "border-stone-300 bg-stone-50")" data-testid="@(kept ? "target-card" : "source-card")">
+                <p class="text-sm font-semibold @(kept ? "text-green-900" : "text-stone-700")">@T[kept ? "Clients.Merge.Confirm.Target" : "Clients.Merge.Confirm.Source"]</p>
+                <h2 class="text-xl font-bold" data-testid="@(kept ? "target-name" : "source-name")">@card.FullName</h2>
+                <dl class="space-y-2 text-sm">
+                    <div>
+                        <dt class="@labelClass">@T["Clients.Card.Phone"]</dt>
+                        <dd>@Dash(card.Phone)</dd>
+                    </div>
+                    <div>
+                        <dt class="@labelClass">@T["Clients.Card.Email"]</dt>
+                        <dd class="break-all">@Dash(card.Email)</dd>
+                    </div>
+                    <div>
+                        <dt class="@labelClass">@T["Clients.History.Title"]</dt>
+                        <dd>@T.Format("Clients.Merge.Confirm.Visits", history.VisitsTotal)</dd>
+                    </div>
+                    <div>
+                        <dt class="@labelClass">@T["Clients.Card.Notes"]</dt>
+                        <dd class="whitespace-pre-line">@(card.Notes is { } notes ? notes : T["Clients.Card.NoNotes"])</dd>
+                    </div>
+                    <div>
+                        <dt class="@labelClass">@T["Clients.Card.HealthNotes"]</dt>
+                        <dd>@(card.HealthNotes is not null || card.HealthNotesUnreadable ? T["Clients.Merge.Confirm.HealthNotesRecorded"] : T["Clients.Card.NoHealthNotes"])</dd>
+                    </div>
+                    <div>
+                        <dt class="@labelClass">@T["Clients.Card.MarketingConsent"]</dt>
+                        <dd>@(card.MarketingConsent ? T["Clients.Merge.Confirm.ConsentGranted"] : T["Clients.Card.ConsentNotGranted"])</dd>
+                    </div>
+                </dl>
+            </article>
+        }
+    </div>
+
+    <section class="space-y-2 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" data-testid="what-happens">
+        <h2 class="text-lg font-semibold">@T["Clients.Merge.Confirm.WhatHappens"]</h2>
+        <ul class="list-disc space-y-1 pl-5 text-base">
+            <li>@T.Format("Clients.Merge.Confirm.Appointments", Model.SourceHistory.VisitsTotal, Model.Source.FullName, Model.Target.FullName)</li>
+            <li>@T["Clients.Merge.Confirm.NotesRule"]</li>
+            <li>@T["Clients.Merge.Confirm.HealthRule"]</li>
+            <li>@T["Clients.Merge.Confirm.ContactRule"]</li>
+            <li>@T["Clients.Merge.Confirm.ConsentRule"]</li>
+            <li>@T["Clients.Merge.Confirm.DeactivateRule"]</li>
+        </ul>
+        <p class="font-medium text-red-700">@T["Clients.Merge.Confirm.Irreversible"]</p>
+    </section>
+
+    <form method="post" asp-antiforgery="true" class="flex flex-col gap-3 sm:flex-row sm:justify-end" data-testid="merge-form">
+        <a href="/admin/clients/@Model.Source.Id" class="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100">@T["Clients.Merge.Confirm.Cancel"]</a>
+        <button type="submit" data-testid="merge-submit" class="inline-flex min-h-11 items-center justify-center rounded-md bg-red-700 px-4 py-2 text-base font-medium text-white hover:bg-red-800">@T["Clients.Merge.Confirm.Submit"]</button>
+    </form>
+</section>
