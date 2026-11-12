@@ -109,7 +109,7 @@ public class PermissionTests(SalonWebApplicationFactory factory) : IAsyncLifetim
         }));
 
         response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-        response.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe("/services");
+        response.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe("/admin/services");
     }
 
     [Fact]

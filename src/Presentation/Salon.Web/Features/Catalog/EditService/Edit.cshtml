@@ -1,0 +1,90 @@
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using Salon.Core.Catalog
+@using Salon.Web.Features.Catalog.EditService
+@model EditServiceCommand
+@{
+    ViewData["Title"] = T["Catalog.Edit.Title"];
+    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 px-3 py-2 text-base shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
+    var categories = ViewData[EditServiceController.CategoriesKey] as IReadOnlyList<ServiceCategory> ?? [];
+    var categoryOptions = new SelectList(categories, nameof(ServiceCategory.Id), nameof(ServiceCategory.Name), Model.CategoryId);
+}
+<section class="mx-auto max-w-lg space-y-6">
+    <header class="space-y-1">
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Catalog.Edit.Title"]</h1>
+        <p class="text-lg text-stone-700" data-testid="service-name">@Model.Name</p>
+    </header>
+    <form method="post" asp-action="Edit" asp-route-id="@Model.ServiceId" class="space-y-5" novalidate data-testid="edit-service-form">
+        <div asp-validation-summary="ModelOnly" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert"></div>
+
+        <div class="space-y-1">
+            <label asp-for="Name" class="block text-sm font-medium">@T["Catalog.Edit.Name"]</label>
+            <input asp-for="Name" type="text" maxlength="@ServiceRules.NameMaxLength" autocomplete="off" aria-describedby="name-error" class="@inputClass" />
+            <span asp-validation-for="Name" id="name-error" class="block text-sm text-red-700"></span>
+        </div>
+
+        <div class="space-y-1">
+            <label asp-for="Description" class="block text-sm font-medium">@T["Catalog.Edit.Description"]</label>
+            <textarea asp-for="Description" rows="3" maxlength="@ServiceRules.DescriptionMaxLength" aria-describedby="description-hint description-error" class="@inputClass"></textarea>
+            <p id="description-hint" class="text-sm text-stone-500">@T["Catalog.Edit.DescriptionHint"]</p>
+            <span asp-validation-for="Description" id="description-error" class="block text-sm text-red-700"></span>
+        </div>
+
+        <div class="space-y-1">
+            <label asp-for="CategoryId" class="block text-sm font-medium">@T["Catalog.Edit.Category"]</label>
+            <select asp-for="CategoryId" asp-items="categoryOptions" aria-describedby="category-error" class="@inputClass" data-testid="category-select">
+                <option value="">@T["Catalog.Edit.NoCategory"]</option>
+            </select>
+            <span asp-validation-for="CategoryId" id="category-error" class="block text-sm text-red-700"></span>
+        </div>
+
+        <div class="grid gap-5 sm:grid-cols-2">
+            <div class="space-y-1">
+                <label asp-for="DurationMinutes" class="block text-sm font-medium">@T["Catalog.Edit.DurationMinutes"]</label>
+                <input asp-for="DurationMinutes" type="number" inputmode="numeric" min="@ServiceRules.MinDurationMinutes" max="@ServiceRules.MaxDurationMinutes" step="@ServiceRules.StepMinutes" aria-describedby="duration-error" class="@inputClass" />
+                <span asp-validation-for="DurationMinutes" id="duration-error" class="block text-sm text-red-700"></span>
+            </div>
+            <div class="space-y-1">
+                <label asp-for="Price" class="block text-sm font-medium">@T["Catalog.Edit.Price"]</label>
+                <input asp-for="Price" type="text" inputmode="decimal" aria-describedby="price-hint price-error" class="@inputClass" />
+                <p id="price-hint" class="text-sm text-stone-500">@T["Catalog.Edit.PriceHint"]</p>
+                <span asp-validation-for="Price" id="price-error" class="block text-sm text-red-700"></span>
+            </div>
+        </div>
+
+        <fieldset class="space-y-4 rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
+            <legend class="px-1 font-semibold">@T["Catalog.Edit.Timing"]</legend>
+            <div class="space-y-1">
+                <label asp-for="BufferAfterMinutes" class="block text-sm font-medium">@T["Catalog.Edit.BufferAfterMinutes"]</label>
+                <input asp-for="BufferAfterMinutes" type="number" inputmode="numeric" min="0" max="@ServiceRules.MaxBufferAfterMinutes" step="@ServiceRules.StepMinutes" aria-describedby="buffer-hint buffer-error" class="@inputClass" data-testid="buffer-input" />
+                <p id="buffer-hint" class="text-sm text-stone-500">@T["Catalog.Edit.BufferHint"]</p>
+                <span asp-validation-for="BufferAfterMinutes" id="buffer-error" class="block text-sm text-red-700"></span>
+            </div>
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div class="space-y-1">
+                    <label asp-for="ProcessingMinutes" class="block text-sm font-medium">@T["Catalog.Edit.ProcessingMinutes"]</label>
+                    <input asp-for="ProcessingMinutes" type="number" inputmode="numeric" min="0" max="@ServiceRules.MaxProcessingMinutes" step="@ServiceRules.StepMinutes" aria-describedby="processing-hint processing-error" class="@inputClass" />
+                    <span asp-validation-for="ProcessingMinutes" id="processing-error" class="block text-sm text-red-700"></span>
+                </div>
+                <div class="space-y-1">
+                    <label asp-for="ProcessingStartsAfterMinutes" class="block text-sm font-medium">@T["Catalog.Edit.ProcessingStartsAfterMinutes"]</label>
+                    <input asp-for="ProcessingStartsAfterMinutes" type="number" inputmode="numeric" min="0" max="@ServiceRules.MaxDurationMinutes" step="@ServiceRules.StepMinutes" aria-describedby="processing-hint processing-start-error" class="@inputClass" />
+                    <span asp-validation-for="ProcessingStartsAfterMinutes" id="processing-start-error" class="block text-sm text-red-700"></span>
+                </div>
+            </div>
+            <p id="processing-hint" class="text-sm text-stone-500">@T["Catalog.Edit.ProcessingHint"]</p>
+        </fieldset>
+
+        <div class="flex min-h-11 items-start gap-3">
+            <input asp-for="IsActive" type="checkbox" class="mt-0.5 size-5 rounded border-stone-300" aria-describedby="active-hint" data-testid="active-checkbox" />
+            <div class="space-y-1">
+                <label asp-for="IsActive" class="text-sm font-medium">@T["Catalog.Edit.IsActive"]</label>
+                <p id="active-hint" class="text-sm text-stone-500">@T["Catalog.Edit.IsActiveHint"]</p>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+            <a href="/admin/services" class="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100">@T["Catalog.Edit.Cancel"]</a>
+            <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700">@T["Catalog.Edit.Submit"]</button>
+        </div>
+    </form>
+</section>

@@ -130,10 +130,11 @@ public partial class ListStaffTests(SalonWebApplicationFactory factory) : IAsync
 
         ownerHtml.ShouldContain("data-testid=\"admin-nav\"");
         ownerHtml.ShouldContain("data-testid=\"nav-staff\"");
-        ownerHtml.ShouldContain("href=\"/admin/services/new\"");
+        ownerHtml.ShouldContain("data-testid=\"nav-services\"");
+        ownerHtml.ShouldContain("href=\"/admin/services\"");
         receptionistHtml.ShouldContain("data-testid=\"admin-nav\"");
         receptionistHtml.ShouldNotContain("data-testid=\"nav-staff\"");
-        receptionistHtml.ShouldNotContain("href=\"/admin/services/new\"");
+        receptionistHtml.ShouldNotContain("data-testid=\"nav-services\"");
 
         using var anonymous = factory.ClientFor("studio-20.localhost");
         (await (await anonymous.GetAsync(new Uri("/services", UriKind.Relative))).Content.ReadAsStringAsync()).ShouldNotContain("data-testid=\"admin-nav\"");

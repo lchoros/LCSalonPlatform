@@ -1,0 +1,82 @@
+@using Salon.Core.Catalog
+@using Salon.Web.Features.Catalog.ManageCategories
+@model ManageCategoriesViewModel
+@{
+    ViewData["Title"] = T["Catalog.Categories.Title"];
+    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 px-3 py-2 text-base shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
+    const string buttonClass = "inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700";
+    const string linkClass = "inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-sm font-medium hover:bg-stone-100";
+    var addErrors = Errors(ManageCategoriesController.AddErrorKey);
+    var renameErrors = Errors(ManageCategoriesController.RenameErrorKey);
+}
+@functions {
+    IReadOnlyList<string> Errors(string key)
+        => ViewData.ModelState.TryGetValue(key, out var entry) ? entry.Errors.Select(e => e.ErrorMessage).ToList() : [];
+}
+<section class="mx-auto max-w-2xl space-y-6">
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+    }
+    <header class="space-y-1">
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Catalog.Categories.Title"]</h1>
+        <p class="text-stone-600">@T["Catalog.Categories.Subtitle"]</p>
+    </header>
+
+    <form method="post" asp-action="Add" class="space-y-2 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" novalidate data-testid="add-category-form">
+        <label for="new-category-name" class="block text-sm font-medium">@T["Catalog.Categories.NewName"]</label>
+        <div class="flex flex-col gap-3 sm:flex-row">
+            <input id="new-category-name" name="Name" type="text" value="@Model.NewName" maxlength="@ServiceRules.CategoryNameMaxLength" autocomplete="off"
+                   aria-describedby="new-category-error" aria-invalid="@(addErrors.Count > 0 ? "true" : "false")"
+                   class="@inputClass @(addErrors.Count > 0 ? "input-validation-error" : "")" data-testid="new-category-name" />
+            <button type="submit" class="@buttonClass" data-testid="add-category">@T["Catalog.Categories.Add"]</button>
+        </div>
+        <span id="new-category-error" class="block text-sm text-red-700" data-testid="add-category-error">@string.Join(" ", addErrors)</span>
+    </form>
+
+    @if (Model.Categories.Count == 0)
+    {
+        <p data-testid="empty-state" class="rounded-md border border-dashed border-stone-300 p-6 text-center text-stone-600">@T["Catalog.Categories.Empty"]</p>
+    }
+    else
+    {
+        <ul class="space-y-3" data-testid="category-list">
+            @foreach (var category in Model.Categories)
+            {
+                var renaming = Model.RenamingId == category.Id;
+                var errorId = $"rename-error-{category.Id}";
+                <li class="space-y-2 rounded-lg border border-stone-200 bg-white p-4 shadow-sm @(category.IsActive ? "" : "opacity-60")" data-testid="category-row" data-active="@category.IsActive.ToString().ToLowerInvariant()">
+                    <div class="flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-wide text-stone-500">
+                        <span data-testid="category-service-count">@T.Format("Catalog.Categories.ServiceCount", category.ServiceCount)</span>
+                        @if (!category.IsActive)
+                        {
+                            <span class="rounded bg-stone-100 px-2 py-0.5" data-testid="badge-inactive">@T["Catalog.Categories.Inactive"]</span>
+                        }
+                    </div>
+                    <form method="post" asp-action="Rename" asp-route-id="@category.Id" class="flex flex-col gap-3 sm:flex-row" novalidate data-testid="rename-form">
+                        <label for="rename-@category.Id" class="sr-only">@T["Catalog.Categories.Rename"]: @category.Name</label>
+                        <input id="rename-@category.Id" name="Name" type="text" value="@(renaming ? Model.RenamingName : category.Name)" maxlength="@ServiceRules.CategoryNameMaxLength" autocomplete="off"
+                               aria-describedby="@errorId" aria-invalid="@(renaming && renameErrors.Count > 0 ? "true" : "false")"
+                               class="@inputClass @(renaming && renameErrors.Count > 0 ? "input-validation-error" : "")" data-testid="category-name" />
+                        <button type="submit" class="@linkClass" data-testid="rename-category">@T["Catalog.Categories.Rename"]</button>
+                    </form>
+                    <span id="@errorId" class="block text-sm text-red-700" data-testid="rename-error">@(renaming ? string.Join(" ", renameErrors) : string.Empty)</span>
+                    @if (category.IsActive)
+                    {
+                        <form method="post" asp-action="Deactivate" asp-route-id="@category.Id">
+                            <button type="submit" class="@linkClass" data-testid="deactivate-category">@T["Catalog.Categories.Deactivate"]</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form method="post" asp-action="Activate" asp-route-id="@category.Id">
+                            <button type="submit" class="@linkClass" data-testid="activate-category">@T["Catalog.Categories.Restore"]</button>
+                        </form>
+                    }
+                </li>
+            }
+        </ul>
+    }
+
+    <a href="/admin/services" class="@linkClass">@T["Catalog.Categories.Back"]</a>
+</section>

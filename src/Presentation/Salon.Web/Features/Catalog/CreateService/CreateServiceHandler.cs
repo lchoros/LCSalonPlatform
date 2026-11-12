@@ -34,12 +34,16 @@ public sealed class CreateServiceHandler(
         var lastSortOrder = await db.Services.MaxAsync(s => (int?)s.SortOrder, cancellationToken) ?? 0;
         var service = new Service
         {
-            Name = request.Name.Trim(),
-            Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim(),
+            Name = ServiceRules.NormalizeName(request.Name),
+            Description = ServiceRules.NormalizeDescription(request.Description),
             Duration = Duration.FromMinutes(request.DurationMinutes),
             Price = request.Price,
             Currency = tenant.Currency,
             SortOrder = lastSortOrder + 1,
+            CategoryId = request.CategoryId,
+            BufferAfterMinutes = request.BufferAfterMinutes,
+            ProcessingMinutes = request.ProcessingMinutes,
+            ProcessingStartsAfterMinutes = ServiceRules.NormalizeProcessingStart(request.ProcessingMinutes, request.ProcessingStartsAfterMinutes),
         };
 
         db.Services.Add(service);
