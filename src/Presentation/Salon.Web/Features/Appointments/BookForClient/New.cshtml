@@ -32,7 +32,10 @@
     {
         <p role="alert" data-testid="error" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">@error</p>
     }
-    <div asp-validation-summary="All" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert" data-testid="validation-summary"></div>
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert" data-testid="validation-summary"></div>
+    }
 
     <section class="@cardClass" data-testid="client-step">
         <h2 class="text-lg font-semibold">@T["Appointments.Book.Client"]</h2>
