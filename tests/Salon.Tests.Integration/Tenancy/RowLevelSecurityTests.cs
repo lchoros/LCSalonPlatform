@@ -31,12 +31,21 @@ public class RowLevelSecurityTests(SalonWebApplicationFactory factory) : IAsyncL
         await using var scope = factory.CreateTenantScope(_tenantA.Id);
         var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
         db.Services.Add(new Service { Name = "Only A", Duration = Duration.FromMinutes(30), Price = 20m, Currency = "GBP" });
+        db.ServiceCategories.Add(new ServiceCategory { Name = "Only A's category" });
         await db.SaveChangesAsync();
 
         await AppRole.EnsureAsync();
     }
 
     public Task DisposeAsync() => Task.CompletedTask;
+
+    [Fact]
+    public async Task App_role_sees_only_the_service_categories_of_the_tenant_in_the_session_setting()
+    {
+        (await CountAsAppRoleAsync(_tenantA.Id, "salon.service_categories")).ShouldBe(1);
+        (await CountAsAppRoleAsync(_tenantB.Id, "salon.service_categories")).ShouldBe(0);
+        (await CountAsAppRoleAsync(null, "salon.service_categories")).ShouldBe(0);
+    }
 
     [Fact]
     public async Task Every_tenant_table_has_forced_row_level_security_and_a_policy()
@@ -103,10 +112,12 @@ public class RowLevelSecurityTests(SalonWebApplicationFactory factory) : IAsyncL
         return connection;
     }
 
-    private static async Task<long> CountAsAppRoleAsync(Guid? tenantId)
+    private static async Task<long> CountAsAppRoleAsync(Guid? tenantId, string table = "salon.services")
     {
         await using var connection = await OpenAsAppRoleAsync(tenantId);
-        await using var command = new NpgsqlCommand("SELECT count(*) FROM salon.services", connection);
+#pragma warning disable CA2100 // The table name is one of two literals in this file, not user input.
+        await using var command = new NpgsqlCommand($"SELECT count(*) FROM {table}", connection);
+#pragma warning restore CA2100
         return (long)(await command.ExecuteScalarAsync())!;
     }
 }

@@ -27,7 +27,7 @@
                 <nav aria-label="@T["Layout.Nav.Admin"]" data-testid="admin-nav" class="-mx-3 flex w-full gap-1 text-sm sm:order-none sm:mx-0 sm:w-auto">
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.CatalogManage))
                     {
-                        <a href="/admin/services/new" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Services"]</a>
+                        <a href="/admin/services" data-testid="nav-services" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Services"]</a>
                     }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.StaffManage))
                     {
