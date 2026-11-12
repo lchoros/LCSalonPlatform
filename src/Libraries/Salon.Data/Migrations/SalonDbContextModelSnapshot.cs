@@ -791,6 +791,61 @@ namespace Salon.Data.Migrations
                     b.ToTable("staff_members", "salon");
                 });
 
+            modelBuilder.Entity("Salon.Core.Staff.StaffTimeOff", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Instant>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<LocalTime?>("End")
+                        .HasColumnType("time")
+                        .HasColumnName("end");
+
+                    b.Property<LocalDate>("FromDate")
+                        .HasColumnType("date")
+                        .HasColumnName("from_date");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("StaffMemberId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("staff_member_id");
+
+                    b.Property<LocalTime?>("Start")
+                        .HasColumnType("time")
+                        .HasColumnName("start");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<LocalDate>("ToDate")
+                        .HasColumnType("date")
+                        .HasColumnName("to_date");
+
+                    b.HasKey("Id")
+                        .HasName("pk_staff_time_off");
+
+                    b.HasIndex("StaffMemberId")
+                        .HasDatabaseName("ix_staff_time_off_staff_member_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_staff_time_off_tenant_id");
+
+                    b.HasIndex("TenantId", "StaffMemberId", "FromDate")
+                        .HasDatabaseName("ix_staff_time_off_tenant_id_staff_member_id_from_date");
+
+                    b.ToTable("staff_time_off", "salon");
+                });
+
             modelBuilder.Entity("Salon.Core.Staff.WorkingHours", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1032,6 +1087,23 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_staff_members_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Staff.StaffTimeOff", b =>
+                {
+                    b.HasOne("Salon.Core.Staff.StaffMember", null)
+                        .WithMany()
+                        .HasForeignKey("StaffMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_staff_time_off_staff_members_staff_member_id");
+
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_staff_time_off_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Staff.WorkingHours", b =>
