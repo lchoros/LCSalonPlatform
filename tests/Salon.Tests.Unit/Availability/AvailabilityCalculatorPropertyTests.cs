@@ -4,10 +4,10 @@ using FsCheck.Xunit;
 
 using NodaTime;
 
-using Interval = NodaTime.Interval;
-
 using Salon.Core.Staff;
 using Salon.Services.Availability;
+
+using Interval = NodaTime.Interval;
 
 namespace Salon.Tests.Unit.Availability;
 
