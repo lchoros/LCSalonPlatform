@@ -10,6 +10,7 @@ using NodaTime.Text;
 
 using Salon.Core.Appointments;
 using Salon.Core.Catalog;
+using Salon.Core.Clients;
 using Salon.Core.Events;
 using Salon.Core.Identity;
 using Salon.Core.Staff;
@@ -33,7 +34,6 @@ namespace Salon.Tests.Integration.Staff;
 public partial class TimeOffTests(SalonWebApplicationFactory factory) : IAsyncLifetime
 {
     private static readonly DateTimeZone London = DateTimeZoneProviders.Tzdb["Europe/London"];
-    private static readonly Guid ClientId = Guid.Parse("0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b");
     private static readonly LocalDatePattern IsoDate = LocalDatePattern.Iso;
 
     private Tenant _studio = null!;
@@ -41,6 +41,7 @@ public partial class TimeOffTests(SalonWebApplicationFactory factory) : IAsyncLi
     private Guid _tomId;
     private Guid _ewaId;
     private Guid _serviceId;
+    private Guid _clientId;
     private LocalDate _tomorrow;
 
     public async Task InitializeAsync()
@@ -48,8 +49,8 @@ public partial class TimeOffTests(SalonWebApplicationFactory factory) : IAsyncLi
         await factory.ResetDatabaseAsync();
         _studio = await factory.CreateTenantAsync("studio-20", name: "Studio 20");
         _polish = await factory.CreateTenantAsync("salon-pl", "pl-PL", "PLN", "Salon PL");
-        (_tomId, _serviceId) = await SeedSalonAsync(_studio.Id, "Tom Reed");
-        (_ewaId, _) = await SeedSalonAsync(_polish.Id, "Ewa Nowak");
+        (_tomId, _serviceId, _clientId) = await SeedSalonAsync(_studio.Id, "Tom Reed");
+        (_ewaId, _, _) = await SeedSalonAsync(_polish.Id, "Ewa Nowak");
         _tomorrow = SystemClock.Instance.GetCurrentInstant().InZone(London).Date.PlusDays(1);
     }
 
@@ -389,10 +390,10 @@ public partial class TimeOffTests(SalonWebApplicationFactory factory) : IAsyncLi
     {
         await using var scope = factory.CreateTenantScope(_studio.Id);
         return await scope.ServiceProvider.GetRequiredService<IBookingService>()
-            .BookAsync(new BookAppointmentRequest(ClientId, _tomId, _serviceId, start, AppointmentSource.Admin, null, null));
+            .BookAsync(new BookAppointmentRequest(_clientId, _tomId, _serviceId, start, AppointmentSource.Admin, null, null));
     }
 
-    private async Task<(Guid StaffId, Guid ServiceId)> SeedSalonAsync(Guid tenantId, string name)
+    private async Task<(Guid StaffId, Guid ServiceId, Guid ClientId)> SeedSalonAsync(Guid tenantId, string name)
     {
         await using var scope = factory.CreateTenantScope(tenantId);
         var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
@@ -405,8 +406,10 @@ public partial class TimeOffTests(SalonWebApplicationFactory factory) : IAsyncLi
 
         var cut = new Service { Name = "Cut", Duration = Duration.FromMinutes(30), Price = 20m, Currency = "GBP" };
         db.Services.Add(cut);
+        var client = new Client { FirstName = "Olivia", LastName = "Brown", CreatedAt = staff.CreatedAt, UpdatedAt = staff.CreatedAt };
+        db.Clients.Add(client);
         await db.SaveChangesAsync();
-        return (staff.Id, cut.Id);
+        return (staff.Id, cut.Id, client.Id);
     }
 
     private async Task<List<StaffTimeOff>> RowsAsync(Guid tenantId)
