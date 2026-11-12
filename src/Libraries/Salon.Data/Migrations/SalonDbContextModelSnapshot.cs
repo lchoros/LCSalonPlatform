@@ -456,6 +456,14 @@ namespace Salon.Data.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("marketing_consent_wording");
 
+                    b.Property<Instant?>("MergedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("merged_at");
+
+                    b.Property<Guid?>("MergedIntoClientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("merged_into_client_id");
+
                     b.Property<string>("Notes")
                         .HasMaxLength(4000)
                         .HasColumnType("character varying(4000)")
@@ -476,6 +484,9 @@ namespace Salon.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_clients");
+
+                    b.HasIndex("MergedIntoClientId")
+                        .HasDatabaseName("ix_clients_merged_into_client_id");
 
                     b.HasIndex("TenantId")
                         .HasDatabaseName("ix_clients_tenant_id");
@@ -1041,6 +1052,12 @@ namespace Salon.Data.Migrations
 
             modelBuilder.Entity("Salon.Core.Clients.Client", b =>
                 {
+                    b.HasOne("Salon.Core.Clients.Client", null)
+                        .WithMany()
+                        .HasForeignKey("MergedIntoClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_clients_clients_merged_into_client_id");
+
                     b.HasOne("Salon.Core.Tenancy.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")

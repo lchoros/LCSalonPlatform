@@ -22,6 +22,9 @@ internal sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
         builder.HasIndex(c => new { c.TenantId, c.LastName, c.FirstName });
         builder.HasIndex(c => new { c.TenantId, c.Phone }).IsUnique().HasFilter("phone IS NOT NULL");
         builder.HasIndex(c => new { c.TenantId, c.Email }).IsUnique().HasFilter("email IS NOT NULL");
+        builder.HasIndex(c => c.MergedIntoClientId);
+        // A merged card points at the one that absorbed it (ADR 0017); the target cannot be deleted while pointers remain.
+        builder.HasOne<Client>().WithMany().HasForeignKey(c => c.MergedIntoClientId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Core.Tenancy.Tenant>().WithMany().HasForeignKey(c => c.TenantId).OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -53,6 +53,14 @@ public class Client : BaseEntity, ITenantEntity
 
     public bool IsActive { get; set; } = true;
 
+    /// <summary>
+    /// Set when this card was merged into another (<see cref="ClientMergeRules"/>): the row stays, inactive and without contact
+    /// details, as a pointer so old links and imports still resolve. Never set on an active client.
+    /// </summary>
+    public Guid? MergedIntoClientId { get; set; }
+
+    public Instant? MergedAt { get; set; }
+
     public Instant CreatedAt { get; set; }
 
     public Instant UpdatedAt { get; set; }
