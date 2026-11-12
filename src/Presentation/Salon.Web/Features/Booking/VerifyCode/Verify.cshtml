@@ -2,30 +2,29 @@
 @model VerifyCodeViewModel
 @{
     ViewData["Title"] = T["Booking.Public.Verify.Title"];
-    const string inputClass = "block w-full min-h-14 rounded-md border border-stone-300 px-3 py-2 text-center text-2xl tracking-[0.5em] shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
 }
 <section class="mx-auto max-w-sm space-y-6">
-    <header class="space-y-1">
+    <header class="space-y-2">
         <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Booking.Public.Verify.Title"]</h1>
-        <p class="text-stone-600" data-testid="code-sent-to">@T.Format("Booking.Public.Verify.Sent", Model.MaskedPhone)</p>
+        <p class="text-stone-700" data-testid="code-sent-to">@T.Format("Booking.Public.Verify.Sent", Model.MaskedPhone)</p>
     </header>
 
     @if (Model.State == VerifyState.Open)
     {
         <form method="post" asp-action="Verify" class="space-y-5" novalidate data-testid="verify-form">
-            <div asp-validation-summary="ModelOnly" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert"></div>
-            <div class="space-y-1">
-                <label for="Code" class="block text-sm font-medium">@T["Booking.Public.Verify.Code"]</label>
-                <input id="Code" name="Code" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="7" aria-describedby="code-error" class="@inputClass" data-testid="code" autofocus />
-                <span data-valmsg-for="Code" id="code-error" class="block text-sm text-red-700" data-testid="code-error">@(ViewData.ModelState["Code"]?.Errors.FirstOrDefault()?.ErrorMessage)</span>
+            <div asp-validation-summary="ModelOnly" class="notice notice-error" role="alert"></div>
+            <div class="space-y-1.5">
+                <label for="Code" class="field-label">@T["Booking.Public.Verify.Code"]</label>
+                <input id="Code" name="Code" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="7" aria-describedby="code-error" class="field min-h-16 text-center text-3xl font-semibold tracking-[0.4em] tabular-nums" data-testid="code" autofocus />
+                <span data-valmsg-for="Code" id="code-error" class="field-error" data-testid="code-error">@(ViewData.ModelState["Code"]?.Errors.FirstOrDefault()?.ErrorMessage)</span>
             </div>
-            <button type="submit" data-testid="submit-code" class="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700">@T["Booking.Public.Verify.Submit"]</button>
+            <button type="submit" data-testid="submit-code" class="btn btn-primary w-full">@T["Booking.Public.Verify.Submit"]</button>
         </form>
     }
     else
     {
-        <p role="alert" data-testid="verify-message" class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">@Model.Message</p>
-        <a href="/book/@Model.ServiceId" data-testid="start-again" class="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700">
+        <p role="alert" data-testid="verify-message" class="notice notice-warn">@Model.Message</p>
+        <a href="/book/@Model.ServiceId" data-testid="start-again" class="btn btn-primary w-full">
             @(Model.State == VerifyState.PickAnother ? T["Booking.Public.Verify.PickAnother"] : T["Booking.Public.Verify.StartAgain"])
         </a>
     }
