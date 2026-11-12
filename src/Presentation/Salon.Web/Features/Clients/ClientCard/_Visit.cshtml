@@ -1,0 +1,30 @@
+@using System.Globalization
+@using NodaTime.Text
+@using Salon.Core.Appointments
+@using Salon.Core.Domain
+@using Salon.Services.Clients
+@model ClientVisit
+@{
+    var culture = CultureInfo.CurrentCulture;
+    var dayPath = "/admin/appointments?date=" + LocalDatePattern.Iso.Format(Model.Start.Date);
+    var badgeClass = Model.Status switch
+    {
+        AppointmentStatus.Completed => "bg-green-100 text-green-900",
+        AppointmentStatus.NoShow => "bg-red-100 text-red-900",
+        AppointmentStatus.CancelledByClient or AppointmentStatus.CancelledBySalon => "bg-stone-200 text-stone-700",
+        AppointmentStatus.Confirmed or AppointmentStatus.Arrived => "bg-blue-100 text-blue-900",
+        _ => "bg-stone-100 text-stone-700",
+    };
+}
+<li data-testid="visit" data-status="@Model.Status">
+    <a href="@dayPath" class="flex min-h-11 flex-col gap-1 p-3 hover:bg-stone-50 sm:flex-row sm:items-center sm:justify-between">
+        <span class="flex flex-col gap-0.5">
+            <time datetime="@Model.Start.ToDateTimeOffset().ToString("o", CultureInfo.InvariantCulture)" class="font-medium tabular-nums" data-testid="visit-start">@Model.Start.LocalDateTime.ToString("g", culture)</time>
+            <span class="text-sm text-stone-600" data-testid="visit-what">@Model.ServiceName · @Model.StaffName</span>
+        </span>
+        <span class="flex items-center gap-3 text-sm">
+            <span class="rounded px-1.5 py-0.5 text-xs font-medium @badgeClass" data-testid="visit-status">@T["Appointments.Status." + Model.Status]</span>
+            <span class="tabular-nums" data-testid="visit-price">@(new Money(Model.PriceAmount, Model.Currency).ToDisplayString(culture))</span>
+        </span>
+    </a>
+</li>
