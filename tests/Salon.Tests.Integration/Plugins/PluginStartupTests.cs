@@ -9,11 +9,11 @@ namespace Salon.Tests.Integration.Plugins;
 public class PluginStartupTests(SalonWebApplicationFactory factory)
 {
     [Fact]
-    public void Host_loads_both_phase_1_plugins_with_descriptors()
+    public void Host_loads_the_phase_1_plugins_with_descriptors()
     {
         var manager = factory.Services.GetRequiredService<IPluginManager>();
 
-        manager.Plugins.Select(p => p.Descriptor.SystemName).Order().ShouldBe(["Payments.Manual", "Sms.Log"]);
+        manager.Plugins.Select(p => p.Descriptor.SystemName).Order().ShouldBe(["Import.Csv", "Payments.Manual", "Sms.Log"]);
         manager.Plugins.ShouldAllBe(p => p.Descriptor.Version == "0.1.0");
     }
 }

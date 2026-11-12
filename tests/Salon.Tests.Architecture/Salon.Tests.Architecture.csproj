@@ -6,6 +6,7 @@
     <ProjectReference Include="..\..\src\Libraries\Salon.Services\Salon.Services.csproj" />
     <ProjectReference Include="..\..\src\Presentation\Salon.Web.Framework\Salon.Web.Framework.csproj" />
     <ProjectReference Include="..\..\src\Presentation\Salon.Web\Salon.Web.csproj" />
+    <ProjectReference Include="..\..\src\Plugins\Salon.Plugin.Import\Salon.Plugin.Import.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Salon.Plugin.Payments.Manual\Salon.Plugin.Payments.Manual.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Salon.Plugin.Sms.Log\Salon.Plugin.Sms.Log.csproj" />
   </ItemGroup>

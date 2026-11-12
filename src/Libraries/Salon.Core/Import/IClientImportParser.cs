@@ -14,5 +14,5 @@ public interface IClientImportParser
     int Match(IReadOnlyList<string> header);
 
     /// <summary>Maps every record to a row. Never throws for bad data: problems are reported on the row.</summary>
-    IReadOnlyList<ImportedClientRow> Parse(IReadOnlyList<string> header, IReadOnlyList<IReadOnlyList<string>> records);
+    IReadOnlyList<ImportedClientRow> Parse(IReadOnlyList<string> header, IReadOnlyList<ImportRecord> records);
 }

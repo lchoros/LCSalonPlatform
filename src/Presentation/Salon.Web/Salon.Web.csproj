@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Salon.Web.Framework\Salon.Web.Framework.csproj" />
+    <ProjectReference Include="..\..\Plugins\Salon.Plugin.Import\Salon.Plugin.Import.csproj" />
     <ProjectReference Include="..\..\Plugins\Salon.Plugin.Payments.Manual\Salon.Plugin.Payments.Manual.csproj" />
     <ProjectReference Include="..\..\Plugins\Salon.Plugin.Sms.Log\Salon.Plugin.Sms.Log.csproj" />
   </ItemGroup>

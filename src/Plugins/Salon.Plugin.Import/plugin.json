@@ -1,0 +1,8 @@
+{
+  "systemName": "Import.Csv",
+  "displayNameKey": "Plugins.Import.Csv.DisplayName",
+  "group": "Import",
+  "author": "Salon Platform",
+  "version": "0.1.0",
+  "description": "Reads Booksy and Versum client CSV exports into the client list, with a preview. Imports no visit history and no health data."
+}
