@@ -294,5 +294,21 @@
   "Catalog.Categories.Validation.NameRequired": "Enter the category name.",
   "Catalog.Categories.Validation.NameTooLong": "The category name can have at most {0} characters.",
   "Catalog.Categories.Validation.NameTaken": "A category with this name already exists.",
-  "Booking.ListServices.Uncategorised": "Other services"
+  "Booking.ListServices.Uncategorised": "Other services",
+  "Clients.Edit.Title": "Edit client",
+  "Clients.Edit.Submit": "Save changes",
+  "Clients.Edit.Cancel": "Cancel",
+  "Clients.Edit.Saved": "Changes to {0} saved.",
+  "Clients.Edit.Validation.FirstNameRequired": "Enter the first name.",
+  "Clients.Edit.Validation.FirstNameTooLong": "The first name can have at most {0} characters.",
+  "Clients.Edit.Validation.LastNameRequired": "Enter the last name.",
+  "Clients.Edit.Validation.LastNameTooLong": "The last name can have at most {0} characters.",
+  "Clients.Edit.Validation.PhoneInvalid": "Enter a valid phone number; add the country code for numbers from abroad.",
+  "Clients.Edit.Validation.PhoneTaken": "A client with this phone number already exists.",
+  "Clients.Edit.Validation.EmailInvalid": "Enter a valid email address.",
+  "Clients.Edit.Validation.EmailTaken": "A client with this email already exists.",
+  "Clients.Edit.Validation.NotesTooLong": "Notes can have at most {0} characters.",
+  "Clients.Edit.Validation.HealthNotesTooLong": "Health notes can have at most {0} characters.",
+  "Clients.Edit.Validation.LastPatchTestOnInvalid": "Enter the patch test date as YYYY-MM-DD.",
+  "Clients.Card.Edit": "Edit"
 }
