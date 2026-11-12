@@ -5,6 +5,8 @@ using NodaTime;
 using Salon.Core.Messaging;
 using Salon.Core.Tasks;
 using Salon.Core.Tenancy;
+using Salon.Services.Appointments;
+using Salon.Services.Availability;
 using Salon.Services.Caching;
 using Salon.Services.Localization;
 using Salon.Services.Messaging;
@@ -19,7 +21,7 @@ namespace Salon.Services;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers cross-slice services: clock, tenant context, cache, settings, schedule tasks, localization, message templates, email.
+    /// Registers cross-slice services: clock, tenant context, cache, settings, availability and booking, schedule tasks, localization, message templates, email.
     /// Resource sources for localization are added per assembly with <see cref="LocalizationServiceCollectionExtensions.AddLocalizationResources"/>.
     /// Events and the outbox are added per assembly with <see cref="Events.EventsServiceCollectionExtensions.AddSalonEvents"/>.
     /// </summary>
@@ -39,6 +41,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ScheduleTaskRunner>();
         services.AddScoped<IScheduleTask, HeartbeatTask>();
         services.AddScoped<ISettingService, SettingService>();
+        services.AddScoped<IAvailabilityService, AvailabilityService>();
+        services.AddScoped<IBookingService, BookingService>();
         services.AddOptions<DemoOptions>().BindConfiguration(DemoOptions.SectionName);
         services.AddSingleton<EmbeddedMessageTemplateDefaults>();
         services.AddScoped<IMessageTemplateService, MessageTemplateService>();

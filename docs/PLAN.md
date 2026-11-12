@@ -11,12 +11,12 @@ Gate: CI green and agents merge a Tier 0 PR on their own. — Met 2026-11-11: CI
 - [x] Catalog/CreateService + Booking/ListServices end to end — `agent/m0-11-catalog-create-service` (+ `-tests`): admin form (first behind the `Features:CatalogAdmin` flag, now `[RequirePermission(Catalog.Manage)]`, ADR 0009), `[RequireTenant]` + `[FeatureGate]` filters, `ServiceCreated` through the outbox; `agent/m0-11b-booking-list-services`: public `/services` with localized prices and durations, home → services link, mobile E2E with screenshots
 - [x] Run locally without Docker: local Postgres 17, Mailpit, dotnet watch; CI and agent workflows (no deploy) — README "Run locally" written; merged to main 2026-11-11, CI green on main
 - [~] ManualPaymentProvider + LogSmsProvider behind their interfaces — contracts + providers + unit tests in place; not yet wired to appointments or settings
-- [x] Demo tenant seed "studio-20" — `agent/m0-11c-demo-seed`: `DemoSeeder` (Development only, `Database:SeedDemo`, idempotent) creates Studio 20 (Europe/London, en-GB, GBP) with six services; the three demo staff are deferred to M1, when the Staff entity exists
+- [x] Demo tenant seed "studio-20" — `agent/m0-11c-demo-seed`: `DemoSeeder` (Development only, `Database:SeedDemo`, idempotent) creates Studio 20 (Europe/London, en-GB, GBP) with six services; since `agent/m1-01-staff` (ADR 0010) also three staff with weekly hours (Anna Kowalska, Tom Reed, Priya Shah), added as well to an existing demo salon that has none
 
 ## M1 Booking core (weeks 3–6)
 Gate: a test client books on a phone in under 60 seconds.
 - [ ] Catalog: categories, services, staff-specific price/duration, processing time, buffers
-- [ ] Staff: working hours, exceptions, breaks, roles
+- [~] Staff: working hours, exceptions, breaks, roles — done: `StaffMember` + `WorkingHours` (ADR 0010), `Staff/ListStaff`, `Staff/CreateStaff`, `Staff/EditWorkingHours` under `/admin/staff` behind `Staff.Manage`, admin nav, demo staff (`agent/m1-01-staff`); remaining: exceptions/time off, breaks, roles, edit/deactivate staff
 - [ ] Availability engine + exclusion constraint + property tests
 - [ ] Public booking page (service → staff/any → slot → SMS code → confirm)
 - [ ] Admin calendar (FullCalendar day/week, drag to move, block time) with live updates
