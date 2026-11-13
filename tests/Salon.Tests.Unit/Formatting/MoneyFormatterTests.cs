@@ -38,6 +38,19 @@ public class MoneyFormatterTests
         new Money(45m, "PLN").ToDisplayString(CultureInfo.GetCultureInfo("pl")).ShouldBe("PLN" + Nbsp + "45,00");
     }
 
+    [Theory]
+    [InlineData("GBP", "en-GB", "-10", "−£10.00")]
+    [InlineData("PLN", "pl-PL", "-45.5", "−45,50" + Nbsp + "zł")]
+    [InlineData("PLN", "en-GB", "-45", "−PLN" + Nbsp + "45.00")]
+    [InlineData("GBP", "en-GB", "-0.004", "£0.00")]
+    [InlineData("GBP", "en-GB", "-0.005", "−£0.01")]
+    public void Money_that_went_out_carries_a_minus_sign_in_front_of_everything(string currency, string culture, string amount, string expected)
+    {
+        var money = new Money(decimal.Parse(amount, CultureInfo.InvariantCulture), currency);
+
+        money.ToDisplayString(CultureInfo.GetCultureInfo(culture)).ShouldBe(expected);
+    }
+
     [Fact]
     public void Amounts_are_rounded_to_two_decimals_for_display_only()
     {
