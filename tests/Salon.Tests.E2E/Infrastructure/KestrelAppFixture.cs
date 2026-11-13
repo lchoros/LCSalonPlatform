@@ -87,7 +87,10 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
 
         Directory.CreateDirectory(ScreenshotDirectory);
         _playwright = await Playwright.CreateAsync();
-        Browser = await _playwright.Chromium.LaunchAsync();
+        // Headless by default; set E2E_HEADED=1 to watch the run in a visible browser, E2E_SLOWMO=<ms> to slow each action down.
+        var headed = Environment.GetEnvironmentVariable("E2E_HEADED") is "1" or "true";
+        var slowMo = float.TryParse(Environment.GetEnvironmentVariable("E2E_SLOWMO"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var ms) ? ms : (headed ? 400f : 0f);
+        Browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = !headed, SlowMo = slowMo });
     }
 
     /// <summary>
