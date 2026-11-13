@@ -1,0 +1,154 @@
+@using System.Globalization
+@using NodaTime
+@using NodaTime.Text
+@using Salon.Core.Appointments
+@using Salon.Core.Identity
+@using Salon.Core.Payments
+@using Salon.Services.Payments
+@using Salon.Web.Features.Payments.VisitFee
+@model VisitFeeViewModel
+@{
+    var visit = Model.Visit;
+    var fee = visit.Fee;
+    var culture = CultureInfo.CurrentCulture;
+    var zone = visit.Start.Zone;
+    var dayPath = "/admin/appointments?date=" + LocalDatePattern.Iso.Format(visit.Start.Date);
+    var feePath = VisitFeeController.BasePath + "/" + visit.AppointmentId;
+    ViewData["Title"] = T["Payments.Fee.Title"];
+    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 bg-white px-3 py-2 text-base shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
+    const string primaryClass = "inline-flex min-h-11 w-full items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700 sm:w-auto";
+    const string secondaryClass = "inline-flex min-h-11 w-full items-center justify-center rounded-md border border-stone-300 bg-white px-4 py-2 text-base font-medium hover:bg-stone-100 sm:w-auto";
+    const string cardClass = "space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm";
+}
+@functions {
+    string When(Instant at, DateTimeZone zone) => at.InZone(zone).LocalDateTime.ToString("g", CultureInfo.CurrentCulture);
+
+    static string StatusClass(FeeStatus status) => status switch
+    {
+        FeeStatus.Paid => "bg-green-100 text-green-900",
+        FeeStatus.Waived => "bg-stone-200 text-stone-800",
+        _ => "bg-amber-100 text-amber-900",
+    };
+}
+<section class="mx-auto max-w-lg space-y-6">
+    <a href="@dayPath" data-testid="back" class="inline-flex min-h-11 items-center text-sm font-medium text-stone-700 hover:underline">&larr; @T["Payments.Fee.Back"]</a>
+    <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Payments.Fee.Title"]</h1>
+
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+    }
+    @if (Model.Error is { } error)
+    {
+        <p role="alert" data-testid="error" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">@error</p>
+    }
+
+    <section class="@cardClass" data-testid="fee-visit" data-status="@visit.Status">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-lg font-semibold"><a href="/admin/clients/@visit.ClientId" class="underline" data-testid="fee-client">@visit.ClientName</a></h2>
+            <span class="rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-900" data-testid="fee-visit-status">@T[$"Appointments.Status.{visit.Status}"]</span>
+        </div>
+        <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-base">
+            <dt class="text-sm text-stone-600">@T["Payments.Fee.Visit.What"]</dt>
+            <dd data-testid="fee-what">@visit.ServiceName · @visit.StaffName</dd>
+            <dt class="text-sm text-stone-600">@T["Payments.Fee.Visit.When"]</dt>
+            <dd class="tabular-nums" data-testid="fee-when">@visit.Start.LocalDateTime.ToString("f", culture)</dd>
+            <dt class="text-sm text-stone-600">@T["Payments.Fee.Visit.Price"]</dt>
+            <dd class="tabular-nums" data-testid="fee-price">@visit.Price.ToDisplayString(culture)</dd>
+        </dl>
+    </section>
+
+    @if (fee is null && visit.Proposal is { } proposal)
+    {
+        <section class="@cardClass" data-testid="fee-proposal" data-kind="@proposal.Kind">
+            <h2 class="text-lg font-semibold">@T[$"Payments.Fee.Kind.{proposal.Kind}"]</h2>
+            <p data-testid="fee-proposal-text">@T.Format($"Payments.Fee.Proposal.{proposal.Kind}", proposal.Percent.ToString("0.##", culture), proposal.Amount.ToDisplayString(culture))</p>
+            <form method="post" action="@feePath" asp-antiforgery="true" class="space-y-3" data-testid="charge-form">
+                <div class="space-y-1">
+                    <label for="amount" class="block text-sm font-medium">@T.Format("Payments.Fee.Amount", visit.Price.Currency)</label>
+                    <input id="amount" name="amount" type="text" inputmode="decimal" value="@proposal.Amount.Amount.ToString("0.00", culture)" required aria-describedby="amount-hint" class="@inputClass tabular-nums" data-testid="fee-amount" />
+                    <p id="amount-hint" class="text-sm text-stone-600">@T.Format("Payments.Fee.AmountHint", visit.Price.ToDisplayString(culture))</p>
+                </div>
+                <button type="submit" class="@primaryClass" data-testid="charge-fee">@T["Payments.Fee.Charge"]</button>
+            </form>
+            <p class="text-sm text-stone-600">@T["Payments.Fee.NothingCharged"]</p>
+            <a href="@dayPath" class="@secondaryClass" data-testid="no-fee">@T["Payments.Fee.Skip"]</a>
+        </section>
+    }
+    else if (fee is null)
+    {
+        <section class="@cardClass" data-testid="fee-none">
+            <p>@T[AppointmentStateMachine.IsActive(visit.Status) || visit.Status == AppointmentStatus.Completed ? "Payments.Fee.None.NotMissed" : "Payments.Fee.None.Policy"]</p>
+            @if (User.HasClaim(UserClaimTypes.Permission, Permissions.SettingsManage))
+            {
+                <a href="/admin/settings/cancellation-policy" class="@secondaryClass" data-testid="open-policy">@T["Payments.Fee.OpenPolicy"]</a>
+            }
+        </section>
+    }
+    else
+    {
+        <section class="@cardClass" data-testid="fee" data-status="@fee.Status" data-kind="@fee.Kind">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="text-lg font-semibold">@T[$"Payments.Fee.Kind.{fee.Kind}"]</h2>
+                <span class="rounded px-1.5 py-0.5 text-xs font-medium @StatusClass(fee.Status)" data-testid="fee-status">@T[$"Payments.Fee.Status.{fee.Status}"]</span>
+            </div>
+            <p class="text-2xl font-bold tabular-nums" data-testid="fee-amount-charged">@fee.Amount.ToDisplayString(culture)</p>
+
+            <h3 class="text-sm font-medium text-stone-600">@T["Payments.Fee.History"]</h3>
+            <ol class="space-y-2 text-sm" data-testid="fee-history">
+                <li data-testid="fee-history-added">
+                    <time datetime="@InstantPattern.ExtendedIso.Format(fee.At)" class="tabular-nums text-stone-600">@When(fee.At, zone)</time>
+                    <span class="block">@T.Format("Payments.Fee.History.Added", fee.ByName ?? T["Payments.Fee.History.Unknown"])</span>
+                </li>
+                @if (fee.Settlement is { } settled)
+                {
+                    <li data-testid="fee-history-settled">
+                        <time datetime="@InstantPattern.ExtendedIso.Format(settled.At)" class="tabular-nums text-stone-600">@When(settled.At, zone)</time>
+                        @if (settled.Kind == ClientAccountEntryKind.FeePayment)
+                        {
+                            <span class="block">@T.Format("Payments.Fee.History.Paid", T[$"Payments.Method.{settled.Method}"], settled.ByName ?? T["Payments.Fee.History.Unknown"])</span>
+                            <span class="block break-all text-stone-600" data-testid="fee-reference">@T.Format("Payments.Fee.History.Reference", settled.ProviderReference ?? "—")</span>
+                        }
+                        else
+                        {
+                            <span class="block">@T.Format("Payments.Fee.History.Waived", settled.ByName ?? T["Payments.Fee.History.Unknown"])</span>
+                            <span class="block whitespace-pre-line text-stone-600" data-testid="fee-waive-reason">@settled.Note</span>
+                        }
+                    </li>
+                }
+            </ol>
+        </section>
+
+        @if (fee.Status == FeeStatus.Owed)
+        {
+            <section class="@cardClass" data-testid="pay-step">
+                <h2 class="text-lg font-semibold">@T["Payments.Fee.Pay.Title"]</h2>
+                <p class="text-sm text-stone-600">@T["Payments.Fee.Pay.Hint"]</p>
+                <form method="post" action="@feePath/paid" asp-antiforgery="true" class="space-y-3" data-testid="pay-form">
+                    <div class="space-y-1">
+                        <label for="method" class="block text-sm font-medium">@T["Payments.Fee.Pay.Method"]</label>
+                        <select id="method" name="method" class="@inputClass" data-testid="pay-method">
+                            @foreach (var method in Enum.GetValues<PaymentMethod>())
+                            {
+                                <option value="@method">@T[$"Payments.Method.{method}"]</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="@primaryClass" data-testid="record-payment">@T.Format("Payments.Fee.Pay.Submit", fee.Amount.ToDisplayString(culture))</button>
+                </form>
+            </section>
+
+            <section class="@cardClass" data-testid="waive-step">
+                <h2 class="text-lg font-semibold">@T["Payments.Fee.Waive.Title"]</h2>
+                <form method="post" action="@feePath/waive" asp-antiforgery="true" class="space-y-3" data-testid="waive-form">
+                    <div class="space-y-1">
+                        <label for="reason" class="block text-sm font-medium">@T["Payments.Fee.Waive.Reason"]</label>
+                        <textarea id="reason" name="reason" rows="2" maxlength="@ClientAccountEntry.NoteMaxLength" required aria-describedby="reason-hint" class="@inputClass" data-testid="waive-reason"></textarea>
+                        <p id="reason-hint" class="text-sm text-stone-600">@T["Payments.Fee.Waive.Hint"]</p>
+                    </div>
+                    <button type="submit" class="@secondaryClass" data-testid="waive-fee">@T["Payments.Fee.Waive.Submit"]</button>
+                </form>
+            </section>
+        }
+    }
+</section>

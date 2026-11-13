@@ -1,6 +1,7 @@
 @using System.Globalization
 @using Salon.Core.Identity
 @using Salon.Services.Clients
+@using Salon.Services.Payments
 @using Salon.Web.Features.Clients.ClientCard
 @model ClientCardViewModel
 @{
@@ -8,6 +9,8 @@
     var history = Model.History;
     var culture = CultureInfo.CurrentCulture;
     ViewData["Title"] = T["Clients.Card.Title"];
+    // The visit rows (a partial) read this to decide whether a missed or cancelled visit links to its fee page.
+    ViewData["FeesInUse"] = Model.FeesInUse;
     var canMerge = !card.IsMerged && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsMerge);
     const string labelClass = "text-sm text-stone-500";
     const string valueClass = "text-base";
@@ -55,6 +58,46 @@
             </div>
         </dl>
     </section>
+
+    @if (Model.Account.Fees.Count > 0)
+    {
+        <section class="space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" data-testid="client-fees">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="text-lg font-semibold">@T["Clients.Fees.Title"]</h2>
+                @if (Model.Account.Owed is { } owed)
+                {
+                    <p class="rounded bg-amber-100 px-2 py-1 text-sm font-medium text-amber-900" data-testid="client-owes">@T.Format("Clients.Fees.Owes", owed.ToDisplayString(culture))</p>
+                }
+                else
+                {
+                    <p class="text-sm text-stone-600" data-testid="client-owes-nothing">@T["Clients.Fees.NothingOwed"]</p>
+                }
+            </div>
+            <ul class="divide-y divide-stone-200 rounded-md border border-stone-200" data-testid="fee-list">
+                @foreach (var fee in Model.Account.Fees)
+                {
+                    var feeBadge = fee.Status switch
+                    {
+                        FeeStatus.Paid => "bg-green-100 text-green-900",
+                        FeeStatus.Waived => "bg-stone-200 text-stone-800",
+                        _ => "bg-amber-100 text-amber-900",
+                    };
+                    <li data-testid="fee-row" data-status="@fee.Status">
+                        <a href="/admin/payments/fees/@fee.AppointmentId" data-testid="fee-link" class="flex min-h-11 flex-col gap-1 p-3 hover:bg-stone-50 sm:flex-row sm:items-center sm:justify-between">
+                            <span class="flex flex-col gap-0.5">
+                                <span class="font-medium">@T[$"Payments.Fee.Kind.{fee.Kind}"]</span>
+                                <span class="text-sm text-stone-600">@fee.ServiceName · <span class="tabular-nums">@fee.AppointmentStart.LocalDateTime.ToString("g", culture)</span></span>
+                            </span>
+                            <span class="flex items-center gap-3 text-sm">
+                                <span class="rounded px-1.5 py-0.5 text-xs font-medium @feeBadge" data-testid="fee-row-status">@T[$"Payments.Fee.Status.{fee.Status}"]</span>
+                                <span class="tabular-nums" data-testid="fee-row-amount">@fee.Amount.ToDisplayString(culture)</span>
+                            </span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
 
     <section class="space-y-4 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" data-testid="history">
         <h2 class="text-lg font-semibold">@T["Clients.History.Title"]</h2>

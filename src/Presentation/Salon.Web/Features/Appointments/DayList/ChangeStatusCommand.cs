@@ -17,7 +17,8 @@ public sealed record ChangeStatusCommand(Guid AppointmentId, AppointmentTransiti
 /// <param name="Succeeded">False when the state machine refused the move; nothing changed then.</param>
 /// <param name="From">The status before (and, when refused, still).</param>
 /// <param name="To">The status asked for.</param>
-public sealed record ChangeStatusResult(LocalDate Day, bool Succeeded, AppointmentStatus From, AppointmentStatus To);
+/// <param name="FeeProposed">True when the salon's cancellation policy allows a fee for the visit as it is now (ADR 0022).</param>
+public sealed record ChangeStatusResult(LocalDate Day, bool Succeeded, AppointmentStatus From, AppointmentStatus To, bool FeeProposed = false);
 
 /// <summary>The buttons on an appointment card; each maps to one target status and one URL segment.</summary>
 public enum AppointmentTransition

@@ -89,5 +89,7 @@
   "Appointments.Calendar.Move.Validation.DateInvalid": "Podaj datę w formacie RRRR-MM-DD.",
   "Appointments.Book.Offering": "{0} min · {1}",
   "Appointments.Book.OfferingFrom": "{0} min · od {1}",
-  "Appointments.Book.NotOffered": "{0} nie wykonuje tej usługi."
+  "Appointments.Book.NotOffered": "{0} nie wykonuje tej usługi.",
+  "Appointments.Calendar.Card.ClientOwes": "Klient ma do zapłaty {0} za wcześniejsze wizyty.",
+  "Appointments.Calendar.Card.OpenClient": "Otwórz kartę klienta"
 }

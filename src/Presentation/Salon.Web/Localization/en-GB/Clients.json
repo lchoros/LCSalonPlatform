@@ -152,5 +152,9 @@
   "Clients.Import.Result.Skipped": "{0} already existed, {1} could not be imported.",
   "Clients.Import.Result.ToClients": "Go to the client list",
   "Clients.Import.Result.Again": "Import another file",
-  "Clients.Import.ConsentSource": "Marketing consent imported from {0} ({1} export)"
+  "Clients.Import.ConsentSource": "Marketing consent imported from {0} ({1} export)",
+  "Clients.Fees.Title": "Fees",
+  "Clients.Fees.Owes": "Owes {0}",
+  "Clients.Fees.NothingOwed": "Nothing owed",
+  "Clients.History.Fee": "Fee"
 }

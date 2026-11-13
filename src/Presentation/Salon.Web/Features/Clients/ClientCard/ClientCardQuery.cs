@@ -1,5 +1,6 @@
 using Salon.Core.Cqrs;
 using Salon.Services.Clients;
+using Salon.Services.Payments;
 
 using Card = Salon.Services.Clients.ClientCard;
 
@@ -15,4 +16,6 @@ public sealed record ClientCardQuery(Guid ClientId) : IQuery<ClientCardDetails?>
 /// <param name="Card">The decrypted card.</param>
 /// <param name="History">Upcoming and past visits with counters; empty lists for a client who never booked.</param>
 /// <param name="MergedIntoName">Full name of the client this card was merged into, when <see cref="Card.IsMerged"/>.</param>
-public sealed record ClientCardDetails(Card Card, ClientHistory History, string? MergedIntoName);
+/// <param name="Account">The fees on the client's account and what is still owed (ADR 0022).</param>
+/// <param name="FeesInUse">True when the salon's policy sets a fee or the client already has one: missed and cancelled visits then link to their fee page.</param>
+public sealed record ClientCardDetails(Card Card, ClientHistory History, string? MergedIntoName, ClientAccount Account, bool FeesInUse);

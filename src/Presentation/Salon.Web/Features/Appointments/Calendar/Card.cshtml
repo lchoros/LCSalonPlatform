@@ -61,6 +61,13 @@
                 <dd data-testid="card-notes" class="whitespace-pre-line">@notes</dd>
             }
         </dl>
+        @if (card.ClientOwes is { } owes)
+        {
+            <p class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" data-testid="card-client-owes">
+                @T.Format("Appointments.Calendar.Card.ClientOwes", owes.ToDisplayString(culture))
+                <a href="/admin/clients/@card.ClientId" class="font-medium underline">@T["Appointments.Calendar.Card.OpenClient"]</a>
+            </p>
+        }
         @if (card.Actions.Count > 0)
         {
             <div class="space-y-2 border-t border-stone-200 pt-3">
