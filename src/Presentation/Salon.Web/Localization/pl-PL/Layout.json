@@ -7,5 +7,6 @@
   "Layout.Nav.Clients": "Klienci",
   "Layout.Nav.Appointments": "Wizyty",
   "Layout.Nav.Calendar": "Kalendarz",
-  "Layout.Nav.Settings": "Ustawienia"
+  "Layout.Nav.Settings": "Ustawienia",
+  "Layout.Nav.CashUp": "Kasa"
 }

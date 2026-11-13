@@ -96,5 +96,7 @@
   "Appointments.Calendar.Card.DepositReceived": "Wpłacono {0}",
   "Appointments.Calendar.Card.DepositDue": "{0} do wpłaty, brak wpłaty",
   "Appointments.Calendar.Card.DepositNone": "Nie wymagano",
-  "Appointments.Calendar.Card.DepositOpen": "Szczegóły zadatku"
+  "Appointments.Calendar.Card.DepositOpen": "Szczegóły zadatku",
+  "Appointments.Day.Checkout": "Rozlicz wizytę",
+  "Appointments.Calendar.Card.Checkout": "Rozlicz wizytę"
 }

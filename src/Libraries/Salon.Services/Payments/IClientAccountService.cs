@@ -55,6 +55,23 @@ public interface IClientAccountService
     /// <summary>Records that the visit's deposit went back to the client, in full. Throws <see cref="ClientAccountException"/> when there is none to return.</summary>
     Task<DepositLine> ReturnDepositAsync(Guid appointmentId, PaymentMethod method, Guid? byUserId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// The bill of a visit (ADR 0024): the booked price, the deposit the salon holds for it, what is left to pay, the
+    /// payment once taken, and the client's open fees from earlier visits, which can be paid on the same bill. Null when
+    /// the salon has no such appointment.
+    /// </summary>
+    Task<VisitBill?> GetBillAsync(Guid appointmentId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Records that the client paid the bill with one method: what is left of the visit, and each open fee named in
+    /// <paramref name="feeAppointmentIds"/> (by the visit the fee is about; unknown ids are ignored). Throws
+    /// <see cref="ClientAccountException"/> when the visit is unknown, has not reached the chair (only an arrived or
+    /// completed visit is paid for), there is nothing to pay, or the payment plugin refuses. The caller completes the
+    /// visit; this only records money.
+    /// </summary>
+    Task<VisitBill> PayBillAsync(Guid appointmentId, PaymentMethod method, IReadOnlyCollection<Guid> feeAppointmentIds, Guid? byUserId, CancellationToken cancellationToken = default);
+
+
 
     /// <summary>What the client owes, every fee and every deposit on their account, newest first. Empty for a client without any or an unknown id.</summary>
     Task<ClientAccount> GetAccountAsync(Guid clientId, CancellationToken cancellationToken = default);
@@ -134,6 +151,42 @@ public sealed record DepositLine(
 }
 
 public sealed record DepositReturn(Instant At, string? ByName, PaymentMethod? Method, string? ProviderReference);
+
+/// <summary>A visit as the checkout sees it (ADR 0024).</summary>
+/// <param name="Start">In the salon's zone.</param>
+/// <param name="DepositHeld">A deposit received for this visit and not returned: it comes off the bill.</param>
+/// <param name="Payment">The payment taken for the visit; null while it is unpaid or the deposit covered it.</param>
+/// <param name="OpenFees">The client's unsettled fees from other visits, oldest debt last.</param>
+public sealed record VisitBill(
+    Guid AppointmentId,
+    Guid ClientId,
+    string ClientName,
+    string ServiceName,
+    string StaffName,
+    ZonedDateTime Start,
+    AppointmentStatus Status,
+    Money Price,
+    Money? DepositHeld,
+    VisitPaymentLine? Payment,
+    IReadOnlyList<FeeLine> OpenFees)
+{
+    /// <summary>Only a visit the client turned up for is paid for.</summary>
+    public bool CanPay => Status is AppointmentStatus.Arrived or AppointmentStatus.Completed;
+
+    /// <summary>What is left to pay for the visit itself: nothing once it is paid, else the price less the deposit held.</summary>
+    public Money Outstanding => Price with { Amount = Payment is null ? TillRules.Outstanding(Price.Amount, DepositHeld?.Amount ?? 0m) : 0m };
+}
+
+/// <summary>The payment taken for a visit at the checkout.</summary>
+public sealed record VisitPaymentLine(
+    Guid EntryId,
+    Guid AppointmentId,
+    Money Amount,
+    Instant At,
+    string? ByName,
+    PaymentMethod? Method,
+    string? ProviderReference);
+
 
 
 public enum FeeStatus
@@ -221,6 +274,12 @@ public enum ClientAccountRefusal
 
     /// <summary>The visit has no deposit to return, or it already went back.</summary>
     NoDepositHeld = 12,
+
+    /// <summary>Only a visit the client turned up for (arrived or completed) is paid for at the checkout.</summary>
+    VisitNotPayable = 13,
+
+    /// <summary>The visit is already paid (or covered by its deposit) and no open fee was chosen.</summary>
+    NothingToPay = 14,
 }
 
 /// <summary>A request the account refuses; <see cref="Refusal"/> says why, for the message the screen shows.</summary>

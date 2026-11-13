@@ -32,6 +32,10 @@
             <span class="tabular-nums" data-testid="visit-price">@(new Money(Model.PriceAmount, Model.Currency).ToDisplayString(culture))</span>
         </span>
     </a>
+    @if (Model.Status == AppointmentStatus.Completed)
+    {
+        <a href="/admin/payments/checkout/@Model.AppointmentId" data-testid="visit-payment-link" class="inline-flex min-h-11 items-center px-3 text-sm font-medium text-stone-700 underline">@T["Clients.History.Payment"]</a>
+    }
     @if (feeLink)
     {
         <a href="/admin/payments/fees/@Model.AppointmentId" data-testid="visit-fee-link" class="inline-flex min-h-11 items-center px-3 text-sm font-medium text-stone-700 underline">@T["Clients.History.Fee"]</a>

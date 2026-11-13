@@ -96,5 +96,7 @@
   "Appointments.Calendar.Card.DepositReceived": "{0} received",
   "Appointments.Calendar.Card.DepositDue": "{0} due, not received",
   "Appointments.Calendar.Card.DepositNone": "None asked for",
-  "Appointments.Calendar.Card.DepositOpen": "Deposit details"
+  "Appointments.Calendar.Card.DepositOpen": "Deposit details",
+  "Appointments.Day.Checkout": "Checkout",
+  "Appointments.Calendar.Card.Checkout": "Checkout"
 }
