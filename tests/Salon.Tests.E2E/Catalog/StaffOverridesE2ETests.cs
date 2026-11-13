@@ -38,12 +38,12 @@ public class StaffOverridesE2ETests(KestrelAppFixture app) : IClassFixture<Kestr
         await page.GetByLabel("Email").FillAsync(Email);
         await page.GetByLabel("Password").FillAsync(Password);
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Sign in" }).ClickAsync();
-        await page.WaitForURLAsync("**/admin/services");
+        await page.ReachAsync("**/admin/services");
 
         await page.GetByTestId("service-card").Nth(0).GetByTestId("edit-service").ClickAsync();
-        await page.WaitForURLAsync("**/admin/services/*");
+        await page.ReachAsync("**/admin/services/*");
         await page.GetByTestId("staff-overrides").ClickAsync();
-        await page.WaitForURLAsync("**/admin/services/*/staff");
+        await page.ReachAsync("**/admin/services/*/staff");
 
         var styled = await StylesheetLoadedAsync(page);
         (await page.GetByTestId("service-name").TextContentAsync()).ShouldBe("Cut & blow-dry");
@@ -71,7 +71,7 @@ public class StaffOverridesE2ETests(KestrelAppFixture app) : IClassFixture<Kestr
         formAxe.Violations.ShouldBeEmpty(string.Join("; ", formAxe.Violations.Select(v => $"{v.Id}: {v.Help}")));
 
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Save" }).ClickAsync();
-        await page.WaitForURLAsync("**/admin/services");
+        await page.ReachAsync("**/admin/services");
         (await page.GetByTestId("flash").TextContentAsync()).ShouldBe("Staff prices and durations for “Cut & blow-dry” have been saved.");
 
         await page.GotoAsync(app.TenantUrl(Slug) + "/services");
