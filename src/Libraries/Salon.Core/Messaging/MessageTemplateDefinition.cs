@@ -9,5 +9,8 @@ public sealed record MessageTemplateDefinition(string Key, IReadOnlyList<Message
     public bool Supports(MessageChannel channel) => Channels.Contains(channel);
 
     /// <summary>True when <paramref name="tokenName"/> is one of <see cref="TokenNames"/>, ignoring case like the renderer does.</summary>
+    /// <summary>Tokens the message is useless without (the code in a verification text); a salon's own wording must keep them.</summary>
+    public IReadOnlyList<string> RequiredTokenNames { get; init; } = [];
+
     public bool AllowsToken(string tokenName) => TokenNames.Contains(tokenName, StringComparer.OrdinalIgnoreCase);
 }

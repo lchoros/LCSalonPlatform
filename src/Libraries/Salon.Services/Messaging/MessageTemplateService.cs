@@ -22,8 +22,6 @@ internal sealed class MessageTemplateService(
 {
     public const string CachePrefix = "Salon.messagetemplates.";
 
-    public const int MaxSubjectLength = 200;
-
     public async Task<MessageTemplateText> GetAsync(string key, MessageChannel channel, string culture, CancellationToken cancellationToken = default)
     {
         RequireDefinition(key, channel);
@@ -47,6 +45,23 @@ internal sealed class MessageTemplateService(
 
         return defaults.TryGet(key, channel, SupportedCultures.Default, out var platformDefault)
             ? platformDefault
+            : throw new MessageTemplateNotFoundException(key, channel, culture);
+    }
+
+    public Task<MessageTemplateText> GetDefaultAsync(string key, MessageChannel channel, string culture, CancellationToken cancellationToken = default)
+    {
+        RequireDefinition(key, channel);
+        ArgumentNullException.ThrowIfNull(culture);
+        RequireTenant();
+
+        var supported = SupportedCultures.Match(culture);
+        if (supported is not null && defaults.TryGet(key, channel, supported, out var cultureDefault))
+        {
+            return Task.FromResult(cultureDefault);
+        }
+
+        return defaults.TryGet(key, channel, SupportedCultures.Default, out var platformDefault)
+            ? Task.FromResult(platformDefault)
             : throw new MessageTemplateNotFoundException(key, channel, culture);
     }
 
@@ -128,8 +143,8 @@ internal sealed class MessageTemplateService(
                 throw new ArgumentException("An SMS template has no subject; pass null.", nameof(subject));
             case MessageChannel.Email when string.IsNullOrWhiteSpace(subject):
                 throw new ArgumentException("An email template needs a subject.", nameof(subject));
-            case MessageChannel.Email when subject.Length > MaxSubjectLength:
-                throw new ArgumentException($"The subject exceeds {MaxSubjectLength} characters.", nameof(subject));
+            case MessageChannel.Email when subject.Length > MessageTemplateRules.SubjectMaxLength:
+                throw new ArgumentException($"The subject exceeds {MessageTemplateRules.SubjectMaxLength} characters.", nameof(subject));
         }
 
         if (subject is not null)
@@ -138,6 +153,17 @@ internal sealed class MessageTemplateService(
         }
 
         RequireAllowedTokens(definition, body, nameof(body));
+
+        if (body.Length > MessageTemplateRules.BodyMaxLength(channel))
+        {
+            throw new ArgumentException($"The body exceeds {MessageTemplateRules.BodyMaxLength(channel)} characters.", nameof(body));
+        }
+
+        var missing = MessageTemplateRules.MissingRequired(definition, body);
+        if (missing.Count > 0)
+        {
+            throw new ArgumentException($"Template '{definition.Key}' must keep the token(s) {string.Join(", ", missing)}.", nameof(body));
+        }
     }
 
     private static void RequireAllowedTokens(MessageTemplateDefinition definition, string text, string parameterName)

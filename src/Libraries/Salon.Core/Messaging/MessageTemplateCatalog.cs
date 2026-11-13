@@ -30,7 +30,7 @@ public static class MessageTemplateCatalog
         new(BookingReminder, SmsAndEmail, [.. BookingTokens, "CancelUrl"]),
         new(BookingCancelled, SmsAndEmail, [.. BookingTokens, "BookingUrl"]),
         new(BookingRescheduled, SmsAndEmail, [.. BookingTokens, "CancelUrl"]),
-        new(BookingCode, SmsOnly, ["SalonName", "Code"]),
+        new(BookingCode, SmsOnly, ["SalonName", "Code"]) { RequiredTokenNames = ["Code"] },
     }.ToDictionary(d => d.Key, StringComparer.Ordinal);
 
     public static IReadOnlyList<MessageTemplateDefinition> All { get; } = [.. Definitions.Values];

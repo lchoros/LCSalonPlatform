@@ -13,6 +13,9 @@ public interface IMessageTemplateService
     /// <summary>The unrendered text for a template, with placeholders in place.</summary>
     Task<MessageTemplateText> GetAsync(string key, MessageChannel channel, string culture, CancellationToken cancellationToken = default);
 
+    /// <summary>The platform's standard wording, whatever the tenant has saved: what "use the standard text again" goes back to.</summary>
+    Task<MessageTemplateText> GetDefaultAsync(string key, MessageChannel channel, string culture, CancellationToken cancellationToken = default);
+
     /// <summary>Resolves the text like <see cref="GetAsync"/> and renders subject and body with <paramref name="tokens"/>.</summary>
     Task<RenderedTemplate> RenderAsync(string key, MessageChannel channel, string culture, MessageTokens tokens, CancellationToken cancellationToken = default);
 
