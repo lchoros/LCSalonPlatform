@@ -37,11 +37,11 @@ public class MergeClientsE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
         await page.GetByLabel("Email").FillAsync(Email);
         await page.GetByLabel("Password").FillAsync(Password);
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Sign in" }).ClickAsync();
-        await page.WaitForURLAsync("**/admin/clients?q=Brown");
+        await page.ReachAsync("**/admin/clients?q=Brown");
 
         // The demo client with history: one visit completed yesterday.
         await page.GetByTestId("client-row").Filter(new LocatorFilterOptions { HasText = "James Brown" }).First.GetByRole(AriaRole.Link).First.ClickAsync(); // the link, not the row: unstyled pages (CI has no CSS) put the row centre outside it
-        await page.WaitForURLAsync(url => url.Contains("/admin/clients/", StringComparison.Ordinal) && !url.Contains('?', StringComparison.Ordinal));
+        await page.ReachAsync(url => url.Contains("/admin/clients/", StringComparison.Ordinal) && !url.Contains('?', StringComparison.Ordinal));
         var targetUrl = page.Url;
         (await page.GetByTestId("history").IsVisibleAsync()).ShouldBeTrue();
         (await page.GetByTestId("visits-completed").TextContentAsync()).ShouldNotBeNull().Trim().ShouldBe("1");
@@ -70,17 +70,17 @@ public class MergeClientsE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
         await page.GetByLabel("Phone number", new PageGetByLabelOptions { Exact = true }).FillAsync("07700 " + suffix);
         await page.GetByLabel("Notes", new PageGetByLabelOptions { Exact = true }).FillAsync("Typed in twice at the desk.");
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Save client" }).ClickAsync();
-        await page.WaitForURLAsync(url => url.Contains("/admin/clients/", StringComparison.Ordinal) && !url.EndsWith("/new", StringComparison.Ordinal));
+        await page.ReachAsync(url => url.Contains("/admin/clients/", StringComparison.Ordinal) && !url.EndsWith("/new", StringComparison.Ordinal));
 
         await page.GetByTestId("merge-link").ClickAsync();
-        await page.WaitForURLAsync("**/admin/clients/*/merge");
+        await page.ReachAsync("**/admin/clients/*/merge");
         await page.GetByTestId("merge-search").FillAsync("Brown");
         await page.GetByTestId("merge-search-submit").ClickAsync();
-        await page.WaitForURLAsync("**/admin/clients/*/merge?q=Brown");
+        await page.ReachAsync("**/admin/clients/*/merge?q=Brown");
         var jamesBrown = page.GetByTestId("merge-candidate").Filter(new LocatorFilterOptions { HasText = "James Brown" }).Filter(new LocatorFilterOptions { HasNotText = "Browne" });
         (await jamesBrown.CountAsync()).ShouldBe(1);
         await jamesBrown.GetByTestId("choose-target").ClickAsync();
-        await page.WaitForURLAsync("**/admin/clients/*/merge/*");
+        await page.ReachAsync("**/admin/clients/*/merge/*");
 
         (await page.GetByTestId("merge-confirm").IsVisibleAsync()).ShouldBeTrue();
         (await page.GetByTestId("source-name").TextContentAsync()).ShouldNotBeNull().Trim().ShouldBe("James Browne");
@@ -101,7 +101,7 @@ public class MergeClientsE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
         confirmAxe.Violations.ShouldBeEmpty(string.Join("; ", confirmAxe.Violations.Select(v => $"{v.Id}: {v.Help}")));
 
         await page.GetByTestId("merge-submit").ClickAsync();
-        await page.WaitForURLAsync(targetUrl);
+        await page.ReachAsync(targetUrl);
 
         (await page.GetByTestId("flash").TextContentAsync()).ShouldNotBeNull().ShouldContain("James Browne has been merged into James Brown.");
         (await page.GetByTestId("client-name").TextContentAsync()).ShouldNotBeNull().Trim().ShouldBe("James Brown");

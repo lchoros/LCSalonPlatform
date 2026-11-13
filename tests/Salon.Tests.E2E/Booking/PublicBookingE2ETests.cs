@@ -68,7 +68,7 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await CaptureAsync(page, "book-services-mobile-390.png");
         interaction.Start();
         await page.GetByTestId("book-service").First.TapAsync();
-        await page.WaitForURLAsync(url => url.Contains("/book/", StringComparison.Ordinal) && !url.EndsWith("/book", StringComparison.Ordinal));
+        await page.ReachAsync(url => url.Contains("/book/", StringComparison.Ordinal) && !url.EndsWith("/book", StringComparison.Ordinal));
 
         // Step 2: the first free time of the first day that has one ("anyone available" is selected by default).
         (await page.GetByTestId("service-name").TextContentAsync()).ShouldBe("Cut & blow-dry");
@@ -82,7 +82,7 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await CaptureDesktopAsync(page.Url, "book-slots-desktop-1280.png");
         interaction.Start();
         await slots.First.TapAsync();
-        await page.WaitForURLAsync("**/details?*");
+        await page.ReachAsync("**/details?*");
 
         // Step 3: details.
         (await page.GetByTestId("summary-service").TextContentAsync()).ShouldNotBeNull().ShouldContain("Cut & blow-dry");
@@ -96,7 +96,7 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await CaptureAsync(page, "book-details-mobile-390.png");
         interaction.Start();
         await page.GetByTestId("submit-details").TapAsync();
-        await page.WaitForURLAsync("**/book/verify/*");
+        await page.ReachAsync("**/book/verify/*");
 
         // Step 4: the code, read from the "phone".
         (await page.GetByTestId("code-sent-to").TextContentAsync()).ShouldNotBeNull().ShouldContain("+44•••••••" + suffix[^3..]);
@@ -106,7 +106,7 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         interaction.Start();
         await page.GetByTestId("code").FillAsync(code);
         await page.GetByTestId("submit-code").TapAsync();
-        await page.WaitForURLAsync("**/book/done/*");
+        await page.ReachAsync("**/book/done/*");
         (await page.GetByTestId("done-title").TextContentAsync()).ShouldBe("Your appointment is booked");
         interaction.Stop();
         total.Stop();

@@ -47,7 +47,7 @@ public class LoginE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppFixt
         await page.GetByLabel("Email").FillAsync(Email);
         await page.GetByLabel("Password").FillAsync(Password);
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Sign in" }).ClickAsync();
-        await page.WaitForURLAsync("**/admin/services/new");
+        await page.ReachAsync("**/admin/services/new");
 
         (await page.GetByTestId("create-service-form").IsVisibleAsync()).ShouldBeTrue();
         (await page.GetByTestId("user-name").TextContentAsync()).ShouldBe("Studio 20 Owner");

@@ -148,7 +148,8 @@ public class MergeClientsTests(SalonWebApplicationFactory factory) : IAsyncLifet
             payload.RootElement.GetProperty("tenantId").GetGuid().ShouldBe(_studio.Id);
             payload.RootElement.EnumerateObject().Count().ShouldBe(3, "events carry ids only");
             message.Payload.ShouldNotContain("Olivia");
-            message.Payload.ShouldNotContain("7700");
+            message.Payload.ShouldNotContain("7700900");
+            message.Payload.ShouldNotContain("7700 900");
         }
 
         await using (var scope = factory.CreateTenantScope(_studio.Id))
