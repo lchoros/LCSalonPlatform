@@ -329,6 +329,12 @@ internal sealed class ClientService(
                 .ExecuteUpdateAsync(a => a.SetProperty(x => x.ClientId, target.Id), cancellationToken)
                 .ConfigureAwait(false);
 
+            // What the source owes or has settled follows it too (ADR 0022): the only write that ever touches an account line.
+            await db.ClientAccountEntries
+                .Where(e => e.ClientId == source.Id)
+                .ExecuteUpdateAsync(e => e.SetProperty(x => x.ClientId, target.Id), cancellationToken)
+                .ConfigureAwait(false);
+
             await publisher.PublishAsync(new ClientsMerged(target.Id, source.Id, tenantId), cancellationToken).ConfigureAwait(false);
             if (transaction is not null)
             {

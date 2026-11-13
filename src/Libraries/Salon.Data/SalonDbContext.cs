@@ -11,6 +11,7 @@ using Salon.Core.Events;
 using Salon.Core.Identity;
 using Salon.Core.Messaging;
 using Salon.Core.Notifications;
+using Salon.Core.Payments;
 using Salon.Core.Settings;
 using Salon.Core.Staff;
 using Salon.Core.Tenancy;
@@ -65,6 +66,9 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
 
     /// <summary>One row per reminder handled for an appointment; the unique row is what prevents a second SMS (ADR 0020).</summary>
     public DbSet<AppointmentReminder> AppointmentReminders => Set<AppointmentReminder>();
+
+    /// <summary>What clients owe the salon and how it was settled; lines are only ever added (ADR 0022).</summary>
+    public DbSet<ClientAccountEntry> ClientAccountEntries => Set<ClientAccountEntry>();
 
     /// <summary>Per-tenant overrides of the embedded message template defaults (ADR 0008).</summary>
     public DbSet<MessageTemplate> MessageTemplates => Set<MessageTemplate>();
