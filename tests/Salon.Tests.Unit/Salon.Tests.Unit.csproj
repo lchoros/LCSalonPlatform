@@ -21,12 +21,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Fixtures for EmbeddedJsonResourceSourceTests; the logical names mimic a host assembly's "Localization" root. -->
+    <!--
+      Fixtures for EmbeddedJsonResourceSourceTests; the logical names mimic a host assembly's "Localization" root.
+      Module files sit in a culture folder and the folder becomes a dot segment (ADR 0006, amendment 2026-11-12):
+      Localization/en-GB/Fixture.json -> ...Localization.en-GB.Fixture.json. RecursiveDir ends with the platform's
+      separator, so both separators are replaced.
+    -->
     <EmbeddedResource Include="Localization\Fixtures\Good\Localization\*.json" LogicalName="Salon.Tests.Unit.Fixtures.Good.Localization.%(Filename)%(Extension)" />
     <EmbeddedResource Include="Localization\Fixtures\Bad\Localization\*.json" LogicalName="Salon.Tests.Unit.Fixtures.Bad.Localization.%(Filename)%(Extension)" />
-    <!-- Two resources for one culture under one root. -->
-    <EmbeddedResource Include="Localization\Fixtures\DupCulture\Localization\en-GB.json" LogicalName="Salon.Tests.Unit.Fixtures.DupCulture.Localization.en-GB.json" />
-    <EmbeddedResource Include="Localization\Fixtures\DupCulture\Localization\en-GB.second.json" LogicalName="Salon.Tests.Unit.Fixtures.Second.DupCulture.Localization.en-GB.json" />
+    <EmbeddedResource Include="Localization\Fixtures\Modular\Localization\**\*.json" LogicalName="Salon.Tests.Unit.Fixtures.Modular.Localization.$([System.String]::Copy('%(RecursiveDir)').Replace('\', '.').Replace('/', '.'))%(Filename)%(Extension)" />
+    <!-- A legacy flat file and a module file for the same culture under one root. -->
+    <EmbeddedResource Include="Localization\Fixtures\Mixed\Localization\**\*.json" LogicalName="Salon.Tests.Unit.Fixtures.Mixed.Localization.$([System.String]::Copy('%(RecursiveDir)').Replace('\', '.').Replace('/', '.'))%(Filename)%(Extension)" />
+    <!-- One key defined in two module files of the same culture. -->
+    <EmbeddedResource Include="Localization\Fixtures\DupAcross\Localization\**\*.json" LogicalName="Salon.Tests.Unit.Fixtures.DupAcross.Localization.$([System.String]::Copy('%(RecursiveDir)').Replace('\', '.').Replace('/', '.'))%(Filename)%(Extension)" />
     <!-- A key repeated inside one file. -->
     <EmbeddedResource Include="Localization\Fixtures\DupKey\Localization\*.json" LogicalName="Salon.Tests.Unit.Fixtures.DupKey.Localization.%(Filename)%(Extension)" />
   </ItemGroup>
