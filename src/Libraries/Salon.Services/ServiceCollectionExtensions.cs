@@ -51,6 +51,9 @@ public static class ServiceCollectionExtensions
         services.AddOptions<DemoOptions>().BindConfiguration(DemoOptions.SectionName);
         services.AddSingleton<EmbeddedMessageTemplateDefaults>();
         services.AddScoped<IMessageTemplateService, MessageTemplateService>();
+        // Reminders (ADR 0020): needs IPublicUrlBuilder (Web.Framework) at resolve time, like the public booking service.
+        services.AddScoped<IAppointmentReminderService, AppointmentReminderService>();
+        services.AddScoped<IScheduleTask, AppointmentReminderTask>();
         services.AddScoped<DemoSeeder>();
 
         services.AddOptions<EmailOptions>().BindConfiguration(EmailOptions.SectionName);
