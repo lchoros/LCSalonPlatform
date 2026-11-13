@@ -87,7 +87,7 @@ public sealed class ImportClientsController(
 
         // [RequireTenant] has already turned a tenant-less request into a 404.
         var token = Store.Save(new ImportSession(tenantContext.TenantId!.Value, outcome.Preview, null));
-        return Redirect($"{UploadPath}/{token}");
+        return RedirectToAction(nameof(Show), new { token });
     }
 
     [HttpGet("{token:length(64)}")]
@@ -132,13 +132,13 @@ public sealed class ImportClientsController(
         if (session.Preview is null || session.Result is not null)
         {
             // Already imported (a double submit lands here): show the result again, run nothing.
-            return Redirect($"{UploadPath}/{token}");
+            return RedirectToAction(nameof(Show), new { token });
         }
 
         if (session.Preview.NewCount == 0)
         {
             Store.Replace(token, session with { Preview = null, Result = new ClientImportResult(session.Preview.FileName, session.Preview.Format, 0, session.Preview.DuplicateCount, session.Preview.InvalidCount) });
-            return Redirect($"{UploadPath}/{token}");
+            return RedirectToAction(nameof(Show), new { token });
         }
 
         // Spend the token before the import runs so a second submit meanwhile finds nothing to confirm; a failure puts it back.
@@ -155,7 +155,7 @@ public sealed class ImportClientsController(
         }
 
         Store.Replace(token, session with { Preview = null, Result = result });
-        return Redirect($"{UploadPath}/{token}");
+        return RedirectToAction(nameof(Show), new { token });
     }
 
     private string ErrorMessage(ClientImportError error, IReadOnlyList<string> header) => error switch
