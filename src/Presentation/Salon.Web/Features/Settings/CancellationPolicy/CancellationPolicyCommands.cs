@@ -11,21 +11,25 @@ namespace Salon.Web.Features.Settings.CancellationPolicy;
 public sealed record GetCancellationPolicyQuery : IQuery<SaveCancellationPolicyCommand>;
 
 /// <summary>
-/// The policy form as posted: the notice period in hours and both fees as whole percentages of the booked price.
+/// The policy form as posted: the salon's default deposit, the notice period in hours and both fees, all as whole
+/// percentages of the booked price.
 /// <see cref="SaveCancellationPolicyValidator"/> holds the rules.
 /// </summary>
 public sealed record SaveCancellationPolicyCommand(
     int? FreeChangeHours,
     int? LateCancellationFeePercent,
-    int? NoShowFeePercent) : ICommand<bool>
+    int? NoShowFeePercent,
+    int? DepositPercent = 0) : ICommand<bool>
 {
-    public static SaveCancellationPolicyCommand From(CancellationPolicySettings settings)
+    public static SaveCancellationPolicyCommand From(CancellationPolicySettings settings, BookingSettings booking)
     {
         ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(booking);
         return new SaveCancellationPolicyCommand(
             settings.FreeChangeHours,
             (int)decimal.Round(settings.LateCancellationFeePercent),
-            (int)decimal.Round(settings.NoShowFeePercent));
+            (int)decimal.Round(settings.NoShowFeePercent),
+            (int)decimal.Round(booking.DefaultDepositPercent));
     }
 }
 
@@ -54,6 +58,13 @@ public sealed class SaveCancellationPolicyValidator : AbstractValidator<SaveCanc
             .Must((c, percent) => percent is not > 0 || c.FreeChangeHours is > 0)
             .WithMessage(_ => localizer["Settings.CancellationPolicy.Validation.LateFeeNeedsNotice"]);
 
+        RuleFor(c => c.DepositPercent)
+            .Cascade(CascadeMode.Stop)
+            .NotNull()
+            .WithMessage(_ => localizer["Settings.CancellationPolicy.Validation.PercentRequired"])
+            .InclusiveBetween(0, MaxPercent)
+            .WithMessage(_ => localizer["Settings.CancellationPolicy.Validation.PercentRange"]);
+
         RuleFor(c => c.NoShowFeePercent)
             .Cascade(CascadeMode.Stop)
             .NotNull()
@@ -68,7 +79,9 @@ public sealed class GetCancellationPolicyHandler(ISettingService settings) : IRe
     public async Task<SaveCancellationPolicyCommand> HandleAsync(GetCancellationPolicyQuery request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
-        return SaveCancellationPolicyCommand.From(await settings.LoadAsync<CancellationPolicySettings>(cancellationToken));
+        return SaveCancellationPolicyCommand.From(
+            await settings.LoadAsync<CancellationPolicySettings>(cancellationToken),
+            await settings.LoadAsync<BookingSettings>(cancellationToken));
     }
 }
 
@@ -79,7 +92,7 @@ public sealed class SaveCancellationPolicyHandler(ISettingService settings) : IR
         ArgumentNullException.ThrowIfNull(request);
 
         // The validator has run in the pipeline; this only narrows the types.
-        if (request.FreeChangeHours is not { } hours || request.LateCancellationFeePercent is not { } late || request.NoShowFeePercent is not { } noShow)
+        if (request.FreeChangeHours is not { } hours || request.LateCancellationFeePercent is not { } late || request.NoShowFeePercent is not { } noShow || request.DepositPercent is not { } deposit)
         {
             return false;
         }
@@ -90,6 +103,11 @@ public sealed class SaveCancellationPolicyHandler(ISettingService settings) : IR
         current.LateCancellationFeePercent = late;
         current.NoShowFeePercent = noShow;
         await settings.SaveAsync(current, cancellationToken);
+
+        // The salon's default deposit lives with the other booking rules (ADR 0023); the rest of them keep their values.
+        var booking = await settings.LoadAsync<BookingSettings>(cancellationToken);
+        booking.DefaultDepositPercent = deposit;
+        await settings.SaveAsync(booking, cancellationToken);
         return true;
     }
 }

@@ -111,7 +111,7 @@ public class CancellationPolicyPageTests(SalonWebApplicationFactory factory) : I
 
         var html = await GetAsync(client, Path);
 
-        html.ShouldContain("Odwołania i opłaty");
+        html.ShouldContain("Zadatki i odwołania");
         html.ShouldContain("Opłata za nieobecność (% ceny)");
     }
 

@@ -153,8 +153,12 @@
   "Clients.Import.Result.ToClients": "Przejdź do listy klientów",
   "Clients.Import.Result.Again": "Importuj kolejny plik",
   "Clients.Import.ConsentSource": "Zgoda marketingowa zaimportowana z pliku {0} (eksport {1})",
-  "Clients.Fees.Title": "Opłaty",
+  "Clients.Fees.Title": "Opłaty i zadatki",
   "Clients.Fees.Owes": "Do zapłaty: {0}",
   "Clients.Fees.NothingOwed": "Nic do zapłaty",
-  "Clients.History.Fee": "Opłata"
+  "Clients.History.Fee": "Opłata",
+  "Clients.Edit.DepositPercent": "Zadatek dla tego klienta (% ceny)",
+  "Clients.Edit.DepositPercentHint": "Zostaw puste, aby stosować zasady usługi i salonu. 0: nigdy nie wymagaj zadatku od tego klienta; liczba: zawsze wymagaj.",
+  "Clients.Edit.Validation.DepositPercentRange": "Zadatek musi mieścić się między 0 a 100 procent.",
+  "Clients.Fees.Deposits": "Zadatki"
 }

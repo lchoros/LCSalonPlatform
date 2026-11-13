@@ -112,5 +112,11 @@
   "Catalog.StaffOverrides.Validation.DurationOutOfRange": "Czas trwania musi wynosić od {0} do {1} minut.",
   "Catalog.StaffOverrides.Validation.DurationStep": "Czas trwania musi być wielokrotnością {0} minut.",
   "Catalog.StaffOverrides.Validation.PriceOutOfRange": "Cena musi wynosić od 0 do {0}.",
-  "Catalog.StaffOverrides.Validation.PriceTooPrecise": "Cena może mieć najwyżej dwa miejsca po przecinku."
+  "Catalog.StaffOverrides.Validation.PriceTooPrecise": "Cena może mieć najwyżej dwa miejsca po przecinku.",
+  "Catalog.Edit.DepositPercent": "Zadatek (% ceny)",
+  "Catalog.Edit.DepositPercentHint": "Zostaw puste, aby użyć zasady salonu. 0 oznacza brak zadatku dla tej usługi.",
+  "Catalog.Edit.Validation.DepositPercentRange": "Zadatek musi mieścić się między 0 a 100 procent.",
+  "Catalog.CreateService.DepositPercent": "Zadatek (% ceny)",
+  "Catalog.CreateService.DepositPercentHint": "Zostaw puste, aby użyć zasady salonu. 0 oznacza brak zadatku dla tej usługi.",
+  "Catalog.CreateService.Validation.DepositPercentRange": "Zadatek musi mieścić się między 0 a 100 procent."
 }

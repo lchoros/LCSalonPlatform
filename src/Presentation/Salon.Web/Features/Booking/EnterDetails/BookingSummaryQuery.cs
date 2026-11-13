@@ -15,6 +15,7 @@ public sealed record BookingSummaryQuery(Guid ServiceId, Guid? StaffMemberId, In
 /// <param name="StaffName">Null for "anyone available".</param>
 /// <param name="RequireSmsVerification">Decides the wording of the submit button and the phone hint.</param>
 /// <param name="Policy">The salon's cancellation policy (ADR 0022), shown before the client commits.</param>
+/// <param name="Deposit">The deposit this service asks for at the price shown (ADR 0023); null when none. The client's own rule applies once they are known.</param>
 public sealed record BookingSummary(
     string ServiceName,
     Duration Duration,
@@ -26,4 +27,5 @@ public sealed record BookingSummary(
     string SalonName,
     string ConsentWording,
     bool RequireSmsVerification,
-    CancellationPolicySettings Policy);
+    CancellationPolicySettings Policy,
+    Money? Deposit = null);

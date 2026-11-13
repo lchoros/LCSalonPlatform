@@ -63,16 +63,27 @@
         <section class="@cardClass" data-testid="fee-proposal" data-kind="@proposal.Kind">
             <h2 class="text-lg font-semibold">@T[$"Payments.Fee.Kind.{proposal.Kind}"]</h2>
             <p data-testid="fee-proposal-text">@T.Format($"Payments.Fee.Proposal.{proposal.Kind}", proposal.Percent.ToString("0.##", culture), proposal.Amount.ToDisplayString(culture))</p>
-            <form method="post" action="@feePath" asp-antiforgery="true" class="space-y-3" data-testid="charge-form">
-                <div class="space-y-1">
-                    <label for="amount" class="block text-sm font-medium">@T.Format("Payments.Fee.Amount", visit.Price.Currency)</label>
-                    <input id="amount" name="amount" type="text" inputmode="decimal" value="@proposal.Amount.Amount.ToString("0.00", culture)" required aria-describedby="amount-hint" class="@inputClass tabular-nums" data-testid="fee-amount" />
-                    <p id="amount-hint" class="text-sm text-stone-600">@T.Format("Payments.Fee.AmountHint", visit.Price.ToDisplayString(culture))</p>
-                </div>
-                <button type="submit" class="@primaryClass" data-testid="charge-fee">@T["Payments.Fee.Charge"]</button>
-            </form>
-            <p class="text-sm text-stone-600">@T["Payments.Fee.NothingCharged"]</p>
-            <a href="@dayPath" class="@secondaryClass" data-testid="no-fee">@T["Payments.Fee.Skip"]</a>
+            @if (visit.DepositHeld is { } depositHeld)
+            {
+                <p class="rounded-md bg-stone-50 p-3 text-sm text-stone-700" data-testid="fee-deposit-held">@T.Format(visit.Chargeable is null ? "Payments.Fee.DepositCovers" : "Payments.Fee.DepositCounts", depositHeld.ToDisplayString(culture))</p>
+            }
+            @if (visit.Chargeable is { } chargeable)
+            {
+                <form method="post" action="@feePath" asp-antiforgery="true" class="space-y-3" data-testid="charge-form">
+                    <div class="space-y-1">
+                        <label for="amount" class="block text-sm font-medium">@T.Format("Payments.Fee.Amount", visit.Price.Currency)</label>
+                        <input id="amount" name="amount" type="text" inputmode="decimal" value="@chargeable.Amount.ToString("0.00", culture)" required aria-describedby="amount-hint" class="@inputClass tabular-nums" data-testid="fee-amount" />
+                        <p id="amount-hint" class="text-sm text-stone-600">@T.Format("Payments.Fee.AmountHint", (visit.Price with { Amount = visit.MaxFee }).ToDisplayString(culture))</p>
+                    </div>
+                    <button type="submit" class="@primaryClass" data-testid="charge-fee">@T["Payments.Fee.Charge"]</button>
+                </form>
+                <p class="text-sm text-stone-600">@T["Payments.Fee.NothingCharged"]</p>
+                <a href="@dayPath" class="@secondaryClass" data-testid="no-fee">@T["Payments.Fee.Skip"]</a>
+            }
+            else
+            {
+                <a href="@dayPath" class="@secondaryClass" data-testid="fee-covered-back">@T["Payments.Fee.Back"]</a>
+            }
         </section>
     }
     else if (fee is null)

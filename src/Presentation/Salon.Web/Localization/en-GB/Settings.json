@@ -16,9 +16,9 @@
   "Settings.Notifications.Validation.SecondCloser": "The second reminder must be closer to the visit than the first.",
   "Settings.Notifications.Validation.TimeInvalid": "Enter a time such as 21:00.",
   "Settings.Nav.Notifications": "Reminders",
-  "Settings.Nav.CancellationPolicy": "Cancellations and fees",
-  "Settings.CancellationPolicy.Title": "Cancellations and fees",
-  "Settings.CancellationPolicy.Lead": "Set how late a client may change or cancel a visit for free, and what a late cancellation or a missed visit costs. Clients see these rules before they book.",
+  "Settings.Nav.CancellationPolicy": "Deposits and cancellations",
+  "Settings.CancellationPolicy.Title": "Deposits and cancellations",
+  "Settings.CancellationPolicy.Lead": "Set the deposit a booking asks for, how late a client may change or cancel a visit for free, and what a late cancellation or a missed visit costs. Clients see these rules before they book.",
   "Settings.CancellationPolicy.FreeChangeHours": "Free changes and cancellation until (hours before the visit)",
   "Settings.CancellationPolicy.FreeChangeHoursHint": "0 means until the visit starts. Later than this, clients can no longer change the time online and a cancellation counts as late.",
   "Settings.CancellationPolicy.LateFee": "Late cancellation fee (% of the price)",
@@ -32,5 +32,7 @@
   "Settings.CancellationPolicy.Validation.HoursRange": "Hours must be between 0 and {0}.",
   "Settings.CancellationPolicy.Validation.PercentRequired": "Enter a percentage.",
   "Settings.CancellationPolicy.Validation.PercentRange": "The percentage must be between 0 and 100.",
-  "Settings.CancellationPolicy.Validation.LateFeeNeedsNotice": "A late cancellation fee needs a notice period: set the hours above 0."
+  "Settings.CancellationPolicy.Validation.LateFeeNeedsNotice": "A late cancellation fee needs a notice period: set the hours above 0.",
+  "Settings.CancellationPolicy.Deposit": "Deposit (% of the price)",
+  "Settings.CancellationPolicy.DepositHint": "Asked for when a visit is booked. 0 means no deposit. A service or a client can have their own rule."
 }

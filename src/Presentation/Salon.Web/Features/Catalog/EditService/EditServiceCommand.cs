@@ -14,6 +14,7 @@ namespace Salon.Web.Features.Catalog.EditService;
 /// <param name="ProcessingMinutes">Time the client waits inside the service; 0–<see cref="ServiceRules.MaxProcessingMinutes"/>, step 5.</param>
 /// <param name="ProcessingStartsAfterMinutes">Offset of the processing window; ignored (stored as 0) without processing time.</param>
 /// <param name="IsActive">False hides the service from the public list and publishes <c>ServiceDeactivated</c>.</param>
+/// <param name="DepositPercent">Deposit for this service as a whole percentage of the price (ADR 0023); blank follows the salon's default, 0 means none.</param>
 public sealed record EditServiceCommand(
     Guid ServiceId,
     string Name,
@@ -24,7 +25,8 @@ public sealed record EditServiceCommand(
     int BufferAfterMinutes,
     int ProcessingMinutes,
     int ProcessingStartsAfterMinutes,
-    bool IsActive) : ICommand<bool>
+    bool IsActive,
+    int? DepositPercent = null) : ICommand<bool>
 {
     /// <summary>The form for an existing service, as the GET renders it.</summary>
     public static EditServiceCommand From(Service service)
@@ -40,6 +42,7 @@ public sealed record EditServiceCommand(
             service.BufferAfterMinutes,
             service.ProcessingMinutes,
             service.ProcessingStartsAfterMinutes,
-            service.IsActive);
+            service.IsActive,
+            service.DepositPercent is { } percent ? (int)decimal.Round(percent) : null);
     }
 }

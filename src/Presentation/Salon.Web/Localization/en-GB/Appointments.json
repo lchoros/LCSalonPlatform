@@ -91,5 +91,10 @@
   "Appointments.Book.OfferingFrom": "{0} min · from {1}",
   "Appointments.Book.NotOffered": "{0} does not offer this service.",
   "Appointments.Calendar.Card.ClientOwes": "This client owes {0} in fees from earlier visits.",
-  "Appointments.Calendar.Card.OpenClient": "Open the client card"
+  "Appointments.Calendar.Card.OpenClient": "Open the client card",
+  "Appointments.Calendar.Card.Deposit": "Deposit",
+  "Appointments.Calendar.Card.DepositReceived": "{0} received",
+  "Appointments.Calendar.Card.DepositDue": "{0} due, not received",
+  "Appointments.Calendar.Card.DepositNone": "None asked for",
+  "Appointments.Calendar.Card.DepositOpen": "Deposit details"
 }

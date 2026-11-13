@@ -153,8 +153,12 @@
   "Clients.Import.Result.ToClients": "Go to the client list",
   "Clients.Import.Result.Again": "Import another file",
   "Clients.Import.ConsentSource": "Marketing consent imported from {0} ({1} export)",
-  "Clients.Fees.Title": "Fees",
+  "Clients.Fees.Title": "Fees and deposits",
   "Clients.Fees.Owes": "Owes {0}",
   "Clients.Fees.NothingOwed": "Nothing owed",
-  "Clients.History.Fee": "Fee"
+  "Clients.History.Fee": "Fee",
+  "Clients.Edit.DepositPercent": "Deposit for this client (% of the price)",
+  "Clients.Edit.DepositPercentHint": "Leave empty to follow the service and the salon. 0 never asks this client for a deposit; a number always does.",
+  "Clients.Edit.Validation.DepositPercentRange": "The deposit must be between 0 and 100 percent.",
+  "Clients.Fees.Deposits": "Deposits"
 }

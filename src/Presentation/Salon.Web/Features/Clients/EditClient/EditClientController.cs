@@ -97,7 +97,8 @@ public sealed class EditClientController(
             card.Notes,
             card.HealthNotes,
             card.LastPatchTestOn is { } patchTest ? LocalDatePattern.Iso.Format(patchTest) : null,
-            card.MarketingConsent);
+            card.MarketingConsent,
+            card.DepositPercent is { } percent ? (int)decimal.Round(percent) : null);
 
     private async Task PrepareConsentWordingAsync(CancellationToken cancellationToken)
     {

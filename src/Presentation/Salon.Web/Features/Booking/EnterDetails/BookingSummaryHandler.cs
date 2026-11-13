@@ -4,6 +4,7 @@ using NodaTime;
 
 using Salon.Core.Cqrs;
 using Salon.Core.Domain;
+using Salon.Core.Payments;
 using Salon.Core.Settings;
 using Salon.Core.Tenancy;
 using Salon.Data;
@@ -28,7 +29,7 @@ public sealed class BookingSummaryHandler(
 
         var service = await db.Services.AsNoTracking()
             .Where(s => s.Id == request.ServiceId && s.IsActive)
-            .Select(s => new { s.Id, s.Name, s.Duration, s.Price, s.Currency })
+            .Select(s => new { s.Id, s.Name, s.Duration, s.Price, s.Currency, s.DepositPercent })
             .FirstOrDefaultAsync(cancellationToken);
         if (service is null)
         {
@@ -74,6 +75,9 @@ public sealed class BookingSummaryHandler(
             priceIsFrom = span.IsRange;
         }
 
+        // What the service and the salon ask for; a client's own rule (ADR 0023) is applied when the booking is made.
+        var deposit = DepositRules.Amount(price.Amount, DepositRules.Percent(rules.DefaultDepositPercent, service.DepositPercent, null));
+
         return new BookingSummary(
             service.Name,
             duration,
@@ -85,6 +89,7 @@ public sealed class BookingSummaryHandler(
             tenant.Name,
             StartBookingHandler.ConsentWording(localizer, tenant.Name),
             rules.RequireSmsVerification,
-            await settings.LoadAsync<CancellationPolicySettings>(cancellationToken));
+            await settings.LoadAsync<CancellationPolicySettings>(cancellationToken),
+            deposit > 0m ? price with { Amount = deposit } : null);
     }
 }

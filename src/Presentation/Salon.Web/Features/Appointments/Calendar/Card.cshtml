@@ -55,6 +55,25 @@
             </dd>
             <dt class="text-sm text-stone-600">@T["Appointments.Calendar.Card.Price"]</dt>
             <dd data-testid="card-price" class="tabular-nums">@card.Price.ToDisplayString(culture)</dd>
+            @if (card.DepositDue is not null || card.DepositHeld is not null || card.IsActive)
+            {
+                <dt class="text-sm text-stone-600">@T["Appointments.Calendar.Card.Deposit"]</dt>
+                <dd data-testid="card-deposit" class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    @if (card.DepositHeld is { } heldDeposit)
+                    {
+                        <span class="tabular-nums" data-testid="card-deposit-received">@T.Format("Appointments.Calendar.Card.DepositReceived", heldDeposit.ToDisplayString(culture))</span>
+                    }
+                    else if (card.DepositDue is { } dueDeposit)
+                    {
+                        <span class="rounded bg-amber-100 px-1.5 py-0.5 text-sm font-medium text-amber-900 tabular-nums" data-testid="card-deposit-due">@T.Format("Appointments.Calendar.Card.DepositDue", dueDeposit.ToDisplayString(culture))</span>
+                    }
+                    else
+                    {
+                        <span class="text-stone-600">@T["Appointments.Calendar.Card.DepositNone"]</span>
+                    }
+                    <a href="/admin/payments/deposits/@card.Id" data-testid="card-deposit-link" class="inline-flex min-h-11 items-center font-medium underline">@T["Appointments.Calendar.Card.DepositOpen"]</a>
+                </dd>
+            }
             @if (card.Notes is { Length: > 0 } notes)
             {
                 <dt class="text-sm text-stone-600">@T["Appointments.Calendar.Card.Notes"]</dt>
