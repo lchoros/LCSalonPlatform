@@ -49,7 +49,7 @@ public partial class CalendarE2ETests(KestrelAppFixture app) : IClassFixture<Kes
             await page.GetByLabel("Email").FillAsync(Email);
             await page.GetByLabel("Password").FillAsync(Password);
             await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Sign in" }).ClickAsync();
-            await page.WaitForURLAsync("**/admin/appointments/calendar?*");
+            await page.ReachAsync("**/admin/appointments/calendar?*");
 
             var styled = await StylesheetLoadedAsync(page);
             (await page.GetByTestId("nav-calendar").IsVisibleAsync()).ShouldBeTrue();
@@ -75,7 +75,7 @@ public partial class CalendarE2ETests(KestrelAppFixture app) : IClassFixture<Kes
 
             // One person's day is a grid on every screen size.
             await page.Locator($"[data-testid='staff-chip'][data-staff-id='{staffId}']").ClickAsync();
-            await page.WaitForURLAsync($"**/admin/appointments/calendar?view=day&date={day}&staff={staffId}");
+            await page.ReachAsync($"**/admin/appointments/calendar?view=day&date={day}&staff={staffId}");
             var block = page.Locator($"[data-testid='calendar-block'][data-appointment-id='{appointmentId}']").First;
             (await block.IsVisibleAsync()).ShouldBeTrue();
             if (styled)
@@ -84,7 +84,7 @@ public partial class CalendarE2ETests(KestrelAppFixture app) : IClassFixture<Kes
             }
 
             await page.GetByTestId("view-week").ClickAsync();
-            await page.WaitForURLAsync("**/admin/appointments/calendar?view=week*");
+            await page.ReachAsync("**/admin/appointments/calendar?view=week*");
             (await page.GetByTestId("calendar-column").CountAsync()).ShouldBe(7);
             (await page.GetByTestId("calendar-block").CountAsync()).ShouldBeGreaterThanOrEqualTo(1);
             if (styled)
@@ -103,7 +103,7 @@ public partial class CalendarE2ETests(KestrelAppFixture app) : IClassFixture<Kes
             weekAxe.Violations.ShouldBeEmpty(string.Join("; ", weekAxe.Violations.Select(v => $"{v.Id}: {v.Help}")));
 
             await page.Locator($"[data-testid='calendar-block'][data-appointment-id='{appointmentId}']").First.ClickAsync();
-            await page.WaitForURLAsync($"**/admin/appointments/calendar/{appointmentId}*");
+            await page.ReachAsync($"**/admin/appointments/calendar/{appointmentId}*");
             (await page.GetByTestId("appointment-card").IsVisibleAsync()).ShouldBeTrue();
             (await page.GetByTestId("move-step").IsVisibleAsync()).ShouldBeTrue();
 
@@ -114,7 +114,7 @@ public partial class CalendarE2ETests(KestrelAppFixture app) : IClassFixture<Kes
             {
                 await page.GetByTestId("move-date").FillAsync(LocalDatePattern.Iso.Format(today.PlusDays(offset)));
                 await page.GetByTestId("move-show-slots").ClickAsync();
-                await page.WaitForURLAsync($"**/admin/appointments/calendar/{appointmentId}?*date=*");
+                await page.ReachAsync($"**/admin/appointments/calendar/{appointmentId}?*date=*");
             }
 
             (await slots.CountAsync()).ShouldBeGreaterThanOrEqualTo(1, "no free time to move the visit to within a week");
@@ -129,7 +129,7 @@ public partial class CalendarE2ETests(KestrelAppFixture app) : IClassFixture<Kes
 
             var chosenTime = (await slots.First.TextContentAsync()).ShouldNotBeNull().Trim();
             await slots.First.ClickAsync();
-            await page.WaitForURLAsync("**/admin/appointments/calendar?view=day&date=*");
+            await page.ReachAsync("**/admin/appointments/calendar?view=day&date=*");
 
             (await page.GetByTestId("flash").TextContentAsync()).ShouldNotBeNull().ShouldContain(chosenTime[..5]);
             var moved = page.Locator($"[data-testid='calendar-block'][data-appointment-id='{appointmentId}']").First;
