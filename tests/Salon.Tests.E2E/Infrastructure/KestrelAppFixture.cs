@@ -59,6 +59,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         tenantScope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
         var tenantDb = tenantScope.ServiceProvider.GetRequiredService<SalonDbContext>();
         await tenantDb.ClientAccountEntries.ExecuteDeleteAsync();
+        await tenantDb.CashUps.ExecuteDeleteAsync();
         await tenantDb.AppointmentStatusChanges.ExecuteDeleteAsync();
         await tenantDb.Appointments.ExecuteDeleteAsync();
         await tenantDb.PhoneVerifications.ExecuteDeleteAsync();
@@ -137,6 +138,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
             scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
             var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
             await db.ClientAccountEntries.ExecuteDeleteAsync();
+            await db.CashUps.ExecuteDeleteAsync();
             db.Appointments.RemoveRange(await db.Appointments.ToListAsync());
             db.Services.RemoveRange(await db.Services.ToListAsync());
             var sortOrder = 0;
