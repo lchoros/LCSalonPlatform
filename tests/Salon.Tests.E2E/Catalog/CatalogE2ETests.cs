@@ -35,7 +35,7 @@ public class CatalogE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppFi
         await page.GetByLabel("Email").FillAsync(Email);
         await page.GetByLabel("Password").FillAsync(Password);
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Sign in" }).ClickAsync();
-        await page.WaitForURLAsync("**/admin/services");
+        await page.ReachAsync("**/admin/services");
 
         var styled = await StylesheetLoadedAsync(page);
         (await page.GetByTestId("nav-services").IsVisibleAsync()).ShouldBeTrue();
@@ -58,7 +58,7 @@ public class CatalogE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppFi
         listAxe.Violations.ShouldBeEmpty(string.Join("; ", listAxe.Violations.Select(v => $"{v.Id}: {v.Help}")));
 
         await cards.Nth(0).GetByTestId("edit-service").ClickAsync();
-        await page.WaitForURLAsync("**/admin/services/*");
+        await page.ReachAsync("**/admin/services/*");
 
         (await page.GetByTestId("service-name").TextContentAsync()).ShouldBe("Cut & blow-dry");
         var buffer = page.GetByTestId("buffer-input");
@@ -78,7 +78,7 @@ public class CatalogE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppFi
         editAxe.Violations.ShouldBeEmpty(string.Join("; ", editAxe.Violations.Select(v => $"{v.Id}: {v.Help}")));
 
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Save changes" }).ClickAsync();
-        await page.WaitForURLAsync("**/admin/services");
+        await page.ReachAsync("**/admin/services");
 
         (await page.GetByTestId("flash").TextContentAsync()).ShouldBe("Service “Cut & blow-dry” has been saved.");
         (await page.GetByTestId("service-buffer").First.TextContentAsync()).ShouldBe("10 min buffer");
