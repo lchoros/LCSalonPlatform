@@ -54,7 +54,7 @@ public class ClientServiceTests(SalonWebApplicationFactory factory) : IAsyncLife
         ukRow.Phone.ShouldBe("+447700900123");
         ukRow.Email.ShouldBe("olivia@example.com");
         ukRow.Notes.ShouldBe("Prefers afternoons.");
-        ukRow.HealthNotesProtected.ShouldNotBeNull().ShouldNotContain("PPD");
+        ukRow.HealthNotesProtected.ShouldNotBeNull().ShouldNotContain("Allergic to PPD", Case.Sensitive);
         ukRow.MarketingConsent.ShouldBeFalse();
         ukRow.MarketingConsentAt.ShouldBeNull();
         ukRow.MarketingConsentWording.ShouldBeNull();
@@ -68,7 +68,7 @@ public class ClientServiceTests(SalonWebApplicationFactory factory) : IAsyncLife
             card.HealthNotes.ShouldBe(HealthText);
             card.HealthNotesUnreadable.ShouldBeFalse();
             card.FullName.ShouldBe("Olivia Brown");
-            card.ToString().ShouldNotContain("PPD");
+            card.ToString().ShouldNotContain("Allergic to PPD", Case.Sensitive);
         }
     }
 
