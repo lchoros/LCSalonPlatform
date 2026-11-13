@@ -1,0 +1,18 @@
+{
+  "Settings.Notifications.Title": "Reminders",
+  "Settings.Notifications.Lead": "Clients get a text before their visit. A reminder that would fall in quiet hours waits until they are over, so nobody is woken up.",
+  "Settings.Notifications.Enabled": "Send reminders",
+  "Settings.Notifications.First": "First reminder (hours before the visit)",
+  "Settings.Notifications.Second": "Second reminder (hours before the visit)",
+  "Settings.Notifications.HoursHint": "0 switches this reminder off.",
+  "Settings.Notifications.QuietLegend": "Quiet hours",
+  "Settings.Notifications.QuietHint": "No texts are sent between these times. Set both to the same time to switch quiet hours off.",
+  "Settings.Notifications.QuietFrom": "From",
+  "Settings.Notifications.QuietTo": "Until",
+  "Settings.Notifications.Submit": "Save",
+  "Settings.Notifications.Saved": "Reminder settings have been saved.",
+  "Settings.Notifications.Validation.HoursRequired": "Enter a number of hours.",
+  "Settings.Notifications.Validation.HoursRange": "Hours must be between 0 and {0}.",
+  "Settings.Notifications.Validation.SecondCloser": "The second reminder must be closer to the visit than the first.",
+  "Settings.Notifications.Validation.TimeInvalid": "Enter a time such as 21:00."
+}

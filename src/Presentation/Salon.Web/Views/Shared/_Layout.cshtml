@@ -58,6 +58,10 @@
                     {
                         <a href="/admin/staff" data-testid="nav-staff" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Staff"]</a>
                     }
+                    @if (User.HasClaim(UserClaimTypes.Permission, Permissions.SettingsManage))
+                    {
+                        <a href="/admin/settings/notifications" data-testid="nav-settings" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Settings"]</a>
+                    }
                 </nav>
             }
         </div>

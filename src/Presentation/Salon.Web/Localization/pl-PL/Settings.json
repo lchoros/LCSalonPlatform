@@ -1,0 +1,18 @@
+{
+  "Settings.Notifications.Title": "Przypomnienia",
+  "Settings.Notifications.Lead": "Klienci dostają SMS przed wizytą. Przypomnienie, które wypadłoby w ciszy nocnej, czeka do jej końca, żeby nikogo nie budzić.",
+  "Settings.Notifications.Enabled": "Wysyłaj przypomnienia",
+  "Settings.Notifications.First": "Pierwsze przypomnienie (godziny przed wizytą)",
+  "Settings.Notifications.Second": "Drugie przypomnienie (godziny przed wizytą)",
+  "Settings.Notifications.HoursHint": "0 wyłącza to przypomnienie.",
+  "Settings.Notifications.QuietLegend": "Cisza nocna",
+  "Settings.Notifications.QuietHint": "W tych godzinach nie wysyłamy SMS-ów. Ustaw tę samą godzinę w obu polach, aby wyłączyć ciszę nocną.",
+  "Settings.Notifications.QuietFrom": "Od",
+  "Settings.Notifications.QuietTo": "Do",
+  "Settings.Notifications.Submit": "Zapisz",
+  "Settings.Notifications.Saved": "Ustawienia przypomnień zostały zapisane.",
+  "Settings.Notifications.Validation.HoursRequired": "Podaj liczbę godzin.",
+  "Settings.Notifications.Validation.HoursRange": "Liczba godzin musi być między 0 a {0}.",
+  "Settings.Notifications.Validation.SecondCloser": "Drugie przypomnienie musi być bliżej wizyty niż pierwsze.",
+  "Settings.Notifications.Validation.TimeInvalid": "Podaj godzinę, na przykład 21:00."
+}

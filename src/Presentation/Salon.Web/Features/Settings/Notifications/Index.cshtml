@@ -1,0 +1,75 @@
+@using Salon.Core.Settings
+@using Salon.Web.Features.Settings.Notifications
+@model NotificationSettingsViewModel
+@{
+    ViewData["Title"] = T["Settings.Notifications.Title"];
+    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 px-3 py-2 text-base tabular-nums shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900 aria-[invalid=true]:border-red-600";
+    const string buttonClass = "inline-flex min-h-11 w-full items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700 sm:w-auto";
+    var form = Model.Form;
+}
+@functions {
+    IReadOnlyList<string> Errors(string key)
+        => ViewData.ModelState.TryGetValue(key, out var entry) ? entry.Errors.Select(e => e.ErrorMessage).ToList() : [];
+}
+<section class="mx-auto max-w-xl space-y-6">
+    <header class="space-y-2">
+        <h1 class="text-2xl font-bold tracking-tight">@T["Settings.Notifications.Title"]</h1>
+        <p class="text-stone-600">@T["Settings.Notifications.Lead"]</p>
+    </header>
+
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+    }
+
+    <form method="post" asp-action="Index" class="space-y-6 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" novalidate data-testid="notification-settings-form">
+        <label class="flex min-h-11 items-center gap-3">
+            <input id="RemindersEnabled" name="RemindersEnabled" type="checkbox" value="true" checked="@form.RemindersEnabled" data-testid="reminders-enabled" class="size-5 shrink-0 rounded border-stone-400" />
+            <span class="font-medium">@T["Settings.Notifications.Enabled"]</span>
+        </label>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+            @foreach (var (name, labelKey, value) in new[]
+            {
+                ("FirstReminderHours", "Settings.Notifications.First", form.FirstReminderHours),
+                ("SecondReminderHours", "Settings.Notifications.Second", form.SecondReminderHours),
+            })
+            {
+                var errors = Errors(name);
+                var errorId = name + "-error";
+                var hintId = name + "-hint";
+                <div class="space-y-1">
+                    <label for="@name" class="block text-sm font-medium">@T[labelKey]</label>
+                    <input id="@name" name="@name" type="number" inputmode="numeric" min="0" max="@NotificationSettings.MaxLeadHours" step="1" value="@value" required
+                           aria-describedby="@hintId @errorId" aria-invalid="@(errors.Count > 0 ? "true" : "false")" class="@inputClass" data-testid="@name" />
+                    <p id="@hintId" class="text-sm text-stone-600">@T["Settings.Notifications.HoursHint"]</p>
+                    <p id="@errorId" class="text-sm text-red-700" data-testid="@errorId">@string.Join(" ", errors)</p>
+                </div>
+            }
+        </div>
+
+        <fieldset class="space-y-2">
+            <legend class="font-medium">@T["Settings.Notifications.QuietLegend"]</legend>
+            <p id="quiet-hint" class="text-sm text-stone-600">@T["Settings.Notifications.QuietHint"]</p>
+            <div class="grid grid-cols-2 gap-4">
+                @foreach (var (name, labelKey, value) in new[]
+                {
+                    ("QuietFrom", "Settings.Notifications.QuietFrom", form.QuietFrom),
+                    ("QuietTo", "Settings.Notifications.QuietTo", form.QuietTo),
+                })
+                {
+                    var errors = Errors(name);
+                    var errorId = name + "-error";
+                    <div class="space-y-1">
+                        <label for="@name" class="block text-sm font-medium">@T[labelKey]</label>
+                        <input id="@name" name="@name" type="time" value="@value" required
+                               aria-describedby="quiet-hint @errorId" aria-invalid="@(errors.Count > 0 ? "true" : "false")" class="@inputClass" data-testid="@name" />
+                        <p id="@errorId" class="text-sm text-red-700" data-testid="@errorId">@string.Join(" ", errors)</p>
+                    </div>
+                }
+            </div>
+        </fieldset>
+
+        <button type="submit" class="@buttonClass" data-testid="save-notification-settings">@T["Settings.Notifications.Submit"]</button>
+    </form>
+</section>
