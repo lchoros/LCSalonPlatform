@@ -39,7 +39,7 @@ Gate: the pilot salon pays; then 3 paying salons before scaling up.
 - [!] Real SMS/email plugins: Twilio (UK), SMSAPI.pl (PL), Postmark/SES (Tier 2)
 - [ ] Polish UI complete, legal pages, DPA in sign-up
 - [!] Own SaaS billing (Tier 2)
-- [ ] Reports: takings, bookings, no-shows, top services, utilisation
+- [x] Reports: takings, bookings, no-shows, top services, utilisation — `Reports/Overview` at `admin/reports` behind the new `Reports.View` permission (Owner and Manager): one period (this or last week or month, or two dates), takings per method, per kind and per day added up with the till's rules, visits by outcome with the no-show rate, fees, completed visits nobody took payment for with a link to their checkout, top services, and per person revenue and utilisation from the rota less time off (ADR 0026). Not built: export, charts, comparison with the period before
 - [ ] Pilot salon onboarding, daily fix list
 
 ## v1.1 Grow

@@ -18,6 +18,8 @@
 | Checkout | Rozliczenie wizyty | The bill of a visit: price less the deposit held, plus open fees the client pays now; one recorded payment |
 | Till / cash-up | Kasa / zamknięcie dnia | A day's recorded money per method and the end-of-day count of the cash drawer (`CashUp`), closed once |
 | Takings | Utarg | Everything that came in on a day less everything that went back out, all methods |
+| Utilisation | Obłożenie | Booked time as a share of working time (rota less time off) in a period; unknown without working time |
+| No-show rate | Odsetek nieobecności | No-shows over visits that had an outcome (completed plus no-shows) |
 | Patch test | Test uczuleniowy | Allergy test before colour/lash/brow tint |
 | Consultation form | Formularz konsultacyjny | Signed client questionnaire |
 | Cash-up | Raport kasowy / Zamknięcie dnia | End-of-day takings check |

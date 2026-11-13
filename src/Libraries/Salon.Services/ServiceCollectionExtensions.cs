@@ -14,6 +14,7 @@ using Salon.Services.Localization;
 using Salon.Services.Messaging;
 using Salon.Services.Notifications;
 using Salon.Services.Payments;
+using Salon.Services.Reports;
 using Salon.Services.Seeding;
 using Salon.Services.Settings;
 using Salon.Services.Tasks;
@@ -60,6 +61,7 @@ public static class ServiceCollectionExtensions
         // The client account (ADR 0022): needs the payment plugin the host registers, at resolve time.
         services.AddScoped<IClientAccountService, ClientAccountService>();
         services.AddScoped<ICashUpService, CashUpService>();
+        services.AddScoped<IReportService, ReportService>();
         services.AddScoped<DemoSeeder>();
 
         services.AddOptions<EmailOptions>().BindConfiguration(EmailOptions.SectionName);

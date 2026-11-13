@@ -1,6 +1,6 @@
 # Manual test: M2 money and messages
 
-For the owner, after PRs #65, #66 and #67 are merged. About 45 minutes. Tick a box when the step behaves as written.
+For the owner, after PRs #65, #66 and #67 are merged (section L also needs #68). About 45 minutes. Tick a box when the step behaves as written.
 If a step does not, note its number (for example "D4") and what you saw; that is all an agent needs to find it.
 
 Nothing here charges a card or sends a real text or email. Texts and emails land in Mailpit.
@@ -138,6 +138,22 @@ Good to know while testing:
       Amounts use a comma (10,00). Add `?culture=en-GB` to switch back.
 - [ ] K2. In the browser's developer tools choose a phone width (390 px). Walk through one checkout and the Till:
       nothing scrolls sideways and every button is easy to hit with a thumb.
+
+## L. Reports (after PR #68 is merged too)
+Sign out and in again first: the "Reports" link needs a permission your old session does not have.
+- [ ] L1. As the owner the menu has "Reports" between Till and Staff. It opens on "This month".
+- [ ] L2. "Total taken" and the lines under "By payment method" equal what the Till showed in section H for the same
+      day. Open "Day by day" and tap today: you land on today's Till with the same takings.
+- [ ] L3. Under "Visits" the numbers match what you did: the no-shows from section E, the cancellation from F.
+      "No-show rate" is no-shows divided by completed plus no-shows.
+- [ ] L4. Mark a visit "Arrived", then "Complete" **without** the checkout. Reports lists it under "Completed visits
+      not paid" with the price. Tap "Checkout", pay it, go back to Reports: it is gone and the takings went up.
+- [ ] L5. "Top services" and "Staff" list what was completed. Each person shows "Booked … of … working hours".
+- [ ] L6. Tap "Last month", then "Other dates" with a first day after the last day: the page says the dates cannot be
+      used and shows this month.
+- [ ] L7. Sign in as `desk@studio-20.local`: no "Reports" in the menu, and `/admin/reports` typed by hand goes to
+      "access denied".
+- [ ] L8. `/admin/reports?culture=pl-PL`: "Raporty", "Utarg", "Obłożenie"; no English left.
 
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the

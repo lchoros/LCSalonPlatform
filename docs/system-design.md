@@ -133,6 +133,11 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
 - `Payments/CashUp` — `/admin/payments/cash-up?date=` behind the same permissions (ADR 0024): `ICashUpService` adds up
   the day's ledger lines that carry a method (in the salon's zone), per method, with the cash the drawer should hold;
   the day is closed once with the cash counted (`CashUp`), and money recorded later is flagged. "Till" in the nav.
+- `Reports/Overview` — `/admin/reports?period=` or `?from=&to=` behind `Reports.View` + `Clients.View` (ADR 0026), read
+  only: `IReportService` reads the period's ledger lines and visits and adds them up with `TillRules` and the pure
+  `ReportRules` in Core (periods, rates, working minutes). Takings per method, kind and day (each day links to its
+  till), visits by outcome, fees, completed visits not paid (linked to their checkout), top services, and per person
+  revenue and utilisation from the rota less time off. Owner and Manager only. "Reports" in the nav.
 - `Booking/Reschedule` — `/book/change/{token}` (ADR 0021): the client's own link moves the visit through
   `IBookingService.MoveAsync`; inside the policy's notice period it offers no times (ADR 0022), while
   `Booking/CancelBooking` still cancels and states the late fee first. The details page states the policy before the
@@ -165,5 +170,6 @@ a visible browser: `pwsh scripts/watch-e2e.ps1 -Filter <name>`.
 
 ## 8. Not yet built
 M1 remainder: locations, FullCalendar drag-and-drop with live updates. M2 leftovers: payment reversals, split
-payments, tips, discounts and retail products at the checkout; a confirmation for bookings made at the desk. M3:
+payments, tips, discounts and retail products at the checkout; a confirmation for bookings made at the desk. Reports:
+export, charts, comparison with the period before. M3:
 payments beyond the record-only provider, real SMS/email, deployment.

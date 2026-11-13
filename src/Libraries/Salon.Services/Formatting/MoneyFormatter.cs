@@ -14,6 +14,9 @@ public static class MoneyFormatter
 {
     private const char NoBreakSpace = '\u00A0';
 
+    /// <summary>A real minus sign in front of everything (\u2212\u00A310.00), never between the symbol and the amount.</summary>
+    private const string Minus = "\u2212";
+
     private static readonly FrozenDictionary<string, (string Symbol, bool AfterAmount)> Symbols =
         new Dictionary<string, (string, bool)>(StringComparer.Ordinal)
         {
@@ -25,6 +28,14 @@ public static class MoneyFormatter
     {
         ArgumentNullException.ThrowIfNull(culture);
 
+        // Decided on the rounded amount, so half a penny below zero does not show as "minus nothing".
+        var negative = decimal.Round(money.Amount, 2, MidpointRounding.AwayFromZero) < 0m;
+        var text = Format(money with { Amount = Math.Abs(money.Amount) }, culture);
+        return negative ? Minus + text : text;
+    }
+
+    private static string Format(Money money, CultureInfo culture)
+    {
         var amount = money.Amount.ToString("N2", culture);
         if (Symbols.TryGetValue(money.Currency, out var symbol) && string.Equals(NativeCurrency(culture), money.Currency, StringComparison.Ordinal))
         {

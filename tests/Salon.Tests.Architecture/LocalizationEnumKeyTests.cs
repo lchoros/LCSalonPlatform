@@ -1,5 +1,6 @@
 using Salon.Core.Localization;
 using Salon.Core.Payments;
+using Salon.Core.Reports;
 using Salon.Services.Payments;
 
 namespace Salon.Tests.Architecture;
@@ -36,5 +37,13 @@ public partial class LocalizationResourceTests
         var known = Resources.Value[SupportedCultures.EnGb];
 
         expected.Where(key => !known.ContainsKey(key)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Every_one_tap_report_period_has_its_name()
+    {
+        var known = Resources.Value[SupportedCultures.EnGb];
+
+        Enum.GetNames<ReportPreset>().Select(name => $"Reports.Preset.{name}").Where(key => !known.ContainsKey(key)).ShouldBeEmpty();
     }
 }

@@ -16,6 +16,9 @@ public static class Permissions
     /// <summary>Merge a duplicate client card into another (ADR 0017): Owner and Manager only, it cannot be undone.</summary>
     public const string ClientsMerge = "Clients.Merge";
     public const string PaymentsRecord = "Payments.Record";
+
+    /// <summary>The salon's numbers (ADR 0026): takings, visits, no-shows, utilisation. Owner and Manager only.</summary>
+    public const string ReportsView = "Reports.View";
     public const string SettingsManage = "Settings.Manage";
     public const string TemplatesManage = "Templates.Manage";
     public const string UsersManage = "Users.Manage";
@@ -30,6 +33,7 @@ public static class Permissions
         ClientsManage,
         ClientsMerge,
         PaymentsRecord,
+        ReportsView,
         SettingsManage,
         TemplatesManage,
         UsersManage,
