@@ -6,6 +6,7 @@ using Salon.Core.Cqrs;
 using Salon.Core.Identity;
 using Salon.Core.Tenancy;
 using Salon.Services.Clients;
+using Salon.Services.Payments;
 using Salon.Services.Tenancy;
 using Salon.Web.Framework.Controllers;
 using Salon.Web.Framework.Mvc;
@@ -38,7 +39,7 @@ public sealed class ClientCardController(IDispatcher dispatcher, ITenantContext 
         var tenant = await tenantLookup.FindByIdAsync(tenantContext.TenantId!.Value, cancellationToken);
         var zone = (tenant is null ? null : DateTimeZoneProviders.Tzdb.GetZoneOrNull(tenant.TimeZoneId)) ?? DateTimeZone.Utc;
 
-        return View(new ClientCardViewModel(details.Card, details.History, details.MergedIntoName, zone, TakeFlash()));
+        return View(new ClientCardViewModel(details.Card, details.History, details.MergedIntoName, zone, TakeFlash(), details.Account, details.FeesInUse));
     }
 }
 
@@ -47,4 +48,6 @@ public sealed class ClientCardController(IDispatcher dispatcher, ITenantContext 
 /// <param name="MergedIntoName">Name of the kept card when this one was merged away; null otherwise.</param>
 /// <param name="Zone">The salon's time zone, for the consent and "client since" dates.</param>
 /// <param name="Flash">Confirmation left by the previous request (post-redirect-get), if any.</param>
-public sealed record ClientCardViewModel(Card Card, ClientHistory History, string? MergedIntoName, DateTimeZone Zone, string? Flash);
+/// <param name="Account">Fees on the client's account (ADR 0022).</param>
+/// <param name="FeesInUse">Whether missed and cancelled visits link to their fee page.</param>
+public sealed record ClientCardViewModel(Card Card, ClientHistory History, string? MergedIntoName, DateTimeZone Zone, string? Flash, ClientAccount Account, bool FeesInUse);

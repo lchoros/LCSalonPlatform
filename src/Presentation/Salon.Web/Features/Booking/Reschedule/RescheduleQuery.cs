@@ -31,6 +31,9 @@ public enum RescheduleState
     /// <summary>The visit has started.</summary>
     TooLate,
 
+    /// <summary>The free-change period of the salon's cancellation policy is over (ADR 0022).</summary>
+    InsideNotice,
+
     /// <summary>Unknown or malformed link.</summary>
     Invalid,
 }
@@ -48,6 +51,9 @@ public sealed record RescheduleOptions(
     Guid? SelectedStaffId,
     IReadOnlyList<RescheduleSlot> Slots)
 {
+    /// <summary>The policy's notice period in hours, for the <see cref="RescheduleState.InsideNotice"/> message.</summary>
+    public int FreeChangeHours { get; init; }
+
     public static RescheduleOptions Without(PublicAppointment? appointment, RescheduleState state, string salonName, DateTimeZone zone)
         => new(appointment, state, salonName, zone, [], default, [], null, []);
 }

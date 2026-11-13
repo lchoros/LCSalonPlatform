@@ -4,9 +4,12 @@ using NodaTime;
 
 using Salon.Core.Appointments;
 using Salon.Core.Cqrs;
+using Salon.Core.Payments;
+using Salon.Core.Settings;
 using Salon.Core.Tenancy;
 using Salon.Data;
 using Salon.Services.Appointments;
+using Salon.Services.Settings;
 using Salon.Services.Tenancy;
 
 namespace Salon.Web.Features.Appointments.DayList;
@@ -19,6 +22,7 @@ namespace Salon.Web.Features.Appointments.DayList;
 public sealed class ChangeStatusHandler(
     SalonDbContext db,
     IBookingService booking,
+    ISettingService settings,
     ITenantContext tenantContext,
     ITenantLookup tenantLookup) : IRequestHandler<ChangeStatusCommand, ChangeStatusResult>
 {
@@ -54,6 +58,9 @@ public sealed class ChangeStatusHandler(
             _ => throw new ArgumentOutOfRangeException(nameof(request), request.Transition, "Unknown transition."),
         };
 
-        return new ChangeStatusResult(day, true, current.Status, moved.Status);
+        // A missed or late-cancelled visit may carry a fee (ADR 0022): the controller then shows its preview instead of the day.
+        var policy = await settings.LoadAsync<CancellationPolicySettings>(cancellationToken);
+        var proposal = CancellationPolicy.Propose(moved.Status, moved.Start, moved.CancelledAt, moved.Price, policy);
+        return new ChangeStatusResult(day, true, current.Status, moved.Status, proposal is not null);
     }
 }

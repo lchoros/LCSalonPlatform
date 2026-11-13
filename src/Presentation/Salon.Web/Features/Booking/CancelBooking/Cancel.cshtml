@@ -26,14 +26,25 @@
     @switch (Model.State)
     {
         case CancelState.Confirm:
+            @if (Model.LateFee is { } lateFee)
+            {
+                <p role="status" data-testid="late-cancel-warning" class="notice notice-warn">@T.Format("Booking.Public.Cancel.LateFee", lateFee.ToDisplayString(culture))</p>
+            }
             <form method="post" asp-action="CancelConfirmed" class="flex flex-col gap-3" data-testid="cancel-form">
                 <button type="submit" data-testid="confirm-cancel" class="btn btn-danger w-full">@T["Booking.Public.Cancel.Confirm"]</button>
-                <a href="/book/change/@Uri.EscapeDataString(Model.Appointment!.PublicToken)" data-testid="change-instead" class="btn btn-secondary w-full">@T["Booking.Public.Cancel.ChangeInstead"]</a>
+                @if (!Model.InsideNotice)
+                {
+                    <a href="/book/change/@Uri.EscapeDataString(Model.Appointment!.PublicToken)" data-testid="change-instead" class="btn btn-secondary w-full">@T["Booking.Public.Cancel.ChangeInstead"]</a>
+                }
                 <a href="/book" class="btn btn-secondary w-full">@T["Booking.Public.Cancel.Keep"]</a>
             </form>
             break;
         case CancelState.Cancelled:
             <p role="status" data-testid="cancel-result" class="notice notice-ok">@T["Booking.Public.Cancel.Done"]</p>
+            @if (Model.LateFee is { } feeDue)
+            {
+                <p data-testid="late-cancel-fee" class="notice notice-warn">@T.Format("Booking.Public.Cancel.DoneLateFee", feeDue.ToDisplayString(culture))</p>
+            }
             <a href="/book" data-testid="book-another" class="btn btn-primary w-full">@T["Booking.Public.Done.BookAnother"]</a>
             break;
         case CancelState.Already:

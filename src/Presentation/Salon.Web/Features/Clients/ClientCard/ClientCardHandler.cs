@@ -1,5 +1,8 @@
 using Salon.Core.Cqrs;
+using Salon.Core.Settings;
 using Salon.Services.Clients;
+using Salon.Services.Payments;
+using Salon.Services.Settings;
 
 namespace Salon.Web.Features.Clients.ClientCard;
 
@@ -7,7 +10,7 @@ namespace Salon.Web.Features.Clients.ClientCard;
 /// The one read path that decrypts health notes (ADR 0011); the client service does it through the tenant filter. The
 /// history comes from the same service, names resolved through the filter too (ADR 0017).
 /// </summary>
-public sealed class ClientCardHandler(IClientService clients) : IRequestHandler<ClientCardQuery, ClientCardDetails?>
+public sealed class ClientCardHandler(IClientService clients, IClientAccountService accounts, ISettingService settings) : IRequestHandler<ClientCardQuery, ClientCardDetails?>
 {
     public async Task<ClientCardDetails?> HandleAsync(ClientCardQuery request, CancellationToken cancellationToken)
     {
@@ -27,6 +30,9 @@ public sealed class ClientCardHandler(IClientService clients) : IRequestHandler<
             mergedIntoName = (await clients.GetCardAsync(targetId, cancellationToken))?.FullName;
         }
 
-        return new ClientCardDetails(card, history, mergedIntoName);
+        var account = await accounts.GetAccountAsync(request.ClientId, cancellationToken);
+        var policy = await settings.LoadAsync<CancellationPolicySettings>(cancellationToken);
+        var feesInUse = account.Fees.Count > 0 || policy.NoShowFeePercent > 0m || policy.LateCancellationFeePercent > 0m;
+        return new ClientCardDetails(card, history, mergedIntoName, account, feesInUse);
     }
 }

@@ -804,6 +804,105 @@ namespace Salon.Data.Migrations
                     b.ToTable("appointment_reminders", "salon");
                 });
 
+            modelBuilder.Entity("Salon.Core.Payments.ClientAccountEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid?>("AppointmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("appointment_id");
+
+                    b.Property<Instant>("At")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("at");
+
+                    b.Property<Guid?>("ByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("by_user_id");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("client_id");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("integer")
+                        .HasColumnName("kind");
+
+                    b.Property<int?>("Method")
+                        .HasColumnType("integer")
+                        .HasColumnName("method");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("note");
+
+                    b.Property<string>("ProviderReference")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("provider_reference");
+
+                    b.Property<string>("ProviderSystemName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("provider_system_name");
+
+                    b.Property<Guid?>("RelatedEntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("related_entry_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_client_account_entries");
+
+                    b.HasIndex("AppointmentId")
+                        .HasDatabaseName("ix_client_account_entries_appointment_id");
+
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("ix_client_account_entries_client_id");
+
+                    b.HasIndex("RelatedEntryId")
+                        .HasDatabaseName("ix_client_account_entries_related_entry_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_client_account_entries_tenant_id");
+
+                    b.HasIndex("TenantId", "AppointmentId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_client_account_entries_one_fee_per_appointment")
+                        .HasFilter("kind IN (1, 2)");
+
+                    b.HasIndex("TenantId", "RelatedEntryId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_client_account_entries_one_settlement_per_fee")
+                        .HasFilter("kind IN (3, 4)");
+
+                    b.HasIndex("TenantId", "ClientId", "At")
+                        .HasDatabaseName("ix_client_account_entries_tenant_id_client_id_at");
+
+                    b.ToTable("client_account_entries", "salon", t =>
+                        {
+                            t.HasCheckConstraint("ck_client_account_entries_amount_positive", "amount > 0");
+                        });
+                });
+
             modelBuilder.Entity("Salon.Core.Settings.Setting", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1226,6 +1325,35 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_appointment_reminders_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Payments.ClientAccountEntry", b =>
+                {
+                    b.HasOne("Salon.Core.Appointments.Appointment", null)
+                        .WithMany()
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_client_account_entries_appointments_appointment_id");
+
+                    b.HasOne("Salon.Core.Clients.Client", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_client_account_entries_clients_client_id");
+
+                    b.HasOne("Salon.Core.Payments.ClientAccountEntry", null)
+                        .WithMany()
+                        .HasForeignKey("RelatedEntryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_client_account_entries_client_account_entries_related_entry");
+
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_client_account_entries_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Settings.Setting", b =>

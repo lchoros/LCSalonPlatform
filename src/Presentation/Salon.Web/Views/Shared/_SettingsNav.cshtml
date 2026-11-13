@@ -1,0 +1,17 @@
+@model string
+@* The pages under "Settings" (owner only). The model is the segment of the page that is open. *@
+@{
+    var pages = new[]
+    {
+        ("notifications", "Settings.Nav.Notifications"),
+        ("cancellation-policy", "Settings.Nav.CancellationPolicy"),
+    };
+}
+<nav aria-label="@T["Layout.Nav.Settings"]" data-testid="settings-nav" class="flex flex-wrap gap-2">
+    @foreach (var (segment, labelKey) in pages)
+    {
+        var on = segment == Model;
+        <a href="/admin/settings/@segment" data-testid="settings-nav-@segment" aria-current="@(on ? "page" : null)"
+           class="inline-flex min-h-11 items-center rounded-md border px-3 py-2 text-sm font-medium @(on ? "border-stone-900 bg-stone-900 text-white" : "border-stone-300 bg-white hover:bg-stone-100")">@T[labelKey]</a>
+    }
+</nav>

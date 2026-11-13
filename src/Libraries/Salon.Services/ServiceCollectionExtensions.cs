@@ -13,6 +13,7 @@ using Salon.Services.Catalog;
 using Salon.Services.Localization;
 using Salon.Services.Messaging;
 using Salon.Services.Notifications;
+using Salon.Services.Payments;
 using Salon.Services.Seeding;
 using Salon.Services.Settings;
 using Salon.Services.Tasks;
@@ -55,6 +56,8 @@ public static class ServiceCollectionExtensions
         // Reminders (ADR 0020): needs IPublicUrlBuilder (Web.Framework) at resolve time, like the public booking service.
         services.AddScoped<IAppointmentReminderService, AppointmentReminderService>();
         services.AddScoped<IScheduleTask, AppointmentReminderTask>();
+        // The client account (ADR 0022): needs the payment plugin the host registers, at resolve time.
+        services.AddScoped<IClientAccountService, ClientAccountService>();
         services.AddScoped<DemoSeeder>();
 
         services.AddOptions<EmailOptions>().BindConfiguration(EmailOptions.SectionName);

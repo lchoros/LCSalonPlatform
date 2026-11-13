@@ -71,5 +71,12 @@
   "Booking.Public.Change.Done": "Twoja wizyta została przeniesiona. Wysłaliśmy SMS z nowym terminem.",
   "Booking.Public.Change.TooLate": "Ta wizyta już się rozpoczęła i nie można jej zmienić online. Zadzwoń do salonu.",
   "Booking.Public.Change.Keep": "Zostaw obecny termin",
-  "Booking.Public.Cancel.ChangeInstead": "Zmień termin zamiast odwoływać"
+  "Booking.Public.Cancel.ChangeInstead": "Zmień termin zamiast odwoływać",
+  "Booking.Public.Terms.Title": "Zmiana i odwołanie wizyty",
+  "Booking.Public.Terms.FreeUntil": "Bezpłatnie do {0} godz. przed wizytą.",
+  "Booking.Public.Terms.LateFee": "Późniejsze odwołanie może kosztować {0}% ceny.",
+  "Booking.Public.Terms.NoShowFee": "Nieobecność bez odwołania może kosztować {0}% ceny.",
+  "Booking.Public.Cancel.LateFee": "Do wizyty zostało niewiele czasu, więc to późne odwołanie. Salon może naliczyć opłatę {0}.",
+  "Booking.Public.Cancel.DoneLateFee": "To było późne odwołanie. Salon może naliczyć opłatę {0}.",
+  "Booking.Public.Change.InsideNotice": "Do wizyty zostało mniej niż {0} godz., więc terminu nie można już zmienić online. Skontaktuj się z salonem."
 }

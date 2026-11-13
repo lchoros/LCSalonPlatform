@@ -29,6 +29,9 @@ public sealed class DayListController(IDispatcher dispatcher, ILocalizationServi
 {
     public const string ListPath = "/admin/appointments";
 
+    /// <summary>The fee page of a visit (ADR 0022); the Payments module owns the route, the day list only sends people there.</summary>
+    public const string FeePath = "/admin/payments/fees";
+
     [HttpGet("")]
     public async Task<IActionResult> Index(string? date, CancellationToken cancellationToken)
     {
@@ -61,7 +64,8 @@ public sealed class DayListController(IDispatcher dispatcher, ILocalizationServi
         if (result.Succeeded)
         {
             SetFlash(localizer.Format("Appointments.Day.StatusChanged", localizer[$"Appointments.Status.{result.To}"]));
-            return Redirect(DayPath(result.Day));
+            // A fee may apply (ADR 0022): straight to its preview, where a person decides. The path is built from the route's Guid.
+            return Redirect(result.FeeProposed ? $"{FeePath}/{id}" : DayPath(result.Day));
         }
 
         var board = await dispatcher.SendAsync(new DayListQuery(result.Day), cancellationToken);

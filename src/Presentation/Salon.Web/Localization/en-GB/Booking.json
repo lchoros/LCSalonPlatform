@@ -71,5 +71,12 @@
   "Booking.Public.Change.Done": "Your appointment has been moved. We have texted you the new time.",
   "Booking.Public.Change.TooLate": "This appointment has already started and cannot be changed online. Please call the salon.",
   "Booking.Public.Change.Keep": "Keep my current time",
-  "Booking.Public.Cancel.ChangeInstead": "Change the time instead"
+  "Booking.Public.Cancel.ChangeInstead": "Change the time instead",
+  "Booking.Public.Terms.Title": "Changes and cancellation",
+  "Booking.Public.Terms.FreeUntil": "Free up to {0} hours before the visit.",
+  "Booking.Public.Terms.LateFee": "Cancelling later than that may cost {0}% of the price.",
+  "Booking.Public.Terms.NoShowFee": "Missing the visit without cancelling may cost {0}% of the price.",
+  "Booking.Public.Cancel.LateFee": "Your visit is soon, so this is a late cancellation. The salon may charge a fee of {0}.",
+  "Booking.Public.Cancel.DoneLateFee": "This was a late cancellation. The salon may charge a fee of {0}.",
+  "Booking.Public.Change.InsideNotice": "It is less than {0} hours before your visit, so the time can no longer be changed online. Please contact the salon."
 }

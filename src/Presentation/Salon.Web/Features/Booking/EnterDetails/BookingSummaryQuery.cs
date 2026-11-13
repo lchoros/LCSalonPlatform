@@ -2,6 +2,7 @@ using NodaTime;
 
 using Salon.Core.Cqrs;
 using Salon.Core.Domain;
+using Salon.Core.Settings;
 
 namespace Salon.Web.Features.Booking.EnterDetails;
 
@@ -13,6 +14,7 @@ public sealed record BookingSummaryQuery(Guid ServiceId, Guid? StaffMemberId, In
 
 /// <param name="StaffName">Null for "anyone available".</param>
 /// <param name="RequireSmsVerification">Decides the wording of the submit button and the phone hint.</param>
+/// <param name="Policy">The salon's cancellation policy (ADR 0022), shown before the client commits.</param>
 public sealed record BookingSummary(
     string ServiceName,
     Duration Duration,
@@ -23,4 +25,5 @@ public sealed record BookingSummary(
     DateTimeZone Zone,
     string SalonName,
     string ConsentWording,
-    bool RequireSmsVerification);
+    bool RequireSmsVerification,
+    CancellationPolicySettings Policy);

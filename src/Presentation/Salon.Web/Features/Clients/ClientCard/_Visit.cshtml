@@ -9,6 +9,9 @@
     var dayPath = "/admin/appointments?date=" + LocalDatePattern.Iso.Format(Model.Start.Date);
     // The status labels are the day list's Appointments.Status.* keys, one per enum member.
     var statusKey = "Appointments.Status." + Model.Status;
+    // A missed or cancelled visit may carry a fee (ADR 0022); its page says whether the policy allows one.
+    var feeLink = ViewData["FeesInUse"] is true
+        && Model.Status is AppointmentStatus.NoShow or AppointmentStatus.CancelledByClient or AppointmentStatus.CancelledBySalon;
     var badgeClass = Model.Status switch
     {
         AppointmentStatus.Completed => "bg-green-100 text-green-900",
@@ -29,4 +32,8 @@
             <span class="tabular-nums" data-testid="visit-price">@(new Money(Model.PriceAmount, Model.Currency).ToDisplayString(culture))</span>
         </span>
     </a>
+    @if (feeLink)
+    {
+        <a href="/admin/payments/fees/@Model.AppointmentId" data-testid="visit-fee-link" class="inline-flex min-h-11 items-center px-3 text-sm font-medium text-stone-700 underline">@T["Clients.History.Fee"]</a>
+    }
 </li>

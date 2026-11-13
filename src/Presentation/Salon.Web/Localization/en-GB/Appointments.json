@@ -89,5 +89,7 @@
   "Appointments.Calendar.Move.Validation.DateInvalid": "Enter a date as YYYY-MM-DD.",
   "Appointments.Book.Offering": "{0} min · {1}",
   "Appointments.Book.OfferingFrom": "{0} min · from {1}",
-  "Appointments.Book.NotOffered": "{0} does not offer this service."
+  "Appointments.Book.NotOffered": "{0} does not offer this service.",
+  "Appointments.Calendar.Card.ClientOwes": "This client owes {0} in fees from earlier visits.",
+  "Appointments.Calendar.Card.OpenClient": "Open the client card"
 }

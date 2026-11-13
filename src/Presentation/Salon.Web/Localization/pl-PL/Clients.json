@@ -152,5 +152,9 @@
   "Clients.Import.Result.Skipped": "{0} już istniało, {1} nie można było zaimportować.",
   "Clients.Import.Result.ToClients": "Przejdź do listy klientów",
   "Clients.Import.Result.Again": "Importuj kolejny plik",
-  "Clients.Import.ConsentSource": "Zgoda marketingowa zaimportowana z pliku {0} (eksport {1})"
+  "Clients.Import.ConsentSource": "Zgoda marketingowa zaimportowana z pliku {0} (eksport {1})",
+  "Clients.Fees.Title": "Opłaty",
+  "Clients.Fees.Owes": "Do zapłaty: {0}",
+  "Clients.Fees.NothingOwed": "Nic do zapłaty",
+  "Clients.History.Fee": "Opłata"
 }

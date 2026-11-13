@@ -9,6 +9,7 @@ using Salon.Core.Tenancy;
 using Salon.Data;
 using Salon.Services.Appointments;
 using Salon.Services.Availability;
+using Salon.Services.Payments;
 using Salon.Services.Tenancy;
 
 namespace Salon.Web.Features.Appointments.Calendar;
@@ -21,6 +22,7 @@ namespace Salon.Web.Features.Appointments.Calendar;
 public sealed class AppointmentCardHandler(
     SalonDbContext db,
     IAvailabilityService availability,
+    IClientAccountService accounts,
     ITenantContext tenantContext,
     ITenantLookup tenantLookup) : IRequestHandler<AppointmentCardQuery, AppointmentCard>
 {
@@ -92,6 +94,8 @@ public sealed class AppointmentCardHandler(
             staff,
             moveStaffId,
             moveDate,
-            slots);
+            slots,
+            appointment.ClientId,
+            (await accounts.GetAccountAsync(appointment.ClientId, cancellationToken)).Owed);
     }
 }

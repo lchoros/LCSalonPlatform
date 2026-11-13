@@ -62,7 +62,9 @@ currency for money. Tables so far: `tenants`, `services` (RLS), `settings` (RLS)
 `message_templates` (ADR 0008), `staff_members` and `working_hours` (RLS, ADR 0010; `LocalTime` as `time`, local to the
 salon), `clients` (RLS, ADR 0011; health notes as Data Protection cipher text), `appointments` and
 `appointment_status_changes` (RLS, ADR 0012; GiST exclusion constraint against overlapping active visits of one staff
-member, `client_id` FK to `clients` with Restrict), `outbox_messages` (no RLS, see §3). The demo salon also gets three
+member, `client_id` FK to `clients` with Restrict), `client_account_entries` (RLS, ADR 0022; append-only fee and
+settlement lines, partial unique indexes for one fee per visit and one settlement per fee), `outbox_messages` (no RLS,
+see §3). The demo salon also gets three
 staff with weekly hours (Anna Kowalska, Tom Reed, Priya Shah), twelve clients and a few appointments over the coming
 working days.
 Migrations are additive; rollback notes live in each PR. Local: `salon_dev` (app, migrates and seeds `studio-20` on
@@ -107,6 +109,19 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `Salon.Plugin.Import`; the preview is kept server-side under a random token bound to the salon.
 - `Settings/Notifications` — `/admin/settings/notifications` behind `Settings.Manage` (ADR 0020): reminders on/off, two
   lead times, quiet hours (`NotificationSettings`).
+- `Settings/CancellationPolicy` — `/admin/settings/cancellation-policy` behind `Settings.Manage` (ADR 0022): notice
+  period in hours and the late-cancellation and no-show fee as a percentage of the booked price
+  (`CancellationPolicySettings`; all zero by default, which is "no policy"). Both settings pages share `_SettingsNav`.
+- `Payments/VisitFee` — `/admin/payments/fees/{appointmentId}` behind `Payments.Record` + `Clients.View` (ADR 0022): the
+  fee the policy allows for a missed or late-cancelled visit (pure `CancellationPolicy` in Core), a form to add it
+  (amount can be lowered), "client paid" (through `IPaymentProvider`, Manual: record only) and "waive" (reason
+  required), with who did what. `IClientAccountService` (Services) owns the ledger; the day list redirects here after
+  a no-show or late cancellation, the client card lists the fees and what is owed, and the calendar card of a later
+  visit says when the client owes something.
+- `Booking/Reschedule` — `/book/change/{token}` (ADR 0021): the client's own link moves the visit through
+  `IBookingService.MoveAsync`; inside the policy's notice period it offers no times (ADR 0022), while
+  `Booking/CancelBooking` still cancels and states the late fee first. The details page states the policy before the
+  client books.
 
 Background work (ADR 0005 schedule tasks, all per salon through `ITenantScopeRunner`): `Outbox.Dispatch` (ADR 0007),
 `Booking.CleanupVerifications` (hourly, ADR 0017) and `Notifications.SendReminders` (every five minutes, ADR 0020).
@@ -127,6 +142,7 @@ pages are unstyled; assert whole phrases, never three or four letters that rando
 a visible browser: `pwsh scripts/watch-e2e.ps1 -Filter <name>`.
 
 ## 8. Not yet built
-M1 remainder: locations, FullCalendar drag-and-drop with live updates. M2: deposits and no-show fees recorded through
-the Manual payment provider, POS checkout and cash-up, cancellation SMS, client reschedule link, email channel. M3:
+M1 remainder: locations, FullCalendar drag-and-drop with live updates. M2: deposits recorded through the Manual
+payment provider (they add their own lines to the client account), POS checkout and cash-up (puts what a client owes on
+the bill), email channel. M3:
 payments beyond the record-only provider, real SMS/email, deployment.

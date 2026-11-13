@@ -115,6 +115,10 @@
         case RescheduleState.TooLate:
             <p role="status" data-testid="change-result" class="notice notice-warn">@T["Booking.Public.Change.TooLate"]</p>
             break;
+        case RescheduleState.InsideNotice:
+            <p role="status" data-testid="change-result" class="notice notice-warn">@T.Format("Booking.Public.Change.InsideNotice", o.FreeChangeHours)</p>
+            <a href="/book/cancel/@token" data-testid="cancel-instead" class="btn btn-secondary w-full">@T["Booking.Public.Done.Cancel"]</a>
+            break;
         default:
             <p role="status" data-testid="change-result" class="notice notice-warn">@T["Booking.Public.Cancel.Invalid"]</p>
             break;

@@ -37,7 +37,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
     public RecordingSmsSender Sms => _factory.Services.GetRequiredService<RecordingSmsSender>();
 
     /// <summary>
-    /// Removes the salon's appointments, status history, phone verifications and clients (in that order, for the foreign
+    /// Removes the salon's client account lines, appointments, status history, phone verifications and clients (in that order, for the foreign
     /// keys), so <see cref="EnsureTenantAsync"/> and <see cref="EnsureDemoStaffAsync"/> can replace services and staff after
     /// a booking run left rows behind. No-op when the salon does not exist yet.
     /// </summary>
@@ -58,6 +58,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         using var tenantScope = _factory.Services.CreateScope();
         tenantScope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
         var tenantDb = tenantScope.ServiceProvider.GetRequiredService<SalonDbContext>();
+        await tenantDb.ClientAccountEntries.ExecuteDeleteAsync();
         await tenantDb.AppointmentStatusChanges.ExecuteDeleteAsync();
         await tenantDb.Appointments.ExecuteDeleteAsync();
         await tenantDb.PhoneVerifications.ExecuteDeleteAsync();
@@ -135,6 +136,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         {
             scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
             var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+            await db.ClientAccountEntries.ExecuteDeleteAsync();
             db.Appointments.RemoveRange(await db.Appointments.ToListAsync());
             db.Services.RemoveRange(await db.Services.ToListAsync());
             var sortOrder = 0;
@@ -180,7 +182,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
     }
 
     /// <summary>
-    /// Puts the salon's booking and reminder settings back to their defaults. The salon row is shared with whatever ran
+    /// Puts the salon's booking, reminder and cancellation-policy settings back to their defaults. The salon row is shared with whatever ran
     /// before on this database (an integration test may have switched SMS verification off), and a test that walks the
     /// public flow must not depend on that.
     /// </summary>
@@ -191,6 +193,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         var settings = scope.ServiceProvider.GetRequiredService<ISettingService>();
         await settings.SaveAsync(new BookingSettings());
         await settings.SaveAsync(new NotificationSettings());
+        await settings.SaveAsync(new CancellationPolicySettings());
     }
 
     /// <summary>
@@ -207,6 +210,43 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         await db.SaveChangesAsync();
 
         await scope.ServiceProvider.GetRequiredService<IUserService>().CreateAsync(email, displayName, password, role);
+    }
+
+    /// <summary>
+    /// A visit three days ago that nobody marked: a new client with <paramref name="firstName"/> and
+    /// <paramref name="lastName"/>, the salon's first service and first bookable person, still "booked". Written straight
+    /// to the tables because the past has no free slots to book through the service.
+    /// </summary>
+    public async Task<(Guid AppointmentId, Guid ClientId, decimal Price)> AddUnmarkedPastVisitAsync(Guid tenantId, string firstName, string lastName)
+    {
+        using var scope = _factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
+        var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+        var now = SystemClock.Instance.GetCurrentInstant();
+        var service = await db.Services.AsNoTracking().Where(s => s.IsActive).OrderBy(s => s.Name).FirstAsync();
+        var staffId = await db.StaffMembers.AsNoTracking().Where(s => s.IsActive && s.IsBookable).OrderBy(s => s.SortOrder).Select(s => s.Id).FirstAsync();
+        var client = new Core.Clients.Client { FirstName = firstName, LastName = lastName, CreatedAt = now, UpdatedAt = now };
+        var start = now - Duration.FromDays(3);
+        var appointment = new Appointment
+        {
+            TenantId = tenantId,
+            ClientId = client.Id,
+            StaffMemberId = staffId,
+            ServiceId = service.Id,
+            Start = start,
+            End = start + service.Duration,
+            Status = AppointmentStatus.Booked,
+            Source = AppointmentSource.Admin,
+            PriceAmount = service.Price,
+            Currency = service.Currency,
+            DurationMinutes = (int)service.Duration.TotalMinutes,
+            CreatedAt = start - Duration.FromDays(1),
+        };
+        db.Clients.Add(client);
+        db.Appointments.Add(appointment);
+        db.AppointmentStatusChanges.Add(new AppointmentStatusChange { TenantId = tenantId, AppointmentId = appointment.Id, To = AppointmentStatus.Booked, At = appointment.CreatedAt });
+        await db.SaveChangesAsync();
+        return (appointment.Id, client.Id, service.Price);
     }
 
     /// <summary>The salon's earliest active appointment that has not started yet (the demo seed books a few over the coming days).</summary>

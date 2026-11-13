@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using NodaTime;
 
 using Salon.Core.Cqrs;
+using Salon.Core.Payments;
 using Salon.Core.Settings;
 using Salon.Core.Tenancy;
 using Salon.Data;
@@ -51,6 +52,12 @@ public sealed class RescheduleOptionsHandler(
         if (appointment.Start <= now)
         {
             return RescheduleOptions.Without(appointment, RescheduleState.TooLate, tenant.Name, zone);
+        }
+
+        var policy = await settings.LoadAsync<CancellationPolicySettings>(cancellationToken);
+        if (CancellationPolicy.IsInsideNotice(appointment.Start, now, policy.FreeChangeHours))
+        {
+            return RescheduleOptions.Without(appointment, RescheduleState.InsideNotice, tenant.Name, zone) with { FreeChangeHours = policy.FreeChangeHours };
         }
 
         var bookable = await db.StaffMembers.AsNoTracking()

@@ -12,6 +12,7 @@
         => ViewData.ModelState.TryGetValue(key, out var entry) ? entry.Errors.Select(e => e.ErrorMessage).ToList() : [];
 }
 <section class="mx-auto max-w-xl space-y-6">
+    <partial name="_SettingsNav" model="@("notifications")" />
     <header class="space-y-2">
         <h1 class="text-2xl font-bold tracking-tight">@T["Settings.Notifications.Title"]</h1>
         <p class="text-stone-600">@T["Settings.Notifications.Lead"]</p>
