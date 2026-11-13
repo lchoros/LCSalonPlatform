@@ -56,5 +56,7 @@
   "Settings.SalonDetails.Validation.PostcodeRequired": "Enter the postcode.",
   "Settings.SalonDetails.Validation.TooLong": "Use at most {0} characters.",
   "Settings.SalonDetails.Validation.Phone": "Enter a phone number: digits, with spaces if you like, for example 020 7946 0020.",
-  "Settings.SalonDetails.Validation.Email": "Enter a valid email address."
+  "Settings.SalonDetails.Validation.Email": "Enter a valid email address.",
+  "Settings.Notifications.ConfirmDeskBookings": "Confirm bookings made at the desk",
+  "Settings.Notifications.ConfirmDeskBookingsHint": "A client you book in by phone or in person gets the same confirmation as one who books online, with their own link to change or cancel."
 }

@@ -19,6 +19,12 @@ public sealed class NotificationSettings : ISettings
     /// </summary>
     public bool EmailEnabled { get; set; } = true;
 
+    /// <summary>
+    /// Also confirm a booking the salon made at the desk (ADR 0029): the client gets the same confirmation as after an
+    /// online booking, with their own link. Off means only online bookings are confirmed.
+    /// </summary>
+    public bool ConfirmDeskBookings { get; set; } = true;
+
     /// <summary>Hours before the visit for the first reminder; 0 switches it off.</summary>
     public int FirstReminderHours { get; set; } = 24;
 

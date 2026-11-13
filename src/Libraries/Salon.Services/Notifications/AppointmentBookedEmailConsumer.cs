@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Salon.Core.Messaging;
+using Salon.Services.Settings;
 
 namespace Salon.Services.Notifications;
 
@@ -8,5 +9,6 @@ public sealed class AppointmentBookedEmailConsumer(
     AppointmentMessageReader reader,
     IPublicUrlBuilder urls,
     AppointmentNotifier notifier,
+    ISettingService settings,
     ILogger<AppointmentBookedEmailConsumer> logger)
-    : AppointmentBookedNotice(MessageChannel.Email, reader, urls, notifier, logger);
+    : AppointmentBookedNotice(MessageChannel.Email, reader, urls, notifier, settings, logger);

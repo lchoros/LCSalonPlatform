@@ -11,7 +11,7 @@ public sealed record GetNotificationSettingsQuery : IQuery<SaveNotificationSetti
 
 /// <summary>
 /// The reminder form as posted: hours as numbers, quiet hours as HH:mm text so that a browser without a time picker
-/// still works, and whether clients are emailed as well as texted (ADR 0025; a tick box, so absent means off). <see cref="SaveNotificationSettingsValidator"/> holds the rules.
+/// still works, whether clients are emailed as well as texted (ADR 0025) and whether desk bookings are confirmed (ADR 0029); both tick boxes, so absent means off. <see cref="SaveNotificationSettingsValidator"/> holds the rules.
 /// </summary>
 public sealed record SaveNotificationSettingsCommand(
     bool RemindersEnabled,
@@ -19,7 +19,8 @@ public sealed record SaveNotificationSettingsCommand(
     int? SecondReminderHours,
     string? QuietFrom,
     string? QuietTo,
-    bool EmailEnabled) : ICommand<bool>
+    bool EmailEnabled,
+    bool ConfirmDeskBookings = false) : ICommand<bool>
 {
     public LocalTime? ParsedQuietFrom => WorkingHoursRules.TryParseTime(QuietFrom);
 
@@ -34,7 +35,8 @@ public sealed record SaveNotificationSettingsCommand(
             settings.SecondReminderHours,
             Format(settings.QuietHoursStartMinute),
             Format(settings.QuietHoursEndMinute),
-            settings.EmailEnabled);
+            settings.EmailEnabled,
+            settings.ConfirmDeskBookings);
     }
 
     private static string Format(int minuteOfDay)

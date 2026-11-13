@@ -65,8 +65,8 @@ public class Appointment : BaseEntity, ITenantEntity
     public string? CancellationReason { get; set; }
 
     /// <summary>
-    /// Secret of the client's cancel link (ADR 0014, <see cref="Booking.PublicBookingToken"/>); set for online bookings,
-    /// null for appointments the salon made in the admin. Unique when present.
+    /// Secret of the client's own link (ADR 0014, <see cref="Booking.PublicBookingToken"/>). Every booking gets one since
+    /// ADR 0029; null only on appointments the salon made in the admin before that. Unique when present.
     /// </summary>
     public string? PublicToken { get; set; }
 

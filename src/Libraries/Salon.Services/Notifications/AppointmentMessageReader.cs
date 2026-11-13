@@ -54,7 +54,7 @@ public sealed class AppointmentMessageReader(SalonDbContext db, ITenantContext t
     }
 }
 
-/// <param name="PublicToken">The secret of the client's own link; null for a booking made at the desk (ADR 0014).</param>
+/// <param name="PublicToken">The secret of the client's own link; null only for a desk booking made before ADR 0029.</param>
 /// <param name="ClientPhone">Null when the card has no phone number: there is nobody to text.</param>
 /// <param name="ClientEmail">Null when the card has no email address.</param>
 public sealed record AppointmentMessageData(

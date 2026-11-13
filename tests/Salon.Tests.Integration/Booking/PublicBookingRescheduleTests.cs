@@ -193,7 +193,8 @@ public partial class PublicBookingTests
         sms.ToE164.ShouldBe("+447700900456");
         sms.Body.ShouldContain("is now on ");
         sms.Body.ShouldContain("12:00");
-        sms.Body.ShouldEndWith("/book", Case.Sensitive, "a booking made at the desk has no link of its own yet");
+        var token = (await AppointmentsAsync(_studio.Id)).Single(a => a.Id == desk).PublicToken.ShouldNotBeNull();
+        sms.Body.ShouldEndWith($"/book/cancel/{token}", Case.Sensitive, "a booking made at the desk has the client's own link too (ADR 0029)");
     }
 
     private static string SlotButton(Instant start) => $"name=\"Start\" value=\"{InstantPattern.ExtendedIso.Format(start)}\"";

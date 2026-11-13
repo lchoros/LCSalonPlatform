@@ -157,6 +157,42 @@ public class NotificationSettingsPageTests(SalonWebApplicationFactory factory) :
     }
 
     [Fact]
+    public async Task Desk_bookings_are_confirmed_by_default_and_the_tick_box_switches_that_off_and_on()
+    {
+        using var client = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Owner);
+
+        var html = await GetAsync(client);
+        Input(html, "ConfirmDeskBookings").ShouldContain("checked");
+        html.ShouldContain("Confirm bookings made at the desk");
+
+        // An unticked box posts nothing: desk bookings are no longer confirmed. Emails stay as they were ticked.
+        (await PostAsync(client, new()
+        {
+            ["RemindersEnabled"] = "true",
+            ["EmailEnabled"] = "true",
+            ["FirstReminderHours"] = "24",
+            ["SecondReminderHours"] = "2",
+            ["QuietFrom"] = "21:00",
+            ["QuietTo"] = "08:00",
+        })).StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        (await LoadAsync(_studio.Id)).ConfirmDeskBookings.ShouldBeFalse();
+        (await LoadAsync(_studio.Id)).EmailEnabled.ShouldBeTrue();
+        Input(await GetAsync(client), "ConfirmDeskBookings").ShouldNotContain("checked", Case.Sensitive, "the box shows what is saved");
+
+        (await PostAsync(client, new()
+        {
+            ["RemindersEnabled"] = "true",
+            ["ConfirmDeskBookings"] = "true",
+            ["FirstReminderHours"] = "24",
+            ["SecondReminderHours"] = "2",
+            ["QuietFrom"] = "21:00",
+            ["QuietTo"] = "08:00",
+        })).StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        (await LoadAsync(_studio.Id)).ConfirmDeskBookings.ShouldBeTrue();
+        (await LoadAsync(_polish.Id)).ConfirmDeskBookings.ShouldBeTrue("the other salon was never touched");
+    }
+
+    [Fact]
     public async Task The_page_speaks_the_salon_language()
     {
         using var client = await factory.SignedInClientAsync(HostB, _polish.Id, Role.Owner);
