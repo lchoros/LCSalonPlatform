@@ -49,6 +49,32 @@ public static class BookingSmsTokens
     }
 
     /// <summary>Tokens of <see cref="MessageTemplateCatalog.BookingCode"/>. The code is in the caller's memory only; it is never logged.</summary>
+    /// <summary>The tokens of <c>Booking.Cancelled</c>: the visit that is off and where to book a new one.</summary>
+    public static MessageTokens Cancelled(
+        string salonName,
+        string clientFirstName,
+        string serviceName,
+        string staffName,
+        Instant start,
+        DateTimeZone zone,
+        CultureInfo culture,
+        string bookingUrl)
+    {
+        ArgumentNullException.ThrowIfNull(salonName);
+        ArgumentNullException.ThrowIfNull(clientFirstName);
+        ArgumentNullException.ThrowIfNull(serviceName);
+        ArgumentNullException.ThrowIfNull(staffName);
+        ArgumentNullException.ThrowIfNull(bookingUrl);
+
+        return MessageTokens.Empty
+            .Add("SalonName", salonName)
+            .Add("ClientFirstName", clientFirstName)
+            .Add("ServiceName", serviceName)
+            .Add("StaffName", staffName)
+            .Add("AppointmentStart", FormatStart(start, zone, culture))
+            .Add("BookingUrl", bookingUrl);
+    }
+
     public static MessageTokens Code(string salonName, string code)
     {
         ArgumentNullException.ThrowIfNull(salonName);

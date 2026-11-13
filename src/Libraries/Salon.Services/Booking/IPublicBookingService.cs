@@ -41,6 +41,13 @@ public interface IPublicBookingService
 
     /// <summary>Cancels as <see cref="AppointmentStatus.CancelledByClient"/> when the token is known, the appointment is still active and has not started.</summary>
     Task<PublicCancellation> CancelByTokenAsync(string? publicToken, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Moves the appointment behind a link to <paramref name="newStart"/> when it is still active and has not started
+    /// (ADR 0021). <paramref name="staffMemberId"/> null means "anyone": the person free at that time is chosen. Asking
+    /// for the time and person the appointment already has is a success that changes nothing, so a double submit is safe.
+    /// </summary>
+    Task<PublicReschedule> RescheduleByTokenAsync(string? publicToken, Guid? staffMemberId, Instant newStart, CancellationToken cancellationToken = default);
 }
 
 /// <summary>What the details form collects, plus the slot chosen one step earlier. Text is trimmed and normalised by the service.</summary>
@@ -89,6 +96,7 @@ public sealed record PublicAppointment(
     Guid Id,
     Guid ServiceId,
     string ServiceName,
+    Guid StaffMemberId,
     string StaffName,
     Instant Start,
     Instant End,
@@ -108,3 +116,15 @@ public enum PublicCancellationOutcome
 }
 
 public sealed record PublicCancellation(PublicCancellationOutcome Outcome, PublicAppointment? Appointment = null);
+
+public enum PublicRescheduleOutcome
+{
+    Moved = 1,
+    NotFound = 2,
+    NotActive = 3,
+    TooLate = 4,
+    SlotTaken = 5,
+}
+
+/// <param name="Appointment">The appointment as it is after the call (moved or untouched); null when the link is unknown.</param>
+public sealed record PublicReschedule(PublicRescheduleOutcome Outcome, PublicAppointment? Appointment = null);

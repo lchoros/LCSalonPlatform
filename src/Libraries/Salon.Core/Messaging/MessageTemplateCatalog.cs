@@ -13,6 +13,9 @@ public static class MessageTemplateCatalog
     public const string BookingReminder = "Booking.Reminder";
     public const string BookingCancelled = "Booking.Cancelled";
 
+    /// <summary>Sent when a visit gets a new time, by the client through their link or by the salon (ADR 0021).</summary>
+    public const string BookingRescheduled = "Booking.Rescheduled";
+
     /// <summary>The SMS verification code sent before an online booking (ADR 0014). SMS only.</summary>
     public const string BookingCode = "Booking.Code";
 
@@ -26,6 +29,7 @@ public static class MessageTemplateCatalog
         new(BookingConfirmation, SmsAndEmail, [.. BookingTokens, "CancelUrl"]),
         new(BookingReminder, SmsAndEmail, [.. BookingTokens, "CancelUrl"]),
         new(BookingCancelled, SmsAndEmail, [.. BookingTokens, "BookingUrl"]),
+        new(BookingRescheduled, SmsAndEmail, [.. BookingTokens, "CancelUrl"]),
         new(BookingCode, SmsOnly, ["SalonName", "Code"]),
     }.ToDictionary(d => d.Key, StringComparer.Ordinal);
 

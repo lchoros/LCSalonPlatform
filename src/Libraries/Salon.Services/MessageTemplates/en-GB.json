@@ -14,6 +14,11 @@
     "EmailSubject": "Your booking at {{SalonName}} has been cancelled",
     "EmailBody": "Hi {{ClientFirstName}},\nyour {{ServiceName}} at {{SalonName}} on {{AppointmentStart}} has been cancelled.\nYou can book a new time here: {{BookingUrl}}"
   },
+  "Booking.Rescheduled": {
+    "Sms": "{{SalonName}}: your {{ServiceName}} is now on {{AppointmentStart}}. Change or cancel: {{CancelUrl}}",
+    "EmailSubject": "Your booking at {{SalonName}} has a new time",
+    "EmailBody": "Hi {{ClientFirstName}},\nyour {{ServiceName}} with {{StaffName}} at {{SalonName}} is now on {{AppointmentStart}}.\nTo change or cancel it, use this link: {{CancelUrl}}"
+  },
   "Booking.Code": {
     "Sms": "{{SalonName}}: your code is {{Code}}. It expires in 10 minutes.",
     "EmailSubject": "Your {{SalonName}} booking code",

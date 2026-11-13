@@ -13,10 +13,12 @@ using Salon.Core.Appointments;
 using Salon.Core.Catalog;
 using Salon.Core.Identity;
 using Salon.Core.Messaging;
+using Salon.Core.Settings;
 using Salon.Core.Tenancy;
 using Salon.Data;
 using Salon.Services.Identity;
 using Salon.Services.Seeding;
+using Salon.Services.Settings;
 
 namespace Salon.Tests.E2E.Infrastructure;
 
@@ -175,6 +177,20 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         {
             await scope.ServiceProvider.GetRequiredService<DemoSeeder>().SeedAsync();
         }
+    }
+
+    /// <summary>
+    /// Puts the salon's booking and reminder settings back to their defaults. The salon row is shared with whatever ran
+    /// before on this database (an integration test may have switched SMS verification off), and a test that walks the
+    /// public flow must not depend on that.
+    /// </summary>
+    public async Task UseDefaultSettingsAsync(Guid tenantId)
+    {
+        using var scope = _factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
+        var settings = scope.ServiceProvider.GetRequiredService<ISettingService>();
+        await settings.SaveAsync(new BookingSettings());
+        await settings.SaveAsync(new NotificationSettings());
     }
 
     /// <summary>

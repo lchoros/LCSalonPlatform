@@ -206,6 +206,53 @@ internal sealed class PublicBookingService(
         return new PublicCancellation(PublicCancellationOutcome.Cancelled, appointment with { Status = cancelled.Status });
     }
 
+    public async Task<PublicReschedule> RescheduleByTokenAsync(string? publicToken, Guid? staffMemberId, Instant newStart, CancellationToken cancellationToken = default)
+    {
+        var appointment = await FindByTokenAsync(publicToken, cancellationToken).ConfigureAwait(false);
+        if (appointment is null)
+        {
+            return new PublicReschedule(PublicRescheduleOutcome.NotFound);
+        }
+
+        if (!appointment.IsActive)
+        {
+            return new PublicReschedule(PublicRescheduleOutcome.NotActive, appointment);
+        }
+
+        if (appointment.Start <= clock.GetCurrentInstant())
+        {
+            return new PublicReschedule(PublicRescheduleOutcome.TooLate, appointment);
+        }
+
+        // The time it already has (a double submit, or the back button): nothing to do, and no second SMS.
+        if (newStart == appointment.Start && (staffMemberId is null || staffMemberId == appointment.StaffMemberId))
+        {
+            return new PublicReschedule(PublicRescheduleOutcome.Moved, appointment);
+        }
+
+        try
+        {
+            var staff = staffMemberId;
+            if (staff is null)
+            {
+                var zone = await ZoneAsync(cancellationToken).ConfigureAwait(false);
+                var day = newStart.InZone(zone).Date;
+                var slots = await availability.GetSlotsAsync(appointment.ServiceId, null, day, day, appointment.Id, cancellationToken).ConfigureAwait(false);
+                staff = slots.FirstOrDefault(s => s.Start == newStart)?.StaffMemberId ?? throw new SlotNoLongerAvailableException();
+            }
+
+            await booking.MoveAsync(appointment.Id, staff.Value, newStart, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is SlotNoLongerAvailableException or InvalidOperationException)
+        {
+            // Taken meanwhile, or the person stopped being bookable for this service: the client picks again.
+            logger.LogInformation("Reschedule of appointment {AppointmentId} refused: {Reason}", appointment.Id, ex.GetType().Name);
+            return new PublicReschedule(PublicRescheduleOutcome.SlotTaken, appointment);
+        }
+
+        return new PublicReschedule(PublicRescheduleOutcome.Moved, await FindByTokenAsync(publicToken, cancellationToken).ConfigureAwait(false));
+    }
+
     /// <summary>Finds or creates the client by phone, picks the person for "anyone", books as Online. Throws <see cref="SlotNoLongerAvailableException"/>.</summary>
     private async Task<Appointment> BookPendingAsync(PhoneVerification pending, CancellationToken cancellationToken)
     {
@@ -280,7 +327,7 @@ internal sealed class PublicBookingService(
 
         var serviceName = await db.Services.AsNoTracking().Where(s => s.Id == row.ServiceId).Select(s => s.Name).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
         var staffName = await db.StaffMembers.AsNoTracking().Where(s => s.Id == row.StaffMemberId).Select(s => s.DisplayName).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
-        return new PublicAppointment(row.Id, row.ServiceId, serviceName, staffName, row.Start, row.End, new Money(row.PriceAmount, row.Currency), row.Status, row.PublicToken);
+        return new PublicAppointment(row.Id, row.ServiceId, serviceName, row.StaffMemberId, staffName, row.Start, row.End, new Money(row.PriceAmount, row.Currency), row.Status, row.PublicToken);
     }
 
     private async Task<TenantInfo> RequireTenantAsync(CancellationToken cancellationToken)

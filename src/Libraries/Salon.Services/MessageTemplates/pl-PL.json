@@ -14,6 +14,11 @@
     "EmailSubject": "Twoja wizyta w {{SalonName}} została odwołana",
     "EmailBody": "Cześć {{ClientFirstName}},\nTwoja wizyta ({{ServiceName}}) w {{SalonName}} w terminie {{AppointmentStart}} została odwołana.\nNowy termin możesz zarezerwować tutaj: {{BookingUrl}}"
   },
+  "Booking.Rescheduled": {
+    "Sms": "{{SalonName}}: Twoja wizyta ({{ServiceName}}) ma nowy termin: {{AppointmentStart}}. Zmiana lub odwołanie: {{CancelUrl}}",
+    "EmailSubject": "Nowy termin wizyty w {{SalonName}}",
+    "EmailBody": "Cześć {{ClientFirstName}},\nTwoja wizyta ({{ServiceName}}) u {{StaffName}} w {{SalonName}} ma nowy termin: {{AppointmentStart}}.\nAby ją zmienić lub odwołać, użyj tego linku: {{CancelUrl}}"
+  },
   "Booking.Code": {
     "Sms": "{{SalonName}}: Twój kod to {{Code}}. Ważny przez 10 minut.",
     "EmailSubject": "Twój kod rezerwacji w {{SalonName}}",
