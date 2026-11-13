@@ -6,5 +6,6 @@
   "Layout.Nav.Staff": "Staff",
   "Layout.Nav.Clients": "Clients",
   "Layout.Nav.Appointments": "Appointments",
-  "Layout.Nav.Calendar": "Calendar"
+  "Layout.Nav.Calendar": "Calendar",
+  "Layout.Nav.Settings": "Settings"
 }
