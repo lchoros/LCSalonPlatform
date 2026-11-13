@@ -61,5 +61,8 @@
   "Booking.Public.Cancel.Already": "This appointment has already been cancelled or has taken place.",
   "Booking.Public.Cancel.TooLate": "This appointment has already started and cannot be cancelled online. Please call the salon.",
   "Booking.Public.OtherServices": "Other services",
-  "Booking.ListServices.FromPrice": "from {0}"
+  "Booking.ListServices.FromPrice": "from {0}",
+  "Booking.Public.Done.Price": "Price",
+  "Booking.Public.Prefilled": "Welcome back, {0}. We filled in your details from last time.",
+  "Booking.Public.NotYou": "Not you? Clear the form"
 }

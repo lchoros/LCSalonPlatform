@@ -7,6 +7,7 @@ using NodaTime;
 using NodaTime.Text;
 
 using Salon.Core.Cqrs;
+using Salon.Core.Tenancy;
 using Salon.Services.Appointments;
 using Salon.Services.Booking;
 using Salon.Services.Localization;
@@ -17,17 +18,20 @@ using Salon.Web.Framework.Mvc;
 namespace Salon.Web.Features.Booking.EnterDetails;
 
 /// <summary>
-/// Step 3 at <c>/book/{serviceId}/details?start=…&amp;staff=…</c> (ADR 0014): the chosen slot and the client's details.
-/// A valid POST sends the SMS code and lands on the verify page (or, with verification off, on the confirmation); an
-/// invalid one re-renders with messages next to the fields. The POST is anti-forgery protected and rate-limited per
-/// address because each one may send an SMS.
+/// Step 3 of the public flow (ADR 0014): name, phone, optional email, consent. A device that has booked here before gets
+/// the form prefilled from its own protected cookie (<see cref="IReturningClientCookie"/>); nothing is looked up before
+/// the phone is verified, and "Not you?" clears it.
 /// </summary>
 [RequireTenant]
 [Route("book")]
-public sealed class EnterDetailsController(IDispatcher dispatcher, ILocalizationService localizer) : SalonControllerBase
+public sealed class EnterDetailsController(
+    IDispatcher dispatcher,
+    ILocalizationService localizer,
+    ITenantContext tenantContext,
+    IReturningClientCookie returning) : SalonControllerBase
 {
     [HttpGet("{serviceId:guid}/details")]
-    public async Task<IActionResult> Details(Guid serviceId, string? start, Guid? staff, CancellationToken cancellationToken)
+    public async Task<IActionResult> Details(Guid serviceId, string? start, Guid? staff, bool forget, CancellationToken cancellationToken)
     {
         var instant = ParseStart(start);
         if (instant is null)
@@ -42,7 +46,20 @@ public sealed class EnterDetailsController(IDispatcher dispatcher, ILocalization
         }
 
         var form = new StartBookingCommand(serviceId, InstantPattern.ExtendedIso.Format(instant.Value), staff, null, null, null, null, false);
-        return View(new EnterDetailsViewModel(summary, form));
+        if (forget)
+        {
+            returning.Forget(Response);
+            return View(new EnterDetailsViewModel(summary, form));
+        }
+
+        var remembered = tenantContext.TenantId is { } tenantId ? returning.Read(Request, tenantId) : null;
+        if (remembered is null)
+        {
+            return View(new EnterDetailsViewModel(summary, form));
+        }
+
+        form = form with { FirstName = remembered.FirstName, LastName = remembered.LastName, Phone = remembered.Phone, Email = remembered.Email };
+        return View(new EnterDetailsViewModel(summary, form, PrefilledFor: remembered.FirstName));
     }
 
     [HttpPost("{serviceId:guid}/details")]
@@ -91,6 +108,12 @@ public sealed class EnterDetailsController(IDispatcher dispatcher, ILocalization
             return View(new EnterDetailsViewModel(summary, command, SlotTaken: true));
         }
 
+        // Valid details: remember them on this device only (what the client just typed, nothing from the salon's records).
+        if (tenantContext.TenantId is { } tenantId)
+        {
+            returning.Write(Response, new ReturningClient(tenantId, command.FirstName ?? string.Empty, command.LastName ?? string.Empty, command.Phone ?? string.Empty, command.Email));
+        }
+
         return result.RequiresVerification
             ? Redirect($"/book/verify/{result.VerificationId}")
             : Redirect($"/book/done/{result.AppointmentId}");
@@ -108,5 +131,5 @@ public sealed class EnterDetailsController(IDispatcher dispatcher, ILocalization
     }
 }
 
-/// <param name="SlotTaken">True when the immediate booking path found the slot gone; the page offers the time picker again.</param>
-public sealed record EnterDetailsViewModel(BookingSummary Summary, StartBookingCommand Form, bool SlotTaken = false);
+/// <param name="PrefilledFor">The remembered first name when the form came from the device's cookie; null otherwise.</param>
+public sealed record EnterDetailsViewModel(BookingSummary Summary, StartBookingCommand Form, bool SlotTaken = false, string? PrefilledFor = null);

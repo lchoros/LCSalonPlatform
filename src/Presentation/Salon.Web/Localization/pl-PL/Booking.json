@@ -61,5 +61,8 @@
   "Booking.Public.Cancel.Already": "Ta wizyta została już odwołana lub już się odbyła.",
   "Booking.Public.Cancel.TooLate": "Ta wizyta już się rozpoczęła i nie można jej odwołać online. Zadzwoń do salonu.",
   "Booking.Public.OtherServices": "Inne usługi",
-  "Booking.ListServices.FromPrice": "od {0}"
+  "Booking.ListServices.FromPrice": "od {0}",
+  "Booking.Public.Done.Price": "Cena",
+  "Booking.Public.Prefilled": "Witaj ponownie, {0}. Uzupełniliśmy Twoje dane z poprzedniej wizyty.",
+  "Booking.Public.NotYou": "To nie Ty? Wyczyść formularz"
 }

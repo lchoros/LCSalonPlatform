@@ -17,6 +17,7 @@ public sealed record BookingSummary(
     string ServiceName,
     Duration Duration,
     Money Price,
+    bool PriceIsFrom,
     string? StaffName,
     Instant Start,
     DateTimeZone Zone,

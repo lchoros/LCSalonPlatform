@@ -20,6 +20,7 @@ public sealed record ChooseSlotResult(
     string ServiceName,
     Duration Duration,
     Money Price,
+    bool PriceIsFrom,
     IReadOnlyList<DayOption> Days,
     LocalDate SelectedDate,
     IReadOnlyList<StaffOption> Staff,

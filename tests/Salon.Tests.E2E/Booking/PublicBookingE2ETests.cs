@@ -117,6 +117,22 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         (await page.GetByTestId("cancel-link").GetAttributeAsync("href")).ShouldNotBeNull().ShouldStartWith("/book/cancel/");
         await CaptureAsync(page, "book-done-mobile-390.png");
 
+        // The same phone comes back: the details are already filled in from the device's own cookie, and can be cleared.
+        await page.GetByTestId("book-another").TapAsync();
+        await page.ReachAsync("**/book");
+        await page.GetByTestId("book-service").First.TapAsync();
+        await page.ReachAsync(url => url.Contains("/book/", StringComparison.Ordinal) && !url.EndsWith("/book", StringComparison.Ordinal));
+        await page.GetByTestId("slot").First.TapAsync();
+        await page.ReachAsync("**/details?*");
+        (await page.GetByTestId("prefilled").TextContentAsync()).ShouldNotBeNull().ShouldContain("Welcome back, Olivia");
+        (await page.GetByLabel("First name", new PageGetByLabelOptions { Exact = true }).InputValueAsync()).ShouldBe("Olivia");
+        (await page.GetByLabel("Mobile number", new PageGetByLabelOptions { Exact = true }).InputValueAsync()).ShouldBe("07700 " + suffix);
+        await CaptureAsync(page, "book-prefilled-mobile-390.png");
+        await page.GetByTestId("not-you").TapAsync();
+        await page.ReachAsync("**/details?*forget=true");
+        (await page.GetByTestId("prefilled").CountAsync()).ShouldBe(0);
+        (await page.GetByLabel("First name", new PageGetByLabelOptions { Exact = true }).InputValueAsync()).ShouldBe(string.Empty);
+
         interaction.Elapsed.ShouldBeLessThan(Gate, $"the client's taps and typing took {interaction.Elapsed.TotalSeconds:F1} s (whole test {total.Elapsed.TotalSeconds:F1} s including screenshots and axe)");
         await File.WriteAllTextAsync(
             Path.Combine(KestrelAppFixture.ScreenshotDirectory, "book-timing.txt"),

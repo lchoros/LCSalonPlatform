@@ -23,6 +23,8 @@
         <dd data-testid="done-staff">@a.StaffName</dd>
         <dt>@T["Booking.Public.Done.When"]</dt>
         <dd class="tabular-nums" data-testid="done-when">@local.ToString("dddd, d MMMM yyyy", culture), @local.ToString("HH:mm", culture)</dd>
+        <dt>@T["Booking.Public.Done.Price"]</dt>
+        <dd class="tabular-nums" data-testid="done-price">@a.Price.ToDisplayString(culture)</dd>
         <dt>@T["Booking.Public.Done.Where"]</dt>
         <dd data-testid="done-salon">@Model.SalonName</dd>
     </dl>
