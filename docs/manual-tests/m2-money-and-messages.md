@@ -1,6 +1,6 @@
 # Manual test: M2 money and messages
 
-For the owner, after PRs #65, #66 and #67 are merged (section L also needs #68, section M #69). About 45 minutes. Tick a box when the step behaves as written.
+For the owner, after PRs #65, #66 and #67 are merged (section L also needs #68, section M #69, section N #72). About 45 minutes. Tick a box when the step behaves as written.
 If a step does not, note its number (for example "D4") and what you saw; that is all an agent needs to find it.
 
 Nothing here charges a card or sends a real text or email. Texts and emails land in Mailpit.
@@ -169,6 +169,15 @@ Sign out and in again first: the "Reports" link needs a permission your old sess
 - [ ] M6. Open the cancel link from the text: the page offers the phone number to call.
 - [ ] M7. As `desk@studio-20.local` there is no Settings menu, and `/admin/settings/salon-details` goes to
       "access denied".
+
+## N. Desk booking confirmation (after PR #72 is merged too)
+- [ ] N1. Settings, Reminders: there is a ticked box "Confirm bookings made at the desk".
+- [ ] N2. Admin, Appointments, "Book": book a visit for a client who has a phone number and an email address. Within a
+      minute Mailpit has a confirmation text and a confirmation email for that client, each with a cancel link.
+- [ ] N3. Open the cancel link from that text: it shows the visit and offers "Change the time instead". Move the visit
+      to another time. The day list in the admin shows the new time.
+- [ ] N4. Untick the box and save. Book another visit at the desk: no confirmation arrives. Book one online: its
+      confirmation still arrives. Tick the box again.
 
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
