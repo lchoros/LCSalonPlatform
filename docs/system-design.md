@@ -96,14 +96,37 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   buttons and a move form posting to `calendar/{id}/move` (`IBookingService.MoveAsync`, re-checked through the engine,
   publishes `AppointmentMoved`). Same permissions as the day list. FullCalendar drag-and-drop is deferred until the
   library is vendored.
+- `Catalog/StaffOverrides` — `/admin/services/{id}/staff` behind `Catalog.Manage` (ADR 0018): per person "offers",
+  duration and price for one service. `IServiceOfferingResolver` (Services) is the single read path; the availability
+  engine, `BookAsync`, the public price list ("from") and the public flow all quote through it.
+- `Clients/MergeClients` — `/admin/clients/{id}/merge` behind `Clients.View` + `Clients.Merge` (ADR 0017): pick the card
+  to keep, confirm, appointments move in one transaction and the duplicate stays as an inactive tombstone. The card
+  (`Clients/ClientCard`) shows visit history.
+- `Clients/ImportClients` — `/admin/clients/import` behind `Clients.Manage` and `Features:ClientImport` (ADR 0019):
+  upload a Booksy or Versum CSV, preview (new / duplicate / invalid), confirm. Parsing lives in the plugin
+  `Salon.Plugin.Import`; the preview is kept server-side under a random token bound to the salon.
+- `Settings/Notifications` — `/admin/settings/notifications` behind `Settings.Manage` (ADR 0020): reminders on/off, two
+  lead times, quiet hours (`NotificationSettings`).
+
+Background work (ADR 0005 schedule tasks, all per salon through `ITenantScopeRunner`): `Outbox.Dispatch` (ADR 0007),
+`Booking.CleanupVerifications` (hourly, ADR 0017) and `Notifications.SendReminders` (every five minutes, ADR 0020).
+Reminders are computed from the appointment when due and claimed by a unique `appointment_reminders` row before the SMS
+is handed over, so a client is never texted twice for one moment.
 
 ## 7. Testing
-Unit (xUnit + Shouldly + NSubstitute), Architecture (NetArchTest + resource parity + outbox isolation), Integration
-(`WebApplicationFactory` against local Postgres, Respawn reset, tenant-scope helpers, RLS proven as a non-superuser
-role), E2E (Playwright, 390 px and 1280 px, axe, screenshots). CI runs all four on `ubuntu-24.04` with a Postgres 17
-service container, plus gitleaks and CodeQL (findings fail the job).
+Unit (xUnit + Shouldly + NSubstitute, FsCheck properties for availability and reminder rules), Architecture (NetArchTest
++ resource parity per module file + outbox isolation + the E2E wait guard), Integration (`WebApplicationFactory` against
+local Postgres, Respawn reset, tenant-scope helpers, RLS proven as a non-superuser role), E2E (Playwright, 390 px and
+1280 px, axe, screenshots). CI runs all four on `ubuntu-24.04` with a Postgres 17 service container, plus gitleaks on
+PRs and CodeQL on `main` (findings fail the job).
 
-## 8. Not yet built (M1 remainder)
-Locations, staff breaks inside a working day, staff-specific price and duration (in progress), client visit history and
-duplicate merge (in progress), FullCalendar drag-and-drop with live updates; payments beyond the record-only provider;
-real SMS/email; deployment (M3).
+E2E rules that keep the suite stable: wait for navigation with `page.ReachAsync(...)`
+(`tests/Salon.Tests.E2E/Infrastructure/PageNavigationExtensions.cs`), never Playwright's `WaitForURLAsync`, which can
+miss the load event on a cold process (an architecture test enforces this); click the link or button itself, because CI
+pages are unstyled; assert whole phrases, never three or four letters that random tokens can contain. To watch a run in
+a visible browser: `pwsh scripts/watch-e2e.ps1 -Filter <name>`.
+
+## 8. Not yet built
+M1 remainder: locations, FullCalendar drag-and-drop with live updates. M2: deposits and no-show fees recorded through
+the Manual payment provider, POS checkout and cash-up, cancellation SMS, client reschedule link, email channel. M3:
+payments beyond the record-only provider, real SMS/email, deployment.
