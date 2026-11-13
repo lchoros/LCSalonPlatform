@@ -60,7 +60,9 @@ public static class AvailabilityCalculator
     {
         var earliestStart = request.Now.Plus(request.MinNotice);
         var lastDay = request.Now.InZone(request.Zone).Date.PlusDays(request.MaxAdvanceDays);
-        var occupiedTicks = request.ServiceDuration.Plus(request.Buffer).BclCompatibleTicks;
+        // The staff member's own duration (ADR 0018) or the service's.
+        var duration = staff.ServiceDuration ?? request.ServiceDuration;
+        var occupiedTicks = duration.Plus(request.Buffer).BclCompatibleTicks;
         var seen = new HashSet<Instant>();
 
         for (var day = request.From; day <= request.To && day <= lastDay; day = day.PlusDays(1))
@@ -81,7 +83,7 @@ public static class AvailabilityCalculator
                         continue;
                     }
 
-                    var endInstant = startInstant.Plus(request.ServiceDuration);
+                    var endInstant = startInstant.Plus(duration);
                     var held = new Interval(startInstant, endInstant.Plus(request.Buffer));
                     if (staff.Busy.Any(b => Overlaps(b, held)))
                     {
@@ -131,6 +133,14 @@ public static class AvailabilityCalculator
         if (request.To < request.From)
         {
             throw new ArgumentException("The date range ends before it starts.", nameof(request));
+        }
+
+        foreach (var staff in request.Staff)
+        {
+            if (staff.ServiceDuration is { } own)
+            {
+                ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(own, Duration.Zero, nameof(request));
+            }
         }
     }
 }

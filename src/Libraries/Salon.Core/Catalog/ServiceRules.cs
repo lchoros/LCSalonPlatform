@@ -1,3 +1,5 @@
+using NodaTime;
+
 namespace Salon.Core.Catalog;
 
 /// <summary>
@@ -53,6 +55,31 @@ public static class ServiceRules
     public static bool IsPriceInRange(decimal price) => price >= 0m && price <= MaxPrice;
 
     public static bool HasAtMostTwoDecimals(decimal price) => decimal.Round(price, 2) == price;
+
+    /// <summary>The duration this person takes (ADR 0018): the override when it has one, else the service's.</summary>
+    public static Duration EffectiveDuration(Service service, StaffServiceOverride? staffOverride)
+    {
+        ArgumentNullException.ThrowIfNull(service);
+        return staffOverride?.Duration ?? service.Duration;
+    }
+
+    /// <summary>The price this person charges (ADR 0018): the override when it has one, else the service's.</summary>
+    public static decimal EffectivePrice(Service service, StaffServiceOverride? staffOverride)
+    {
+        ArgumentNullException.ThrowIfNull(service);
+        return staffOverride?.Price ?? service.Price;
+    }
+
+    /// <summary>Everyone offers a service unless a row says otherwise.</summary>
+    public static bool IsOffered(StaffServiceOverride? staffOverride) => staffOverride?.Offers ?? true;
+
+    /// <summary>A staff duration is blank (service default) or obeys the same grid and bounds as a service duration.</summary>
+    public static bool IsOverrideDurationValid(int? minutes)
+        => minutes is null || (IsDurationInRange(minutes.Value) && IsOnStep(minutes.Value));
+
+    /// <summary>A staff price is blank (service default) or obeys the same range and precision as a service price.</summary>
+    public static bool IsOverridePriceValid(decimal? price)
+        => price is null || (IsPriceInRange(price.Value) && HasAtMostTwoDecimals(price.Value));
 
     /// <summary>"Cut" and "cut" are the same service to a receptionist: names compare trimmed and case-insensitively.</summary>
     public static bool NamesMatch(string? a, string? b)

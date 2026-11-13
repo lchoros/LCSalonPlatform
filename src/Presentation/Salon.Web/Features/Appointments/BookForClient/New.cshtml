@@ -131,9 +131,31 @@
 
     <section class="@cardClass" data-testid="slots-step">
         <h2 class="text-lg font-semibold">@T["Appointments.Book.Slots"]</h2>
+        @if (form.Offering is { } offering)
+        {
+            var price = offering.Price.ToDisplayString(CultureInfo.CurrentCulture);
+            <p class="text-sm font-medium text-stone-700 tabular-nums" data-testid="offering">
+                @if (!offering.Offered)
+                {
+                    @T.Format("Appointments.Book.NotOffered", offering.StaffName ?? string.Empty)
+                }
+                else if (offering.IsFromPrice)
+                {
+                    @T.Format("Appointments.Book.OfferingFrom", offering.DurationMinutes, price)
+                }
+                else
+                {
+                    @T.Format("Appointments.Book.Offering", offering.DurationMinutes, price)
+                }
+            </p>
+        }
         @if (!form.ShowSlots)
         {
             <p class="text-sm text-stone-600" data-testid="slots-hint">@T["Appointments.Book.ChooseServiceHint"]</p>
+        }
+        else if (form.Offering is { Offered: false })
+        {
+            @* The explanation above says why; no empty-slots line on top of it. *@
         }
         else if (form.Slots.Count == 0)
         {

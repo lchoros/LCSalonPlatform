@@ -11,6 +11,7 @@ using Salon.Core.Events;
 using Salon.Core.Tenancy;
 using Salon.Data;
 using Salon.Services.Availability;
+using Salon.Services.Catalog;
 using Salon.Services.Tenancy;
 
 namespace Salon.Services.Appointments;
@@ -20,6 +21,7 @@ internal sealed class BookingService(
     ITenantContext tenantContext,
     ITenantLookup tenantLookup,
     IAvailabilityService availability,
+    IServiceOfferingResolver offerings,
     IEventPublisher publisher,
     IClock clock) : IBookingService
 {
@@ -44,6 +46,13 @@ internal sealed class BookingService(
             throw new InvalidOperationException($"Staff member {request.StaffMemberId} does not exist or is not bookable in this salon.");
         }
 
+        // This person's own duration and price, or the service's (ADR 0018); someone who does not offer it cannot be booked.
+        var offering = await offerings.ResolveAsync(request.ServiceId, request.StaffMemberId, cancellationToken).ConfigureAwait(false);
+        if (!offering.Offers)
+        {
+            throw new InvalidOperationException($"Staff member {request.StaffMemberId} does not offer service {request.ServiceId}.");
+        }
+
         // The same rules the client saw: working hours, other bookings, notice and advance limit, as of now.
         var day = request.Start.InZone(zone).Date;
         var slots = await availability.GetSlotsAsync(request.ServiceId, request.StaffMemberId, day, day, cancellationToken).ConfigureAwait(false);
@@ -60,15 +69,15 @@ internal sealed class BookingService(
             StaffMemberId = request.StaffMemberId,
             ServiceId = request.ServiceId,
             Start = request.Start,
-            End = request.Start.Plus(service.Duration),
+            End = request.Start.Plus(offering.Duration),
             // Online bookings get the secret of their cancel link (ADR 0014); admin bookings have no public page yet.
             PublicToken = request.Source == AppointmentSource.Online ? PublicBookingToken.Generate() : null,
             Status = AppointmentStatus.Booked,
             Source = request.Source,
             Notes = request.Notes,
-            PriceAmount = service.Price,
+            PriceAmount = offering.Price,
             Currency = service.Currency,
-            DurationMinutes = (int)service.Duration.TotalMinutes,
+            DurationMinutes = (int)offering.Duration.TotalMinutes,
             CreatedAt = now,
             CreatedByUserId = request.ByUserId,
         };
