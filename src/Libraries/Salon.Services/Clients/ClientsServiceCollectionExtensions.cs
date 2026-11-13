@@ -12,6 +12,7 @@ public static class ClientsServiceCollectionExtensions
     public static IServiceCollection AddSalonClients(this IServiceCollection services)
     {
         services.AddScoped<IClientService, ClientService>();
+        services.AddScoped<Import.IClientImportService, Import.ClientImportService>();
         return services;
     }
 }

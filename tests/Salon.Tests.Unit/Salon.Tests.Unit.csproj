@@ -4,6 +4,7 @@
     <ProjectReference Include="..\..\src\Libraries\Salon.Core\Salon.Core.csproj" />
     <ProjectReference Include="..\..\src\Libraries\Salon.Services\Salon.Services.csproj" />
     <ProjectReference Include="..\..\src\Presentation\Salon.Web.Framework\Salon.Web.Framework.csproj" />
+    <ProjectReference Include="..\..\src\Plugins\Salon.Plugin.Import\Salon.Plugin.Import.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Salon.Plugin.Payments.Manual\Salon.Plugin.Payments.Manual.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Salon.Plugin.Sms.Log\Salon.Plugin.Sms.Log.csproj" />
   </ItemGroup>
@@ -35,6 +36,11 @@
     <EmbeddedResource Include="Localization\Fixtures\DupAcross\Localization\**\*.json" LogicalName="Salon.Tests.Unit.Fixtures.DupAcross.Localization.$([System.String]::Copy('%(RecursiveDir)').Replace('\', '.').Replace('/', '.'))%(Filename)%(Extension)" />
     <!-- A key repeated inside one file. -->
     <EmbeddedResource Include="Localization\Fixtures\DupKey\Localization\*.json" LogicalName="Salon.Tests.Unit.Fixtures.DupKey.Localization.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Client import fixtures (ADR 0019): a Booksy export (UTF-8 BOM), a Versum export (Windows-1250) and a broken file. -->
+    <None Include="Import\Fixtures\*.csv" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

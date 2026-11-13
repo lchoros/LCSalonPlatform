@@ -233,6 +233,8 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
                 ?? "Host=localhost;Port=5432;Database=salon_test;Username=postgres;Password=postgres");
             Environment.SetEnvironmentVariable("Database__MigrateOnStartup", "false");
             Environment.SetEnvironmentVariable("Jobs__Enabled", "false");
+            // Slices behind a flag (CLAUDE.md Tier 1) are on in the E2E host.
+            Environment.SetEnvironmentVariable("Features__ClientImport", "true");
         }
 
         // UseStaticWebAssets maps the build-time content roots (including the pre-compressed css/app.css.gz under obj/);

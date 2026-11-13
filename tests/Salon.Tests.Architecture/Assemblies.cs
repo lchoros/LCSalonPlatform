@@ -11,6 +11,7 @@ internal static class Assemblies
     public static readonly Assembly Web = typeof(Program).Assembly;
     public static readonly Assembly[] Plugins =
     [
+        typeof(Salon.Plugin.Import.CsvClientImportProvider).Assembly,
         typeof(Salon.Plugin.Payments.Manual.ManualPaymentProvider).Assembly,
         typeof(Salon.Plugin.Sms.Log.LogSmsProvider).Assembly,
     ];

@@ -12,4 +12,7 @@ public sealed class FeaturesOptions
 
     /// <summary>Screens that are built but not yet released. Nothing uses it today; it keeps the gate exercised.</summary>
     public bool Preview { get; set; }
+
+    /// <summary>Client CSV import from Booksy/Versum at /admin/clients/import (ADR 0019).</summary>
+    public bool ClientImport { get; set; }
 }

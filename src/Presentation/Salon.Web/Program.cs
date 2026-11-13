@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
 using Salon.Data;
+using Salon.Plugin.Import;
 using Salon.Plugin.Payments.Manual;
 using Salon.Plugin.Sms.Log;
 using Salon.Services.Seeding;
@@ -17,9 +18,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSalonFramework(builder.Configuration, typeof(Program).Assembly);
 builder.Services.AddSalonAuthentication(builder.Configuration);
 
-// Phase 1 plugins: record-only payments, log + Mailpit SMS. Real gateways arrive at M3 behind the same interfaces.
+// Phase 1 plugins: record-only payments, log + Mailpit SMS, CSV client import. Real gateways arrive at M3 behind the same interfaces.
 builder.Services.AddManualPaymentProvider();
 builder.Services.AddLogSmsProvider();
+builder.Services.AddCsvClientImport();
 builder.Services.AddSalonPlugins();
 builder.Services.AddSalonJobs(builder.Configuration);
 

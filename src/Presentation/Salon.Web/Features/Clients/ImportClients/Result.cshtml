@@ -1,0 +1,23 @@
+@using Salon.Web.Features.Clients.ImportClients
+@model ResultViewModel
+@{
+    ViewData["Title"] = T["Clients.Import.Result.Title"];
+}
+<section class="mx-auto max-w-lg space-y-6" data-testid="import-result">
+    <header class="space-y-2">
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Clients.Import.Result.Title"]</h1>
+        <p class="text-sm text-stone-600">@Model.Result.FileName · @Model.Result.Format</p>
+    </header>
+
+    <div class="rounded-lg border border-green-200 bg-green-50 p-5 text-center">
+        <p data-testid="result-created" class="text-5xl font-bold text-green-900">@Model.Result.Created</p>
+        <p class="mt-1 text-sm font-medium text-green-800">@T["Clients.Import.Result.CreatedLabel"]</p>
+    </div>
+
+    <p class="text-stone-600">@T.Format("Clients.Import.Result.Skipped", Model.Result.Duplicates, Model.Result.Invalid)</p>
+
+    <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+        <a href="/admin/clients/import" class="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100">@T["Clients.Import.Result.Again"]</a>
+        <a href="/admin/clients" data-testid="to-clients" class="inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700">@T["Clients.Import.Result.ToClients"]</a>
+    </div>
+</section>
