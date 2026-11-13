@@ -38,7 +38,7 @@ public class AppointmentsE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
         await page.GetByLabel("Email").FillAsync(Email);
         await page.GetByLabel("Password").FillAsync(Password);
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Sign in" }).ClickAsync();
-        await page.WaitForURLAsync("**/admin/appointments");
+        await page.ReachAsync("**/admin/appointments");
 
         var styled = await StylesheetLoadedAsync(page);
         (await page.GetByTestId("nav-appointments").IsVisibleAsync()).ShouldBeTrue();
@@ -59,15 +59,15 @@ public class AppointmentsE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
         dayAxe.Violations.ShouldBeEmpty(string.Join("; ", dayAxe.Violations.Select(v => $"{v.Id}: {v.Help}")));
 
         await page.GetByTestId("book").ClickAsync();
-        await page.WaitForURLAsync("**/admin/appointments/new*");
+        await page.ReachAsync("**/admin/appointments/new*");
 
         await page.GetByTestId("client-search").FillAsync("Sop");
         await page.GetByTestId("client-search-submit").ClickAsync();
-        await page.WaitForURLAsync("**/admin/appointments/new?*q=Sop*");
+        await page.ReachAsync("**/admin/appointments/new?*q=Sop*");
         var sophie = page.GetByTestId("client-match").Filter(new LocatorFilterOptions { HasText = "Sophie Smith" });
         (await sophie.CountAsync()).ShouldBe(1);
         await sophie.ClickAsync();
-        await page.WaitForURLAsync("**/admin/appointments/new?*clientId=*");
+        await page.ReachAsync("**/admin/appointments/new?*clientId=*");
         (await page.GetByTestId("selected-client").TextContentAsync()).ShouldNotBeNull().ShouldContain("Sophie Smith");
 
         // Tomorrow is not always a working day (nobody works on Sunday); the first day with free times within a week is.
@@ -81,7 +81,7 @@ public class AppointmentsE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
             await page.GetByTestId("staff-select").SelectOptionAsync(new SelectOptionValue { Value = string.Empty });
             await page.GetByTestId("date-input").FillAsync(day);
             await page.GetByTestId("show-slots").ClickAsync();
-            await page.WaitForURLAsync($"**/admin/appointments/new?*date={day}*");
+            await page.ReachAsync($"**/admin/appointments/new?*date={day}*");
             if (await slots.CountAsync() > 0)
             {
                 chosenDay = day;
@@ -105,7 +105,7 @@ public class AppointmentsE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
 
         var firstSlotTime = (await slots.First.TextContentAsync()).ShouldNotBeNull().Trim();
         await slots.First.ClickAsync();
-        await page.WaitForURLAsync($"**/admin/appointments?date={chosenDay}");
+        await page.ReachAsync($"**/admin/appointments?date={chosenDay}");
 
         (await page.GetByTestId("flash").TextContentAsync()).ShouldNotBeNull().ShouldContain("Sophie Smith");
         var booked = page.GetByTestId("appointment").Filter(new LocatorFilterOptions { HasText = "Sophie Smith" });

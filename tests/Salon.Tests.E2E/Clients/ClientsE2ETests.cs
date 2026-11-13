@@ -34,7 +34,7 @@ public class ClientsE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppFi
         await page.GetByLabel("Email").FillAsync(Email);
         await page.GetByLabel("Password").FillAsync(Password);
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Sign in" }).ClickAsync();
-        await page.WaitForURLAsync("**/admin/clients/new");
+        await page.ReachAsync("**/admin/clients/new");
 
         (await page.GetByTestId("create-client-form").IsVisibleAsync()).ShouldBeTrue();
         (await page.EvaluateAsync<int>("() => document.documentElement.scrollWidth")).ShouldBeLessThanOrEqualTo(390);
@@ -57,7 +57,7 @@ public class ClientsE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppFi
         await page.GetByLabel("Last patch test", new PageGetByLabelOptions { Exact = true }).FillAsync("2026-10-01");
         await page.GetByTestId("marketing-consent").CheckAsync();
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Save client" }).ClickAsync();
-        await page.WaitForURLAsync(url => url.Contains("/admin/clients/", StringComparison.Ordinal) && !url.EndsWith("/new", StringComparison.Ordinal));
+        await page.ReachAsync(url => url.Contains("/admin/clients/", StringComparison.Ordinal) && !url.EndsWith("/new", StringComparison.Ordinal));
 
         (await page.GetByTestId("client-card").IsVisibleAsync()).ShouldBeTrue();
         (await page.GetByTestId("flash").TextContentAsync()).ShouldNotBeNull().ShouldContain("Olivia Brown");

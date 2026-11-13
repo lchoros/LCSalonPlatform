@@ -36,7 +36,7 @@ public class StaffE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppFixt
         await page.GetByLabel("Email").FillAsync(Email);
         await page.GetByLabel("Password").FillAsync(Password);
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Sign in" }).ClickAsync();
-        await page.WaitForURLAsync("**/admin/staff");
+        await page.ReachAsync("**/admin/staff");
 
         var styled = await StylesheetLoadedAsync(page);
         (await page.GetByTestId("nav-staff").IsVisibleAsync()).ShouldBeTrue();
@@ -64,7 +64,7 @@ public class StaffE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppFixt
         listAxe.Violations.ShouldBeEmpty(string.Join("; ", listAxe.Violations.Select(v => $"{v.Id}: {v.Help}")));
 
         await cards.Nth(1).GetByTestId("edit-hours").ClickAsync();
-        await page.WaitForURLAsync("**/admin/staff/*/hours");
+        await page.ReachAsync("**/admin/staff/*/hours");
 
         (await page.GetByTestId("staff-name").TextContentAsync()).ShouldBe("Tom Reed");
         var days = page.GetByTestId("day-row");

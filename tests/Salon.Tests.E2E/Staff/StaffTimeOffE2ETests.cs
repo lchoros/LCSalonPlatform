@@ -42,10 +42,10 @@ public class StaffTimeOffE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
         await page.GetByLabel("Email").FillAsync(Email);
         await page.GetByLabel("Password").FillAsync(Password);
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Sign in" }).ClickAsync();
-        await page.WaitForURLAsync("**/admin/staff");
+        await page.ReachAsync("**/admin/staff");
 
         await page.GetByTestId("staff-card").Nth(0).GetByTestId("time-off").ClickAsync();
-        await page.WaitForURLAsync("**/admin/staff/*/time-off");
+        await page.ReachAsync("**/admin/staff/*/time-off");
         var styled = await StylesheetLoadedAsync(page);
 
         (await page.GetByTestId("staff-name").TextContentAsync()).ShouldBe("Anna Kowalska");
@@ -55,7 +55,7 @@ public class StaffTimeOffE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
         await page.Locator("#ToDate").FillAsync(iso);
         await page.Locator("#Reason").FillAsync("Day off");
         await page.GetByTestId("add-time-off").ClickAsync();
-        await page.WaitForURLAsync("**/admin/staff/*/time-off");
+        await page.ReachAsync("**/admin/staff/*/time-off");
 
         (await page.GetByTestId("flash").TextContentAsync()).ShouldBe("Time off has been added.");
         var entries = page.GetByTestId("time-off-entry");
