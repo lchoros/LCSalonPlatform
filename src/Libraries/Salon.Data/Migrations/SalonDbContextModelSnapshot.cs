@@ -821,6 +821,66 @@ namespace Salon.Data.Migrations
                     b.ToTable("appointment_reminders", "salon");
                 });
 
+            modelBuilder.Entity("Salon.Core.Payments.CashUp", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Instant>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<Guid?>("ClosedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("closed_by_user_id");
+
+                    b.Property<decimal>("CountedCash")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("counted_cash");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<LocalDate>("Day")
+                        .HasColumnType("date")
+                        .HasColumnName("day");
+
+                    b.Property<decimal>("ExpectedCash")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("expected_cash");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("note");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_cash_ups");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_cash_ups_tenant_id");
+
+                    b.HasIndex("TenantId", "Day")
+                        .IsUnique()
+                        .HasDatabaseName("ix_cash_ups_tenant_id_day");
+
+                    b.ToTable("cash_ups", "salon", t =>
+                        {
+                            t.HasCheckConstraint("ck_cash_ups_counted_cash_not_negative", "counted_cash >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Salon.Core.Payments.ClientAccountEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -914,6 +974,9 @@ namespace Salon.Data.Migrations
                     b.HasIndex("TenantId", "ClientId", "At")
                         .HasDatabaseName("ix_client_account_entries_tenant_id_client_id_at");
 
+                    b.HasIndex(new[] { "TenantId", "At" }, "ByDay")
+                        .HasDatabaseName("ix_client_account_entries_tenant_id_at");
+
                     b.HasIndex(new[] { "TenantId", "AppointmentId" }, "OneDepositPerAppointment")
                         .IsUnique()
                         .HasDatabaseName("ux_client_account_entries_one_deposit_per_appointment")
@@ -923,6 +986,11 @@ namespace Salon.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("ux_client_account_entries_one_return_per_deposit")
                         .HasFilter("kind = 6");
+
+                    b.HasIndex(new[] { "TenantId", "AppointmentId" }, "OneVisitPaymentPerAppointment")
+                        .IsUnique()
+                        .HasDatabaseName("ux_client_account_entries_one_visit_payment_per_appointment")
+                        .HasFilter("kind = 7");
 
                     b.ToTable("client_account_entries", "salon", t =>
                         {
@@ -1352,6 +1420,16 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_appointment_reminders_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Payments.CashUp", b =>
+                {
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_cash_ups_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Payments.ClientAccountEntry", b =>

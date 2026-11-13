@@ -70,6 +70,9 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     /// <summary>What clients owe the salon and how it was settled; lines are only ever added (ADR 0022).</summary>
     public DbSet<ClientAccountEntry> ClientAccountEntries => Set<ClientAccountEntry>();
 
+    /// <summary>One end-of-day count of the cash drawer per salon and day (ADR 0024).</summary>
+    public DbSet<CashUp> CashUps => Set<CashUp>();
+
     /// <summary>Per-tenant overrides of the embedded message template defaults (ADR 0008).</summary>
     public DbSet<MessageTemplate> MessageTemplates => Set<MessageTemplate>();
 

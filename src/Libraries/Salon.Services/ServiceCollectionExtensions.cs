@@ -58,6 +58,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IScheduleTask, AppointmentReminderTask>();
         // The client account (ADR 0022): needs the payment plugin the host registers, at resolve time.
         services.AddScoped<IClientAccountService, ClientAccountService>();
+        services.AddScoped<ICashUpService, CashUpService>();
         services.AddScoped<DemoSeeder>();
 
         services.AddOptions<EmailOptions>().BindConfiguration(EmailOptions.SectionName);

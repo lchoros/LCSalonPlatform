@@ -77,4 +77,7 @@ public enum ClientAccountEntryKind
 
     /// <summary>The salon gave a deposit back, in full.</summary>
     DepositReturned = 6,
+
+    /// <summary>The client paid for a visit at the checkout (ADR 0024): the price less the deposit the salon held.</summary>
+    VisitPayment = 7,
 }

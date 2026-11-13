@@ -13,4 +13,7 @@ public static class ClientAccountRules
     /// <summary>A deposit received or given back (ADR 0023): money held for a visit, not a debt.</summary>
     public static bool IsDeposit(ClientAccountEntryKind kind)
         => kind is ClientAccountEntryKind.DepositPaid or ClientAccountEntryKind.DepositReturned;
+
+    /// <summary>Money taken for a visit that took place (ADR 0024): neither a debt nor held, simply the bill paid.</summary>
+    public static bool IsVisitPayment(ClientAccountEntryKind kind) => kind is ClientAccountEntryKind.VisitPayment;
 }
