@@ -6,6 +6,7 @@ using NodaTime;
 using Salon.Core.Appointments;
 using Salon.Core.Booking;
 using Salon.Core.Clients;
+using Salon.Core.Domain;
 using Salon.Core.Messaging;
 using Salon.Core.Settings;
 using Salon.Core.Tenancy;
@@ -265,6 +266,8 @@ internal sealed class PublicBookingService(
                 a.StaffMemberId,
                 a.Start,
                 a.End,
+                a.PriceAmount,
+                a.Currency,
                 a.Status,
                 a.PublicToken,
             })
@@ -277,7 +280,7 @@ internal sealed class PublicBookingService(
 
         var serviceName = await db.Services.AsNoTracking().Where(s => s.Id == row.ServiceId).Select(s => s.Name).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
         var staffName = await db.StaffMembers.AsNoTracking().Where(s => s.Id == row.StaffMemberId).Select(s => s.DisplayName).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
-        return new PublicAppointment(row.Id, row.ServiceId, serviceName, staffName, row.Start, row.End, row.Status, row.PublicToken);
+        return new PublicAppointment(row.Id, row.ServiceId, serviceName, staffName, row.Start, row.End, new Money(row.PriceAmount, row.Currency), row.Status, row.PublicToken);
     }
 
     private async Task<TenantInfo> RequireTenantAsync(CancellationToken cancellationToken)

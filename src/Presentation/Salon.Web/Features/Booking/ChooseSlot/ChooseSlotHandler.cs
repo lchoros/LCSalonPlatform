@@ -8,15 +8,15 @@ using Salon.Core.Settings;
 using Salon.Core.Tenancy;
 using Salon.Data;
 using Salon.Services.Availability;
+using Salon.Services.Catalog;
 using Salon.Services.Settings;
 using Salon.Services.Tenancy;
 
 namespace Salon.Web.Features.Booking.ChooseSlot;
 
 /// <summary>
-/// One availability call covers the whole strip (today plus up to <see cref="DaysShown"/> days, bounded by
-/// <see cref="BookingSettings.MaxAdvanceDays"/>), so picking the default day and marking days with free times costs no
-/// extra queries. Everything reads through the tenant filter; an unknown or inactive service is null (a 404 upstream).
+/// Step 2 of the public flow (ADR 0014): the people who offer the service, two weeks of days, the slots of one day. Price
+/// and duration are the chosen person's own (ADR 0018); under "anyone" the service default with "from" when people differ.
 /// </summary>
 public sealed class ChooseSlotHandler(
     SalonDbContext db,
@@ -24,9 +24,9 @@ public sealed class ChooseSlotHandler(
     ITenantLookup tenantLookup,
     ISettingService settings,
     IAvailabilityService availability,
+    IServiceOfferingResolver offerings,
     IClock clock) : IRequestHandler<ChooseSlotQuery, ChooseSlotResult?>
 {
-    /// <summary>The date strip never shows more than two weeks; a salon open further ahead still books the rest later.</summary>
     public const int DaysShown = 14;
 
     public async Task<ChooseSlotResult?> HandleAsync(ChooseSlotQuery request, CancellationToken cancellationToken)
@@ -48,13 +48,32 @@ public sealed class ChooseSlotHandler(
         var zone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(tenant.TimeZoneId) ?? DateTimeZone.Utc;
         var rules = await settings.LoadAsync<BookingSettings>(cancellationToken);
 
-        var staff = await db.StaffMembers.AsNoTracking()
+        var bookable = await db.StaffMembers.AsNoTracking()
             .Where(s => s.IsActive && s.IsBookable)
             .OrderBy(s => s.SortOrder).ThenBy(s => s.DisplayName).ThenBy(s => s.Id)
             .Select(s => new StaffOption(s.Id, s.DisplayName))
             .ToListAsync(cancellationToken);
-        // A person who is no longer bookable falls back to "anyone" instead of an empty page.
+        // Someone who does not offer this service is not on the picker at all (ADR 0018); the engine skips them too.
+        var offered = await offerings.ResolveAsync(service.Id, bookable.Select(s => s.Id).ToArray(), cancellationToken);
+        var staff = bookable.Where(s => offered[s.Id].Offers).ToList();
+        // A person who is no longer bookable (or no longer offers it) falls back to "anyone" instead of an empty page.
         var staffId = request.StaffMemberId is { } wanted && staff.Any(s => s.Id == wanted) ? request.StaffMemberId : null;
+
+        var duration = service.Duration;
+        var price = new Money(service.Price, service.Currency);
+        var priceIsFrom = false;
+        if (staffId is { } chosen)
+        {
+            var offering = offered[chosen];
+            duration = offering.Duration;
+            price = new Money(offering.Price, offering.Currency);
+        }
+        else
+        {
+            var span = (await offerings.PriceSpansAsync([service.Id], cancellationToken))[service.Id];
+            price = new Money(span.Min, service.Currency);
+            priceIsFrom = span.IsRange;
+        }
 
         var today = clock.GetCurrentInstant().InZone(zone).Date;
         var dayCount = Math.Clamp(rules.MaxAdvanceDays + 1, 1, DaysShown);
@@ -70,8 +89,9 @@ public sealed class ChooseSlotHandler(
         return new ChooseSlotResult(
             service.Id,
             service.Name,
-            service.Duration,
-            new Money(service.Price, service.Currency),
+            duration,
+            price,
+            priceIsFrom,
             days,
             selected,
             staff,

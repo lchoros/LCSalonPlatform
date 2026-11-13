@@ -26,7 +26,7 @@
         <dl class="min-w-0 flex-1 basis-56 space-y-1 text-sm">
             <div>
                 <dt class="sr-only">@T["Booking.Public.Done.Service"]</dt>
-                <dd data-testid="summary-service"><span class="block text-base font-semibold">@s.ServiceName</span><span class="text-stone-600">@T.Format("Booking.Public.DurationMinutes", (int)s.Duration.TotalMinutes) · <span class="tabular-nums">@s.Price.ToDisplayString(culture)</span></span></dd>
+                <dd data-testid="summary-service"><span class="block text-base font-semibold">@s.ServiceName</span><span class="text-stone-600">@T.Format("Booking.Public.DurationMinutes", (int)s.Duration.TotalMinutes) · <span class="tabular-nums">@(s.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", s.Price.ToDisplayString(culture)) : s.Price.ToDisplayString(culture))</span></span></dd>
             </div>
             <div class="flex gap-2">
                 <dt class="text-stone-600">@T["Booking.Public.Done.When"]</dt>
@@ -44,6 +44,14 @@
     {
         <p role="alert" data-testid="slot-taken" class="notice notice-warn">
             @T["Booking.Public.SlotTaken"] <a href="/book/@Model.Form.ServiceId" class="font-medium underline underline-offset-4">@T["Booking.Public.Verify.PickAnother"]</a>
+        </p>
+    }
+
+    @if (Model.PrefilledFor is { } who)
+    {
+        <p data-testid="prefilled" class="notice notice-ok flex flex-wrap items-center justify-between gap-2">
+            <span>@T.Format("Booking.Public.Prefilled", who)</span>
+            <a href="/book/@Model.Form.ServiceId/details?start=@Uri.EscapeDataString(Model.Form.Start ?? string.Empty)@(Model.Form.StaffMemberId is { } sid ? $"&staff={sid}" : string.Empty)&forget=true" data-testid="not-you" class="font-medium underline underline-offset-4">@T["Booking.Public.NotYou"]</a>
         </p>
     }
 

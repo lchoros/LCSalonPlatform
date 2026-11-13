@@ -1,6 +1,7 @@
 using NodaTime;
 
 using Salon.Core.Appointments;
+using Salon.Core.Domain;
 
 namespace Salon.Services.Booking;
 
@@ -91,6 +92,7 @@ public sealed record PublicAppointment(
     string StaffName,
     Instant Start,
     Instant End,
+    Money Price,
     AppointmentStatus Status,
     string PublicToken)
 {

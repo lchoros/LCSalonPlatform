@@ -95,3 +95,17 @@ work on a 390 px phone, in both languages, without JavaScript, and in a handful 
   the code read from a recording SMS sender, five wrong codes, the normalised client with consent wording, the outbox
   event and the confirmation text with the cancel link, cancel and reuse, tenant B against tenant A's token, the
   no-verification path, the 429, and a Playwright run on a 390 px viewport timed under 60 seconds.
+
+## Amendment 2026-11-13 — prices per person and prefill for returning clients
+- **Prices and durations in the flow are the chosen person's own** (ADR 0018), read through `IServiceOfferingResolver`
+  on the time picker and the details step; under "anyone" the service default with "from {min}" when bookable staff
+  differ, and the confirmation page prints the price actually booked (the appointment snapshot). Someone who does not
+  offer the service is not on the picker; a `staff=` id that points at such a person falls back to "anyone", and the
+  details page for them is a 404.
+- **Returning clients are prefilled from their own device, not from the salon's records.** After a valid details
+  post the browser gets `salon.returning`: Data Protection-encrypted, HttpOnly, SameSite=Lax, path `/book`, one year,
+  carrying the tenant id and the typed name, phone and email. The details form is filled from it with a "Welcome back,
+  {name}" notice and a "Not you? Clear the form" link (`?forget=true` deletes it). Nothing is looked up by phone before
+  the SMS code is verified, so the cookie cannot reveal another person's card, and a cookie written for one salon is
+  ignored on another host. Rejected alternative: looking the client up by phone on the details step — it would show a
+  name to whoever types a number.

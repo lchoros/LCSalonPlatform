@@ -518,9 +518,9 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         return await PostAsync(client, verifyPath, new() { ["Code"] = code }, page);
     }
 
-    private async Task<(Appointment Appointment, string DonePath)> BookThroughTheFlowAsync(HttpClient client, Instant start)
+    private async Task<(Appointment Appointment, string DonePath)> BookThroughTheFlowAsync(HttpClient client, Instant start, Guid? staffId = null)
     {
-        var verifyPath = await StartAsync(client, Fields(start));
+        var verifyPath = await StartAsync(client, Fields(start, staffId));
         var response = await PostCodeAsync(client, verifyPath, factory.Sms.LastCodeFor(PhoneE164)!);
         response.StatusCode.ShouldBe(HttpStatusCode.Redirect, await response.Content.ReadAsStringAsync());
         var appointment = (await AppointmentsAsync(_studio.Id)).Single(a => a.Start == start);

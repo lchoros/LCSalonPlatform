@@ -32,7 +32,7 @@
     <div class="summary-bar">
         <div class="min-w-0">
             <p class="truncate font-semibold" data-testid="service-name">@r.ServiceName</p>
-            <p class="text-sm text-stone-600">@T.Format("Booking.Public.DurationMinutes", (int)r.Duration.TotalMinutes) · <span class="tabular-nums">@r.Price.ToDisplayString(culture)</span></p>
+            <p class="text-sm text-stone-600">@T.Format("Booking.Public.DurationMinutes", (int)r.Duration.TotalMinutes) · <span class="tabular-nums">@(r.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", r.Price.ToDisplayString(culture)) : r.Price.ToDisplayString(culture))</span></p>
         </div>
         <a href="/book" class="btn-link">@T["Booking.Public.ChangeService"]</a>
     </div>
