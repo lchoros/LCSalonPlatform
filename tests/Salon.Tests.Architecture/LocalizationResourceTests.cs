@@ -12,15 +12,35 @@ namespace Salon.Tests.Architecture;
 /// </summary>
 public partial class LocalizationResourceTests
 {
+    private const string SplitScript = "tools/split-localization.ps1";
+
     // Lazy so a packaging error surfaces as its own message, not as a TypeInitializationException.
     private static readonly Lazy<IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>> Resources =
         new(() => new EmbeddedJsonResourceSource(Assemblies.Web).Load());
+
+    private static readonly Lazy<IReadOnlyList<LocalizationResourceFile>> Files =
+        new(() => new EmbeddedJsonResourceSource(Assemblies.Web).ReadFiles());
 
     [Fact]
     public void The_host_ships_both_supported_cultures()
     {
         Resources.Value.Keys.OrderBy(k => k, StringComparer.Ordinal).ShouldBe(SupportedCultures.All.OrderBy(k => k, StringComparer.Ordinal));
         Resources.Value[SupportedCultures.EnGb].ShouldNotBeEmpty();
+    }
+
+    [Fact]
+    public void Every_module_file_exists_in_both_cultures()
+    {
+        // One file per module and culture (ADR 0006, amendment 2026-11-12): Localization/<culture>/<Module>.json.
+        var english = ModulesOf(SupportedCultures.EnGb);
+        var polish = ModulesOf(SupportedCultures.PlPl);
+
+        var onlyEnglish = english.Except(polish).Order(StringComparer.Ordinal).Select(m => $"Localization/{SupportedCultures.PlPl}/{m}.json").ToList();
+        var onlyPolish = polish.Except(english).Order(StringComparer.Ordinal).Select(m => $"Localization/{SupportedCultures.EnGb}/{m}.json").ToList();
+
+        onlyEnglish.Concat(onlyPolish).ShouldBeEmpty(
+            "every module file must exist for both cultures; missing files: " + string.Join(", ", onlyEnglish.Concat(onlyPolish)));
+        english.ShouldNotBeEmpty("the host embeds no module files; expected Localization/<culture>/<Module>.json");
     }
 
     [Fact]
@@ -35,6 +55,55 @@ public partial class LocalizationResourceTests
         (onlyEnglish.Count + onlyPolish.Count).ShouldBe(
             0,
             $"missing in pl-PL: [{string.Join(", ", onlyEnglish)}]; missing in en-GB: [{string.Join(", ", onlyPolish)}]");
+    }
+
+    [Fact]
+    public void The_host_has_no_flat_culture_file()
+    {
+        // A flat Localization/<culture>.json reappears when a branch from before the split is merged; it would duplicate
+        // every key the module files already hold. Re-run the split script instead of resolving by hand.
+        var flat = Files.Value.Where(f => f.Module is null).Select(f => f.ResourceName).Order(StringComparer.Ordinal).ToList();
+
+        flat.ShouldBeEmpty($"flat culture files are embedded: [{string.Join(", ", flat)}]; run `pwsh {SplitScript}` and delete them");
+    }
+
+    [Fact]
+    public void Every_key_lives_in_the_module_file_named_after_its_first_segment()
+    {
+        var misplaced = Files.Value
+            .Where(f => f.Module is not null)
+            .SelectMany(f => f.Entries.Keys
+                .Where(key => !string.Equals(key.Split('.')[0], f.Module, StringComparison.Ordinal))
+                .Select(key => $"{f.ResourceName}: {key}"))
+            .Order(StringComparer.Ordinal)
+            .ToList();
+
+        misplaced.ShouldBeEmpty("keys must sit in Localization/<culture>/<FirstSegment>.json; misplaced: " + string.Join("; ", misplaced));
+    }
+
+    [Fact]
+    public void Module_file_names_are_a_single_PascalCase_segment()
+    {
+        var bad = Files.Value
+            .Where(f => f.Module is not null && !ModulePattern().IsMatch(f.Module))
+            .Select(f => f.ResourceName)
+            .Order(StringComparer.Ordinal)
+            .ToList();
+
+        bad.ShouldBeEmpty("module files are Localization/<culture>/<Module>.json with a PascalCase name and no sub-folder; offenders: " + string.Join(", ", bad));
+    }
+
+    [Fact]
+    public void Manifest_names_turn_the_culture_folder_into_a_dot_segment()
+    {
+        // The csproj LogicalName transform; a regression here would make the source see "en-GB\Catalog" as a culture.
+        var names = Assemblies.Web.GetManifestResourceNames()
+            .Where(n => n.Contains(".Localization.", StringComparison.Ordinal))
+            .ToList();
+
+        names.ShouldContain("Salon.Web.Localization.en-GB.Common.json");
+        names.ShouldContain("Salon.Web.Localization.pl-PL.Common.json");
+        names.Where(n => n.Contains('\\', StringComparison.Ordinal) || n.Contains('/', StringComparison.Ordinal)).ShouldBeEmpty();
     }
 
     [Fact]
@@ -143,8 +212,17 @@ public partial class LocalizationResourceTests
     private static HashSet<string> Placeholders(string value)
         => PlaceholderPattern().Matches(value).Select(m => m.Value).ToHashSet(StringComparer.Ordinal);
 
+    private static HashSet<string> ModulesOf(string culture)
+        => Files.Value
+            .Where(f => string.Equals(f.Culture, culture, StringComparison.OrdinalIgnoreCase) && f.Module is not null)
+            .Select(f => f.Module!)
+            .ToHashSet(StringComparer.Ordinal);
+
     [GeneratedRegex("^[A-Z][A-Za-z0-9]*(\\.[A-Z][A-Za-z0-9]*)+$")]
     private static partial Regex KeyPattern();
+
+    [GeneratedRegex("^[A-Z][A-Za-z0-9]*$")]
+    private static partial Regex ModulePattern();
 
     /// <summary>T["Key"], T.Get("Key" and T.Format("Key" as written in Razor.</summary>
     [GeneratedRegex("\\bT(?:\\[\\s*|\\.(?:Get|Format)\\(\\s*)\"(?<key>[^\"]+)\"")]

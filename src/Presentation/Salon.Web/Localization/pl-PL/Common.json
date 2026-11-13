@@ -1,0 +1,16 @@
+{
+  "Common.Day.Monday": "Poniedziałek",
+  "Common.Day.Tuesday": "Wtorek",
+  "Common.Day.Wednesday": "Środa",
+  "Common.Day.Thursday": "Czwartek",
+  "Common.Day.Friday": "Piątek",
+  "Common.Day.Saturday": "Sobota",
+  "Common.Day.Sunday": "Niedziela",
+  "Common.DayShort.Monday": "Pn",
+  "Common.DayShort.Tuesday": "Wt",
+  "Common.DayShort.Wednesday": "Śr",
+  "Common.DayShort.Thursday": "Cz",
+  "Common.DayShort.Friday": "Pt",
+  "Common.DayShort.Saturday": "So",
+  "Common.DayShort.Sunday": "Nd"
+}
