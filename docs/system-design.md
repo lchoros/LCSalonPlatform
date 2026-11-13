@@ -9,7 +9,7 @@ Layers follow nopCommerce, slices follow vertical-slice architecture (ADR 0001):
 
 ```
 Salon.Web (host)          Features/<Module>/<UseCase>/  one use case per folder: command/query, validator, handler,
-                          controller, Razor views; Localization/{en-GB,pl-PL}.json; Views/ for the host pages
+                          controller, Razor views; Localization/{en-GB,pl-PL}/<Module>.json (one file per module and culture, ADR 0006 amendment); Views/ for the host pages
 Salon.Web.Framework       AddSalonFramework, tenant resolution middleware, request localization, pipeline behaviours,
                           plugin loader, widget-zone tag helper, Hangfire wiring, filters (RequireTenant, FeatureGate)
 Salon.Services            cross-slice services: TenantLookup, SettingService, LocalizationService, cache, events/outbox,

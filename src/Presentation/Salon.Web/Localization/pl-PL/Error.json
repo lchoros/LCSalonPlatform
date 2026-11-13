@@ -1,0 +1,5 @@
+{
+  "Error.Title": "Coś poszło nie tak",
+  "Error.Description": "Podczas przetwarzania żądania wystąpił błąd.",
+  "Error.RequestId": "Identyfikator żądania"
+}
