@@ -3,8 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using NodaTime;
 
 using Salon.Core.Cqrs;
+using Salon.Core.Domain;
+using Salon.Core.Payments;
+using Salon.Core.Settings;
 using Salon.Core.Tenancy;
 using Salon.Services.Booking;
+using Salon.Services.Settings;
 using Salon.Services.Tenancy;
 using Salon.Web.Framework.Controllers;
 using Salon.Web.Framework.Mvc;
@@ -18,7 +22,7 @@ namespace Salon.Web.Features.Booking.CancelBooking;
 /// </summary>
 [RequireTenant]
 [Route("book/cancel")]
-public sealed class CancelBookingController(IDispatcher dispatcher, ITenantContext tenantContext, ITenantLookup tenantLookup, IClock clock) : SalonControllerBase
+public sealed class CancelBookingController(IDispatcher dispatcher, ITenantContext tenantContext, ITenantLookup tenantLookup, ISettingService settings, IClock clock) : SalonControllerBase
 {
     [HttpGet("{token}")]
     public async Task<IActionResult> Cancel(string token, CancellationToken cancellationToken)
@@ -54,7 +58,20 @@ public sealed class CancelBookingController(IDispatcher dispatcher, ITenantConte
         // [RequireTenant] has already turned a tenant-less request into a 404; instants are shown in the salon's zone (rule 5).
         var tenant = await tenantLookup.FindByIdAsync(tenantContext.TenantId!.Value, cancellationToken);
         var zone = (tenant is null ? null : DateTimeZoneProviders.Tzdb.GetZoneOrNull(tenant.TimeZoneId)) ?? DateTimeZone.Utc;
-        return new CancelBookingViewModel(appointment, state, tenant?.Name ?? string.Empty, zone);
+        // Inside the notice period of the salon's policy (ADR 0022) a change is no longer offered and a cancellation may
+        // carry a fee: the client is told before they confirm, and again once it is done.
+        var insideNotice = false;
+        Money? lateFee = null;
+        if (appointment is not null && state is CancelState.Confirm or CancelState.Cancelled)
+        {
+            var policy = await settings.LoadAsync<CancellationPolicySettings>(cancellationToken);
+            insideNotice = CancellationPolicy.IsInsideNotice(appointment.Start, clock.GetCurrentInstant(), policy.FreeChangeHours);
+            var amount = insideNotice ? CancellationPolicy.FeeAmount(appointment.Price.Amount, policy.LateCancellationFeePercent) : 0m;
+            lateFee = amount > 0m ? appointment.Price with { Amount = amount } : null;
+        }
+
+        return new CancelBookingViewModel(appointment, state, tenant?.Name ?? string.Empty, zone, insideNotice, lateFee);
+
     }
 }
 
@@ -67,4 +84,6 @@ public enum CancelState
     Invalid,
 }
 
-public sealed record CancelBookingViewModel(PublicAppointment? Appointment, CancelState State, string SalonName, DateTimeZone Zone);
+/// <param name="InsideNotice">True when the free-change period of the salon's policy is over (ADR 0022).</param>
+/// <param name="LateFee">The late-cancellation fee the salon may charge; null when the policy sets none or the cancellation is in time.</param>
+public sealed record CancelBookingViewModel(PublicAppointment? Appointment, CancelState State, string SalonName, DateTimeZone Zone, bool InsideNotice = false, Money? LateFee = null);

@@ -84,6 +84,7 @@ public sealed class BookingSummaryHandler(
             DateTimeZoneProviders.Tzdb.GetZoneOrNull(tenant.TimeZoneId) ?? DateTimeZone.Utc,
             tenant.Name,
             StartBookingHandler.ConsentWording(localizer, tenant.Name),
-            rules.RequireSmsVerification);
+            rules.RequireSmsVerification,
+            await settings.LoadAsync<CancellationPolicySettings>(cancellationToken));
     }
 }

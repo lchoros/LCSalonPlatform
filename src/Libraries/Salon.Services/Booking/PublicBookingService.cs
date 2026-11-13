@@ -8,6 +8,7 @@ using Salon.Core.Booking;
 using Salon.Core.Clients;
 using Salon.Core.Domain;
 using Salon.Core.Messaging;
+using Salon.Core.Payments;
 using Salon.Core.Settings;
 using Salon.Core.Tenancy;
 using Salon.Data;
@@ -219,7 +220,8 @@ internal sealed class PublicBookingService(
             return new PublicReschedule(PublicRescheduleOutcome.NotActive, appointment);
         }
 
-        if (appointment.Start <= clock.GetCurrentInstant())
+        var now = clock.GetCurrentInstant();
+        if (appointment.Start <= now)
         {
             return new PublicReschedule(PublicRescheduleOutcome.TooLate, appointment);
         }
@@ -228,6 +230,13 @@ internal sealed class PublicBookingService(
         if (newStart == appointment.Start && (staffMemberId is null || staffMemberId == appointment.StaffMemberId))
         {
             return new PublicReschedule(PublicRescheduleOutcome.Moved, appointment);
+        }
+
+        // Inside the notice period of the salon's cancellation policy (ADR 0022) the salon is asked instead.
+        var policy = await settings.LoadAsync<CancellationPolicySettings>(cancellationToken).ConfigureAwait(false);
+        if (CancellationPolicy.IsInsideNotice(appointment.Start, now, policy.FreeChangeHours))
+        {
+            return new PublicReschedule(PublicRescheduleOutcome.TooLate, appointment);
         }
 
         try

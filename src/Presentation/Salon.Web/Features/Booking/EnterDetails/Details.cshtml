@@ -40,6 +40,27 @@
         <a href="/book/@Model.Form.ServiceId" class="btn-link ml-auto">@T["Booking.Public.ChangeTime"]</a>
     </div>
 
+    @if (s.Policy.FreeChangeHours > 0 || s.Policy.NoShowFeePercent > 0m)
+    {
+        <div class="notice border-stone-200 bg-white text-stone-700" data-testid="cancellation-terms">
+            <p class="font-medium text-stone-900">@T["Booking.Public.Terms.Title"]</p>
+            <ul class="mt-1 list-disc space-y-1 pl-5">
+                @if (s.Policy.FreeChangeHours > 0)
+                {
+                    <li data-testid="terms-free">@T.Format("Booking.Public.Terms.FreeUntil", s.Policy.FreeChangeHours)</li>
+                    @if (s.Policy.LateCancellationFeePercent > 0m)
+                    {
+                        <li data-testid="terms-late">@T.Format("Booking.Public.Terms.LateFee", s.Policy.LateCancellationFeePercent.ToString("0.##", culture))</li>
+                    }
+                }
+                @if (s.Policy.NoShowFeePercent > 0m)
+                {
+                    <li data-testid="terms-no-show">@T.Format("Booking.Public.Terms.NoShowFee", s.Policy.NoShowFeePercent.ToString("0.##", culture))</li>
+                }
+            </ul>
+        </div>
+    }
+
     @if (Model.SlotTaken)
     {
         <p role="alert" data-testid="slot-taken" class="notice notice-warn">
