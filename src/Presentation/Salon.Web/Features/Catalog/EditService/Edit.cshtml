@@ -49,6 +49,12 @@
                 <p id="price-hint" class="text-sm text-stone-500">@T["Catalog.Edit.PriceHint"]</p>
                 <span asp-validation-for="Price" id="price-error" class="block text-sm text-red-700"></span>
             </div>
+            <div class="space-y-1 sm:col-span-2">
+                <label asp-for="DepositPercent" class="block text-sm font-medium">@T["Catalog.Edit.DepositPercent"]</label>
+                <input asp-for="DepositPercent" type="number" inputmode="numeric" min="0" max="100" step="1" aria-describedby="deposit-hint deposit-error" class="@inputClass sm:max-w-xs" data-testid="deposit-percent" />
+                <p id="deposit-hint" class="text-sm text-stone-500">@T["Catalog.Edit.DepositPercentHint"]</p>
+                <span asp-validation-for="DepositPercent" id="deposit-error" class="block text-sm text-red-700"></span>
+            </div>
         </div>
 
         <fieldset class="space-y-4 rounded-lg border border-stone-200 bg-white p-4 shadow-sm">

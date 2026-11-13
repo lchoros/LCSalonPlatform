@@ -76,6 +76,10 @@
                                     </div>
                                     <p class="text-base" data-testid="appointment-client">@appointment.ClientName</p>
                                     <p class="text-sm text-stone-600" data-testid="appointment-service">@appointment.ServiceName</p>
+                                    @if (appointment.Status == AppointmentStatus.Arrived)
+                                    {
+                                        <a href="/admin/payments/checkout/@appointment.Id" data-testid="checkout-link" class="inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-700">@T["Appointments.Day.Checkout"]</a>
+                                    }
                                     @if (appointment.Actions.Count > 0)
                                     {
                                         <div class="flex flex-wrap gap-2 pt-1">

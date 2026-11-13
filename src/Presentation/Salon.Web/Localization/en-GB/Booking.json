@@ -78,5 +78,9 @@
   "Booking.Public.Terms.NoShowFee": "Missing the visit without cancelling may cost {0}% of the price.",
   "Booking.Public.Cancel.LateFee": "Your visit is soon, so this is a late cancellation. The salon may charge a fee of {0}.",
   "Booking.Public.Cancel.DoneLateFee": "This was a late cancellation. The salon may charge a fee of {0}.",
-  "Booking.Public.Change.InsideNotice": "It is less than {0} hours before your visit, so the time can no longer be changed online. Please contact the salon."
+  "Booking.Public.Change.InsideNotice": "It is less than {0} hours before your visit, so the time can no longer be changed online. Please contact the salon.",
+  "Booking.Public.Deposit.Due": "A deposit of {0} secures this visit. The salon will tell you how to pay it.",
+  "Booking.Public.Deposit.DueFrom": "A deposit from {0} secures this visit. The salon will tell you how to pay it.",
+  "Booking.Public.Done.Deposit": "Deposit",
+  "Booking.Public.Deposit.Note": "The salon will tell you how to pay it."
 }

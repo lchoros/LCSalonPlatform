@@ -12,6 +12,7 @@ namespace Salon.Web.Features.Clients.EditClient;
 /// <param name="HealthNotes">Plain text for this request only; stored encrypted (ADR 0011).</param>
 /// <param name="LastPatchTestOn">ISO date (<c>yyyy-MM-dd</c>, what a date input posts) or blank.</param>
 /// <param name="MarketingConsent">The tick; the wording recorded on a new grant is the label shown next to it.</param>
+/// <param name="DepositPercent">This client's own deposit as a whole percentage (ADR 0023); blank follows the service and the salon, 0 never asks.</param>
 public sealed record EditClientCommand(
     Guid Id,
     string FirstName,
@@ -21,7 +22,8 @@ public sealed record EditClientCommand(
     string? Notes,
     string? HealthNotes,
     string? LastPatchTestOn,
-    bool MarketingConsent) : ICommand<bool>
+    bool MarketingConsent,
+    int? DepositPercent = null) : ICommand<bool>
 {
     /// <summary>Keeps contact details and health notes out of any log line that prints the request.</summary>
     public override string ToString() => $"{nameof(EditClientCommand)} {{ Id = {Id} }}";

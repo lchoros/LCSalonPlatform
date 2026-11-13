@@ -44,5 +44,8 @@ public class Service : BaseEntity, ITenantEntity
     /// <summary>Where inside the service the processing window starts; <c>0 ≤ x ≤ Duration − ProcessingMinutes</c>. 0 when there is no processing time.</summary>
     public int ProcessingStartsAfterMinutes { get; set; }
 
+    /// <summary>Deposit for this service as a percentage of the price (ADR 0023); null follows the salon's default, 0 means none.</summary>
+    public decimal? DepositPercent { get; set; }
+
     public Money PriceAsMoney => new(Price, Currency);
 }

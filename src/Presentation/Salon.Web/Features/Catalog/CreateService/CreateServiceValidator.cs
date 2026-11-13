@@ -1,6 +1,7 @@
 using FluentValidation;
 
 using Salon.Core.Catalog;
+using Salon.Core.Payments;
 using Salon.Services.Localization;
 
 namespace Salon.Web.Features.Catalog.CreateService;
@@ -33,6 +34,10 @@ public sealed class CreateServiceValidator : AbstractValidator<CreateServiceComm
             .WithMessage(_ => localizer.Format("Catalog.CreateService.Validation.PriceOutOfRange", ServiceRules.MaxPrice))
             .Must(ServiceRules.HasAtMostTwoDecimals)
             .WithMessage(_ => localizer["Catalog.CreateService.Validation.PriceTooPrecise"]);
+
+        RuleFor(c => c.DepositPercent)
+            .Must(percent => percent is null or (>= 0 and <= (int)DepositRules.MaxPercent))
+            .WithMessage(_ => localizer["Catalog.CreateService.Validation.DepositPercentRange"]);
 
         RuleFor(c => c.BufferAfterMinutes)
             .Must(ServiceRules.IsBufferInRange)

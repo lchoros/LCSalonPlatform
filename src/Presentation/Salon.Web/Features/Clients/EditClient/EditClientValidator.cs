@@ -3,6 +3,7 @@ using FluentValidation;
 using NodaTime.Text;
 
 using Salon.Core.Clients;
+using Salon.Core.Payments;
 using Salon.Services.Clients;
 using Salon.Services.Localization;
 
@@ -17,6 +18,10 @@ public sealed class EditClientValidator : AbstractValidator<EditClientCommand>
     public EditClientValidator(ILocalizationService localizer)
     {
         ArgumentNullException.ThrowIfNull(localizer);
+
+        RuleFor(c => c.DepositPercent)
+            .Must(percent => percent is null or (>= 0 and <= (int)DepositRules.MaxPercent))
+            .WithMessage(_ => localizer["Clients.Edit.Validation.DepositPercentRange"]);
 
         RuleFor(c => c.FirstName)
             .Must(name => !string.IsNullOrWhiteSpace(name))

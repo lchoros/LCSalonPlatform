@@ -91,5 +91,12 @@
   "Appointments.Book.OfferingFrom": "{0} min · od {1}",
   "Appointments.Book.NotOffered": "{0} nie wykonuje tej usługi.",
   "Appointments.Calendar.Card.ClientOwes": "Klient ma do zapłaty {0} za wcześniejsze wizyty.",
-  "Appointments.Calendar.Card.OpenClient": "Otwórz kartę klienta"
+  "Appointments.Calendar.Card.OpenClient": "Otwórz kartę klienta",
+  "Appointments.Calendar.Card.Deposit": "Zadatek",
+  "Appointments.Calendar.Card.DepositReceived": "Wpłacono {0}",
+  "Appointments.Calendar.Card.DepositDue": "{0} do wpłaty, brak wpłaty",
+  "Appointments.Calendar.Card.DepositNone": "Nie wymagano",
+  "Appointments.Calendar.Card.DepositOpen": "Szczegóły zadatku",
+  "Appointments.Day.Checkout": "Rozlicz wizytę",
+  "Appointments.Calendar.Card.Checkout": "Rozlicz wizytę"
 }

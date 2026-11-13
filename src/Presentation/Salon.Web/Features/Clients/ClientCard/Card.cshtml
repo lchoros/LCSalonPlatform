@@ -59,7 +59,7 @@
         </dl>
     </section>
 
-    @if (Model.Account.Fees.Count > 0)
+    @if (Model.Account.Fees.Count > 0 || Model.Account.Deposits.Count > 0)
     {
         <section class="space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" data-testid="client-fees">
             <div class="flex flex-wrap items-center justify-between gap-2">
@@ -73,6 +73,8 @@
                     <p class="text-sm text-stone-600" data-testid="client-owes-nothing">@T["Clients.Fees.NothingOwed"]</p>
                 }
             </div>
+            @if (Model.Account.Fees.Count > 0)
+            {
             <ul class="divide-y divide-stone-200 rounded-md border border-stone-200" data-testid="fee-list">
                 @foreach (var fee in Model.Account.Fees)
                 {
@@ -96,6 +98,25 @@
                     </li>
                 }
             </ul>
+            }
+            @if (Model.Account.Deposits.Count > 0)
+            {
+                <h3 class="text-base font-semibold">@T["Clients.Fees.Deposits"]</h3>
+                <ul class="divide-y divide-stone-200 rounded-md border border-stone-200" data-testid="deposit-list">
+                    @foreach (var deposit in Model.Account.Deposits)
+                    {
+                        <li data-testid="deposit-row" data-held="@deposit.IsHeld.ToString().ToLowerInvariant()">
+                            <a href="/admin/payments/deposits/@deposit.AppointmentId" data-testid="deposit-link" class="flex min-h-11 flex-col gap-1 p-3 hover:bg-stone-50 sm:flex-row sm:items-center sm:justify-between">
+                                <span class="text-sm text-stone-600">@deposit.ServiceName · <span class="tabular-nums">@deposit.AppointmentStart.LocalDateTime.ToString("g", culture)</span></span>
+                                <span class="flex items-center gap-3 text-sm">
+                                    <span class="rounded px-1.5 py-0.5 text-xs font-medium @(deposit.IsHeld ? "bg-green-100 text-green-900" : "bg-stone-200 text-stone-800")" data-testid="deposit-row-status">@T[deposit.IsHeld ? "Payments.Deposit.Status.Held" : "Payments.Deposit.Status.Returned"]</span>
+                                    <span class="tabular-nums" data-testid="deposit-row-amount">@deposit.Amount.ToDisplayString(culture)</span>
+                                </span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            }
         </section>
     }
 

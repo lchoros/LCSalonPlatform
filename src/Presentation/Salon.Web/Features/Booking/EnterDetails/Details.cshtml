@@ -40,6 +40,11 @@
         <a href="/book/@Model.Form.ServiceId" class="btn-link ml-auto">@T["Booking.Public.ChangeTime"]</a>
     </div>
 
+    @if (s.Deposit is { } depositDue)
+    {
+        <p class="notice border-stone-200 bg-white text-stone-700" data-testid="deposit-terms">@T.Format(s.PriceIsFrom ? "Booking.Public.Deposit.DueFrom" : "Booking.Public.Deposit.Due", depositDue.ToDisplayString(culture))</p>
+    }
+
     @if (s.Policy.FreeChangeHours > 0 || s.Policy.NoShowFeePercent > 0m)
     {
         <div class="notice border-stone-200 bg-white text-stone-700" data-testid="cancellation-terms">

@@ -25,6 +25,11 @@
         <dd class="tabular-nums" data-testid="done-when">@local.ToString("dddd, d MMMM yyyy", culture), @local.ToString("HH:mm", culture)</dd>
         <dt>@T["Booking.Public.Done.Price"]</dt>
         <dd class="tabular-nums" data-testid="done-price">@a.Price.ToDisplayString(culture)</dd>
+        @if (a.Deposit is { } depositDue)
+        {
+            <dt>@T["Booking.Public.Done.Deposit"]</dt>
+            <dd data-testid="done-deposit"><span class="tabular-nums">@depositDue.ToDisplayString(culture)</span> <span class="block text-sm text-stone-600">@T["Booking.Public.Deposit.Note"]</span></dd>
+        }
         <dt>@T["Booking.Public.Done.Where"]</dt>
         <dd data-testid="done-salon">@Model.SalonName</dd>
     </dl>

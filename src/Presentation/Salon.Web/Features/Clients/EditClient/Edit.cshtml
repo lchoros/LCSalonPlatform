@@ -45,6 +45,13 @@
             <span asp-validation-for="Notes" id="notes-error" class="block text-sm text-red-700"></span>
         </div>
 
+        <div class="space-y-1">
+            <label asp-for="DepositPercent" class="block text-sm font-medium">@T["Clients.Edit.DepositPercent"]</label>
+            <input asp-for="DepositPercent" type="number" inputmode="numeric" min="0" max="100" step="1" aria-describedby="deposit-hint deposit-error" class="@inputClass sm:max-w-xs" data-testid="client-deposit-percent" />
+            <p id="deposit-hint" class="text-sm text-stone-500">@T["Clients.Edit.DepositPercentHint"]</p>
+            <span asp-validation-for="DepositPercent" id="deposit-error" class="block text-sm text-red-700"></span>
+        </div>
+
         <fieldset class="space-y-4 rounded-lg border border-amber-300 bg-amber-50 p-4" data-testid="health-section">
             <legend class="px-1 text-sm font-semibold text-amber-900">@T["Clients.Create.HealthNotes"]</legend>
             <p id="health-notes-hint" class="text-sm text-amber-900">@T["Clients.Create.HealthNotesHint"]</p>

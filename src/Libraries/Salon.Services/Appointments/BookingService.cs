@@ -8,10 +8,13 @@ using Salon.Core.Appointments;
 using Salon.Core.Appointments.Events;
 using Salon.Core.Booking;
 using Salon.Core.Events;
+using Salon.Core.Payments;
+using Salon.Core.Settings;
 using Salon.Core.Tenancy;
 using Salon.Data;
 using Salon.Services.Availability;
 using Salon.Services.Catalog;
+using Salon.Services.Settings;
 using Salon.Services.Tenancy;
 
 namespace Salon.Services.Appointments;
@@ -22,6 +25,7 @@ internal sealed class BookingService(
     ITenantLookup tenantLookup,
     IAvailabilityService availability,
     IServiceOfferingResolver offerings,
+    ISettingService settings,
     IEventPublisher publisher,
     IClock clock) : IBookingService
 {
@@ -61,6 +65,15 @@ internal sealed class BookingService(
             throw new SlotNoLongerAvailableException();
         }
 
+        // The deposit this booking asks for (ADR 0023): the client's own rule, else the service's, else the salon's.
+        var bookingRules = await settings.LoadAsync<BookingSettings>(cancellationToken).ConfigureAwait(false);
+        var clientDepositPercent = await db.Clients.AsNoTracking()
+            .Where(c => c.Id == request.ClientId)
+            .Select(c => c.DepositPercent)
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
+        var depositPercent = DepositRules.Percent(bookingRules.DefaultDepositPercent, service.DepositPercent, clientDepositPercent);
+
         var now = clock.GetCurrentInstant();
         var appointment = new Appointment
         {
@@ -76,6 +89,7 @@ internal sealed class BookingService(
             Source = request.Source,
             Notes = request.Notes,
             PriceAmount = offering.Price,
+            DepositAmount = DepositRules.Amount(offering.Price, depositPercent),
             Currency = service.Currency,
             DurationMinutes = (int)offering.Duration.TotalMinutes,
             CreatedAt = now,

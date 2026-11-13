@@ -7,5 +7,6 @@
   "Layout.Nav.Clients": "Clients",
   "Layout.Nav.Appointments": "Appointments",
   "Layout.Nav.Calendar": "Calendar",
-  "Layout.Nav.Settings": "Settings"
+  "Layout.Nav.Settings": "Settings",
+  "Layout.Nav.CashUp": "Till"
 }

@@ -76,6 +76,8 @@ public sealed class AppointmentCardHandler(
             }
         }
 
+        var deposit = await accounts.GetDepositAsync(appointment.Id, cancellationToken);
+
         return new AppointmentCard(
             appointment.Id,
             start.Date,
@@ -96,6 +98,8 @@ public sealed class AppointmentCardHandler(
             moveDate,
             slots,
             appointment.ClientId,
-            (await accounts.GetAccountAsync(appointment.ClientId, cancellationToken)).Owed);
+            (await accounts.GetAccountAsync(appointment.ClientId, cancellationToken)).Owed,
+            deposit?.Due,
+            deposit?.Deposit is { IsHeld: true } held ? held.Amount : null);
     }
 }

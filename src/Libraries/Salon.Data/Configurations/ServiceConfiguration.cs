@@ -14,6 +14,7 @@ internal sealed class ServiceConfiguration : IEntityTypeConfiguration<Service>
         builder.Property(s => s.Name).HasMaxLength(ServiceRules.NameMaxLength).IsRequired();
         builder.Property(s => s.Description).HasMaxLength(ServiceRules.DescriptionMaxLength);
         builder.Property(s => s.Price).HasPrecision(12, 2);
+        builder.Property(s => s.DepositPercent).HasPrecision(5, 2);
         builder.Property(s => s.Currency).HasMaxLength(3).IsRequired();
         builder.HasIndex(s => new { s.TenantId, s.Name }).IsUnique();
         builder.HasOne<Core.Tenancy.Tenant>().WithMany().HasForeignKey(s => s.TenantId).OnDelete(DeleteBehavior.Restrict);

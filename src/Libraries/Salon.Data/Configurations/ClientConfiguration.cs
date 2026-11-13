@@ -16,6 +16,7 @@ internal sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
         builder.Property(c => c.Phone).HasMaxLength(Client.PhoneMaxLength);
         builder.Property(c => c.Email).HasMaxLength(Client.EmailMaxLength);
         builder.Property(c => c.Notes).HasMaxLength(Client.NotesMaxLength);
+        builder.Property(c => c.DepositPercent).HasPrecision(5, 2);
         builder.Property(c => c.HealthNotesProtected).HasMaxLength(Client.HealthNotesProtectedMaxLength);
         builder.Property(c => c.MarketingConsentWording).HasMaxLength(Client.MarketingConsentWordingMaxLength);
         builder.Ignore(c => c.FullName);

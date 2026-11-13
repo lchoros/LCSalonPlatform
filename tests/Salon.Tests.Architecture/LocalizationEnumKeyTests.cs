@@ -25,6 +25,14 @@ public partial class LocalizationResourceTests
             .Where(refusal => refusal != ClientAccountRefusal.NotFound)
             .Select(refusal => $"Payments.Fee.Refused.{refusal}"));
 
+        // The till names each kind of line that moved money and each reason a day was not closed.
+        expected.AddRange(Enum.GetValues<ClientAccountEntryKind>()
+            .Where(kind => TillRules.Direction(kind) != 0)
+            .Select(kind => $"Payments.Kind.{kind}"));
+        expected.AddRange(Enum.GetValues<CashUpOutcome>()
+            .Where(outcome => outcome != CashUpOutcome.Closed)
+            .Select(outcome => $"Payments.CashUp.Refused.{outcome}"));
+
         var known = Resources.Value[SupportedCultures.EnGb];
 
         expected.Where(key => !known.ContainsKey(key)).ShouldBeEmpty();

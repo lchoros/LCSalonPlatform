@@ -92,6 +92,7 @@ public enum PublicBookingVerificationOutcome
 public sealed record PublicBookingVerification(PublicBookingVerificationOutcome Outcome, Guid? AppointmentId = null, int AttemptsLeft = 0, Guid? ServiceId = null);
 
 /// <summary>What a client may see about their own booking: no names of other people, no price breakdown, no notes.</summary>
+/// <param name="Deposit">The deposit the booking asks for (ADR 0023); null when none.</param>
 public sealed record PublicAppointment(
     Guid Id,
     Guid ServiceId,
@@ -102,7 +103,8 @@ public sealed record PublicAppointment(
     Instant End,
     Money Price,
     AppointmentStatus Status,
-    string PublicToken)
+    string PublicToken,
+    Money? Deposit = null)
 {
     public bool IsActive => AppointmentStateMachine.IsActive(Status);
 }

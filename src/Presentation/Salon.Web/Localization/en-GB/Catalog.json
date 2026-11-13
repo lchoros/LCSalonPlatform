@@ -112,5 +112,11 @@
   "Catalog.StaffOverrides.Validation.DurationOutOfRange": "Duration must be between {0} and {1} minutes.",
   "Catalog.StaffOverrides.Validation.DurationStep": "Duration must be a multiple of {0} minutes.",
   "Catalog.StaffOverrides.Validation.PriceOutOfRange": "Price must be between 0 and {0}.",
-  "Catalog.StaffOverrides.Validation.PriceTooPrecise": "Price can have at most two decimal places."
+  "Catalog.StaffOverrides.Validation.PriceTooPrecise": "Price can have at most two decimal places.",
+  "Catalog.Edit.DepositPercent": "Deposit (% of the price)",
+  "Catalog.Edit.DepositPercentHint": "Leave empty to use the salon's rule. 0 means no deposit for this service.",
+  "Catalog.Edit.Validation.DepositPercentRange": "The deposit must be between 0 and 100 percent.",
+  "Catalog.CreateService.DepositPercent": "Deposit (% of the price)",
+  "Catalog.CreateService.DepositPercentHint": "Leave empty to use the salon's rule. 0 means no deposit for this service.",
+  "Catalog.CreateService.Validation.DepositPercentRange": "The deposit must be between 0 and 100 percent."
 }

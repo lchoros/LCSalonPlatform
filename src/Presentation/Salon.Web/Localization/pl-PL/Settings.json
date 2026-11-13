@@ -16,9 +16,9 @@
   "Settings.Notifications.Validation.SecondCloser": "Drugie przypomnienie musi być bliżej wizyty niż pierwsze.",
   "Settings.Notifications.Validation.TimeInvalid": "Podaj godzinę, na przykład 21:00.",
   "Settings.Nav.Notifications": "Przypomnienia",
-  "Settings.Nav.CancellationPolicy": "Odwołania i opłaty",
-  "Settings.CancellationPolicy.Title": "Odwołania i opłaty",
-  "Settings.CancellationPolicy.Lead": "Ustal, do kiedy klient może bezpłatnie zmienić lub odwołać wizytę oraz ile kosztuje późne odwołanie lub nieobecność. Klienci widzą te zasady przed rezerwacją.",
+  "Settings.Nav.CancellationPolicy": "Zadatki i odwołania",
+  "Settings.CancellationPolicy.Title": "Zadatki i odwołania",
+  "Settings.CancellationPolicy.Lead": "Ustal zadatek wymagany przy rezerwacji, do kiedy klient może bezpłatnie zmienić lub odwołać wizytę oraz ile kosztuje późne odwołanie lub nieobecność. Klienci widzą te zasady przed rezerwacją.",
   "Settings.CancellationPolicy.FreeChangeHours": "Bezpłatna zmiana i odwołanie do (godziny przed wizytą)",
   "Settings.CancellationPolicy.FreeChangeHoursHint": "0 oznacza: do rozpoczęcia wizyty. Później klient nie zmieni już terminu online, a odwołanie liczy się jako późne.",
   "Settings.CancellationPolicy.LateFee": "Opłata za późne odwołanie (% ceny)",
@@ -32,5 +32,7 @@
   "Settings.CancellationPolicy.Validation.HoursRange": "Liczba godzin musi być między 0 a {0}.",
   "Settings.CancellationPolicy.Validation.PercentRequired": "Podaj procent.",
   "Settings.CancellationPolicy.Validation.PercentRange": "Procent musi być między 0 a 100.",
-  "Settings.CancellationPolicy.Validation.LateFeeNeedsNotice": "Opłata za późne odwołanie wymaga terminu: ustaw liczbę godzin większą niż 0."
+  "Settings.CancellationPolicy.Validation.LateFeeNeedsNotice": "Opłata za późne odwołanie wymaga terminu: ustaw liczbę godzin większą niż 0.",
+  "Settings.CancellationPolicy.Deposit": "Zadatek (% ceny)",
+  "Settings.CancellationPolicy.DepositHint": "Wymagany przy rezerwacji wizyty. 0 oznacza brak zadatku. Usługa lub klient mogą mieć własną zasadę."
 }

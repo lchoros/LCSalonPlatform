@@ -32,6 +32,22 @@ internal sealed class ClientAccountEntryConfiguration : IEntityTypeConfiguration
             .IsUnique()
             .HasFilter("kind IN (3, 4)")
             .HasDatabaseName("ux_client_account_entries_one_settlement_per_fee");
+        // Likewise one deposit per visit and one return per deposit (ADR 0023).
+        builder.HasIndex(e => new { e.TenantId, e.AppointmentId }, "OneDepositPerAppointment")
+            .IsUnique()
+            .HasFilter("kind = 5")
+            .HasDatabaseName("ux_client_account_entries_one_deposit_per_appointment");
+        builder.HasIndex(e => new { e.TenantId, e.RelatedEntryId }, "OneReturnPerDeposit")
+            .IsUnique()
+            .HasFilter("kind = 6")
+            .HasDatabaseName("ux_client_account_entries_one_return_per_deposit");
+        // A visit is paid once at the checkout (ADR 0024).
+        builder.HasIndex(e => new { e.TenantId, e.AppointmentId }, "OneVisitPaymentPerAppointment")
+            .IsUnique()
+            .HasFilter("kind = 7")
+            .HasDatabaseName("ux_client_account_entries_one_visit_payment_per_appointment");
+        // The till reads a day's lines whoever the client is.
+        builder.HasIndex(e => new { e.TenantId, e.At }, "ByDay").HasDatabaseName("ix_client_account_entries_tenant_id_at");
         // Restrict everywhere: money history outlives a tidy-up of whatever it points at.
         builder.HasOne<Client>().WithMany().HasForeignKey(e => e.ClientId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Appointment>().WithMany().HasForeignKey(e => e.AppointmentId).OnDelete(DeleteBehavior.Restrict);

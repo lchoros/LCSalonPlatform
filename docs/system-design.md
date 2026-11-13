@@ -62,8 +62,10 @@ currency for money. Tables so far: `tenants`, `services` (RLS), `settings` (RLS)
 `message_templates` (ADR 0008), `staff_members` and `working_hours` (RLS, ADR 0010; `LocalTime` as `time`, local to the
 salon), `clients` (RLS, ADR 0011; health notes as Data Protection cipher text), `appointments` and
 `appointment_status_changes` (RLS, ADR 0012; GiST exclusion constraint against overlapping active visits of one staff
-member, `client_id` FK to `clients` with Restrict), `client_account_entries` (RLS, ADR 0022; append-only fee and
-settlement lines, partial unique indexes for one fee per visit and one settlement per fee), `outbox_messages` (no RLS,
+member, `client_id` FK to `clients` with Restrict), `client_account_entries` (RLS, ADR 0022 and 0023; append-only fee,
+settlement, deposit and visit-payment lines, partial unique indexes for one fee, one deposit and one payment per visit,
+one settlement per fee and one return per deposit; `appointments.deposit_amount`, `services.deposit_percent` and `clients.deposit_percent` carry the
+deposit rules), `cash_ups` (RLS, ADR 0024; one end-of-day count per salon and day), `outbox_messages` (no RLS,
 see §3). The demo salon also gets three
 staff with weekly hours (Anna Kowalska, Tom Reed, Priya Shah), twelve clients and a few appointments over the coming
 working days.
@@ -118,6 +120,19 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   required), with who did what. `IClientAccountService` (Services) owns the ledger; the day list redirects here after
   a no-show or late cancellation, the client card lists the fees and what is owed, and the calendar card of a later
   visit says when the client owes something.
+- `Payments/VisitDeposit` — `/admin/payments/deposits/{appointmentId}` behind `Payments.Record` + `Clients.View`
+  (ADR 0023): the deposit a booking asks for (pure `DepositRules` in Core: client, else service, else salon; snapshot
+  on the appointment), a form to record it received and one to record it returned, both through `IPaymentProvider`
+  (Manual: record only). The calendar card shows what is due or received; a deposit the salon holds is taken off the
+  fee the fee page offers.
+- `Payments/Checkout` — `/admin/payments/checkout/{appointmentId}` behind `Payments.Record` + `Clients.View`
+  (ADR 0024): the bill of a visit the client turned up for (pure `TillRules` in Core: price less the deposit held),
+  the client's open fees ticked onto it, one payment through `IPaymentProvider` (Manual: record only). Paying an
+  arrived visit completes it in the same transaction. Linked from the day list, the calendar card and the client's
+  history.
+- `Payments/CashUp` — `/admin/payments/cash-up?date=` behind the same permissions (ADR 0024): `ICashUpService` adds up
+  the day's ledger lines that carry a method (in the salon's zone), per method, with the cash the drawer should hold;
+  the day is closed once with the cash counted (`CashUp`), and money recorded later is flagged. "Till" in the nav.
 - `Booking/Reschedule` — `/book/change/{token}` (ADR 0021): the client's own link moves the visit through
   `IBookingService.MoveAsync`; inside the policy's notice period it offers no times (ADR 0022), while
   `Booking/CancelBooking` still cancels and states the late fee first. The details page states the policy before the
@@ -142,7 +157,6 @@ pages are unstyled; assert whole phrases, never three or four letters that rando
 a visible browser: `pwsh scripts/watch-e2e.ps1 -Filter <name>`.
 
 ## 8. Not yet built
-M1 remainder: locations, FullCalendar drag-and-drop with live updates. M2: deposits recorded through the Manual
-payment provider (they add their own lines to the client account), POS checkout and cash-up (puts what a client owes on
-the bill), email channel. M3:
+M1 remainder: locations, FullCalendar drag-and-drop with live updates. M2: email channel, idempotent confirmation consumer;
+payment reversals, split payments, tips, discounts and retail products at the checkout. M3:
 payments beyond the record-only provider, real SMS/email, deployment.

@@ -54,6 +54,12 @@ public class Client : BaseEntity, ITenantEntity
     public bool IsActive { get; set; } = true;
 
     /// <summary>
+    /// This client's own deposit percentage (ADR 0023): null follows the service and the salon, 0 never asks them for a
+    /// deposit, anything above always does, whatever the service says.
+    /// </summary>
+    public decimal? DepositPercent { get; set; }
+
+    /// <summary>
     /// Set when this card was merged into another (<see cref="ClientMergeRules"/>): the row stays, inactive and without contact
     /// details, as a pointer so old links and imports still resolve. Never set on an active client.
     /// </summary>

@@ -6,7 +6,8 @@ using Salon.Core.Tenancy;
 namespace Salon.Core.Payments;
 
 /// <summary>
-/// One line of a client's account with the salon (ADR 0022): a fee the client owes, or what settled it. Tenant-owned and
+/// One line of a client's account with the salon (ADR 0022, ADR 0023): a fee the client owes or what settled it, a
+/// deposit the salon received or gave back. Tenant-owned and
 /// append-only: a line is never edited or deleted, a mistake is corrected by another line (a fee is waived, not removed),
 /// so the list itself is the audit trail of who decided what and when. <see cref="Amount"/> is always positive; whether
 /// it is owed or settles a debt follows from <see cref="Kind"/> (<see cref="ClientAccountRules"/>).
@@ -34,7 +35,7 @@ public class ClientAccountEntry : BaseEntity, ITenantEntity
     /// <summary>ISO 4217 code of <see cref="Amount"/>.</summary>
     public required string Currency { get; set; }
 
-    /// <summary>How the money was taken; only on a payment line.</summary>
+    /// <summary>How the money changed hands; on payment, deposit and return lines.</summary>
     public PaymentMethod? Method { get; set; }
 
     /// <summary>System name of the payment plugin that recorded a payment line.</summary>
@@ -43,7 +44,7 @@ public class ClientAccountEntry : BaseEntity, ITenantEntity
     /// <summary>The plugin's reference for a payment line. Never card data.</summary>
     public string? ProviderReference { get; set; }
 
-    /// <summary>The fee a waiver or payment settles.</summary>
+    /// <summary>The fee a waiver or payment settles, or the deposit a return gives back.</summary>
     public Guid? RelatedEntryId { get; set; }
 
     /// <summary>Why a fee was waived; optional remark otherwise.</summary>
@@ -70,4 +71,13 @@ public enum ClientAccountEntryKind
 
     /// <summary>The client paid a fee at the salon; settles it in full.</summary>
     FeePayment = 4,
+
+    /// <summary>The salon received a deposit for a visit (ADR 0023).</summary>
+    DepositPaid = 5,
+
+    /// <summary>The salon gave a deposit back, in full.</summary>
+    DepositReturned = 6,
+
+    /// <summary>The client paid for a visit at the checkout (ADR 0024): the price less the deposit the salon held.</summary>
+    VisitPayment = 7,
 }

@@ -324,6 +324,7 @@ internal sealed class PublicBookingService(
                 a.End,
                 a.PriceAmount,
                 a.Currency,
+                a.DepositAmount,
                 a.Status,
                 a.PublicToken,
             })
@@ -336,7 +337,7 @@ internal sealed class PublicBookingService(
 
         var serviceName = await db.Services.AsNoTracking().Where(s => s.Id == row.ServiceId).Select(s => s.Name).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
         var staffName = await db.StaffMembers.AsNoTracking().Where(s => s.Id == row.StaffMemberId).Select(s => s.DisplayName).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
-        return new PublicAppointment(row.Id, row.ServiceId, serviceName, row.StaffMemberId, staffName, row.Start, row.End, new Money(row.PriceAmount, row.Currency), row.Status, row.PublicToken);
+        return new PublicAppointment(row.Id, row.ServiceId, serviceName, row.StaffMemberId, staffName, row.Start, row.End, new Money(row.PriceAmount, row.Currency), row.Status, row.PublicToken, row.DepositAmount > 0m ? new Money(row.DepositAmount, row.Currency) : null);
     }
 
     private async Task<TenantInfo> RequireTenantAsync(CancellationToken cancellationToken)

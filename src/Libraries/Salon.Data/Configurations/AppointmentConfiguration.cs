@@ -20,6 +20,7 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
         builder.Property(a => a.Source).HasConversion<int>();
         builder.Property(a => a.Notes).HasMaxLength(Appointment.NotesMaxLength);
         builder.Property(a => a.PriceAmount).HasPrecision(10, 2);
+        builder.Property(a => a.DepositAmount).HasPrecision(10, 2).HasDefaultValue(0m);
         builder.Property(a => a.Currency).HasMaxLength(Appointment.CurrencyLength).IsRequired();
         builder.Property(a => a.CancellationReason).HasMaxLength(Appointment.CancellationReasonMaxLength);
         builder.Property(a => a.PublicToken).HasMaxLength(Appointment.PublicTokenMaxLength);

@@ -7,6 +7,7 @@ using Salon.Core.Appointments;
 using Salon.Core.Clients;
 using Salon.Core.Clients.Events;
 using Salon.Core.Events;
+using Salon.Core.Payments;
 using Salon.Core.Tenancy;
 using Salon.Data;
 using Salon.Services.Security;
@@ -163,7 +164,8 @@ internal sealed class ClientService(
             client.CreatedAt,
             client.UpdatedAt,
             client.MergedIntoClientId,
-            client.MergedAt);
+            client.MergedAt,
+            client.DepositPercent);
     }
 
     public async Task UpdateHealthNotesAsync(Guid clientId, string? healthNotes, LocalDate? lastPatchTestOn, CancellationToken cancellationToken = default)
@@ -172,6 +174,24 @@ internal sealed class ClientService(
         var client = await RequireAsync(clientId, cancellationToken).ConfigureAwait(false);
         client.HealthNotesProtected = plain is null ? null : encryptor.Protect(plain);
         client.LastPatchTestOn = lastPatchTestOn;
+        client.UpdatedAt = clock.GetCurrentInstant();
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task SetDepositPercentAsync(Guid clientId, decimal? percent, CancellationToken cancellationToken = default)
+    {
+        if (!DepositRules.IsPercentInRange(percent))
+        {
+            throw new ArgumentOutOfRangeException(nameof(percent), percent, $"A deposit is between 0 and {DepositRules.MaxPercent} percent.");
+        }
+
+        var client = await RequireAsync(clientId, cancellationToken).ConfigureAwait(false);
+        if (client.DepositPercent == percent)
+        {
+            return;
+        }
+
+        client.DepositPercent = percent;
         client.UpdatedAt = clock.GetCurrentInstant();
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -314,6 +334,8 @@ internal sealed class ClientService(
             target.LastPatchTestOn = ClientMergeRules.ChoosePatchTest(target.LastPatchTestOn, source.LastPatchTestOn);
             target.Phone = ClientMergeRules.ChooseContact(target.Phone, sourcePhone);
             target.Email = ClientMergeRules.ChooseContact(target.Email, sourceEmail);
+            // The kept card's own deposit rule wins; without one it takes the duplicate's (ADR 0023).
+            target.DepositPercent ??= source.DepositPercent;
             var consent = ClientMergeRules.ChooseConsent(
                 new ConsentState(target.MarketingConsent, target.MarketingConsentAt, target.MarketingConsentWording),
                 new ConsentState(source.MarketingConsent, source.MarketingConsentAt, source.MarketingConsentWording));

@@ -20,6 +20,8 @@ public sealed record AppointmentCardQuery(Guid AppointmentId, Guid? MoveStaffId,
 /// <param name="Staff">Bookable staff for the move select (plus the visit's own person, even if no longer bookable).</param>
 /// <param name="Slots">Free starts for the move selection; empty when nothing is free or the visit cannot be moved.</param>
 /// <param name="ClientOwes">Open fees on the client's account (ADR 0022), so the desk sees them when the client is back; null when nothing is owed.</param>
+/// <param name="DepositDue">The deposit the booking asks for (ADR 0023); null when it asks for none.</param>
+/// <param name="DepositHeld">The deposit the salon received for this visit and still holds; null when none.</param>
 public sealed record AppointmentCard(
     Guid Id,
     LocalDate Day,
@@ -40,7 +42,9 @@ public sealed record AppointmentCard(
     LocalDate MoveDate,
     IReadOnlyList<MoveSlot> Slots,
     Guid ClientId = default,
-    Money? ClientOwes = null);
+    Money? ClientOwes = null,
+    Money? DepositDue = null,
+    Money? DepositHeld = null);
 
 /// <summary>A status button: the URL segment of the day list's <c>POST admin/appointments/{id}/{segment}</c> route and the label key.</summary>
 public sealed record CardAction(string Segment, AppointmentStatus Target, string LabelKey);

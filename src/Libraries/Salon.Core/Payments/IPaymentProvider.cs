@@ -14,6 +14,9 @@ public interface IPaymentProvider : IPlugin
 
     Task<PaymentResult> RecordDepositAsync(PaymentRequest request, CancellationToken cancellationToken = default);
 
+    /// <summary>Records that a deposit went back to the client (ADR 0023). A gateway refunds here; Manual only records.</summary>
+    Task<PaymentResult> RecordDepositReturnAsync(PaymentRequest request, CancellationToken cancellationToken = default);
+
     Task<PaymentResult> RecordInSalonPaymentAsync(PaymentRequest request, CancellationToken cancellationToken = default);
 
     Task<PaymentResult> RecordNoShowFeeAsync(PaymentRequest request, CancellationToken cancellationToken = default);

@@ -33,6 +33,7 @@ public sealed class EditClientHandler(
 
         await clients.UpdateDetailsAsync(request.Id, request.FirstName, request.LastName, request.Phone, request.Email, request.Notes, cancellationToken);
         await clients.UpdateHealthNotesAsync(request.Id, request.HealthNotes, ParseDate(request.LastPatchTestOn), cancellationToken);
+        await clients.SetDepositPercentAsync(request.Id, request.DepositPercent, cancellationToken);
 
         if (card.MarketingConsent != request.MarketingConsent)
         {

@@ -1,0 +1,134 @@
+@using System.Globalization
+@using NodaTime
+@using NodaTime.Text
+@using Salon.Core.Appointments
+@using Salon.Core.Payments
+@using Salon.Web.Features.Payments.Checkout
+@model CheckoutViewModel
+@{
+    var bill = Model.Bill;
+    var culture = CultureInfo.CurrentCulture;
+    var zone = bill.Start.Zone;
+    var dayPath = "/admin/appointments?date=" + LocalDatePattern.Iso.Format(bill.Start.Date);
+    var checkoutPath = CheckoutController.BasePath + "/" + bill.AppointmentId;
+    var feesTotal = bill.OpenFees.Sum(f => f.Amount.Amount);
+    var somethingToPay = bill.Outstanding.Amount > 0m || bill.OpenFees.Count > 0;
+    ViewData["Title"] = T["Payments.Checkout.Title"];
+    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 bg-white px-3 py-2 text-base shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
+    const string primaryClass = "inline-flex min-h-11 w-full items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700 sm:w-auto";
+    const string secondaryClass = "inline-flex min-h-11 w-full items-center justify-center rounded-md border border-stone-300 bg-white px-4 py-2 text-base font-medium hover:bg-stone-100 sm:w-auto";
+    const string cardClass = "space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm";
+}
+@functions {
+    string When(Instant at, DateTimeZone zone) => at.InZone(zone).LocalDateTime.ToString("g", CultureInfo.CurrentCulture);
+}
+<section class="mx-auto max-w-lg space-y-6">
+    <a href="@dayPath" data-testid="back" class="inline-flex min-h-11 items-center text-sm font-medium text-stone-700 hover:underline">&larr; @T["Payments.Fee.Back"]</a>
+    <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Payments.Checkout.Title"]</h1>
+
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+    }
+    @if (Model.Error is { } error)
+    {
+        <p role="alert" data-testid="error" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">@error</p>
+    }
+
+    <section class="@cardClass" data-testid="bill" data-status="@bill.Status">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-lg font-semibold"><a href="/admin/clients/@bill.ClientId" class="underline" data-testid="bill-client">@bill.ClientName</a></h2>
+            <span class="rounded bg-stone-100 px-1.5 py-0.5 text-xs font-medium text-stone-700" data-testid="bill-visit-status">@T[$"Appointments.Status.{bill.Status}"]</span>
+        </div>
+        <p class="text-sm text-stone-600">@bill.ServiceName · @bill.StaffName · <span class="tabular-nums">@bill.Start.LocalDateTime.ToString("g", culture)</span></p>
+        <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 text-base">
+            <dt>@bill.ServiceName</dt>
+            <dd class="text-right tabular-nums" data-testid="bill-price">@bill.Price.ToDisplayString(culture)</dd>
+            @if (bill.DepositHeld is { } deposit)
+            {
+                <dt>@T["Payments.Checkout.Deposit"]</dt>
+                <dd class="text-right tabular-nums" data-testid="bill-deposit">−@deposit.ToDisplayString(culture)</dd>
+            }
+            @if (bill.Payment is { } paid)
+            {
+                <dt>@T.Format("Payments.Checkout.PaidWith", T[$"Payments.Method.{paid.Method}"])</dt>
+                <dd class="text-right tabular-nums" data-testid="bill-paid">−@paid.Amount.ToDisplayString(culture)</dd>
+            }
+            <dt class="border-t border-stone-200 pt-2 font-semibold">@T["Payments.Checkout.Outstanding"]</dt>
+            <dd class="border-t border-stone-200 pt-2 text-right text-xl font-bold tabular-nums" data-testid="bill-outstanding">@bill.Outstanding.ToDisplayString(culture)</dd>
+        </dl>
+        @if (bill.Payment is { } payment)
+        {
+            <p class="text-sm text-stone-600" data-testid="bill-payment">
+                <time datetime="@InstantPattern.ExtendedIso.Format(payment.At)" class="tabular-nums">@When(payment.At, zone)</time>
+                · @T.Format("Payments.Checkout.RecordedBy", payment.ByName ?? T["Payments.Fee.History.Unknown"])
+                <span class="block break-all" data-testid="bill-reference">@T.Format("Payments.Fee.History.Reference", payment.ProviderReference ?? "—")</span>
+            </p>
+        }
+    </section>
+
+    @if (!bill.CanPay)
+    {
+        <section class="@cardClass" data-testid="not-payable">
+            @if (AppointmentStateMachine.IsActive(bill.Status))
+            {
+                <p>@T["Payments.Checkout.NotArrived"]</p>
+                <a href="/admin/appointments/calendar/@bill.AppointmentId" class="@secondaryClass" data-testid="open-visit">@T["Payments.Checkout.OpenVisit"]</a>
+            }
+            else
+            {
+                <p>@T["Payments.Checkout.DidNotTakePlace"]</p>
+                <a href="/admin/payments/fees/@bill.AppointmentId" class="@secondaryClass" data-testid="open-fee">@T["Payments.Checkout.OpenFee"]</a>
+            }
+        </section>
+    }
+    else if (somethingToPay)
+    {
+        <section class="@cardClass" data-testid="pay-step">
+            <h2 class="text-lg font-semibold">@T["Payments.Checkout.Pay.Title"]</h2>
+            <form method="post" action="@checkoutPath" asp-antiforgery="true" class="space-y-4" data-testid="pay-bill-form">
+                @if (bill.OpenFees.Count > 0)
+                {
+                    <fieldset class="space-y-2" data-testid="open-fees">
+                        <legend class="text-sm font-medium">@T["Payments.Checkout.Fees.Legend"]</legend>
+                        <p class="text-sm text-stone-600">@T["Payments.Checkout.Fees.Hint"]</p>
+                        @foreach (var fee in bill.OpenFees)
+                        {
+                            var feeId = "fee-" + fee.AppointmentId;
+                            <label for="@feeId" class="flex min-h-11 items-center gap-3 rounded-md border border-stone-200 px-3 py-2" data-testid="open-fee-row">
+                                <input id="@feeId" name="fees" type="checkbox" value="@fee.AppointmentId" checked class="size-5 shrink-0 rounded border-stone-400" />
+                                <span class="min-w-0 flex-1">
+                                    <span class="block font-medium">@T[$"Payments.Fee.Kind.{fee.Kind}"]</span>
+                                    <span class="block text-sm text-stone-600">@fee.ServiceName · <span class="tabular-nums">@fee.AppointmentStart.Date.ToString("d", culture)</span></span>
+                                </span>
+                                <span class="tabular-nums">@fee.Amount.ToDisplayString(culture)</span>
+                            </label>
+                        }
+                    </fieldset>
+                    <p class="flex items-baseline justify-between gap-4 rounded-md bg-stone-50 p-3" data-testid="bill-total">
+                        <span class="text-sm text-stone-700">@T["Payments.Checkout.TotalWithFees"]</span>
+                        <span class="text-xl font-bold tabular-nums">@((bill.Outstanding with { Amount = bill.Outstanding.Amount + feesTotal }).ToDisplayString(culture))</span>
+                    </p>
+                }
+                <div class="space-y-1">
+                    <label for="method" class="block text-sm font-medium">@T["Payments.Fee.Pay.Method"]</label>
+                    <select id="method" name="method" class="@inputClass" data-testid="bill-method">
+                        @foreach (var method in Enum.GetValues<PaymentMethod>())
+                        {
+                            <option value="@method">@T[$"Payments.Method.{method}"]</option>
+                        }
+                    </select>
+                </div>
+                <p class="text-sm text-stone-600">@T["Payments.Checkout.Pay.Hint"]</p>
+                <button type="submit" class="@primaryClass" data-testid="pay-bill">@T["Payments.Checkout.Pay.Submit"]</button>
+            </form>
+        </section>
+    }
+    else
+    {
+        <section class="@cardClass" data-testid="bill-settled">
+            <p class="font-medium">@T[bill.Payment is null ? "Payments.Checkout.CoveredByDeposit" : "Payments.Checkout.Settled"]</p>
+            <a href="/admin/payments/cash-up?date=@LocalDatePattern.Iso.Format((bill.Payment?.At ?? bill.Start.ToInstant()).InZone(zone).Date)" class="@secondaryClass" data-testid="open-cash-up">@T["Payments.Checkout.OpenCashUp"]</a>
+        </section>
+    }
+</section>
