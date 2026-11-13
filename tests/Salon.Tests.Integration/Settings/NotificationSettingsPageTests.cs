@@ -231,7 +231,8 @@ public class NotificationSettingsPageTests(SalonWebApplicationFactory factory) :
 
         // And the nav does not offer what the role cannot open.
         var home = await client.GetAsync(new Uri("/admin/appointments", UriKind.Relative));
-        (await home.Content.ReadAsStringAsync()).ShouldNotContain("data-testid=\"nav-settings\"");
+        // A manager has a Settings link since ADR 0030, but it leads to the messages only, never to this page.
+        (await home.Content.ReadAsStringAsync()).ShouldNotContain("href=\"/admin/settings/notifications\"");
     }
 
     [Fact]

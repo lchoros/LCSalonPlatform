@@ -70,6 +70,11 @@
                     {
                         <a href="/admin/settings/notifications" data-testid="nav-settings" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Settings"]</a>
                     }
+                    else if (User.HasClaim(UserClaimTypes.Permission, Permissions.TemplatesManage))
+                    {
+                        @* A manager may edit the messages to clients but none of the other settings (ADR 0030). *@
+                        <a href="/admin/settings/messages" data-testid="nav-settings" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Settings"]</a>
+                    }
                 </nav>
             }
         </div>
