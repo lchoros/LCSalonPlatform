@@ -82,5 +82,8 @@
   "Booking.Public.Deposit.Due": "A deposit of {0} secures this visit. The salon will tell you how to pay it.",
   "Booking.Public.Deposit.DueFrom": "A deposit from {0} secures this visit. The salon will tell you how to pay it.",
   "Booking.Public.Done.Deposit": "Deposit",
-  "Booking.Public.Deposit.Note": "The salon will tell you how to pay it."
+  "Booking.Public.Deposit.Note": "The salon will tell you how to pay it.",
+  "Booking.Contact.Title": "Where to find us",
+  "Booking.Contact.Map": "Open in maps",
+  "Booking.Contact.Call": "Call {0}"
 }

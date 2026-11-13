@@ -34,6 +34,8 @@
         <dd data-testid="done-salon">@Model.SalonName</dd>
     </dl>
 
+    @await Component.InvokeAsync("SalonContact")
+
     <div class="flex flex-col gap-3">
         <a href="/book" data-testid="book-another" class="btn btn-primary w-full">@T["Booking.Public.Done.BookAnother"]</a>
         <a href="/book/change/@Uri.EscapeDataString(a.PublicToken)" data-testid="change-link" class="btn btn-secondary w-full">@T["Booking.Public.Change.Title"]</a>
