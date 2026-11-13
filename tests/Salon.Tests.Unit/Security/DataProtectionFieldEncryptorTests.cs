@@ -31,8 +31,9 @@ public class DataProtectionFieldEncryptorTests
         var second = _encryptor.Protect(Plain);
 
         first.ShouldNotBe(Plain);
-        first.ShouldNotContain("PPD");
-        first.ShouldNotContain("patch");
+        // Whole phrases, case-sensitive: a three-letter match can occur by chance in random base64 cipher text.
+        first.ShouldNotContain("Allergic to PPD", Case.Sensitive);
+        first.ShouldNotContain("patch test", Case.Sensitive);
         first.ShouldNotBe(second);
         _encryptor.Unprotect(second).ShouldBe(Plain);
     }
