@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Events;
 using Salon.Core.Staff.Events;

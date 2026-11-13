@@ -1,5 +1,4 @@
 using NodaTime;
-
 using Salon.Core.Catalog;
 using Salon.Services.Catalog;
 

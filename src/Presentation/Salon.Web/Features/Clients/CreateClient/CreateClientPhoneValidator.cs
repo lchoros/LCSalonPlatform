@@ -1,5 +1,4 @@
 using FluentValidation;
-
 using Salon.Core.Tenancy;
 using Salon.Services.Clients;
 using Salon.Services.Localization;

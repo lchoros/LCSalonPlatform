@@ -1,7 +1,5 @@
 using System.Text.Json;
-
 using NodaTime;
-
 using Salon.Services.Events;
 
 namespace Salon.Tests.Unit.Events;

@@ -1,11 +1,8 @@
 using FluentValidation;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-
 using NSubstitute;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Tenancy;
 using Salon.Web.Framework.Pipeline;

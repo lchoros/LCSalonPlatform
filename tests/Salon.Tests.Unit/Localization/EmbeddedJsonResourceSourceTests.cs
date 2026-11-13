@@ -1,5 +1,4 @@
 using System.Reflection;
-
 using Salon.Services.Localization;
 
 namespace Salon.Tests.Unit.Localization;

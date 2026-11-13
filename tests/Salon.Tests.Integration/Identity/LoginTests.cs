@@ -1,11 +1,9 @@
 using System.Net;
 using System.Text.RegularExpressions;
-
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
 using Salon.Core.Identity;
 using Salon.Core.Tenancy;
 using Salon.Services.Identity;

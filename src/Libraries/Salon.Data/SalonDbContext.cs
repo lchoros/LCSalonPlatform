@@ -1,8 +1,6 @@
 using System.Linq.Expressions;
 using System.Reflection;
-
 using Microsoft.EntityFrameworkCore;
-
 using Salon.Core.Appointments;
 using Salon.Core.Booking;
 using Salon.Core.Catalog;

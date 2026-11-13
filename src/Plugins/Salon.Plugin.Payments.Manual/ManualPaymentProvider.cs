@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-
 using Salon.Core.Payments;
 
 namespace Salon.Plugin.Payments.Manual;

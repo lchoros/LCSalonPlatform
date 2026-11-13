@@ -1,12 +1,10 @@
 using System.Globalization;
 using System.Threading.RateLimiting;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-
 using Salon.Core.Tasks;
 using Salon.Services.Notifications;
 using Salon.Web.Framework.Tenancy;

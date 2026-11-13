@@ -1,9 +1,6 @@
 using System.Diagnostics;
-
 using Hangfire;
-
 using Microsoft.Extensions.Logging;
-
 using Salon.Core.Tasks;
 
 namespace Salon.Services.Tasks;

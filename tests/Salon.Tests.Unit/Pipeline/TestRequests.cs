@@ -1,5 +1,4 @@
 using FluentValidation;
-
 using Salon.Core.Cqrs;
 
 namespace Salon.Tests.Unit.Pipeline;

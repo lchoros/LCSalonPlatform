@@ -1,6 +1,5 @@
 using Salon.Core.Cqrs;
 using Salon.Services.Clients;
-
 using Card = Salon.Services.Clients.ClientCard;
 
 namespace Salon.Web.Features.Clients.EditClient;

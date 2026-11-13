@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-
 using Salon.Tests.Integration.Infrastructure;
 using Salon.Web.Framework.Plugins;
 

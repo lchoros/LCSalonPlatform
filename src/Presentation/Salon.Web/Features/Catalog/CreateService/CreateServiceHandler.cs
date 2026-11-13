@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-
 using NodaTime;
-
 using Salon.Core.Catalog;
 using Salon.Core.Catalog.Events;
 using Salon.Core.Cqrs;

@@ -1,10 +1,7 @@
 using System.Globalization;
 using System.Text;
-
 using Deque.AxeCore.Playwright;
-
 using Microsoft.Playwright;
-
 using Salon.Core.Identity;
 using Salon.Tests.E2E.Infrastructure;
 

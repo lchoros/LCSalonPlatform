@@ -1,5 +1,4 @@
 using NSubstitute;
-
 using Salon.Core.Tenancy;
 using Salon.Web.Framework.Pipeline;
 

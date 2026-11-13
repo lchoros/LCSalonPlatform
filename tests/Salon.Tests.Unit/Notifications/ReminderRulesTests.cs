@@ -1,9 +1,7 @@
 using FsCheck;
 using FsCheck.Fluent;
 using FsCheck.Xunit;
-
 using NodaTime;
-
 using Salon.Core.Notifications;
 using Salon.Core.Settings;
 

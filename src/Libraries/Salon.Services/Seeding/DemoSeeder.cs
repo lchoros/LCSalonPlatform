@@ -2,9 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
 using NodaTime;
-
 using Salon.Core.Appointments;
 using Salon.Core.Catalog;
 using Salon.Core.Identity;

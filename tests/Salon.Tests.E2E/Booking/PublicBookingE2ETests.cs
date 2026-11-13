@@ -1,10 +1,7 @@
 using System.Diagnostics;
 using System.Globalization;
-
 using Deque.AxeCore.Playwright;
-
 using Microsoft.Playwright;
-
 using Salon.Tests.E2E.Infrastructure;
 
 namespace Salon.Tests.E2E.Booking;

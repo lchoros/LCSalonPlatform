@@ -1,8 +1,6 @@
 using FluentValidation;
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-
 using Salon.Core.Cqrs;
 using Salon.Services.Booking;
 using Salon.Services.Clients;

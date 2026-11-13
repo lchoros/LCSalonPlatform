@@ -1,5 +1,4 @@
 using NodaTime;
-
 using Salon.Core.Settings;
 
 namespace Salon.Core.Notifications;

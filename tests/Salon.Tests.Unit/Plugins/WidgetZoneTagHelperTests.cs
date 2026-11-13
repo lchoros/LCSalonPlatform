@@ -3,9 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-
 using NSubstitute;
-
 using Salon.Core.Plugins;
 using Salon.Web.Framework.Plugins;
 using Salon.Web.Framework.TagHelpers;

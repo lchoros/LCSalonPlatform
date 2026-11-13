@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http;
-
 using Salon.Web.Framework.Localization;
 
 namespace Salon.Tests.Unit.Localization;

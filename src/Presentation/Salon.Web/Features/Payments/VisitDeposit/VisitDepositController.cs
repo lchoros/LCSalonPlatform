@@ -1,9 +1,6 @@
 using System.Security.Claims;
-
 using FluentValidation;
-
 using Microsoft.AspNetCore.Mvc;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Identity;
 using Salon.Core.Payments;
@@ -11,7 +8,6 @@ using Salon.Services.Localization;
 using Salon.Services.Payments;
 using Salon.Web.Framework.Controllers;
 using Salon.Web.Framework.Mvc;
-
 using Deposit = Salon.Services.Payments.VisitDeposit;
 
 namespace Salon.Web.Features.Payments.VisitDeposit;

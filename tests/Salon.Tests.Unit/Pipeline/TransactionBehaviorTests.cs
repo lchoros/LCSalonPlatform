@@ -1,7 +1,5 @@
 using Microsoft.Extensions.Logging.Abstractions;
-
 using NSubstitute;
-
 using Salon.Web.Framework.Pipeline;
 
 namespace Salon.Tests.Unit.Pipeline;

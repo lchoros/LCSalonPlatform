@@ -1,5 +1,4 @@
 using NodaTime;
-
 using Salon.Core.Clients;
 
 namespace Salon.Tests.Unit.Clients;

@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 using Salon.Core.Appointments;
 
 namespace Salon.Data.Configurations;

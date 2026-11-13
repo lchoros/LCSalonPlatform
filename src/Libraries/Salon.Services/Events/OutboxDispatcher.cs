@@ -1,13 +1,10 @@
 using System.Collections.Concurrent;
 using System.Runtime.ExceptionServices;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
 using NodaTime;
-
 using Salon.Core.Events;
 using Salon.Data;
 using Salon.Services.Tenancy;

@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-
 using Salon.Core.Settings;
 using Salon.Core.Tenancy;
 using Salon.Data;

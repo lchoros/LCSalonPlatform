@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Primitives;
-
 using Salon.Core.Localization;
 
 namespace Salon.Web.Framework.Localization;

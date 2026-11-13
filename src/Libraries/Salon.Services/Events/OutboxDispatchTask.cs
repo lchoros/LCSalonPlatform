@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
 using Salon.Core.Tasks;
 
 namespace Salon.Services.Events;

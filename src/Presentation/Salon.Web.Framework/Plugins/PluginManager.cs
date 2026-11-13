@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-
 using Salon.Core.Plugins;
 
 namespace Salon.Web.Framework.Plugins;

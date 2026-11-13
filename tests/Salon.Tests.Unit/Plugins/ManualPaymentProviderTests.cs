@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging.Abstractions;
-
 using Salon.Core.Domain;
 using Salon.Core.Payments;
 using Salon.Plugin.Payments.Manual;

@@ -1,12 +1,9 @@
 using FluentValidation;
-
 using NodaTime;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Payments;
 using Salon.Services.Localization;
 using Salon.Services.Payments;
-
 using Count = Salon.Core.Payments.CashUp;
 
 namespace Salon.Web.Features.Payments.CashUp;

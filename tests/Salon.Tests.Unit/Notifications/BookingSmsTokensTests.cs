@@ -1,7 +1,5 @@
 using System.Globalization;
-
 using NodaTime;
-
 using Salon.Core.Messaging;
 using Salon.Services.Notifications;
 

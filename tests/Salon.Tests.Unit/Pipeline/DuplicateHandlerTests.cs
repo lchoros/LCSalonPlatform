@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-
 using Salon.Core.Cqrs;
 using Salon.Web.Framework.Pipeline;
 

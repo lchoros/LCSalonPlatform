@@ -1,7 +1,5 @@
 using Microsoft.Extensions.Logging.Abstractions;
-
 using NSubstitute;
-
 using Salon.Core.Tasks;
 using Salon.Services.Tasks;
 

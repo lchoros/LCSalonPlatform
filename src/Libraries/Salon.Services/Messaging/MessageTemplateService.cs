@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-
 using NodaTime;
-
 using Salon.Core.Localization;
 using Salon.Core.Messaging;
 using Salon.Core.Tenancy;

@@ -1,9 +1,7 @@
 using System.Globalization;
-
 using FsCheck;
 using FsCheck.Fluent;
 using FsCheck.Xunit;
-
 using Salon.Core.Domain;
 using Salon.Core.Localization;
 using Salon.Services.Formatting;

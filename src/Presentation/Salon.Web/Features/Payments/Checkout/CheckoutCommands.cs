@@ -1,5 +1,4 @@
 using FluentValidation;
-
 using Salon.Core.Appointments;
 using Salon.Core.Cqrs;
 using Salon.Core.Payments;

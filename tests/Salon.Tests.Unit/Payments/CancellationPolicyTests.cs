@@ -1,9 +1,7 @@
 using FsCheck;
 using FsCheck.Fluent;
 using FsCheck.Xunit;
-
 using NodaTime;
-
 using Salon.Core.Appointments;
 using Salon.Core.Domain;
 using Salon.Core.Payments;

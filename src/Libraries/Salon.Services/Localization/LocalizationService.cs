@@ -1,9 +1,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Globalization;
-
 using Microsoft.Extensions.Logging;
-
 using Salon.Core.Localization;
 
 namespace Salon.Services.Localization;

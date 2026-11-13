@@ -1,7 +1,6 @@
 using FsCheck;
 using FsCheck.Fluent;
 using FsCheck.Xunit;
-
 using Salon.Core.Locations;
 using Salon.Services.Locations;
 using Salon.Services.Notifications;

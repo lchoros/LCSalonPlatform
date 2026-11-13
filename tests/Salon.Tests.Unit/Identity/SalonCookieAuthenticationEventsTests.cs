@@ -1,17 +1,13 @@
 using System.Globalization;
 using System.Security.Claims;
-
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-
 using NodaTime;
-
 using NSubstitute;
-
 using Salon.Core.Identity;
 using Salon.Services.Identity;
 using Salon.Services.Tenancy;

@@ -1,5 +1,4 @@
 using System.Globalization;
-
 using Salon.Core.Domain;
 using Salon.Services.Formatting;
 

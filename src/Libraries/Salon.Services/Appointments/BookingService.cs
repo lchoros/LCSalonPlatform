@@ -1,9 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-
 using NodaTime;
-
 using Npgsql;
-
 using Salon.Core.Appointments;
 using Salon.Core.Appointments.Events;
 using Salon.Core.Booking;

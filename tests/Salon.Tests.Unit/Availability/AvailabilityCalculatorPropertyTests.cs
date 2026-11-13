@@ -1,12 +1,9 @@
 using FsCheck;
 using FsCheck.Fluent;
 using FsCheck.Xunit;
-
 using NodaTime;
-
 using Salon.Core.Staff;
 using Salon.Services.Availability;
-
 using Interval = NodaTime.Interval;
 
 namespace Salon.Tests.Unit.Availability;

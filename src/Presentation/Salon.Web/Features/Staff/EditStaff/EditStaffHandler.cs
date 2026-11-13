@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Staff;
 using Salon.Core.Tenancy;

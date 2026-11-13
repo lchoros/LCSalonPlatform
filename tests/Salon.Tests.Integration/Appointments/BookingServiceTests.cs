@@ -1,12 +1,8 @@
 using System.Text.Json;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
 using NodaTime;
-
 using Npgsql;
-
 using Salon.Core.Appointments;
 using Salon.Core.Appointments.Events;
 using Salon.Core.Catalog;

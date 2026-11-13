@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-
 using Salon.Core.Payments;
 using Salon.Core.Plugins;
 

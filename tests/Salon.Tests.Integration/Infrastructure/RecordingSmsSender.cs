@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
-
 using Salon.Core.Messaging;
 
 namespace Salon.Tests.Integration.Infrastructure;

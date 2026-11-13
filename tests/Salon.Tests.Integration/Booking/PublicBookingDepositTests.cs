@@ -1,10 +1,7 @@
 using System.Net;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
 using NodaTime;
-
 using Salon.Data;
 using Salon.Services.Clients;
 using Salon.Tests.Integration.Infrastructure;

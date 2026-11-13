@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-
 using NodaTime;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Identity;
 using Salon.Core.Tenancy;
@@ -10,7 +8,6 @@ using Salon.Services.Payments;
 using Salon.Services.Tenancy;
 using Salon.Web.Framework.Controllers;
 using Salon.Web.Framework.Mvc;
-
 using Card = Salon.Services.Clients.ClientCard;
 
 namespace Salon.Web.Features.Clients.ClientCard;

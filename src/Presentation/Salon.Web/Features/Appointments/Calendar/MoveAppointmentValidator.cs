@@ -1,7 +1,5 @@
 using FluentValidation;
-
 using NodaTime.Text;
-
 using Salon.Services.Localization;
 
 namespace Salon.Web.Features.Appointments.Calendar;

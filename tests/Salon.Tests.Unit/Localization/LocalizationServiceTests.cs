@@ -1,7 +1,5 @@
 using System.Globalization;
-
 using Microsoft.Extensions.Logging;
-
 using Salon.Services.Localization;
 using Salon.Tests.Unit.Infrastructure;
 

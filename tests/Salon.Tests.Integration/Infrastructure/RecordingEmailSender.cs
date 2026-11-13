@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-
 using Salon.Core.Messaging;
 
 namespace Salon.Tests.Integration.Infrastructure;

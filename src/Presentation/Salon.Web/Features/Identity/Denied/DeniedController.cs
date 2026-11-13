@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
 using Salon.Web.Framework.Controllers;
 using Salon.Web.Framework.Mvc;
 

@@ -1,8 +1,6 @@
 using NodaTime;
-
 using Salon.Core.Staff;
 using Salon.Services.Availability;
-
 using static Salon.Tests.Unit.Availability.AvailabilityCalculatorTests;
 
 namespace Salon.Tests.Unit.Availability;

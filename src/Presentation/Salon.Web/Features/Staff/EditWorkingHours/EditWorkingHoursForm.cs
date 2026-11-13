@@ -1,7 +1,5 @@
 using System.Globalization;
-
 using NodaTime;
-
 using Salon.Core.Staff;
 
 namespace Salon.Web.Features.Staff.EditWorkingHours;

@@ -1,5 +1,4 @@
 using NodaTime;
-
 using Salon.Core.Events;
 
 namespace Salon.Services.Events;

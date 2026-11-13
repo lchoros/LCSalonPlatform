@@ -1,7 +1,5 @@
 using System.Text.RegularExpressions;
-
 using NodaTime;
-
 using Salon.Core.Domain;
 using Salon.Core.Tenancy;
 

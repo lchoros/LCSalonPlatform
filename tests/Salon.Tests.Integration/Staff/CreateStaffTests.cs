@@ -1,11 +1,8 @@
 using System.Net;
 using System.Text.Json;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
 using NodaTime;
-
 using Salon.Core.Identity;
 using Salon.Core.Staff;
 using Salon.Core.Staff.Events;

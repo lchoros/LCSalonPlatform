@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-
 using NodaTime;
 using NodaTime.Text;
-
 using Salon.Core.Cqrs;
 using Salon.Services.Booking;
 using Salon.Services.Localization;

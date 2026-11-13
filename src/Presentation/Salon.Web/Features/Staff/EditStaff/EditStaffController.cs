@@ -1,8 +1,6 @@
 using FluentValidation;
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Identity;
 using Salon.Core.Tenancy;

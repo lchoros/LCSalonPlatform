@@ -1,9 +1,6 @@
 using FluentValidation;
-
 using Microsoft.EntityFrameworkCore;
-
 using NodaTime.Text;
-
 using Salon.Data;
 using Salon.Services.Localization;
 

@@ -1,9 +1,7 @@
 using FluentValidation;
-
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Identity;
 using Salon.Core.Tenancy;

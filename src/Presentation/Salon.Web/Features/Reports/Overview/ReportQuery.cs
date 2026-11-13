@@ -1,5 +1,4 @@
 using NodaTime;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Reports;
 using Salon.Services.Reports;

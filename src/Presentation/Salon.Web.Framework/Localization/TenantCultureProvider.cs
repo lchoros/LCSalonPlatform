@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
-
 using Salon.Core.Localization;
 using Salon.Core.Tenancy;
 using Salon.Services.Tenancy;

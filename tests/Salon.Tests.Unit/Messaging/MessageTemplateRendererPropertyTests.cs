@@ -1,7 +1,6 @@
 using FsCheck;
 using FsCheck.Fluent;
 using FsCheck.Xunit;
-
 using Salon.Core.Messaging;
 
 namespace Salon.Tests.Unit.Messaging;

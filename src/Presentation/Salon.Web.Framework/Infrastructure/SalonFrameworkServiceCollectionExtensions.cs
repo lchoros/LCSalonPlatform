@@ -1,14 +1,11 @@
 using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
-
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
 using Npgsql;
-
 using Salon.Data;
 using Salon.Data.Tenancy;
 using Salon.Services;

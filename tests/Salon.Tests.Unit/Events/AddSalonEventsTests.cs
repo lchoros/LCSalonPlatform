@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-
 using Salon.Core.Events;
 using Salon.Services.Events;
 

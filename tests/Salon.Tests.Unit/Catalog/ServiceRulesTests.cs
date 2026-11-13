@@ -1,5 +1,4 @@
 using System.Globalization;
-
 using Salon.Core.Catalog;
 
 namespace Salon.Tests.Unit.Catalog;

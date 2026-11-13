@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-
 using Salon.Core.Tenancy;
 using Salon.Services.Tenancy;
 using Salon.Tests.Integration.Infrastructure;

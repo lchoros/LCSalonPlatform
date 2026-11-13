@@ -1,7 +1,5 @@
 using FluentValidation;
-
 using Microsoft.AspNetCore.Mvc;
-
 using Salon.Core.Catalog;
 using Salon.Core.Cqrs;
 using Salon.Core.Identity;

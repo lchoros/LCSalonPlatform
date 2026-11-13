@@ -1,7 +1,5 @@
 using FluentValidation;
-
 using Microsoft.EntityFrameworkCore;
-
 using Salon.Core.Catalog;
 using Salon.Data;
 using Salon.Services.Localization;

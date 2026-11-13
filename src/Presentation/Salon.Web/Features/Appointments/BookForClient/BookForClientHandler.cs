@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-
 using NodaTime;
 using NodaTime.Text;
-
 using Salon.Core.Appointments;
 using Salon.Core.Cqrs;
 using Salon.Core.Tenancy;

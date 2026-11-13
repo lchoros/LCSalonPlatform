@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-
 using Salon.Data;
 
 namespace Salon.Web.Framework.Pipeline;

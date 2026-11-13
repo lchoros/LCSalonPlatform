@@ -1,12 +1,8 @@
 using System.Globalization;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-
 using NodaTime;
-
 using Npgsql;
-
 using Salon.Core.Appointments;
 using Salon.Core.Messaging;
 using Salon.Core.Notifications;

@@ -1,11 +1,9 @@
 using Hangfire;
 using Hangfire.PostgreSql;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-
 using Salon.Core.Tasks;
 using Salon.Services.Tasks;
 

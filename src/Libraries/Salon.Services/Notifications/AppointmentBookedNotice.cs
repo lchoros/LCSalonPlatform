@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-
 using Salon.Core.Appointments;
 using Salon.Core.Appointments.Events;
 using Salon.Core.Events;

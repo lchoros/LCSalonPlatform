@@ -1,13 +1,9 @@
 using System.Globalization;
 using System.Security.Claims;
-
 using FluentValidation;
-
 using Microsoft.AspNetCore.Mvc;
-
 using NodaTime;
 using NodaTime.Text;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Identity;
 using Salon.Services.Appointments;

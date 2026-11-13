@@ -1,11 +1,8 @@
 using System.Text.Json;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-
 using NodaTime;
-
 using Salon.Core.Catalog;
 using Salon.Core.Cqrs;
 using Salon.Core.Events;

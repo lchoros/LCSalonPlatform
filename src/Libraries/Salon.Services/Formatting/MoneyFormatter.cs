@@ -1,6 +1,5 @@
 using System.Collections.Frozen;
 using System.Globalization;
-
 using Salon.Core.Domain;
 
 namespace Salon.Services.Formatting;

@@ -1,7 +1,6 @@
 using FsCheck;
 using FsCheck.Fluent;
 using FsCheck.Xunit;
-
 using Salon.Core.Payments;
 
 namespace Salon.Tests.Unit.Payments;

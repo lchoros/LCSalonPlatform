@@ -1,6 +1,5 @@
 using System.Reflection;
 using System.Text.Json;
-
 using Salon.Core.Plugins;
 
 namespace Salon.Web.Framework.Plugins;

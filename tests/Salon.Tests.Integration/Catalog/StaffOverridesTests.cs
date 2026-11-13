@@ -1,11 +1,8 @@
 using System.Net;
 using System.Text.RegularExpressions;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
 using NodaTime;
-
 using Salon.Core.Catalog;
 using Salon.Core.Catalog.Events;
 using Salon.Core.Events;

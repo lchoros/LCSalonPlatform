@@ -1,5 +1,4 @@
 using NodaTime;
-
 using Salon.Core.Booking;
 
 namespace Salon.Tests.Unit.Booking;

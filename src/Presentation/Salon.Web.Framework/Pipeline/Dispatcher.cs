@@ -1,7 +1,5 @@
 using System.Collections.Concurrent;
-
 using Microsoft.Extensions.DependencyInjection;
-
 using Salon.Core.Cqrs;
 
 namespace Salon.Web.Framework.Pipeline;
