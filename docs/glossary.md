@@ -12,6 +12,9 @@
 | Deposit | Zadatek | Amount paid at booking (zadatek, not zaliczka — different legal meaning in PL) |
 | No-show | Nieobecność / Nie przyszedł | Client did not attend |
 | Late cancellation | Późne odwołanie | Cancelled inside the policy window |
+| Notice period | Termin bezpłatnego odwołania | Hours before a visit until which a change or cancellation is free (`CancellationPolicySettings.FreeChangeHours`) |
+| Client account | Rozliczenia klienta | `ClientAccountEntry` lines: fees a client owes and what settled them (payment, waiver); never edited |
+| Waiver | Umorzenie | The salon lets a fee go, with a reason |
 | Patch test | Test uczuleniowy | Allergy test before colour/lash/brow tint |
 | Consultation form | Formularz konsultacyjny | Signed client questionnaire |
 | Cash-up | Raport kasowy / Zamknięcie dnia | End-of-day takings check |
