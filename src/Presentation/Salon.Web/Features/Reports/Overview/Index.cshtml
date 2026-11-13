@@ -1,0 +1,235 @@
+@using System.Globalization
+@using NodaTime.Text
+@using Salon.Core.Reports
+@using Salon.Services.Reports
+@using Salon.Web.Features.Reports.Overview
+@model SalonReport
+@{
+    var culture = CultureInfo.CurrentCulture;
+    var period = Model.Period;
+    ViewData["Title"] = T["Reports.Title"];
+    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 bg-white px-3 py-2 text-base shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
+    const string primaryClass = "inline-flex min-h-11 w-full items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700 sm:w-auto";
+    const string presetClass = "inline-flex min-h-11 items-center justify-center rounded-md border px-3 py-2 text-base font-medium";
+    const string cardClass = "space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm";
+    const string listClass = "grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 text-base";
+    const string subheadClass = "pt-2 text-sm font-semibold text-stone-700";
+}
+@functions {
+    string Percent(decimal? rate) => rate is { } value ? T.Format("Reports.Percent", value.ToString("0.#", CultureInfo.CurrentCulture)) : T["Reports.NotKnown"];
+
+    static string Hours(int minutes) => (minutes / 60m).ToString("0.#", CultureInfo.CurrentCulture);
+}
+<section class="mx-auto max-w-2xl space-y-6">
+    <header class="space-y-3">
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Reports.Title"]</h1>
+        <p class="text-stone-600">@T["Reports.Lead"]</p>
+        <nav aria-label="@T["Reports.Period.Nav"]" class="grid grid-cols-2 gap-2 sm:grid-cols-4" data-testid="presets">
+            @foreach (var preset in Enum.GetValues<ReportPreset>())
+            {
+                var current = Model.Preset == preset;
+                <a href="@ReportsController.PresetPath(preset)" data-testid="preset-@preset" aria-current="@(current ? "page" : null)"
+                   class="@presetClass @(current ? "border-stone-900 bg-stone-900 text-white" : "border-stone-300 bg-white hover:bg-stone-100")">@T[$"Reports.Preset.{preset}"]</a>
+            }
+        </nav>
+        <details class="rounded-lg border border-stone-200 bg-white p-4" data-testid="custom-period" open="@(Model.Preset is null || Model.RangeRefused)">
+            <summary class="cursor-pointer text-base font-medium">@T["Reports.Period.Custom"]</summary>
+            <form method="get" action="@ReportsController.Path" class="mt-3 grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end" data-testid="period-form">
+                <div class="space-y-1">
+                    <label for="from" class="block text-sm font-medium">@T["Reports.Period.From"]</label>
+                    <input id="from" name="from" type="date" value="@LocalDatePattern.Iso.Format(period.From)" required class="@inputClass" data-testid="period-from" />
+                </div>
+                <div class="space-y-1">
+                    <label for="to" class="block text-sm font-medium">@T["Reports.Period.To"]</label>
+                    <input id="to" name="to" type="date" value="@LocalDatePattern.Iso.Format(period.To)" required class="@inputClass" data-testid="period-to" />
+                </div>
+                <button type="submit" class="@primaryClass" data-testid="period-show">@T["Reports.Period.Show"]</button>
+            </form>
+        </details>
+        @if (Model.RangeRefused)
+        {
+            <p role="alert" data-testid="error" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">@T.Format("Reports.Period.Refused", ReportRules.MaxDays)</p>
+        }
+        <p class="text-base font-medium sm:text-lg" data-testid="period" data-from="@LocalDatePattern.Iso.Format(period.From)" data-to="@LocalDatePattern.Iso.Format(period.To)">@T.Format("Reports.Period.Range", period.From.ToString("D", culture), period.To.ToString("D", culture))</p>
+    </header>
+
+    <section class="@cardClass" data-testid="takings">
+        <h2 class="text-lg font-semibold">@T["Reports.Takings.Title"]</h2>
+        @if (Model.Takings.ByMethod.Count == 0)
+        {
+            <p class="text-sm text-stone-600" data-testid="no-takings">@T["Reports.Takings.None"]</p>
+        }
+        else
+        {
+            <p class="flex items-baseline justify-between gap-4 rounded-md bg-stone-50 p-3">
+                <span class="text-sm text-stone-700">@T["Reports.Takings.Total"]</span>
+                <span class="text-xl font-bold tabular-nums" data-testid="takings-total">@Model.Takings.Total.ToDisplayString(culture)</span>
+            </p>
+            <h3 class="@subheadClass">@T["Reports.Takings.ByMethod"]</h3>
+            <dl class="@listClass">
+                @foreach (var total in Model.Takings.ByMethod)
+                {
+                    <dt>@T[$"Payments.Method.{total.Method}"]</dt>
+                    <dd class="text-right tabular-nums" data-testid="method-@total.Method">@total.Amount.ToDisplayString(culture)</dd>
+                }
+            </dl>
+            <h3 class="@subheadClass">@T["Reports.Takings.ByKind"]</h3>
+            <dl class="@listClass">
+                @foreach (var total in Model.Takings.ByKind)
+                {
+                    <dt>@T[$"Payments.Kind.{total.Kind}"]</dt>
+                    <dd class="text-right tabular-nums @(total.Amount.Amount < 0m ? "text-red-800" : string.Empty)" data-testid="kind-@total.Kind">@total.Amount.ToDisplayString(culture)</dd>
+                }
+            </dl>
+            <details data-testid="takings-by-day">
+                <summary class="cursor-pointer @subheadClass">@T["Reports.Takings.ByDay"]</summary>
+                <p class="pt-2 text-sm text-stone-600">@T["Reports.Takings.ByDayHint"]</p>
+                <ul class="mt-2 divide-y divide-stone-200 rounded-md border border-stone-200">
+                    @foreach (var day in Model.Takings.ByDay)
+                    {
+                        var iso = LocalDatePattern.Iso.Format(day.Day);
+                        <li class="flex items-center justify-between gap-4 px-3" data-testid="takings-day" data-day="@iso">
+                            <a href="@(ReportsController.TillPath + "?date=" + iso)" class="inline-flex min-h-11 items-center font-medium underline underline-offset-2">@day.Day.ToString("D", culture)</a>
+                            <span class="tabular-nums @(day.Amount.Amount < 0m ? "text-red-800" : string.Empty)">@day.Amount.ToDisplayString(culture)</span>
+                        </li>
+                    }
+                </ul>
+            </details>
+        }
+    </section>
+
+    <section class="@cardClass" data-testid="visits">
+        <h2 class="text-lg font-semibold">@T["Reports.Visits.Title"]</h2>
+        <dl class="@listClass">
+            <dt class="font-semibold">@T["Reports.Visits.Total"]</dt>
+            <dd class="text-right font-bold tabular-nums" data-testid="visits-total">@Model.Visits.Total</dd>
+            <dt>@T["Reports.Visits.Completed"]</dt>
+            <dd class="text-right tabular-nums" data-testid="visits-completed">@Model.Visits.Completed</dd>
+            <dt>@T["Reports.Visits.Open"]</dt>
+            <dd class="text-right tabular-nums" data-testid="visits-open">@Model.Visits.Open</dd>
+            <dt>@T["Reports.Visits.NoShows"]</dt>
+            <dd class="text-right tabular-nums" data-testid="visits-no-shows">@Model.Visits.NoShows</dd>
+            <dt>@T["Reports.Visits.CancelledByClient"]</dt>
+            <dd class="text-right tabular-nums" data-testid="visits-cancelled-client">@Model.Visits.CancelledByClient</dd>
+            <dt>@T["Reports.Visits.CancelledBySalon"]</dt>
+            <dd class="text-right tabular-nums" data-testid="visits-cancelled-salon">@Model.Visits.CancelledBySalon</dd>
+            <dt>@T["Reports.Visits.Online"]</dt>
+            <dd class="text-right tabular-nums" data-testid="visits-online">@Model.Visits.Online</dd>
+            <dt class="border-t border-stone-200 pt-2">
+                <span class="block font-semibold">@T["Reports.Visits.NoShowRate"]</span>
+                <span class="block text-sm text-stone-600">@T["Reports.Visits.NoShowRateHint"]</span>
+            </dt>
+            <dd class="border-t border-stone-200 pt-2 text-right font-bold tabular-nums" data-testid="no-show-rate">@Percent(Model.Visits.NoShowRate)</dd>
+            <dt class="font-semibold">@T["Reports.Visits.CompletedValue"]</dt>
+            <dd class="text-right font-bold tabular-nums" data-testid="completed-value">@Model.Visits.CompletedValue.ToDisplayString(culture)</dd>
+        </dl>
+    </section>
+
+    @if (Model.Fees.Added.Amount > 0m || Model.Fees.Waived.Amount > 0m || Model.Fees.Paid.Amount > 0m)
+    {
+        <section class="@cardClass" data-testid="fees">
+            <h2 class="text-lg font-semibold">@T["Reports.Fees.Title"]</h2>
+            <dl class="@listClass">
+                <dt>@T["Reports.Fees.Added"]</dt>
+                <dd class="text-right tabular-nums" data-testid="fees-added">@Model.Fees.Added.ToDisplayString(culture)</dd>
+                <dt>@T["Reports.Fees.Waived"]</dt>
+                <dd class="text-right tabular-nums" data-testid="fees-waived">@Model.Fees.Waived.ToDisplayString(culture)</dd>
+                <dt>@T["Reports.Fees.Paid"]</dt>
+                <dd class="text-right tabular-nums" data-testid="fees-paid">@Model.Fees.Paid.ToDisplayString(culture)</dd>
+            </dl>
+        </section>
+    }
+
+    <section class="@cardClass" data-testid="unpaid">
+        <h2 class="text-lg font-semibold">@T["Reports.Unpaid.Title"]</h2>
+        @if (Model.UnpaidCount == 0)
+        {
+            <p class="text-sm text-stone-600" data-testid="no-unpaid">@T["Reports.Unpaid.None"]</p>
+        }
+        else
+        {
+            <p role="status" class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" data-testid="unpaid-summary">@T.Format("Reports.Unpaid.Summary", Model.UnpaidCount, Model.UnpaidTotal.ToDisplayString(culture))</p>
+            <ul class="divide-y divide-stone-200 rounded-md border border-stone-200" data-testid="unpaid-list">
+                @foreach (var visit in Model.Unpaid)
+                {
+                    <li class="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between" data-testid="unpaid-visit">
+                        <span class="flex flex-col gap-0.5">
+                            <span class="font-medium">@visit.ClientName</span>
+                            <span class="text-sm text-stone-600">@visit.Start.Date.ToString("d", culture) @visit.Start.TimeOfDay.ToString("t", culture) · @visit.ServiceName</span>
+                        </span>
+                        <span class="flex items-center justify-between gap-3">
+                            <span class="tabular-nums font-medium" data-testid="unpaid-amount">@visit.Outstanding.ToDisplayString(culture)</span>
+                            <a href="@(ReportsController.CheckoutPath + visit.AppointmentId)" data-testid="unpaid-checkout" class="inline-flex min-h-11 items-center rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium hover:bg-stone-100">@T["Reports.Unpaid.Checkout"]<span class="sr-only">: @visit.ClientName, @visit.Start.Date.ToString("d", culture)</span></a>
+                        </span>
+                    </li>
+                }
+            </ul>
+            @if (Model.UnpaidCount > Model.Unpaid.Count)
+            {
+                <p class="text-sm text-stone-600" data-testid="unpaid-more">@T.Format("Reports.Unpaid.More", Model.Unpaid.Count)</p>
+            }
+        }
+    </section>
+
+    <section class="@cardClass" data-testid="top-services">
+        <h2 class="text-lg font-semibold">@T["Reports.Services.Title"]</h2>
+        @if (Model.TopServices.Count == 0)
+        {
+            <p class="text-sm text-stone-600">@T["Reports.Services.None"]</p>
+        }
+        else
+        {
+            <ol class="divide-y divide-stone-200 rounded-md border border-stone-200">
+                @foreach (var service in Model.TopServices)
+                {
+                    <li class="flex items-center justify-between gap-4 p-3" data-testid="top-service">
+                        <span class="flex min-w-0 flex-col gap-0.5">
+                            <span class="font-medium">@service.Name</span>
+                            <span class="text-sm text-stone-600">@T.Format("Reports.Services.Visits", service.Visits)</span>
+                        </span>
+                        <span class="tabular-nums font-medium">@service.Value.ToDisplayString(culture)</span>
+                    </li>
+                }
+            </ol>
+        }
+    </section>
+
+    <section class="@cardClass" data-testid="staff">
+        <h2 class="text-lg font-semibold">@T["Reports.Staff.Title"]</h2>
+        <p class="text-sm text-stone-600">@T["Reports.Staff.Hint"]</p>
+        @if (Model.Staff.Count == 0)
+        {
+            <p class="text-sm text-stone-600">@T["Reports.Staff.None"]</p>
+        }
+        else
+        {
+            <ul class="divide-y divide-stone-200 rounded-md border border-stone-200">
+                @foreach (var person in Model.Staff)
+                {
+                    <li class="space-y-2 p-3" data-testid="staff-line">
+                        <div class="flex items-center justify-between gap-4">
+                            <span class="flex min-w-0 flex-col gap-0.5">
+                                <span class="font-medium">@person.Name</span>
+                                <span class="text-sm text-stone-600">@T.Format("Reports.Services.Visits", person.Visits)</span>
+                            </span>
+                            <span class="tabular-nums font-medium">@person.Value.ToDisplayString(culture)</span>
+                        </div>
+                        @if (person.Utilisation is { } used)
+                        {
+                            <div class="flex items-center justify-between gap-4 text-sm">
+                                <span>@T["Reports.Staff.Utilisation"]</span>
+                                <span class="font-semibold tabular-nums" data-testid="utilisation">@Percent(used)</span>
+                            </div>
+                            <meter class="block h-3 w-full" min="0" max="100" value="@Math.Min(100m, used).ToString(CultureInfo.InvariantCulture)" aria-label="@T["Reports.Staff.Utilisation"]: @person.Name">@Percent(used)</meter>
+                            <p class="text-sm text-stone-600" data-testid="staff-hours">@T.Format("Reports.Staff.Booked", Hours(person.BookedMinutes), Hours(person.WorkingMinutes))</p>
+                        }
+                        else
+                        {
+                            <p class="text-sm text-stone-600" data-testid="staff-hours">@T.Format("Reports.Staff.NoHours", Hours(person.BookedMinutes))</p>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+</section>

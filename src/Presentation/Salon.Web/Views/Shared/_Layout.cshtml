@@ -58,6 +58,10 @@
                     {
                         <a href="/admin/payments/cash-up" data-testid="nav-cash-up" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.CashUp"]</a>
                     }
+                    @if (User.HasClaim(UserClaimTypes.Permission, Permissions.ReportsView) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView))
+                    {
+                        <a href="/admin/reports" data-testid="nav-reports" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Reports"]</a>
+                    }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.StaffManage))
                     {
                         <a href="/admin/staff" data-testid="nav-staff" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Staff"]</a>
