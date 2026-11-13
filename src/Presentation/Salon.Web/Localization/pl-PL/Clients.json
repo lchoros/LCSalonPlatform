@@ -160,5 +160,6 @@
   "Clients.Edit.DepositPercent": "Zadatek dla tego klienta (% ceny)",
   "Clients.Edit.DepositPercentHint": "Zostaw puste, aby stosować zasady usługi i salonu. 0: nigdy nie wymagaj zadatku od tego klienta; liczba: zawsze wymagaj.",
   "Clients.Edit.Validation.DepositPercentRange": "Zadatek musi mieścić się między 0 a 100 procent.",
-  "Clients.Fees.Deposits": "Zadatki"
+  "Clients.Fees.Deposits": "Zadatki",
+  "Clients.History.Payment": "Płatność"
 }

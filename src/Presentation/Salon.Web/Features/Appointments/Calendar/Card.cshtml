@@ -80,6 +80,10 @@
                 <dd data-testid="card-notes" class="whitespace-pre-line">@notes</dd>
             }
         </dl>
+        @if (card.Status is AppointmentStatus.Arrived or AppointmentStatus.Completed)
+        {
+            <a href="/admin/payments/checkout/@card.Id" data-testid="card-checkout-link" class="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700 sm:w-auto">@T["Appointments.Calendar.Card.Checkout"]</a>
+        }
         @if (card.ClientOwes is { } owes)
         {
             <p class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" data-testid="card-client-owes">
