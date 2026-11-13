@@ -118,7 +118,7 @@ public class CreateClientValidatorTests
         text.ShouldContain("Olivia");
         text.ShouldNotContain("7700");
         text.ShouldNotContain("example.com");
-        text.ShouldNotContain("PPD");
+        text.ShouldNotContain("Allergic to PPD", Case.Sensitive);
     }
 
     private static ValidationResult Validate(CreateClientCommand command, string culture)

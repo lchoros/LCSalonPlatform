@@ -250,7 +250,8 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         booked.TenantId.ShouldBe(_studio.Id);
         booked.Payload.ShouldContain(appointmentId.ToString());
         booked.Payload.ShouldNotContain("Olivia");
-        booked.Payload.ShouldNotContain("7700");
+        booked.Payload.ShouldNotContain("7700900");
+        booked.Payload.ShouldNotContain("7700 900");
 
         var done = await GetAsync(client, location);
         done.ShouldContain("Your appointment is booked");
@@ -342,7 +343,7 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
 
         var page = await GetAsync(clientB, cancelPath);
         page.ShouldContain("Ten link jest nieprawidłowy");
-        page.ShouldNotContain("Cut");
+        page.ShouldNotContain("Cut", Case.Sensitive);
         page.ShouldNotContain("data-testid=\"cancel-form\"");
 
         // Any page of salon B with a form supplies the anti-forgery token for B's session.

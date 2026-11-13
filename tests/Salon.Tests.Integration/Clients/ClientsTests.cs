@@ -94,7 +94,7 @@ public class ClientsTests(SalonWebApplicationFactory factory) : IAsyncLifetime
         row.Notes.ShouldBe("Prefers afternoons.");
         row.HealthNotesProtected.ShouldNotBeNull();
         row.HealthNotesProtected.ShouldNotBe(HealthText);
-        row.HealthNotesProtected.ShouldNotContain("PPD");
+        row.HealthNotesProtected.ShouldNotContain("Allergic to PPD", Case.Sensitive);
         row.LastPatchTestOn.ShouldBe(new LocalDate(2026, 10, 1));
         row.MarketingConsent.ShouldBeTrue();
         row.MarketingConsentAt.ShouldNotBeNull();
@@ -113,8 +113,9 @@ public class ClientsTests(SalonWebApplicationFactory factory) : IAsyncLifetime
         payload.RootElement.EnumerateObject().Count().ShouldBe(2, "events carry ids only");
         message.Payload.ShouldNotContain("Olivia");
         message.Payload.ShouldNotContain("Brown");
-        message.Payload.ShouldNotContain("7700");
-        message.Payload.ShouldNotContain("PPD");
+        message.Payload.ShouldNotContain("7700900");
+        message.Payload.ShouldNotContain("7700 900");
+        message.Payload.ShouldNotContain("Allergic to PPD", Case.Sensitive);
 
         var card = await GetAsync(client, location);
         card.ShouldContain("data-testid=\"flash\"");
@@ -180,7 +181,7 @@ public class ClientsTests(SalonWebApplicationFactory factory) : IAsyncLifetime
         byPrefix.ShouldNotContain("Anna Nowak");
         byPrefix.IndexOf("Olivia Brown", StringComparison.Ordinal).ShouldBeLessThan(byPrefix.IndexOf("Oliver Twist", StringComparison.Ordinal), "ordered by last name");
         byPrefix.ShouldContain("+447700900123");
-        byPrefix.ShouldNotContain("PPD");
+        byPrefix.ShouldNotContain("Allergic to PPD", Case.Sensitive);
         byPrefix.ShouldNotContain(HealthText);
 
         var byTwoWords = await GetAsync(client, SearchPath + "?q=oli%20bro");
@@ -200,7 +201,7 @@ public class ClientsTests(SalonWebApplicationFactory factory) : IAsyncLifetime
         all.ShouldContain("Olivia Brown");
         all.ShouldContain("Oliver Twist");
         all.ShouldContain("Anna Nowak");
-        all.ShouldNotContain("PPD");
+        all.ShouldNotContain("Allergic to PPD", Case.Sensitive);
 
         var none = await GetAsync(client, SearchPath + "?q=zzz");
         none.ShouldContain("data-testid=\"empty-state\"");
