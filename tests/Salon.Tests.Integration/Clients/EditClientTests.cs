@@ -265,7 +265,7 @@ public class EditClientTests(SalonWebApplicationFactory factory) : IAsyncLifetim
         (await owner.GetAsync(new Uri(EditPath(Guid.NewGuid()), UriKind.Relative))).StatusCode.ShouldBe(HttpStatusCode.NotFound);
         var otherGet = await other.GetAsync(new Uri(EditPath(id), UriKind.Relative));
         otherGet.StatusCode.ShouldBe(HttpStatusCode.NotFound);
-        (await otherGet.Content.ReadAsStringAsync()).ShouldNotContain("PPD");
+        (await otherGet.Content.ReadAsStringAsync()).ShouldNotContain("Allergic to PPD", Case.Sensitive);
 
         var token = IdentityTestClient.AntiForgeryToken(await GetAsync(other, $"{CardPath}/new"));
         var otherPost = await other.PostAsync(

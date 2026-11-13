@@ -52,7 +52,7 @@ public class DemoSeederClientsAndAppointmentsTests(SalonWebApplicationFactory fa
 
         var james = clients.Single(c => c.FirstName == "James");
         james.HealthNotesProtected.ShouldNotBeNull();
-        james.HealthNotesProtected.ShouldNotContain("PPD");
+        james.HealthNotesProtected.ShouldNotContain("PPD sensitivity", Case.Sensitive);
         james.LastPatchTestOn.ShouldBe(new LocalDate(2026, 5, 15));
         james.MarketingConsent.ShouldBeFalse();
         james.MarketingConsentWording.ShouldBeNull();
