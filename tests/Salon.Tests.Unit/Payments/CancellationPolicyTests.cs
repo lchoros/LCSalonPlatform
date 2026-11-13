@@ -123,11 +123,11 @@ public class CancellationPolicyTests
     }
 
     [Fact]
-    public void Every_kind_of_line_is_either_a_fee_or_what_settles_one()
+    public void Every_kind_of_line_is_a_fee_what_settles_one_or_a_deposit()
     {
         foreach (var kind in Enum.GetValues<ClientAccountEntryKind>())
         {
-            (ClientAccountRules.IsFee(kind) ^ ClientAccountRules.IsSettlement(kind)).ShouldBeTrue(kind.ToString());
+            new[] { ClientAccountRules.IsFee(kind), ClientAccountRules.IsSettlement(kind), ClientAccountRules.IsDeposit(kind) }.Count(family => family).ShouldBe(1, kind.ToString());
         }
     }
 }

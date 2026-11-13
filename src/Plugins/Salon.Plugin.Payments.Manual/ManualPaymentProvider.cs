@@ -21,6 +21,9 @@ public sealed class ManualPaymentProvider(ILogger<ManualPaymentProvider> logger)
     public Task<PaymentResult> RecordDepositAsync(PaymentRequest request, CancellationToken cancellationToken = default)
         => Record("deposit", request);
 
+    public Task<PaymentResult> RecordDepositReturnAsync(PaymentRequest request, CancellationToken cancellationToken = default)
+        => Record("deposit-return", request);
+
     public Task<PaymentResult> RecordInSalonPaymentAsync(PaymentRequest request, CancellationToken cancellationToken = default)
         => Record("payment", request);
 

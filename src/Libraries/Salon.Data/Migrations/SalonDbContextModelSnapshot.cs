@@ -58,6 +58,13 @@ namespace Salon.Data.Migrations
                         .HasColumnType("character varying(3)")
                         .HasColumnName("currency");
 
+                    b.Property<decimal>("DepositAmount")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("deposit_amount");
+
                     b.Property<int>("DurationMinutes")
                         .HasColumnType("integer")
                         .HasColumnName("duration_minutes");
@@ -305,6 +312,11 @@ namespace Salon.Data.Migrations
                         .HasColumnType("character varying(3)")
                         .HasColumnName("currency");
 
+                    b.Property<decimal?>("DepositPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("deposit_percent");
+
                     b.Property<string>("Description")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
@@ -466,6 +478,11 @@ namespace Salon.Data.Migrations
                     b.Property<Instant>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
+
+                    b.Property<decimal?>("DepositPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("deposit_percent");
 
                     b.Property<string>("Email")
                         .HasMaxLength(254)
@@ -896,6 +913,16 @@ namespace Salon.Data.Migrations
 
                     b.HasIndex("TenantId", "ClientId", "At")
                         .HasDatabaseName("ix_client_account_entries_tenant_id_client_id_at");
+
+                    b.HasIndex(new[] { "TenantId", "AppointmentId" }, "OneDepositPerAppointment")
+                        .IsUnique()
+                        .HasDatabaseName("ux_client_account_entries_one_deposit_per_appointment")
+                        .HasFilter("kind = 5");
+
+                    b.HasIndex(new[] { "TenantId", "RelatedEntryId" }, "OneReturnPerDeposit")
+                        .IsUnique()
+                        .HasDatabaseName("ux_client_account_entries_one_return_per_deposit")
+                        .HasFilter("kind = 6");
 
                     b.ToTable("client_account_entries", "salon", t =>
                         {

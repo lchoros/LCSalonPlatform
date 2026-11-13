@@ -47,6 +47,12 @@ public class Appointment : BaseEntity, ITenantEntity
     /// <summary>ISO 4217 code of <see cref="PriceAmount"/>.</summary>
     public required string Currency { get; set; }
 
+    /// <summary>
+    /// The deposit asked for when the visit was booked (ADR 0023), in <see cref="Currency"/>; 0 means none. A snapshot like
+    /// the price: later changes to the rules do not rewrite it. Whether it was received is on the client's account.
+    /// </summary>
+    public decimal DepositAmount { get; set; }
+
     /// <summary>Duration of the service when it was booked.</summary>
     public int DurationMinutes { get; set; }
 

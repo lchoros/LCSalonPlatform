@@ -41,6 +41,12 @@ public interface IClientService
     /// <summary>Grants consent with the exact wording shown and the current instant, or withdraws it and clears both.</summary>
     Task SetMarketingConsentAsync(Guid clientId, bool granted, string? wording, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Sets the client's own deposit percentage (ADR 0023): null follows the service and the salon, 0 never asks for a
+    /// deposit. Throws <see cref="ArgumentOutOfRangeException"/> outside 0 to 100.
+    /// </summary>
+    Task SetDepositPercentAsync(Guid clientId, decimal? percent, CancellationToken cancellationToken = default);
+
     /// <summary>Updates client details (name, phone, email, notes) ensuring uniqueness within the tenant.</summary>
     Task UpdateDetailsAsync(Guid clientId, string firstName, string lastName, string? phone, string? email, string? notes, CancellationToken cancellationToken = default);
 
@@ -106,7 +112,8 @@ public sealed record ClientCard(
     Instant CreatedAt,
     Instant UpdatedAt,
     Guid? MergedIntoClientId = null,
-    Instant? MergedAt = null)
+    Instant? MergedAt = null,
+    decimal? DepositPercent = null)
 {
     public string FullName => $"{FirstName} {LastName}";
 
