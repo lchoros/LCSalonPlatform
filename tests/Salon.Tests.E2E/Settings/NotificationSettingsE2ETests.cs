@@ -9,7 +9,7 @@ namespace Salon.Tests.E2E.Settings;
 
 /// <summary>
 /// The demo owner on a phone opens Settings from the admin nav, changes both reminder lead times and the quiet hours,
-/// saves, and sees the confirmation with the new values (ADR 0020). 390 px, axe clean, no horizontal scroll.
+/// switches emails off (ADR 0025), saves, and sees the confirmation with the new values (ADR 0020). 390 px, axe clean, no horizontal scroll.
 /// </summary>
 public class NotificationSettingsE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppFixture>
 {
@@ -43,6 +43,7 @@ public class NotificationSettingsE2ETests(KestrelAppFixture app) : IClassFixture
         var first = Random.Shared.Next(30, 60);
         var second = Random.Shared.Next(3, 9);
         await page.GetByTestId("reminders-enabled").CheckAsync();
+        await page.GetByTestId("email-enabled").UncheckAsync();
         await page.GetByTestId("FirstReminderHours").FillAsync(first.ToString(System.Globalization.CultureInfo.InvariantCulture));
         await page.GetByTestId("SecondReminderHours").FillAsync(second.ToString(System.Globalization.CultureInfo.InvariantCulture));
         await page.GetByTestId("QuietFrom").FillAsync("22:00");
@@ -56,6 +57,7 @@ public class NotificationSettingsE2ETests(KestrelAppFixture app) : IClassFixture
         (await page.GetByTestId("QuietFrom").InputValueAsync()).ShouldBe("22:00");
         (await page.GetByTestId("QuietTo").InputValueAsync()).ShouldBe("07:30");
         (await page.GetByTestId("reminders-enabled").IsCheckedAsync()).ShouldBeTrue();
+        (await page.GetByTestId("email-enabled").IsCheckedAsync()).ShouldBeFalse("emails were switched off and the page shows what is saved");
         if (styled)
         {
             (await page.GetByTestId("save-notification-settings").BoundingBoxAsync()).ShouldNotBeNull().Height.ShouldBeGreaterThanOrEqualTo(44);

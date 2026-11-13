@@ -38,4 +38,10 @@ public class OutboxMessage : BaseEntity
 
     /// <summary>Earliest time for the next attempt; null means as soon as possible.</summary>
     public Instant? NextAttemptAt { get; set; }
+
+    /// <summary>
+    /// Full type names of the consumers that have handled this event (ADR 0025). When one consumer fails and the row is
+    /// retried, these are skipped, so a client is not texted again because the email after it could not be sent.
+    /// </summary>
+    public List<string> CompletedConsumers { get; set; } = [];
 }

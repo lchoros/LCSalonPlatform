@@ -23,7 +23,7 @@ namespace Salon.Services.Notifications;
 public interface IAppointmentReminderService
 {
     /// <summary>
-    /// Sends every reminder due at <paramref name="now"/> and returns how many SMS were handed to the provider. Safe to
+    /// Sends every reminder due at <paramref name="now"/> and returns how many visits were reminded (by SMS, email or both). Safe to
     /// call as often as wanted and from several workers: each reminder is claimed by a unique row before it is sent.
     /// </summary>
     Task<int> SendDueAsync(Instant now, CancellationToken cancellationToken = default);
@@ -34,9 +34,9 @@ internal sealed class AppointmentReminderService(
     ITenantContext tenantContext,
     ITenantLookup tenantLookup,
     ISettingService settings,
-    IMessageTemplateService templates,
+    AppointmentMessageReader reader,
+    AppointmentNotifier notifier,
     IPublicUrlBuilder urls,
-    ISmsSender sms,
     ILogger<AppointmentReminderService> logger) : IAppointmentReminderService
 {
     public async Task<int> SendDueAsync(Instant now, CancellationToken cancellationToken = default)
@@ -125,41 +125,45 @@ internal sealed class AppointmentReminderService(
             return false;
         }
 
-        var client = await db.Clients.AsNoTracking()
-            .Where(c => c.Id == appointment.ClientId)
-            .Select(c => new { c.FirstName, c.Phone })
-            .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(client?.Phone))
+        var data = await reader.ReadAsync(appointment.Id, cancellationToken).ConfigureAwait(false);
+        if (data is null || (data.ClientPhone is null && data.ClientEmail is null))
         {
             await FinishAsync(claim, ReminderOutcome.NoPhone, cancellationToken).ConfigureAwait(false);
             return false;
         }
 
-        try
-        {
-            var serviceName = await db.Services.AsNoTracking().Where(s => s.Id == appointment.ServiceId).Select(s => s.Name).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
-            var staffName = await db.StaffMembers.AsNoTracking().Where(s => s.Id == appointment.StaffMemberId).Select(s => s.DisplayName).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
-            // Admin bookings have no public page yet (ADR 0014); their link leads to the salon's booking page instead.
-            var link = appointment.PublicToken is { } token ? urls.CancelBookingUrl(tenant.Slug, token) : urls.BookingUrl(tenant.Slug);
-            var tokens = BookingSmsTokens.Confirmation(tenant.Name, client.FirstName, serviceName, staffName, appointment.Start, zone, CultureInfo.GetCultureInfo(tenant.Culture), link);
-            var rendered = await templates.RenderAsync(MessageTemplateCatalog.BookingReminder, MessageChannel.Sms, tenant.Culture, tokens, cancellationToken).ConfigureAwait(false);
-            if (!rendered.IsComplete)
-            {
-                logger.LogWarning("Reminder template for tenant {TenantId} has unresolved tokens: {Tokens}", tenant.Id, string.Join(", ", rendered.MissingTokens));
-            }
+        // Admin bookings have no public page yet (ADR 0014); their link leads to the salon's booking page instead.
+        var link = appointment.PublicToken is { } token ? urls.CancelBookingUrl(tenant.Slug, token) : urls.BookingUrl(tenant.Slug);
+        var tokens = BookingSmsTokens.Confirmation(tenant.Name, data.ClientFirstName, data.ServiceName, data.StaffName, appointment.Start, zone, CultureInfo.GetCultureInfo(tenant.Culture), link);
 
-            await sms.SendAsync(new SmsMessage(client.Phone, rendered.Body), cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        // Each channel on its own (ADR 0025): a mail server that is down must not cost the client their text, or the
+        // other way round. Not retried: the claim stays, so the client can at worst miss this reminder, never get it twice.
+        var handed = 0;
+        var failed = 0;
+        foreach (var channel in new[] { MessageChannel.Sms, MessageChannel.Email })
         {
-            // Not retried: the claim stays, so the client can at worst miss this reminder, never get it twice.
-            logger.LogError(ex, "Reminder {Kind} for appointment {AppointmentId} could not be sent", kind, appointment.Id);
-            await FinishAsync(claim, ReminderOutcome.Failed, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                if (await notifier.SendAsync(channel, MessageTemplateCatalog.BookingReminder, data, tokens, cancellationToken).ConfigureAwait(false))
+                {
+                    handed++;
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                failed++;
+                logger.LogError(ex, "Reminder {Kind} for appointment {AppointmentId} could not be sent by {Channel}", kind, appointment.Id, channel);
+            }
+        }
+
+        if (handed == 0)
+        {
+            // Nothing went out: a sender threw, or the only address is an email and the salon has emails switched off.
+            await FinishAsync(claim, failed > 0 ? ReminderOutcome.Failed : ReminderOutcome.NoPhone, cancellationToken).ConfigureAwait(false);
             return false;
         }
 
         await FinishAsync(claim, ReminderOutcome.Sent, cancellationToken).ConfigureAwait(false);
-        logger.LogInformation("Reminder {Kind} for appointment {AppointmentId} handed to {Provider}", kind, appointment.Id, sms.SystemName);
         return true;
     }
 

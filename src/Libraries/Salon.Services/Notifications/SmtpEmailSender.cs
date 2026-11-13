@@ -30,6 +30,7 @@ internal sealed class SmtpEmailSender(IOptions<EmailOptions> options, ILogger<Sm
         await client.SendAsync(new SendRequest(mime), cancellationToken);
         await client.DisconnectAsync(quit: true, cancellationToken);
 
-        logger.LogInformation("Email sent to {To}: {Subject}", message.To, message.Subject);
+        // The address is personal data; the log says that a message went, not to whom.
+        logger.LogInformation("Email handed to {Host}:{Port}", settings.Host, settings.Port);
     }
 }

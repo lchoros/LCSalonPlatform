@@ -34,5 +34,7 @@
   "Settings.CancellationPolicy.Validation.PercentRange": "Procent musi być między 0 a 100.",
   "Settings.CancellationPolicy.Validation.LateFeeNeedsNotice": "Opłata za późne odwołanie wymaga terminu: ustaw liczbę godzin większą niż 0.",
   "Settings.CancellationPolicy.Deposit": "Zadatek (% ceny)",
-  "Settings.CancellationPolicy.DepositHint": "Wymagany przy rezerwacji wizyty. 0 oznacza brak zadatku. Usługa lub klient mogą mieć własną zasadę."
+  "Settings.CancellationPolicy.DepositHint": "Wymagany przy rezerwacji wizyty. 0 oznacza brak zadatku. Usługa lub klient mogą mieć własną zasadę.",
+  "Settings.Notifications.EmailEnabled": "Wysyłaj też e-maile",
+  "Settings.Notifications.EmailHint": "Potwierdzenia, przypomnienia oraz wiadomości o odwołanej lub przeniesionej wizycie trafiają także na adres e-mail z karty klienta. SMS-y są wysyłane niezależnie od tego."
 }

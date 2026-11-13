@@ -34,5 +34,7 @@
   "Settings.CancellationPolicy.Validation.PercentRange": "The percentage must be between 0 and 100.",
   "Settings.CancellationPolicy.Validation.LateFeeNeedsNotice": "A late cancellation fee needs a notice period: set the hours above 0.",
   "Settings.CancellationPolicy.Deposit": "Deposit (% of the price)",
-  "Settings.CancellationPolicy.DepositHint": "Asked for when a visit is booked. 0 means no deposit. A service or a client can have their own rule."
+  "Settings.CancellationPolicy.DepositHint": "Asked for when a visit is booked. 0 means no deposit. A service or a client can have their own rule.",
+  "Settings.Notifications.EmailEnabled": "Also email clients",
+  "Settings.Notifications.EmailHint": "Confirmations, reminders and messages about a cancelled or moved visit also go to the email address on the client card. Texts are sent either way."
 }

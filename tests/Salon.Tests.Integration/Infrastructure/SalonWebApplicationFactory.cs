@@ -73,6 +73,9 @@ public sealed class SalonWebApplicationFactory : WebApplicationFactory<Program>,
 
         // Tenant rows are cached by slug and id; test classes reuse slugs, so a reset must also forget the old ids.
         await Services.GetRequiredService<IStaticCacheManager>().ClearAsync();
+
+        // Emails of the previous test are gone and the pretend mail server is up again.
+        Services.GetRequiredService<RecordingEmailSender>().Clear();
     }
 
     /// <summary>Opens a DI scope whose tenant context is already set, as the middleware would for a request.</summary>
@@ -116,9 +119,15 @@ public sealed class SalonWebApplicationFactory : WebApplicationFactory<Program>,
             services.RemoveAll<ISmsSender>();
             services.AddSingleton<RecordingSmsSender>();
             services.AddSingleton<ISmsSender>(sp => sp.GetRequiredService<RecordingSmsSender>());
+            services.RemoveAll<IEmailSender>();
+            services.AddSingleton<RecordingEmailSender>();
+            services.AddSingleton<IEmailSender>(sp => sp.GetRequiredService<RecordingEmailSender>());
         });
     }
 
     /// <summary>Every SMS the host "sent" since the last <see cref="RecordingSmsSender.Clear"/>.</summary>
     public RecordingSmsSender Sms => Services.GetRequiredService<RecordingSmsSender>();
+
+    /// <summary>Every email the host "sent" since the last <see cref="RecordingEmailSender.Clear"/>; nothing reaches an SMTP server.</summary>
+    public RecordingEmailSender Emails => Services.GetRequiredService<RecordingEmailSender>();
 }

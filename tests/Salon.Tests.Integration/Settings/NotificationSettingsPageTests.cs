@@ -125,6 +125,40 @@ public class NotificationSettingsPageTests(SalonWebApplicationFactory factory) :
     }
 
     [Fact]
+    public async Task Emails_are_on_by_default_and_the_tick_box_switches_them_off_and_on()
+    {
+        using var client = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Owner);
+
+        var html = await GetAsync(client);
+        Input(html, "EmailEnabled").ShouldContain("checked");
+        html.ShouldContain("Also email clients");
+
+        // An unticked box posts nothing: emails off.
+        (await PostAsync(client, new()
+        {
+            ["RemindersEnabled"] = "true",
+            ["FirstReminderHours"] = "24",
+            ["SecondReminderHours"] = "2",
+            ["QuietFrom"] = "21:00",
+            ["QuietTo"] = "08:00",
+        })).StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        (await LoadAsync(_studio.Id)).EmailEnabled.ShouldBeFalse();
+        Input(await GetAsync(client), "EmailEnabled").ShouldNotContain("checked", Case.Sensitive, "the box shows what is saved");
+
+        (await PostAsync(client, new()
+        {
+            ["RemindersEnabled"] = "true",
+            ["EmailEnabled"] = "true",
+            ["FirstReminderHours"] = "24",
+            ["SecondReminderHours"] = "2",
+            ["QuietFrom"] = "21:00",
+            ["QuietTo"] = "08:00",
+        })).StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        (await LoadAsync(_studio.Id)).EmailEnabled.ShouldBeTrue();
+        (await LoadAsync(_polish.Id)).EmailEnabled.ShouldBeTrue("the other salon was never touched");
+    }
+
+    [Fact]
     public async Task The_page_speaks_the_salon_language()
     {
         using var client = await factory.SignedInClientAsync(HostB, _polish.Id, Role.Owner);

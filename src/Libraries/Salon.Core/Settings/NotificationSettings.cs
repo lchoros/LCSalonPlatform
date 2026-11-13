@@ -13,6 +13,12 @@ public sealed class NotificationSettings : ISettings
 
     public bool RemindersEnabled { get; set; } = true;
 
+    /// <summary>
+    /// Also email the client (ADR 0025): confirmations, reminders and the messages for a cancelled or moved visit go to
+    /// the address on the card as well as by SMS. Off means SMS only.
+    /// </summary>
+    public bool EmailEnabled { get; set; } = true;
+
     /// <summary>Hours before the visit for the first reminder; 0 switches it off.</summary>
     public int FirstReminderHours { get; set; } = 24;
 

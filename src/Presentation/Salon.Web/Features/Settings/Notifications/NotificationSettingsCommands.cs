@@ -13,14 +13,15 @@ public sealed record GetNotificationSettingsQuery : IQuery<SaveNotificationSetti
 
 /// <summary>
 /// The reminder form as posted: hours as numbers, quiet hours as HH:mm text so that a browser without a time picker
-/// still works. <see cref="SaveNotificationSettingsValidator"/> holds the rules.
+/// still works, and whether clients are emailed as well as texted (ADR 0025; a tick box, so absent means off). <see cref="SaveNotificationSettingsValidator"/> holds the rules.
 /// </summary>
 public sealed record SaveNotificationSettingsCommand(
     bool RemindersEnabled,
     int? FirstReminderHours,
     int? SecondReminderHours,
     string? QuietFrom,
-    string? QuietTo) : ICommand<bool>
+    string? QuietTo,
+    bool EmailEnabled) : ICommand<bool>
 {
     public LocalTime? ParsedQuietFrom => WorkingHoursRules.TryParseTime(QuietFrom);
 
@@ -34,7 +35,8 @@ public sealed record SaveNotificationSettingsCommand(
             settings.FirstReminderHours,
             settings.SecondReminderHours,
             Format(settings.QuietHoursStartMinute),
-            Format(settings.QuietHoursEndMinute));
+            Format(settings.QuietHoursEndMinute),
+            settings.EmailEnabled);
     }
 
     private static string Format(int minuteOfDay)
