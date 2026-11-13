@@ -217,7 +217,15 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
     /// <paramref name="lastName"/>, the salon's first service and first bookable person, still "booked". Written straight
     /// to the tables because the past has no free slots to book through the service.
     /// </summary>
-    public async Task<(Guid AppointmentId, Guid ClientId, decimal Price)> AddUnmarkedPastVisitAsync(Guid tenantId, string firstName, string lastName)
+    public Task<(Guid AppointmentId, Guid ClientId, decimal Price)> AddUnmarkedPastVisitAsync(Guid tenantId, string firstName, string lastName)
+        => AddVisitAsync(tenantId, firstName, lastName, -Duration.FromDays(3), deposit: 0m);
+
+    /// <summary>
+    /// A booked visit of a new client <paramref name="fromNow"/> away (negative for the past) that asks for
+    /// <paramref name="deposit"/>, written straight to the tables. Call after <see cref="EnsureDemoStaffAsync"/>, which
+    /// clears earlier visits, so two runs never overlap.
+    /// </summary>
+    public async Task<(Guid AppointmentId, Guid ClientId, decimal Price)> AddVisitAsync(Guid tenantId, string firstName, string lastName, Duration fromNow, decimal deposit)
     {
         using var scope = _factory.Services.CreateScope();
         scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
@@ -226,7 +234,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         var service = await db.Services.AsNoTracking().Where(s => s.IsActive).OrderBy(s => s.Name).FirstAsync();
         var staffId = await db.StaffMembers.AsNoTracking().Where(s => s.IsActive && s.IsBookable).OrderBy(s => s.SortOrder).Select(s => s.Id).FirstAsync();
         var client = new Core.Clients.Client { FirstName = firstName, LastName = lastName, CreatedAt = now, UpdatedAt = now };
-        var start = now - Duration.FromDays(3);
+        var start = now + fromNow;
         var appointment = new Appointment
         {
             TenantId = tenantId,
@@ -238,6 +246,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
             Status = AppointmentStatus.Booked,
             Source = AppointmentSource.Admin,
             PriceAmount = service.Price,
+            DepositAmount = deposit,
             Currency = service.Currency,
             DurationMinutes = (int)service.Duration.TotalMinutes,
             CreatedAt = start - Duration.FromDays(1),
