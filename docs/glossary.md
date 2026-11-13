@@ -3,7 +3,7 @@
 | Term | Polish | Meaning in code |
 | --- | --- | --- |
 | Salon / Tenant | Salon | `Tenant` — one business account |
-| Location | Lokalizacja | `Location` — a physical salon address |
+| Location | Lokalizacja | `Location` — a physical salon address with phone and email; the first active one is the salon's main location (ADR 0027) |
 | Staff member | Pracownik / Specjalista | `StaffMember` — bookable person |
 | Service | Usługa | `Service` — e.g. "Women's cut & blow-dry" |
 | Processing time | Czas działania (np. farby) | Gap inside a service when the stylist is free |

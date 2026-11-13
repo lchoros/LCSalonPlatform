@@ -125,4 +125,5 @@
             @(s.RequireSmsVerification ? T["Booking.Public.SendCode"] : T["Booking.Public.Book"])
         </button>
     </form>
+    @await Component.InvokeAsync("SalonContact")
 </section>

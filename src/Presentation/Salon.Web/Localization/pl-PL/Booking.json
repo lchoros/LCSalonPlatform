@@ -82,5 +82,8 @@
   "Booking.Public.Deposit.Due": "Tę wizytę zabezpiecza zadatek {0}. Salon poinformuje Cię, jak go wpłacić.",
   "Booking.Public.Deposit.DueFrom": "Tę wizytę zabezpiecza zadatek od {0}. Salon poinformuje Cię, jak go wpłacić.",
   "Booking.Public.Done.Deposit": "Zadatek",
-  "Booking.Public.Deposit.Note": "Salon poinformuje Cię, jak go wpłacić."
+  "Booking.Public.Deposit.Note": "Salon poinformuje Cię, jak go wpłacić.",
+  "Booking.Contact.Title": "Gdzie nas znaleźć",
+  "Booking.Contact.Map": "Otwórz w mapach",
+  "Booking.Contact.Call": "Zadzwoń: {0}"
 }

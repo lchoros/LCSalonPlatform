@@ -8,6 +8,7 @@ using NodaTime;
 using Salon.Core.Appointments;
 using Salon.Core.Catalog;
 using Salon.Core.Identity;
+using Salon.Core.Locations;
 using Salon.Core.Staff;
 using Salon.Core.Tenancy;
 using Salon.Data;
@@ -132,6 +133,11 @@ public sealed class DemoSeeder(
                         logger.LogInformation("Seeded {Count} demo staff into the existing tenant {Slug}", Staff.Length, Slug);
                     }
 
+                    if (await SeedLocationAsync(tenantDb, ct).ConfigureAwait(false))
+                    {
+                        logger.LogInformation("Seeded the demo address into the existing tenant {Slug}", Slug);
+                    }
+
                     if (await SeedCategoriesAsync(tenantDb, ct).ConfigureAwait(false))
                     {
                         logger.LogInformation("Seeded {Count} demo categories into the existing tenant {Slug}", Categories.Length, Slug);
@@ -190,6 +196,7 @@ public sealed class DemoSeeder(
 
             await db.SaveChangesAsync(ct).ConfigureAwait(false);
             await SeedCategoriesAsync(db, ct).ConfigureAwait(false);
+            await SeedLocationAsync(db, ct).ConfigureAwait(false);
             await SeedStaffAsync(db, ct).ConfigureAwait(false);
             await SeedStaffOverridesAsync(db, ct).ConfigureAwait(false);
             await SeedUsersAsync(provider.GetRequiredService<IUserService>(), ct).ConfigureAwait(false);
@@ -234,6 +241,31 @@ public sealed class DemoSeeder(
             service.ProcessingStartsAfterMinutes = demo.ProcessingStartsAfter;
         }
 
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return true;
+    }
+
+    /// <summary>
+    /// Gives the salon in scope an address and a phone number when it has no location at all (ADR 0027); returns false
+    /// otherwise. The street is made up and the number is from the range Ofcom keeps for drama, so it reaches nobody.
+    /// </summary>
+    private async Task<bool> SeedLocationAsync(SalonDbContext db, CancellationToken cancellationToken)
+    {
+        if (await db.Locations.AnyAsync(cancellationToken).ConfigureAwait(false))
+        {
+            return false;
+        }
+
+        var now = clock.GetCurrentInstant();
+        db.Locations.Add(new Location
+        {
+            AddressLine1 = "20 Example Street",
+            City = "London",
+            Postcode = "N1 9GU",
+            Phone = "020 7946 0020",
+            CreatedAt = now,
+            UpdatedAt = now,
+        });
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return true;
     }

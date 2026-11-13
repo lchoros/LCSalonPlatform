@@ -1,6 +1,6 @@
 # Manual test: M2 money and messages
 
-For the owner, after PRs #65, #66 and #67 are merged (section L also needs #68). About 45 minutes. Tick a box when the step behaves as written.
+For the owner, after PRs #65, #66 and #67 are merged (section L also needs #68, section M #69). About 45 minutes. Tick a box when the step behaves as written.
 If a step does not, note its number (for example "D4") and what you saw; that is all an agent needs to find it.
 
 Nothing here charges a card or sends a real text or email. Texts and emails land in Mailpit.
@@ -154,6 +154,21 @@ Sign out and in again first: the "Reports" link needs a permission your old sess
 - [ ] L7. Sign in as `desk@studio-20.local`: no "Reports" in the menu, and `/admin/reports` typed by hand goes to
       "access denied".
 - [ ] L8. `/admin/reports?culture=pl-PL`: "Raporty", "Utarg", "Obłożenie"; no English left.
+
+## M. Salon address (after PR #69 is merged too)
+- [ ] M1. Settings has a third tab, "Salon details". The demo salon already has "20 Example Street, London, N1 9GU"
+      and the phone number 020 7946 0020.
+- [ ] M2. Clear the address and save: "Enter the address." appears next to the field. Type "ask at the desk" as the
+      phone number and save: it is refused with an example. Nothing was changed.
+- [ ] M3. Enter your own address, phone number and email and save. You see "The salon details have been saved."
+- [ ] M4. Public tab, `/book`: under the services there is "Where to find us" with the address on one line,
+      "Open in maps", "Call …" and the email address. "Open in maps" opens a map of the address in a new tab.
+- [ ] M5. Book online with an email address. The details page and the confirmation page show the same block. The
+      confirmation **email** in Mailpit ends with the salon's name, the address and the phone number. The **text**
+      does not mention the address.
+- [ ] M6. Open the cancel link from the text: the page offers the phone number to call.
+- [ ] M7. As `desk@studio-20.local` there is no Settings menu, and `/admin/settings/salon-details` goes to
+      "access denied".
 
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the

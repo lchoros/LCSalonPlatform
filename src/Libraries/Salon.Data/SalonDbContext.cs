@@ -9,6 +9,7 @@ using Salon.Core.Catalog;
 using Salon.Core.Clients;
 using Salon.Core.Events;
 using Salon.Core.Identity;
+using Salon.Core.Locations;
 using Salon.Core.Messaging;
 using Salon.Core.Notifications;
 using Salon.Core.Payments;
@@ -72,6 +73,9 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
 
     /// <summary>One end-of-day count of the cash drawer per salon and day (ADR 0024).</summary>
     public DbSet<CashUp> CashUps => Set<CashUp>();
+
+    /// <summary>Where the salon is; the first active row is the main location (ADR 0027).</summary>
+    public DbSet<Location> Locations => Set<Location>();
 
     /// <summary>Per-tenant overrides of the embedded message template defaults (ADR 0008).</summary>
     public DbSet<MessageTemplate> MessageTemplates => Set<MessageTemplate>();

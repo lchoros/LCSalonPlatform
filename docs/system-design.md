@@ -65,7 +65,8 @@ salon), `clients` (RLS, ADR 0011; health notes as Data Protection cipher text), 
 member, `client_id` FK to `clients` with Restrict), `client_account_entries` (RLS, ADR 0022 and 0023; append-only fee,
 settlement, deposit and visit-payment lines, partial unique indexes for one fee, one deposit and one payment per visit,
 one settlement per fee and one return per deposit; `appointments.deposit_amount`, `services.deposit_percent` and `clients.deposit_percent` carry the
-deposit rules), `cash_ups` (RLS, ADR 0024; one end-of-day count per salon and day), `outbox_messages` (no RLS,
+deposit rules), `cash_ups` (RLS, ADR 0024; one end-of-day count per salon and day), `locations` (RLS, ADR 0027; the first active
+row is the salon's main location), `outbox_messages` (no RLS,
 see §3). The demo salon also gets three
 staff with weekly hours (Anna Kowalska, Tom Reed, Priya Shah), twelve clients and a few appointments over the coming
 working days.
@@ -109,6 +110,10 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
 - `Clients/ImportClients` — `/admin/clients/import` behind `Clients.Manage` and `Features:ClientImport` (ADR 0019):
   upload a Booksy or Versum CSV, preview (new / duplicate / invalid), confirm. Parsing lives in the plugin
   `Salon.Plugin.Import`; the preview is kept server-side under a random token bound to the salon.
+- `Settings/SalonDetails` — `/admin/settings/salon-details` behind `Settings.Manage` (ADR 0027): address, phone and
+  email of the salon's main location through `ILocationService`. The `SalonContact` view component shows them as
+  "Where to find us" on the public service list, details step, confirmation, cancel and change pages (nothing while
+  there is no address), and `AppointmentNotifier` ends every booking email with them.
 - `Settings/Notifications` — `/admin/settings/notifications` behind `Settings.Manage` (ADR 0020): reminders on/off, two
   lead times, quiet hours (`NotificationSettings`).
 - `Settings/CancellationPolicy` — `/admin/settings/cancellation-policy` behind `Settings.Manage` (ADR 0022): notice
@@ -169,7 +174,7 @@ pages are unstyled; assert whole phrases, never three or four letters that rando
 a visible browser: `pwsh scripts/watch-e2e.ps1 -Filter <name>`.
 
 ## 8. Not yet built
-M1 remainder: locations, FullCalendar drag-and-drop with live updates. M2 leftovers: payment reversals, split
+M1 remainder: several locations per salon (one exists, ADR 0027), FullCalendar drag-and-drop with live updates. M2 leftovers: payment reversals, split
 payments, tips, discounts and retail products at the checkout; a confirmation for bookings made at the desk. Reports:
 export, charts, comparison with the period before. M3:
 payments beyond the record-only provider, real SMS/email, deployment.

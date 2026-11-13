@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 
 using Salon.Core.Messaging;
 using Salon.Core.Settings;
+using Salon.Services.Locations;
 using Salon.Services.Messaging;
 using Salon.Services.Settings;
 
@@ -12,10 +13,13 @@ namespace Salon.Services.Notifications;
 /// gives it to the SMS or the email sender. Each caller decides <em>whether</em> a message is due; this only knows
 /// <em>how</em> it goes out, so the rules are written once and both channels behave the same. Log lines carry ids,
 /// never a phone number or an address.
+/// An email ends with where the salon is and its phone number once the salon has entered them (ADR 0027); a text stays
+/// as short as its template.
 /// </summary>
 public sealed class AppointmentNotifier(
     IMessageTemplateService templates,
     ISettingService settings,
+    ILocationService locations,
     ISmsSender sms,
     IEmailSender email,
     ILogger<AppointmentNotifier> logger)
@@ -51,7 +55,8 @@ public sealed class AppointmentNotifier(
 
         if (channel == MessageChannel.Email)
         {
-            await email.SendAsync(new EmailMessage(to, rendered.Subject ?? data.Tenant.Name, EmailBodies.ToHtml(rendered.Body), rendered.Body), cancellationToken).ConfigureAwait(false);
+            var body = WithFooter(rendered.Body, data.Tenant.Name, await locations.GetMainAsync(cancellationToken).ConfigureAwait(false));
+            await email.SendAsync(new EmailMessage(to, rendered.Subject ?? data.Tenant.Name, EmailBodies.ToHtml(body), body), cancellationToken).ConfigureAwait(false);
             logger.LogInformation("{Template} email for appointment {AppointmentId} handed to the mail sender", templateKey, data.AppointmentId);
         }
         else
@@ -61,5 +66,19 @@ public sealed class AppointmentNotifier(
         }
 
         return true;
+    }
+
+    /// <summary>The body followed by a blank line and the salon's name, address and phone number, one per line.</summary>
+    public static string WithFooter(string body, string salonName, SalonLocation? location)
+    {
+        ArgumentNullException.ThrowIfNull(body);
+        ArgumentNullException.ThrowIfNull(salonName);
+        if (location is null)
+        {
+            return body;
+        }
+
+        string?[] lines = [location.Name ?? salonName, location.Address, location.Phone];
+        return body.TrimEnd() + "\n\n" + string.Join('\n', lines.Where(l => !string.IsNullOrWhiteSpace(l)));
     }
 }
