@@ -68,7 +68,7 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await CaptureAsync(page, "book-services-mobile-390.png");
         interaction.Start();
         await page.GetByTestId("book-service").First.TapAsync();
-        await page.WaitForURLAsync(url => url.Contains("/book/", StringComparison.Ordinal) && !url.EndsWith("/book", StringComparison.Ordinal));
+        await page.ReachAsync(url => url.Contains("/book/", StringComparison.Ordinal) && !url.EndsWith("/book", StringComparison.Ordinal));
 
         // Step 2: the first free time of the first day that has one ("anyone available" is selected by default).
         (await page.GetByTestId("service-name").TextContentAsync()).ShouldBe("Cut & blow-dry");
@@ -82,7 +82,7 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await CaptureDesktopAsync(page.Url, "book-slots-desktop-1280.png");
         interaction.Start();
         await slots.First.TapAsync();
-        await page.WaitForURLAsync("**/details?*");
+        await page.ReachAsync("**/details?*");
 
         // Step 3: details.
         (await page.GetByTestId("summary-service").TextContentAsync()).ShouldNotBeNull().ShouldContain("Cut & blow-dry");
@@ -96,7 +96,7 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await CaptureAsync(page, "book-details-mobile-390.png");
         interaction.Start();
         await page.GetByTestId("submit-details").TapAsync();
-        await page.WaitForURLAsync("**/book/verify/*");
+        await page.ReachAsync("**/book/verify/*");
 
         // Step 4: the code, read from the "phone".
         (await page.GetByTestId("code-sent-to").TextContentAsync()).ShouldNotBeNull().ShouldContain("+44•••••••" + suffix[^3..]);
@@ -106,7 +106,7 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         interaction.Start();
         await page.GetByTestId("code").FillAsync(code);
         await page.GetByTestId("submit-code").TapAsync();
-        await page.WaitForURLAsync("**/book/done/*");
+        await page.ReachAsync("**/book/done/*");
         (await page.GetByTestId("done-title").TextContentAsync()).ShouldBe("Your appointment is booked");
         interaction.Stop();
         total.Stop();
@@ -119,17 +119,17 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
 
         // The same phone comes back: the details are already filled in from the device's own cookie, and can be cleared.
         await page.GetByTestId("book-another").TapAsync();
-        await page.WaitForURLAsync("**/book");
+        await page.ReachAsync("**/book");
         await page.GetByTestId("book-service").First.TapAsync();
-        await page.WaitForURLAsync(url => url.Contains("/book/", StringComparison.Ordinal) && !url.EndsWith("/book", StringComparison.Ordinal));
+        await page.ReachAsync(url => url.Contains("/book/", StringComparison.Ordinal) && !url.EndsWith("/book", StringComparison.Ordinal));
         await page.GetByTestId("slot").First.TapAsync();
-        await page.WaitForURLAsync("**/details?*");
+        await page.ReachAsync("**/details?*");
         (await page.GetByTestId("prefilled").TextContentAsync()).ShouldNotBeNull().ShouldContain("Welcome back, Olivia");
         (await page.GetByLabel("First name", new PageGetByLabelOptions { Exact = true }).InputValueAsync()).ShouldBe("Olivia");
         (await page.GetByLabel("Mobile number", new PageGetByLabelOptions { Exact = true }).InputValueAsync()).ShouldBe("07700 " + suffix);
         await CaptureAsync(page, "book-prefilled-mobile-390.png");
         await page.GetByTestId("not-you").TapAsync();
-        await page.WaitForURLAsync("**/details?*forget=true");
+        await page.ReachAsync("**/details?*forget=true");
         (await page.GetByTestId("prefilled").CountAsync()).ShouldBe(0);
         (await page.GetByLabel("First name", new PageGetByLabelOptions { Exact = true }).InputValueAsync()).ShouldBe(string.Empty);
 

@@ -43,7 +43,7 @@ public class ListServicesE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
         }
 
         await link.ClickAsync();
-        await page.WaitForURLAsync("**/services");
+        await page.ReachAsync("**/services");
 
         (await page.GetByTestId("salon-name").TextContentAsync()).ShouldBe("Studio 20");
         var cards = page.GetByTestId("service-card");
