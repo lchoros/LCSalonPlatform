@@ -33,6 +33,7 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await app.ClearBookingDataAsync(Slug);
         var tenantId = await app.EnsureTenantAsync(Slug, "Studio 20", Services);
         await app.EnsureDemoStaffAsync(tenantId);
+        await app.UseDefaultSettingsAsync(tenantId);
         try
         {
             await BookAsync(suffixSeed: Random.Shared.Next(100_000, 999_999));
@@ -116,6 +117,18 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         (await page.GetByTestId("done-salon").TextContentAsync()).ShouldBe("Studio 20");
         (await page.GetByTestId("cancel-link").GetAttributeAsync("href")).ShouldNotBeNull().ShouldStartWith("/book/cancel/");
         await CaptureAsync(page, "book-done-mobile-390.png");
+
+        // A change of plan (ADR 0021): the link on the confirmation, one tap on another time, and the visit has moved.
+        await page.GetByTestId("change-link").TapAsync();
+        await page.ReachAsync("**/book/change/*");
+        (await page.GetByTestId("change-when").TextContentAsync()).ShouldNotBeNull().ShouldContain(chosenTime);
+        await CaptureAsync(page, "book-change-mobile-390.png");
+        var newTime = (await page.GetByTestId("slot").First.TextContentAsync()).ShouldNotBeNull().Trim();
+        newTime.ShouldNotBe(chosenTime, "the time the visit already has is not offered back");
+        await page.GetByTestId("slot").First.TapAsync();
+        (await page.GetByTestId("change-result").TextContentAsync()).ShouldNotBeNull().ShouldContain("Your appointment has been moved.");
+        (await page.GetByTestId("change-when").TextContentAsync()).ShouldNotBeNull().ShouldContain(newTime);
+        await CaptureAsync(page, "book-changed-mobile-390.png");
 
         // The same phone comes back: the details are already filled in from the device's own cookie, and can be cleared.
         await page.GetByTestId("book-another").TapAsync();

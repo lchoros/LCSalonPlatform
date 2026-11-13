@@ -64,5 +64,12 @@
   "Booking.ListServices.FromPrice": "from {0}",
   "Booking.Public.Done.Price": "Price",
   "Booking.Public.Prefilled": "Welcome back, {0}. We filled in your details from last time.",
-  "Booking.Public.NotYou": "Not you? Clear the form"
+  "Booking.Public.NotYou": "Not you? Clear the form",
+  "Booking.Public.Change.Title": "Change the time",
+  "Booking.Public.Change.Current": "Now booked for",
+  "Booking.Public.Change.Lead": "Pick a new time. Your current time stays yours until you choose another.",
+  "Booking.Public.Change.Done": "Your appointment has been moved. We have texted you the new time.",
+  "Booking.Public.Change.TooLate": "This appointment has already started and cannot be changed online. Please call the salon.",
+  "Booking.Public.Change.Keep": "Keep my current time",
+  "Booking.Public.Cancel.ChangeInstead": "Change the time instead"
 }

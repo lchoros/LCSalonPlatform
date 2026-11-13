@@ -8,10 +8,10 @@ public class MessageTemplateCatalogTests
     private static readonly string[] BookingTokens = ["SalonName", "ClientFirstName", "ServiceName", "StaffName", "AppointmentStart"];
 
     [Fact]
-    public void Lists_exactly_the_three_booking_templates_and_the_code()
+    public void Lists_exactly_the_four_booking_templates_and_the_code()
     {
         MessageTemplateCatalog.All.Select(d => d.Key).Order(StringComparer.Ordinal)
-            .ShouldBe(["Booking.Cancelled", "Booking.Code", "Booking.Confirmation", "Booking.Reminder"]);
+            .ShouldBe(["Booking.Cancelled", "Booking.Code", "Booking.Confirmation", "Booking.Reminder", "Booking.Rescheduled"]);
     }
 
     [Fact]
@@ -27,6 +27,7 @@ public class MessageTemplateCatalogTests
     [InlineData("Booking.Confirmation")]
     [InlineData("Booking.Reminder")]
     [InlineData("Booking.Cancelled")]
+    [InlineData("Booking.Rescheduled")]
     public void Every_booking_template_goes_out_by_sms_and_email(string key)
     {
         MessageTemplateCatalog.Get(key).Channels.Order().ShouldBe([MessageChannel.Sms, MessageChannel.Email]);
@@ -36,6 +37,7 @@ public class MessageTemplateCatalogTests
     [InlineData("Booking.Confirmation", "CancelUrl")]
     [InlineData("Booking.Reminder", "CancelUrl")]
     [InlineData("Booking.Cancelled", "BookingUrl")]
+    [InlineData("Booking.Rescheduled", "CancelUrl")]
     public void Token_names_are_the_shared_booking_tokens_plus_one_link(string key, string link)
     {
         var expected = BookingTokens.Append(link).Order(StringComparer.Ordinal);

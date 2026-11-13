@@ -28,6 +28,7 @@
         case CancelState.Confirm:
             <form method="post" asp-action="CancelConfirmed" class="flex flex-col gap-3" data-testid="cancel-form">
                 <button type="submit" data-testid="confirm-cancel" class="btn btn-danger w-full">@T["Booking.Public.Cancel.Confirm"]</button>
+                <a href="/book/change/@Uri.EscapeDataString(Model.Appointment!.PublicToken)" data-testid="change-instead" class="btn btn-secondary w-full">@T["Booking.Public.Cancel.ChangeInstead"]</a>
                 <a href="/book" class="btn btn-secondary w-full">@T["Booking.Public.Cancel.Keep"]</a>
             </form>
             break;

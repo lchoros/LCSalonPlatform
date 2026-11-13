@@ -1,0 +1,122 @@
+@using System.Globalization
+@using NodaTime
+@using NodaTime.Text
+@using Salon.Web.Features.Booking.Reschedule
+@model RescheduleViewModel
+@{
+    var o = Model.Options;
+    var culture = CultureInfo.CurrentCulture;
+    ViewData["Title"] = T["Booking.Public.Change.Title"];
+    var token = Uri.EscapeDataString(Model.Token);
+    var staffValue = o.SelectedStaffId is { } sid ? sid.ToString() : RescheduleQuery.AnyStaff;
+    var hasAnySlot = o.Days.Any(d => d.HasSlots);
+}
+@functions {
+    static string Iso(LocalDate date) => LocalDatePattern.Iso.Format(date);
+
+    static string Iso(Instant instant) => InstantPattern.ExtendedIso.Format(instant);
+
+    // Days without free times stay tappable but muted (.is-dim keeps AA contrast on white).
+    static string State(bool on, bool hasSlots) => on ? "is-on" : hasSlots ? "is-off" : "is-dim";
+}
+<section class="mx-auto max-w-2xl space-y-6">
+    <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Booking.Public.Change.Title"]</h1>
+
+    @if (o.Appointment is { } a && o.State is RescheduleState.Choose or RescheduleState.Moved)
+    {
+        var local = a.Start.InZone(o.Zone).LocalDateTime;
+        <dl class="facts" data-testid="booking-details">
+            <dt>@T["Booking.Public.Done.Service"]</dt>
+            <dd data-testid="change-service">@a.ServiceName</dd>
+            <dt>@T["Booking.Public.Done.Staff"]</dt>
+            <dd data-testid="change-staff">@a.StaffName</dd>
+            <dt>@(o.State == RescheduleState.Moved ? T["Booking.Public.Done.When"] : T["Booking.Public.Change.Current"])</dt>
+            <dd class="tabular-nums" data-testid="change-when">@local.ToString("dddd, d MMMM yyyy", culture), @local.ToString("HH:mm", culture)</dd>
+            <dt>@T["Booking.Public.Done.Where"]</dt>
+            <dd>@o.SalonName</dd>
+        </dl>
+    }
+
+    @switch (o.State)
+    {
+        case RescheduleState.Choose:
+            <p class="text-stone-700">@T["Booking.Public.Change.Lead"]</p>
+
+            @if (Model.Message is { } message)
+            {
+                <p role="alert" data-testid="change-message" class="notice notice-warn">@message</p>
+            }
+
+            @if (o.Staff.Count > 1)
+            {
+                <nav aria-label="@T["Booking.Public.With"]" data-testid="staff-picker" class="scroll-row">
+                    <a href="/book/change/@token?date=@Iso(o.SelectedDate)&staff=@RescheduleQuery.AnyStaff" class="pill @State(o.SelectedStaffId is null, true)" aria-current="@(o.SelectedStaffId is null ? "true" : null)" data-testid="staff-any">@T["Booking.Public.Anyone"]</a>
+                    @foreach (var person in o.Staff)
+                    {
+                        var on = person.Id == o.SelectedStaffId;
+                        <a href="/book/change/@token?date=@Iso(o.SelectedDate)&staff=@person.Id" class="pill @State(on, true)" aria-current="@(on ? "true" : null)" data-testid="staff-option">@person.DisplayName</a>
+                    }
+                </nav>
+            }
+
+            <nav aria-label="@T["Booking.Public.Day"]" data-testid="date-strip" class="scroll-row">
+                @foreach (var day in o.Days)
+                {
+                    var on = day.Date == o.SelectedDate;
+                    <a href="/book/change/@token?date=@Iso(day.Date)&staff=@staffValue" class="tile @State(on, day.HasSlots)" aria-current="@(on ? "date" : null)" data-testid="day" data-has-slots="@day.HasSlots.ToString().ToLowerInvariant()">
+                        <span class="text-xs font-medium uppercase">@day.Date.ToString("ddd", culture)</span>
+                        <span class="text-xl font-bold tabular-nums">@day.Date.Day</span>
+                        <span class="text-xs">@day.Date.ToString("MMM", culture)</span>
+                    </a>
+                }
+            </nav>
+
+            <div class="space-y-3">
+                <h2 class="text-lg font-semibold" data-testid="selected-day">@o.SelectedDate.ToString("dddd, d MMMM", culture)</h2>
+                @if (o.Slots.Count == 0)
+                {
+                    <p data-testid="no-slots" class="rounded-xl border border-dashed border-stone-300 p-6 text-center text-stone-600">
+                        @(hasAnySlot ? T["Booking.Public.NoSlotsOnDay"] : T.Format("Booking.Public.NoSlotsAtAll", o.Days.Count))
+                    </p>
+                }
+                else
+                {
+                    @* One form, one button per time: the tapped button carries the start, the hidden field the person ("anyone" when empty). *@
+                    <form method="post" asp-action="ChangeConfirmed" asp-route-token="@Model.Token" data-testid="change-form">
+                        <input type="hidden" name="StaffMemberId" value="@o.SelectedStaffId" />
+                        <ul class="grid grid-cols-3 gap-3 sm:grid-cols-4" data-testid="slot-list" aria-label="@T["Booking.Public.Times"]">
+                            @foreach (var slot in o.Slots)
+                            {
+                                <li>
+                                    <button type="submit" name="Start" value="@Iso(slot.Start)" data-testid="slot" class="slot w-full">@slot.LocalStart.ToString("HH:mm", culture)</button>
+                                </li>
+                            }
+                        </ul>
+                    </form>
+                }
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <a href="/book" data-testid="keep-time" class="btn btn-secondary w-full">@T["Booking.Public.Change.Keep"]</a>
+                <a href="/book/cancel/@token" data-testid="cancel-instead" class="btn-link self-center">@T["Booking.Public.Done.Cancel"]</a>
+            </div>
+            break;
+        case RescheduleState.Moved:
+            <p role="status" data-testid="change-result" class="notice notice-ok">@T["Booking.Public.Change.Done"]</p>
+            <div class="flex flex-col gap-3">
+                <a href="/book" data-testid="book-another" class="btn btn-primary w-full">@T["Booking.Public.Done.BookAnother"]</a>
+                <a href="/book/change/@token" data-testid="change-again" class="btn btn-secondary w-full">@T["Booking.Public.Change.Title"]</a>
+            </div>
+            break;
+        case RescheduleState.NotActive:
+            <p role="status" data-testid="change-result" class="notice notice-warn">@T["Booking.Public.Cancel.Already"]</p>
+            <a href="/book" data-testid="book-another" class="btn btn-primary w-full">@T["Booking.Public.Done.BookAnother"]</a>
+            break;
+        case RescheduleState.TooLate:
+            <p role="status" data-testid="change-result" class="notice notice-warn">@T["Booking.Public.Change.TooLate"]</p>
+            break;
+        default:
+            <p role="status" data-testid="change-result" class="notice notice-warn">@T["Booking.Public.Cancel.Invalid"]</p>
+            break;
+    }
+</section>
