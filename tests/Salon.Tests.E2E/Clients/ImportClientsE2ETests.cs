@@ -36,7 +36,7 @@ public class ImportClientsE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await page.GetByLabel("Email").FillAsync(Email);
         await page.GetByLabel("Password").FillAsync(Password);
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Sign in" }).ClickAsync();
-        await page.WaitForURLAsync("**/admin/clients/import");
+        await page.ReachAsync("**/admin/clients/import");
 
         (await page.GetByTestId("import-upload-form").IsVisibleAsync()).ShouldBeTrue();
         await CheckAndShootAsync(page, "clients-import-upload-mobile-390.png");
@@ -55,7 +55,7 @@ public class ImportClientsE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
             Buffer = Encoding.UTF8.GetBytes(csv),
         });
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Check the file" }).ClickAsync();
-        await page.WaitForURLAsync(url => url.Contains("/admin/clients/import/", StringComparison.Ordinal));
+        await page.ReachAsync(url => url.Contains("/admin/clients/import/", StringComparison.Ordinal));
 
         (await page.GetByTestId("import-preview").IsVisibleAsync()).ShouldBeTrue();
         (await page.GetByTestId("count-new").TextContentAsync()).ShouldNotBeNull().Trim().ShouldBe("2");
@@ -70,7 +70,7 @@ public class ImportClientsE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await CheckAndShootAsync(page, "clients-import-result-mobile-390.png");
 
         await page.GetByTestId("to-clients").ClickAsync();
-        await page.WaitForURLAsync("**/admin/clients");
+        await page.ReachAsync("**/admin/clients");
         (await page.GetByTestId("client-list").TextContentAsync()).ShouldNotBeNull().ShouldContain("Olivia Brown");
     }
 
