@@ -29,6 +29,7 @@ public sealed class SaveNotificationSettingsHandler(ISettingService settings) : 
         // Load first: a property this form does not show must keep its value.
         var current = await settings.LoadAsync<NotificationSettings>(cancellationToken);
         current.RemindersEnabled = request.RemindersEnabled;
+        current.EmailEnabled = request.EmailEnabled;
         current.FirstReminderHours = first;
         current.SecondReminderHours = second;
         current.QuietHoursStartMinute = (quietFrom.Hour * 60) + quietFrom.Minute;

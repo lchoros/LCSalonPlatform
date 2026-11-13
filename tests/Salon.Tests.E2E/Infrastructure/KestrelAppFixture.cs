@@ -36,6 +36,9 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
     /// <summary>Every SMS the host "sent" (ADR 0014); the booking test reads the code from here.</summary>
     public RecordingSmsSender Sms => _factory.Services.GetRequiredService<RecordingSmsSender>();
 
+    /// <summary>Every email the host "sent"; nothing reaches an SMTP server.</summary>
+    public RecordingEmailSender Emails => _factory.Services.GetRequiredService<RecordingEmailSender>();
+
     /// <summary>
     /// Removes the salon's client account lines, appointments, status history, phone verifications and clients (in that order, for the foreign
     /// keys), so <see cref="EnsureTenantAsync"/> and <see cref="EnsureDemoStaffAsync"/> can replace services and staff after
@@ -315,6 +318,9 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
                 services.RemoveAll<ISmsSender>();
                 services.AddSingleton<RecordingSmsSender>();
                 services.AddSingleton<ISmsSender>(sp => sp.GetRequiredService<RecordingSmsSender>());
+                services.RemoveAll<IEmailSender>();
+                services.AddSingleton<RecordingEmailSender>();
+                services.AddSingleton<IEmailSender>(sp => sp.GetRequiredService<RecordingEmailSender>());
             });
         }
     }

@@ -35,7 +35,7 @@ public enum ReminderKind
 
 public enum ReminderOutcome
 {
-    /// <summary>Claimed; the SMS is being handed to the provider.</summary>
+    /// <summary>Claimed; the message is being handed to the senders.</summary>
     Pending = 0,
 
     Sent = 1,
@@ -43,7 +43,10 @@ public enum ReminderOutcome
     /// <summary>The provider threw; not retried (a late duplicate is worse than a missed reminder).</summary>
     Failed = 2,
 
-    /// <summary>The client has no phone number on the card.</summary>
+    /// <summary>
+    /// Nobody to tell: the card has no phone number and no email address the salon sends to (ADR 0025). The name is
+    /// from when reminders were SMS only; the stored value stays.
+    /// </summary>
     NoPhone = 3,
 
     /// <summary>Another reminder for the same visit went out in the same pass; this one is recorded so it never follows.</summary>

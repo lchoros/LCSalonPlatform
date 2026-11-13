@@ -53,6 +53,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<EmbeddedMessageTemplateDefaults>();
         services.AddScoped<IMessageTemplateService, MessageTemplateService>();
         services.AddScoped<AppointmentMessageReader>();
+        services.AddScoped<AppointmentNotifier>();
         // Reminders (ADR 0020): needs IPublicUrlBuilder (Web.Framework) at resolve time, like the public booking service.
         services.AddScoped<IAppointmentReminderService, AppointmentReminderService>();
         services.AddScoped<IScheduleTask, AppointmentReminderTask>();

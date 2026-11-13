@@ -37,6 +37,7 @@ public class AppointmentReminderTests(SalonWebApplicationFactory factory) : IAsy
     {
         await factory.ResetDatabaseAsync();
         factory.Sms.Clear();
+        factory.Emails.Clear();
         _studio = await factory.CreateTenantAsync("reminders-a", name: "Studio 20");
         _other = await factory.CreateTenantAsync("reminders-b", name: "Other Salon");
         (_staffId, _serviceId) = await VisitSeed.SalonAsync(factory, _studio.Id);
@@ -105,6 +106,57 @@ public class AppointmentReminderTests(SalonWebApplicationFactory factory) : IAsy
 
         factory.Sms.Messages.ShouldBeEmpty();
         (await RemindersAsync(_studio.Id)).ShouldHaveSingleItem().Outcome.ShouldBe(ReminderOutcome.NoPhone);
+    }
+
+    [Fact]
+    public async Task A_client_with_an_email_address_is_reminded_by_text_and_by_email_as_one_reminder()
+    {
+        var olivia = await VisitSeed.ClientAsync(factory, _studio.Id, "Olivia", "Green", "+447700900555", "olivia.green@example.com");
+        var start = Now + Duration.FromHours(24);
+        await VisitAsync(start, clientId: olivia);
+
+        (await SendDueAsync(_studio.Id, Now)).ShouldBe(1, "one visit reminded, on two channels");
+
+        factory.Sms.Messages.ShouldHaveSingleItem().ToE164.ShouldBe("+447700900555");
+        var email = factory.Emails.Messages.ShouldHaveSingleItem();
+        email.To.ShouldBe("olivia.green@example.com");
+        email.Subject.ShouldBe("Reminder: your Cut at Studio 20");
+        email.TextBody.ShouldNotBeNull().ShouldStartWith("Hi Olivia,\na quick reminder that your Cut with Anna at Studio 20 is on Sat 21 Nov, 14:00.");
+        (await RemindersAsync(_studio.Id)).ShouldHaveSingleItem().Outcome.ShouldBe(ReminderOutcome.Sent);
+        (await SendDueAsync(_studio.Id, Now + Duration.FromMinutes(5))).ShouldBe(0);
+        factory.Emails.Messages.ShouldHaveSingleItem("never a second copy by email either");
+    }
+
+    [Fact]
+    public async Task A_mail_server_that_is_down_does_not_cost_the_client_their_text()
+    {
+        var olivia = await VisitSeed.ClientAsync(factory, _studio.Id, "Olivia", "Green", "+447700900555", "olivia.green@example.com");
+        await VisitAsync(Now + Duration.FromHours(24), clientId: olivia);
+        factory.Emails.Fail = true;
+
+        (await SendDueAsync(_studio.Id, Now)).ShouldBe(1);
+
+        factory.Sms.Messages.ShouldHaveSingleItem();
+        factory.Emails.Messages.ShouldBeEmpty();
+        (await RemindersAsync(_studio.Id)).ShouldHaveSingleItem().Outcome.ShouldBe(ReminderOutcome.Sent, "the text went out");
+    }
+
+    [Fact]
+    public async Task A_client_with_only_an_email_address_is_reminded_by_email_unless_emails_are_switched_off()
+    {
+        var emailOnly = await VisitSeed.ClientAsync(factory, _studio.Id, "Ed", "Mail", email: "ed.mail@example.com");
+        await VisitAsync(Now + Duration.FromHours(24), clientId: emailOnly);
+        var other = await VisitSeed.ClientAsync(factory, _studio.Id, "Em", "Mail", email: "em.mail@example.com");
+        var later = await VisitAsync(Now + Duration.FromHours(25), clientId: other);
+
+        (await SendDueAsync(_studio.Id, Now)).ShouldBe(1);
+        factory.Sms.Messages.ShouldBeEmpty();
+        factory.Emails.Messages.ShouldHaveSingleItem().To.ShouldBe("ed.mail@example.com");
+
+        await SaveSettingsAsync(_studio.Id, s => s.EmailEnabled = false);
+        (await SendDueAsync(_studio.Id, Now + Duration.FromHours(1))).ShouldBe(0, "nobody the salon may tell");
+        factory.Emails.Messages.ShouldHaveSingleItem();
+        (await RemindersAsync(_studio.Id)).Single(r => r.AppointmentId == later).Outcome.ShouldBe(ReminderOutcome.NoPhone);
     }
 
     [Fact]

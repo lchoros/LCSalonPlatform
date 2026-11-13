@@ -29,6 +29,14 @@
             <span class="font-medium">@T["Settings.Notifications.Enabled"]</span>
         </label>
 
+        <div class="space-y-1">
+            <label class="flex min-h-11 items-center gap-3">
+                <input id="EmailEnabled" name="EmailEnabled" type="checkbox" value="true" checked="@form.EmailEnabled" aria-describedby="email-hint" data-testid="email-enabled" class="size-5 shrink-0 rounded border-stone-400" />
+                <span class="font-medium">@T["Settings.Notifications.EmailEnabled"]</span>
+            </label>
+            <p id="email-hint" class="text-sm text-stone-600">@T["Settings.Notifications.EmailHint"]</p>
+        </div>
+
         <div class="grid gap-4 sm:grid-cols-2">
             @foreach (var (name, labelKey, value) in new[]
             {
