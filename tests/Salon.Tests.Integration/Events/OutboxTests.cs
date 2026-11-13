@@ -166,6 +166,32 @@ public class OutboxTests(SalonWebApplicationFactory factory) : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Every_consumer_gets_its_turn_and_one_that_handled_the_event_is_not_run_again_on_the_retry()
+    {
+        var probeId = Guid.NewGuid();
+        await PublishAsync(_tenant.Id, new OutboxFlakyEvent(probeId));
+
+        // First attempt: the flaky consumer throws, the steady one still runs, whichever comes first.
+        (await DispatchAsync()).ShouldBe(1);
+        var row = await SingleRowAsync();
+        row.Attempts.ShouldBe(1);
+        row.ProcessedAt.ShouldBeNull();
+        row.LastError.ShouldNotBeNull().ShouldContain("the flaky consumer failed its first call on purpose");
+        row.CompletedConsumers.ShouldBe([typeof(OutboxSteadyConsumer).FullName!]);
+        OutboxSteadyConsumer.Calls[probeId].ShouldBe(1);
+        OutboxFlakyConsumer.Calls[probeId].ShouldBe(1);
+
+        // The retry is for the one that failed: the steady consumer is left alone.
+        await MakeDueAsync(row.Id);
+        (await DispatchAsync()).ShouldBe(1);
+        row = await SingleRowAsync();
+        row.ProcessedAt.ShouldNotBeNull();
+        row.CompletedConsumers.ShouldBe([typeof(OutboxSteadyConsumer).FullName!, typeof(OutboxFlakyConsumer).FullName!], ignoreOrder: true);
+        OutboxFlakyConsumer.Calls[probeId].ShouldBe(2);
+        OutboxSteadyConsumer.Calls[probeId].ShouldBe(1, "what was delivered is not delivered again");
+    }
+
+    [Fact]
     public async Task One_poison_message_does_not_block_the_rest_of_the_batch()
     {
         var bad = Guid.NewGuid();

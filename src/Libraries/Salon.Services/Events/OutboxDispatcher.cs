@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Runtime.ExceptionServices;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +18,9 @@ namespace Salon.Services.Events;
 /// Loads due rows approximately oldest first (UUIDv7 ids are time-ordered to the millisecond, nothing finer is
 /// guaranteed) and runs each event's consumers in a fresh DI scope: the publishing tenant's scope through
 /// <see cref="ITenantScopeRunner"/>, or a plain scope for platform events. Every row's outcome is saved on its own, so
-/// one poison message never blocks the rest of the batch. Delivery is at-least-once; consumers must be idempotent (ADR 0007).
+/// one poison message never blocks the rest of the batch. Delivery is at-least-once per consumer: every consumer gets
+/// its turn even when another one throws, and one that has handled an event is not run again when the row is retried
+/// (ADR 0025). A consumer that failed half-way is run again, so consumers must still be idempotent (ADR 0007).
 /// </summary>
 internal sealed class OutboxDispatcher(
     SalonDbContext db,
@@ -65,7 +68,7 @@ internal sealed class OutboxDispatcher(
             var consumerCount = 0;
             await RunInScopeAsync(
                 message.TenantId,
-                async (services, ct) => consumerCount = await invoker.InvokeAsync(services, domainEvent, ct).ConfigureAwait(false),
+                async (services, ct) => consumerCount = await invoker.InvokeAsync(services, domainEvent, message, ct).ConfigureAwait(false),
                 cancellationToken).ConfigureAwait(false);
 
             message.ProcessedAt = clock.GetCurrentInstant();
@@ -121,22 +124,55 @@ internal sealed class OutboxDispatcher(
 
     private abstract class ConsumerInvoker
     {
-        public abstract Task<int> InvokeAsync(IServiceProvider services, IEvent domainEvent, CancellationToken cancellationToken);
+        public abstract Task<int> InvokeAsync(IServiceProvider services, IEvent domainEvent, OutboxMessage message, CancellationToken cancellationToken);
     }
 
     /// <summary>Resolves the consumers of one event type from the given scope and awaits them in registration order.</summary>
     private sealed class ConsumerInvoker<TEvent> : ConsumerInvoker
         where TEvent : IEvent
     {
-        public override async Task<int> InvokeAsync(IServiceProvider services, IEvent domainEvent, CancellationToken cancellationToken)
+        public override async Task<int> InvokeAsync(IServiceProvider services, IEvent domainEvent, OutboxMessage message, CancellationToken cancellationToken)
         {
             var consumers = services.GetServices<IConsumer<TEvent>>().ToList();
+            List<Exception>? failures = null;
             foreach (var consumer in consumers)
             {
-                await consumer.HandleAsync((TEvent)domainEvent, cancellationToken).ConfigureAwait(false);
+                // A consumer that handled this event on an earlier attempt is not run again (ADR 0025): the retry is for
+                // the one that failed. The list is saved with the row's outcome, success or failure.
+                var name = consumer.GetType().FullName ?? consumer.GetType().Name;
+                if (message.CompletedConsumers.Contains(name, StringComparer.Ordinal))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    await consumer.HandleAsync((TEvent)domainEvent, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+                {
+                    // One consumer's failure is not the others' business: they still get their turn in this attempt.
+                    (failures ??= []).Add(ex);
+                    continue;
+                }
+
+                // A new list, so the change tracker sees the column changed.
+                message.CompletedConsumers = [.. message.CompletedConsumers, name];
             }
 
-            return consumers.Count;
+            return failures switch
+            {
+                null => consumers.Count,
+                [var only] => Rethrow(only),
+                _ => throw new AggregateException(failures),
+            };
+        }
+
+        /// <summary>Throws the consumer's own exception with its stack trace, so the row's error text names what failed.</summary>
+        private static int Rethrow(Exception exception)
+        {
+            ExceptionDispatchInfo.Capture(exception).Throw();
+            return 0;
         }
     }
 }
