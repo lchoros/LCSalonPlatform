@@ -114,6 +114,11 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   email of the salon's main location through `ILocationService`. The `SalonContact` view component shows them as
   "Where to find us" on the public service list, details step, confirmation, cancel and change pages (nothing while
   there is no address), and `AppointmentNotifier` ends every booking email with them.
+- `Settings/MessageTemplates` — `/admin/settings/messages` and `/{key}/{sms|email}` behind `Templates.Manage`
+  (ADR 0030): the salon's own wording of each client message in the tenant's culture through
+  `IMessageTemplateService`, placeholders checked by the pure `MessageTemplateRules`, a preview with made-up details
+  that is not saved, and the number of texts it costs (`SmsLengthRules`). The Settings tabs show each role only the
+  pages it may open; a manager's Settings link leads here.
 - `Settings/Notifications` — `/admin/settings/notifications` behind `Settings.Manage` (ADR 0020): reminders on/off, two
   lead times, quiet hours (`NotificationSettings`).
 - `Settings/CancellationPolicy` — `/admin/settings/cancellation-policy` behind `Settings.Manage` (ADR 0022): notice
