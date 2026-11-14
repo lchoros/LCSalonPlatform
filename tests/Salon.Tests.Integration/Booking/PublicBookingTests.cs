@@ -275,7 +275,7 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         confirmation.Body.ShouldContain("Cut");
         confirmation.Body.ShouldContain("Studio 20");
         confirmation.Body.ShouldContain(_day.ToString("ddd d MMM", System.Globalization.CultureInfo.GetCultureInfo("en-GB")) + ", 10:00");
-        confirmation.Body.ShouldContain($"https://studio-20.localhost/book/cancel/{token}");
+        confirmation.Body.ShouldContain($"https://studio-20.localhost/v/{token}");
     }
 
     [Fact]
@@ -325,7 +325,7 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         (await repost.Content.ReadAsStringAsync()).ShouldContain("already been cancelled");
         (await AppointmentsAsync(_studio.Id)).Count.ShouldBe(1);
 
-        var bogus = await GetAsync(client, "/book/cancel/" + new string('A', 43));
+        var bogus = await GetAsync(client, "/book/cancel/" + new string('A', PublicBookingToken.Length));
         bogus.ShouldContain("This link is not valid or has already been used.");
         (await client.GetAsync(new Uri("/book/done/" + Guid.NewGuid(), UriKind.Relative))).StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }

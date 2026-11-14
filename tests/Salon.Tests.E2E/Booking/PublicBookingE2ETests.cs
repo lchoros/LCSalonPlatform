@@ -127,6 +127,15 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         (await page.GetByTestId("change-when").TextContentAsync()).ShouldNotBeNull().ShouldContain(newTime);
         await CaptureAsync(page, "book-changed-mobile-390.png");
 
+        // The short address a text carries (ADR 0031) forwards to the page of that visit.
+        var token = page.Url[(page.Url.LastIndexOf('/') + 1)..];
+        token.Length.ShouldBe(22, "the link in a text is short enough for one text");
+        var linkPage = await page.Context.NewPageAsync();
+        await linkPage.GotoAsync($"{app.TenantUrl(Slug)}/v/{token}");
+        await linkPage.ReachAsync($"**/book/cancel/{token}");
+        (await linkPage.GetByTestId("confirm-cancel").IsVisibleAsync()).ShouldBeTrue();
+        await linkPage.CloseAsync();
+
         // The same phone comes back: the details are already filled in from the device's own cookie, and can be cleared.
         await page.GetByTestId("book-another").TapAsync();
         await page.ReachAsync("**/book");

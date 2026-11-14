@@ -16,7 +16,7 @@ public class PublicUrlBuilderTests
         var builder = Build(new TenancyOptions { BaseDomains = ["salon.example", "salon.pl"] }, "Production");
 
         builder.BookingUrl("studio-20").ShouldBe("https://studio-20.salon.example/book");
-        builder.CancelBookingUrl("studio-20", Token).ShouldBe($"https://studio-20.salon.example/book/cancel/{Token}");
+        builder.CancelBookingUrl("studio-20", Token).ShouldBe($"https://studio-20.salon.example/v/{Token}");
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public class PublicUrlBuilderTests
     {
         var builder = Build(new TenancyOptions(), "Production");
 
-        builder.CancelBookingUrl("glam", "a b/c").ShouldBe("https://glam.localhost/book/cancel/a%20b%2Fc");
+        builder.CancelBookingUrl("glam", "a b/c").ShouldBe("https://glam.localhost/v/a%20b%2Fc");
     }
 
     [Theory]

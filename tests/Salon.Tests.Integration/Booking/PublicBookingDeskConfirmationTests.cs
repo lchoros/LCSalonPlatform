@@ -28,11 +28,11 @@ public partial class PublicBookingTests
         var sms = factory.Sms.Messages.ShouldHaveSingleItem();
         sms.ToE164.ShouldBe("+447700900456");
         sms.Body.ShouldStartWith("Hi Sophie, your Cut at Studio 20 is booked for ");
-        sms.Body.ShouldEndWith($"/book/cancel/{token}");
+        sms.Body.ShouldEndWith($"/v/{token}");
         var email = factory.Emails.Messages.ShouldHaveSingleItem();
         email.To.ShouldBe("sophie@example.com");
         email.Subject.ShouldBe("Your Cut at Studio 20 is booked");
-        email.TextBody.ShouldNotBeNull().ShouldContain($"/book/cancel/{token}");
+        email.TextBody.ShouldNotBeNull().ShouldContain($"/v/{token}");
 
         // Dispatching again sends nothing more.
         await DispatchAsync();

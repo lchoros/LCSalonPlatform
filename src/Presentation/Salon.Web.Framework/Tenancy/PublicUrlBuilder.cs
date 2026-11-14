@@ -18,7 +18,7 @@ internal sealed class PublicUrlBuilder(IOptions<TenancyOptions> options, IHostEn
     public string CancelBookingUrl(string tenantSlug, string publicToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(publicToken);
-        return Build(tenantSlug, PublicBookingDefaults.CancelPath(publicToken));
+        return Build(tenantSlug, PublicBookingDefaults.ShortLinkPath(publicToken));
     }
 
     private string Build(string tenantSlug, string path)

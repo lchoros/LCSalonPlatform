@@ -8,6 +8,7 @@ using Salon.Core.Tenancy;
 using Salon.Services.Booking;
 using Salon.Services.Settings;
 using Salon.Services.Tenancy;
+using Salon.Web.Framework.Booking;
 using Salon.Web.Framework.Controllers;
 using Salon.Web.Framework.Mvc;
 
@@ -35,6 +36,13 @@ public sealed class CancelBookingController(IDispatcher dispatcher, ITenantConte
         };
         return View(await ViewModelAsync(appointment, state, cancellationToken));
     }
+
+    /// <summary>
+    /// <c>/v/{token}</c> (ADR 0031): the short address messages carry. It only forwards to the page above, which also
+    /// explains a link that is unknown or used; the token is escaped, so the target is always a path on this site.
+    /// </summary>
+    [HttpGet(PublicBookingDefaults.ShortLinkPrefix + "/{token}")]
+    public IActionResult ShortLink(string token) => LocalRedirect(PublicBookingDefaults.CancelPath(token));
 
     [HttpPost("{token}")]
     [ValidateAntiForgeryToken]
