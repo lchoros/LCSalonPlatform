@@ -19,6 +19,7 @@
 | Till / cash-up | Kasa / zamknięcie dnia | A day's recorded money per method and the end-of-day count of the cash drawer (`CashUp`), closed once |
 | Takings | Utarg | Everything that came in on a day less everything that went back out, all methods |
 | Utilisation | Obłożenie | Booked time as a share of working time (rota less time off) in a period; unknown without working time |
+| Variant | Wariant | A service that shares a title with siblings (`Service.VariantGroup`) and differs by its label (`VariantLabel`): "Keratin · Long hair". Clients see one entry with a price range |
 | Placeholder | Znacznik | `{{Name}}` in a message's wording, replaced when the message is sent; each message offers its own list |
 | SMS segment | Część SMS-a | One billed text: 160 characters in the basic alphabet, 70 once a letter such as "ą" is used |
 | No-show rate | Odsetek nieobecności | No-shows over visits that had an outcome (completed plus no-shows) |
