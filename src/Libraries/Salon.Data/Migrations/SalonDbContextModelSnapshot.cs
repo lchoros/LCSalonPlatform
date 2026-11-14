@@ -358,6 +358,16 @@ namespace Salon.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
 
+                    b.Property<string>("VariantGroup")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("variant_group");
+
+                    b.Property<string>("VariantLabel")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("variant_label");
+
                     b.HasKey("Id")
                         .HasName("pk_services");
 

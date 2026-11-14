@@ -12,6 +12,8 @@ internal sealed class ServiceConfiguration : IEntityTypeConfiguration<Service>
         builder.HasKey(s => s.Id);
         builder.Property(s => s.Name).HasMaxLength(ServiceRules.NameMaxLength).IsRequired();
         builder.Property(s => s.Description).HasMaxLength(ServiceRules.DescriptionMaxLength);
+        builder.Property(s => s.VariantGroup).HasMaxLength(ServiceRules.VariantGroupMaxLength);
+        builder.Property(s => s.VariantLabel).HasMaxLength(ServiceRules.VariantLabelMaxLength);
         builder.Property(s => s.Price).HasPrecision(12, 2);
         builder.Property(s => s.DepositPercent).HasPrecision(5, 2);
         builder.Property(s => s.Currency).HasMaxLength(3).IsRequired();
