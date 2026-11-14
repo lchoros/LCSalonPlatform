@@ -152,7 +152,7 @@ internal sealed class AppointmentReminderService(
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 failed++;
-                logger.LogError(ex, "Reminder {Kind} for appointment {AppointmentId} could not be sent by {Channel}", kind, appointment.Id, channel);
+                logger.LogError(ex, "Reminder {Kind} for appointment {AppointmentId} could not be sent by {Channel}", kind, appointment.Id, AppointmentNotifier.ChannelName(channel));
             }
         }
 

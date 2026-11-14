@@ -37,7 +37,7 @@ public sealed class AppointmentNotifier(
         var to = channel == MessageChannel.Email ? data.ClientEmail : data.ClientPhone;
         if (to is null)
         {
-            logger.LogInformation("The client of appointment {AppointmentId} cannot be reached by {Channel}; {Template} skipped", data.AppointmentId, channel, templateKey);
+            logger.LogInformation("The client of appointment {AppointmentId} cannot be reached by {Channel}; {Template} skipped", data.AppointmentId, ChannelName(channel), templateKey);
             return false;
         }
 
@@ -50,7 +50,7 @@ public sealed class AppointmentNotifier(
         var rendered = await templates.RenderAsync(templateKey, channel, data.Tenant.Culture, tokens, cancellationToken).ConfigureAwait(false);
         if (!rendered.IsComplete)
         {
-            logger.LogWarning("Template {Template} ({Channel}) of tenant {TenantId} has unresolved tokens: {Tokens}", templateKey, channel, data.Tenant.Id, string.Join(", ", rendered.MissingTokens));
+            logger.LogWarning("Template {Template} ({Channel}) of tenant {TenantId} has unresolved tokens: {Tokens}", templateKey, ChannelName(channel), data.Tenant.Id, string.Join(", ", rendered.MissingTokens));
         }
 
         if (channel == MessageChannel.Email)
@@ -67,6 +67,17 @@ public sealed class AppointmentNotifier(
 
         return true;
     }
+
+    /// <summary>
+    /// What a log line calls a channel. A fixed word per channel, never the value itself: a log line must not carry
+    /// anything that came from a client, and a scanner cannot tell the channel "Email" from an email address.
+    /// </summary>
+    public static string ChannelName(MessageChannel channel) => channel switch
+    {
+        MessageChannel.Sms => "SMS",
+        MessageChannel.Email => "email",
+        _ => "unknown",
+    };
 
     /// <summary>The body followed by a blank line and the salon's name, address and phone number, one per line.</summary>
     public static string WithFooter(string body, string salonName, SalonLocation? location)
