@@ -185,6 +185,54 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
     }
 
     /// <summary>
+    /// Replaces the salon's services and categories with a catalogue that has categories and variants (ADR 0032). Call
+    /// after <see cref="EnsureDemoStaffAsync"/>; pair with <see cref="RemoveCategoriesAsync"/> so later tests find the
+    /// salon without categories again.
+    /// </summary>
+    public async Task SetCatalogueAsync(Guid tenantId, IReadOnlyList<(string Category, string Name, string? VariantGroup, string? VariantLabel, int Minutes, decimal Price)> services)
+    {
+        using var scope = _factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
+        var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+        db.Appointments.RemoveRange(await db.Appointments.ToListAsync());
+        db.Services.RemoveRange(await db.Services.ToListAsync());
+        db.ServiceCategories.RemoveRange(await db.ServiceCategories.ToListAsync());
+        await db.SaveChangesAsync();
+
+        var categories = services.Select(s => s.Category).Distinct(StringComparer.Ordinal)
+            .Select((name, index) => new ServiceCategory { Name = name, SortOrder = index + 1 })
+            .ToDictionary(c => c.Name, StringComparer.Ordinal);
+        db.ServiceCategories.AddRange(categories.Values);
+        var sortOrder = 0;
+        foreach (var service in services)
+        {
+            db.Services.Add(new Service
+            {
+                Name = service.Name,
+                VariantGroup = service.VariantGroup,
+                VariantLabel = service.VariantLabel,
+                Duration = Duration.FromMinutes(service.Minutes),
+                Price = service.Price,
+                Currency = "GBP",
+                SortOrder = ++sortOrder,
+                CategoryId = categories[service.Category].Id,
+            });
+        }
+
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>Removes every category of the salon; its services stay and become uncategorised.</summary>
+    public async Task RemoveCategoriesAsync(Guid tenantId)
+    {
+        using var scope = _factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
+        var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+        db.ServiceCategories.RemoveRange(await db.ServiceCategories.ToListAsync());
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>
     /// Puts the salon's booking, reminder and cancellation-policy settings back to their defaults. The salon row is shared with whatever ran
     /// before on this database (an integration test may have switched SMS verification off), and a test that walks the
     /// public flow must not depend on that.
