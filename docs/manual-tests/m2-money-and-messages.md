@@ -1,6 +1,6 @@
 # Manual test: M2 money and messages
 
-For the owner, after PRs #65, #66 and #67 are merged (section L also needs #68, section M #69, section N #72, section O #73). About 45 minutes. Tick a box when the step behaves as written.
+For the owner, after PRs #65, #66 and #67 are merged (section L also needs #68, section M #69, section N #72, section O #73, section P #74). About 45 minutes. Tick a box when the step behaves as written.
 If a step does not, note its number (for example "D4") and what you saw; that is all an agent needs to find it.
 
 Nothing here charges a card or sends a real text or email. Texts and emails land in Mailpit.
@@ -189,6 +189,12 @@ Sign out and in again first: the "Reports" link needs a permission your old sess
 - [ ] O5. Type a Polish letter such as "ą" and press "Preview": the page warns that a text now holds 70 characters.
 - [ ] O6. Open "Verification code" and remove `{{Code}}`: saving is refused.
 - [ ] O7. Press "Use the standard wording again": the standard text is back.
+
+## P. Short links (after PR #74 is merged too)
+- [ ] P1. Book online. The link at the end of the confirmation text in Mailpit looks like `…/v/` followed by 22
+      characters. Opening it shows your visit with the cancel button.
+- [ ] P2. On the Messages page the example of the standard booking confirmation says "Texts needed: 1".
+- [ ] P3. A cancel link from a booking made before this change (a long one) still opens its visit.
 
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the

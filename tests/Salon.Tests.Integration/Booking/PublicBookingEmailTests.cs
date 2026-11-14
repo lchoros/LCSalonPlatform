@@ -31,9 +31,9 @@ public partial class PublicBookingTests
         email.Subject.ShouldBe("Your Cut at Studio 20 is booked");
         var text = email.TextBody.ShouldNotBeNull();
         text.ShouldStartWith("Hi Olivia,\nyour Cut with Anna at Studio 20 is booked for ");
-        text.ShouldContain($"/book/cancel/{appointment.PublicToken}");
+        text.ShouldContain($"/v/{appointment.PublicToken}");
         email.HtmlBody.ShouldStartWith("<p>Hi Olivia,<br>");
-        email.HtmlBody.ShouldContain($"/book/cancel/{appointment.PublicToken}\">", Case.Sensitive, "the link is clickable");
+        email.HtmlBody.ShouldContain($"/v/{appointment.PublicToken}\">", Case.Sensitive, "the link is clickable");
         email.HtmlBody.ShouldEndWith("</p>");
     }
 
@@ -103,7 +103,7 @@ public partial class PublicBookingTests
         var moved = factory.Emails.Messages.ShouldHaveSingleItem();
         moved.Subject.ShouldBe("Your booking at Studio 20 has a new time");
         moved.TextBody.ShouldNotBeNull().ShouldContain("11:00");
-        moved.TextBody.ShouldContain($"/book/cancel/{appointment.PublicToken}");
+        moved.TextBody.ShouldContain($"/v/{appointment.PublicToken}");
 
         factory.Emails.Clear();
         await CancelBySalonAsync(appointment.Id);

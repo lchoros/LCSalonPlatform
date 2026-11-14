@@ -165,7 +165,9 @@ the dispatcher gives every consumer its turn per attempt and skips the finished 
 renders the template for the channel and hands it to `ISmsSender` or `IEmailSender`; emails are the plain template
 text rendered to safe HTML (`EmailBodies`). `NotificationSettings.EmailEnabled` switches the email channel per salon. Every booking
 carries a public token, so a booking made at the desk is confirmed like an online one and its client can change or
-cancel through the same link (ADR 0029); `NotificationSettings.ConfirmDeskBookings` switches the desk confirmation off.
+cancel through the same link (ADR 0029); `NotificationSettings.ConfirmDeskBookings` switches the desk confirmation off. Messages carry the short
+address `/v/{token}` (ADR 0031), which forwards to `/book/cancel/{token}`; the token is 16 random bytes (22
+characters), and 43-character tokens from before keep working.
 
 ## 7. Testing
 Unit (xUnit + Shouldly + NSubstitute, FsCheck properties for availability and reminder rules), Architecture (NetArchTest

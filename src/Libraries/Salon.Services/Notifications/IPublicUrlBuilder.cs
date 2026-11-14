@@ -10,6 +10,10 @@ public interface IPublicUrlBuilder
     /// <summary>The salon's booking start page, e.g. <c>https://studio-20.salon.example/book</c>.</summary>
     string BookingUrl(string tenantSlug);
 
-    /// <summary>The cancel page for one appointment, addressed by its public token.</summary>
+    /// <summary>
+    /// The client's own link to one appointment, addressed by its public token: a short address
+    /// (<c>https://studio-20.salon.example/v/{token}</c>, ADR 0031) that leads to the page where the visit can be
+    /// changed or cancelled.
+    /// </summary>
     string CancelBookingUrl(string tenantSlug, string publicToken);
 }

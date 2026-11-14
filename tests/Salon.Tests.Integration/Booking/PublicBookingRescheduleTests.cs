@@ -59,7 +59,7 @@ public partial class PublicBookingTests
         sms.ToE164.ShouldBe(PhoneE164);
         sms.Body.ShouldStartWith("Studio 20: your Cut is now on ");
         sms.Body.ShouldContain("11:00");
-        sms.Body.ShouldContain($"/book/cancel/{appointment.PublicToken}");
+        sms.Body.ShouldContain($"/v/{appointment.PublicToken}");
     }
 
     [Fact]
@@ -194,7 +194,7 @@ public partial class PublicBookingTests
         sms.Body.ShouldContain("is now on ");
         sms.Body.ShouldContain("12:00");
         var token = (await AppointmentsAsync(_studio.Id)).Single(a => a.Id == desk).PublicToken.ShouldNotBeNull();
-        sms.Body.ShouldEndWith($"/book/cancel/{token}", Case.Sensitive, "a booking made at the desk has the client's own link too (ADR 0029)");
+        sms.Body.ShouldEndWith($"/v/{token}", Case.Sensitive, "a booking made at the desk has the client's own link too (ADR 0029)");
     }
 
     private static string SlotButton(Instant start) => $"name=\"Start\" value=\"{InstantPattern.ExtendedIso.Format(start)}\"";

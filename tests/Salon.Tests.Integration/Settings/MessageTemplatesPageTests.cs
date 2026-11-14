@@ -74,7 +74,7 @@ public class MessageTemplatesPageTests(SalonWebApplicationFactory factory) : IAs
 
         sms.ShouldContain("the link the client uses to change or cancel the visit");
         sms.ShouldContain("data-testid=\"preview-body\">Hi Olivia, your Cut and blow-dry at Studio 20 is booked for ");
-        sms.ShouldContain("/book/cancel/exampleexample");
+        sms.ShouldContain("/v/exampleexampleexamplee<");
         // How many texts depends on the length of the salon's address, so only the line itself is checked here.
         sms.ShouldContain("data-testid=\"preview-length\" data-segments=\"");
         sms.ShouldContain("Texts needed: ");

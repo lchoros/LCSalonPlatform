@@ -35,8 +35,7 @@ things a salon checks.
 ## Consequences
 - **Found while building:** the standard confirmation text with a client's link is about 170 characters, which is
   two texts, not one. The link alone is about 75 characters because the token has 43. Before real SMS (M3) either the
-  standard wording gets shorter or the link does (a short code for links in texts). Not changed here; it is a cost
-  decision for the owner.
+  standard wording gets shorter or the link does (a short code for links in texts). Not changed here; ADR 0031 shortens the link.
 - Only the tenant's culture can be edited. A salon that writes to clients in two languages is not a case we have.
 - No history of earlier wordings and no "send me a test message"; the preview is the check.
 - The email footer with the salon's address (ADR 0027) is added after the wording and is not part of the preview.
