@@ -30,11 +30,11 @@ public class DemoSeederOverridesTests(SalonWebApplicationFactory factory) : IAsy
         rows.Count.ShouldBe(2);
         rows.ShouldAllBe(o => o.Row.TenantId == tenantId);
         var (anna, priya) = (rows.Single(o => o.Staff == "Anna Kowalska"), rows.Single(o => o.Staff == "Priya Shah"));
-        anna.Service.ShouldBe("Cut & blow-dry");
+        anna.Service.ShouldBe("HAIR MEN 17: Haircut Scissors");
         anna.Row.Offers.ShouldBeTrue();
-        anna.Row.Duration.ShouldBe(Duration.FromMinutes(60));
-        anna.Row.Price.ShouldBe(55m);
-        priya.Service.ShouldBe("Cut & blow-dry");
+        anna.Row.Duration.ShouldBe(Duration.FromMinutes(45));
+        anna.Row.Price.ShouldBe(18m);
+        priya.Service.ShouldBe("HAIR MEN 17: Haircut Scissors");
         priya.Row.Offers.ShouldBeFalse();
         priya.Row.Duration.ShouldBeNull();
         priya.Row.Price.ShouldBeNull();

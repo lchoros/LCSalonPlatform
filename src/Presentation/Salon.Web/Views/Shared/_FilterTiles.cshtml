@@ -1,0 +1,9 @@
+@using Salon.Web.Framework.Lists
+@model FilterTilesModel
+@* Shared filter (ADR 0032): one squared tile per choice, each a link; the chosen one is marked for eyes and for screen readers. *@
+<nav aria-label="@Model.Label" class="filter-tiles" data-testid="filter-tiles">
+    @foreach (var tile in Model.Tiles)
+    {
+        <a href="@tile.Url" class="filter-tile accent-@tile.Accent @(tile.Selected ? "is-on" : string.Empty)" aria-current="@(tile.Selected ? "true" : null)" data-testid="filter-tile" data-key="@tile.Key">@tile.Label</a>
+    }
+</nav>

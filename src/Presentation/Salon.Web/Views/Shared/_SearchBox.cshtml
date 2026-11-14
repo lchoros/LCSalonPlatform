@@ -1,0 +1,19 @@
+@using Salon.Web.Framework.Lists
+@model SearchBoxModel
+@* Shared search (ADR 0032): a GET form, so a search is an address. Other filters ride along as hidden fields. *@
+<form method="get" action="@Model.Action" role="search" class="search-box" data-testid="search-form">
+    @foreach (var (name, value) in Model.Keep)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            <input type="hidden" name="@name" value="@value" />
+        }
+    }
+    <label for="list-search" class="sr-only">@Model.Label</label>
+    <input id="list-search" name="@ListUrl.SearchParameter" type="search" value="@Model.Value" placeholder="@Model.Label" autocomplete="off" enterkeyhint="search" class="search-input" data-testid="search-input" />
+    <button type="submit" class="search-submit" data-testid="search-submit">@T["Common.Search.Submit"]</button>
+    @if (!string.IsNullOrWhiteSpace(Model.Value))
+    {
+        <a href="@Model.ClearUrl" class="search-clear" data-testid="search-clear">@T["Common.Search.Clear"]</a>
+    }
+</form>

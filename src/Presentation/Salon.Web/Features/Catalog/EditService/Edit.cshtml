@@ -57,6 +57,25 @@
             </div>
         </div>
 
+        <fieldset class="space-y-4 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" data-testid="variant-fields">
+            <legend class="px-1 font-semibold">@T["Catalog.Variant.Legend"]</legend>
+            <p id="variant-hint" class="text-sm text-stone-500">@T["Catalog.Variant.Hint"]</p>
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div class="space-y-1">
+                    <label asp-for="VariantGroup" class="block text-sm font-medium">@T["Catalog.Variant.Group"]</label>
+                    <input asp-for="VariantGroup" maxlength="@ServiceRules.VariantGroupMaxLength" aria-describedby="variant-hint variant-group-hint variant-group-error" class="@inputClass" data-testid="variant-group" />
+                    <p id="variant-group-hint" class="text-sm text-stone-500">@T["Catalog.Variant.GroupHint"]</p>
+                    <span asp-validation-for="VariantGroup" id="variant-group-error" class="block text-sm text-red-700"></span>
+                </div>
+                <div class="space-y-1">
+                    <label asp-for="VariantLabel" class="block text-sm font-medium">@T["Catalog.Variant.Label"]</label>
+                    <input asp-for="VariantLabel" maxlength="@ServiceRules.VariantLabelMaxLength" aria-describedby="variant-label-hint variant-label-error" class="@inputClass" data-testid="variant-label" />
+                    <p id="variant-label-hint" class="text-sm text-stone-500">@T["Catalog.Variant.LabelHint"]</p>
+                    <span asp-validation-for="VariantLabel" id="variant-label-error" class="block text-sm text-red-700"></span>
+                </div>
+            </div>
+        </fieldset>
+
         <fieldset class="space-y-4 rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
             <legend class="px-1 font-semibold">@T["Catalog.Edit.Timing"]</legend>
             <div class="space-y-1">

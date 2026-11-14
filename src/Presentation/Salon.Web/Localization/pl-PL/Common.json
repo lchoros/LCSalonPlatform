@@ -12,5 +12,12 @@
   "Common.DayShort.Thursday": "Cz",
   "Common.DayShort.Friday": "Pt",
   "Common.DayShort.Saturday": "So",
-  "Common.DayShort.Sunday": "Nd"
+  "Common.DayShort.Sunday": "Nd",
+  "Common.Pager.Label": "Strony",
+  "Common.Pager.Previous": "Poprzednia",
+  "Common.Pager.Next": "Następna",
+  "Common.Pager.Status": "Strona {0} z {1}",
+  "Common.Pager.Summary": "{0}–{1} z {2}",
+  "Common.Search.Submit": "Szukaj",
+  "Common.Search.Clear": "Wyczyść"
 }
