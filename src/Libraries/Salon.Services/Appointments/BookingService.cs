@@ -80,8 +80,9 @@ internal sealed class BookingService(
             ServiceId = request.ServiceId,
             Start = request.Start,
             End = request.Start.Plus(offering.Duration),
-            // Online bookings get the secret of their cancel link (ADR 0014); admin bookings have no public page yet.
-            PublicToken = request.Source == AppointmentSource.Online ? PublicBookingToken.Generate() : null,
+            // Every booking gets the secret of the client's own link (ADR 0014, ADR 0029), so a visit booked at the desk can be
+            // confirmed, changed and cancelled by the client like one booked online.
+            PublicToken = PublicBookingToken.Generate(),
             Status = AppointmentStatus.Booked,
             Source = request.Source,
             Notes = request.Notes,

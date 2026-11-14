@@ -158,7 +158,9 @@ Client messages (ADR 0025): each booking message has one rule (`AppointmentBooke
 retries a failed channel alone: `outbox_messages.completed_consumers` lists the consumers that are done with an event,
 the dispatcher gives every consumer its turn per attempt and skips the finished ones on a retry. `AppointmentNotifier`
 renders the template for the channel and hands it to `ISmsSender` or `IEmailSender`; emails are the plain template
-text rendered to safe HTML (`EmailBodies`). `NotificationSettings.EmailEnabled` switches the email channel per salon.
+text rendered to safe HTML (`EmailBodies`). `NotificationSettings.EmailEnabled` switches the email channel per salon. Every booking
+carries a public token, so a booking made at the desk is confirmed like an online one and its client can change or
+cancel through the same link (ADR 0029); `NotificationSettings.ConfirmDeskBookings` switches the desk confirmation off.
 
 ## 7. Testing
 Unit (xUnit + Shouldly + NSubstitute, FsCheck properties for availability and reminder rules), Architecture (NetArchTest
@@ -175,6 +177,6 @@ a visible browser: `pwsh scripts/watch-e2e.ps1 -Filter <name>`.
 
 ## 8. Not yet built
 M1 remainder: several locations per salon (one exists, ADR 0027), FullCalendar drag-and-drop with live updates. M2 leftovers: payment reversals, split
-payments, tips, discounts and retail products at the checkout; a confirmation for bookings made at the desk. Reports:
+payments, tips, discounts and retail products at the checkout. Reports:
 export, charts, comparison with the period before. M3:
 payments beyond the record-only provider, real SMS/email, deployment.

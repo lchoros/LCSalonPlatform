@@ -56,5 +56,7 @@
   "Settings.SalonDetails.Validation.PostcodeRequired": "Podaj kod pocztowy.",
   "Settings.SalonDetails.Validation.TooLong": "Użyj najwyżej {0} znaków.",
   "Settings.SalonDetails.Validation.Phone": "Podaj numer telefonu: cyfry, można ze spacjami, na przykład 22 123 45 67.",
-  "Settings.SalonDetails.Validation.Email": "Podaj poprawny adres e-mail."
+  "Settings.SalonDetails.Validation.Email": "Podaj poprawny adres e-mail.",
+  "Settings.Notifications.ConfirmDeskBookings": "Potwierdzaj rezerwacje robione w salonie",
+  "Settings.Notifications.ConfirmDeskBookingsHint": "Klient zapisany przez telefon lub na miejscu dostaje takie samo potwierdzenie jak przy rezerwacji online, z własnym linkiem do zmiany lub odwołania wizyty."
 }

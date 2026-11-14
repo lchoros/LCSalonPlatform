@@ -30,6 +30,7 @@ public sealed class SaveNotificationSettingsHandler(ISettingService settings) : 
         var current = await settings.LoadAsync<NotificationSettings>(cancellationToken);
         current.RemindersEnabled = request.RemindersEnabled;
         current.EmailEnabled = request.EmailEnabled;
+        current.ConfirmDeskBookings = request.ConfirmDeskBookings;
         current.FirstReminderHours = first;
         current.SecondReminderHours = second;
         current.QuietHoursStartMinute = (quietFrom.Hour * 60) + quietFrom.Minute;
