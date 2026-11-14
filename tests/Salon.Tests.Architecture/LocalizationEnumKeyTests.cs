@@ -1,4 +1,5 @@
 using Salon.Core.Localization;
+using Salon.Core.Messaging;
 using Salon.Core.Payments;
 using Salon.Core.Reports;
 using Salon.Services.Payments;
@@ -33,6 +34,19 @@ public partial class LocalizationResourceTests
         expected.AddRange(Enum.GetValues<CashUpOutcome>()
             .Where(outcome => outcome != CashUpOutcome.Closed)
             .Select(outcome => $"Payments.CashUp.Refused.{outcome}"));
+
+        var known = Resources.Value[SupportedCultures.EnGb];
+
+        expected.Where(key => !known.ContainsKey(key)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Every_message_channel_and_placeholder_the_messages_page_names_has_its_text()
+    {
+        var expected = new List<string>();
+        expected.AddRange(MessageTemplateCatalog.All.SelectMany(d => new[] { $"Settings.Messages.Name.{d.Key}", $"Settings.Messages.When.{d.Key}" }));
+        expected.AddRange(MessageTemplateCatalog.All.SelectMany(d => d.TokenNames).Distinct().Select(token => $"Settings.Messages.Token.{token}"));
+        expected.AddRange(Enum.GetNames<MessageChannel>().Select(channel => $"Settings.Messages.Channel.{channel}"));
 
         var known = Resources.Value[SupportedCultures.EnGb];
 
