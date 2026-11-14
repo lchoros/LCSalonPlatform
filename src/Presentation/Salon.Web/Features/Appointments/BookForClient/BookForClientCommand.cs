@@ -1,5 +1,4 @@
 using NodaTime;
-
 using Salon.Core.Cqrs;
 
 namespace Salon.Web.Features.Appointments.BookForClient;

@@ -1,7 +1,6 @@
 using Salon.Core.Cqrs;
 using Salon.Services.Clients;
 using Salon.Services.Payments;
-
 using Card = Salon.Services.Clients.ClientCard;
 
 namespace Salon.Web.Features.Clients.ClientCard;

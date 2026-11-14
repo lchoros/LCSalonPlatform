@@ -1,10 +1,7 @@
 using System.Reflection;
-
 using FluentValidation;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-
 using Salon.Core.Cqrs;
 
 namespace Salon.Web.Framework.Pipeline;

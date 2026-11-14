@@ -1,5 +1,4 @@
 using System.Security.Claims;
-
 using Salon.Core.Identity;
 
 namespace Salon.Services.Identity;

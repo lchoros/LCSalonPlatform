@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-
 using Salon.Data;
 using Salon.Plugin.Import;
 using Salon.Plugin.Payments.Manual;

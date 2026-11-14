@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
 using Salon.Core.Catalog;
 using Salon.Data;
 using Salon.Services.Seeding;

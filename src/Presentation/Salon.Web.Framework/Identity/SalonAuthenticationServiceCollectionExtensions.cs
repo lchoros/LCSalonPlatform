@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Threading.RateLimiting;
-
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -9,7 +8,6 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-
 using Salon.Services.Identity;
 
 namespace Salon.Web.Framework.Identity;

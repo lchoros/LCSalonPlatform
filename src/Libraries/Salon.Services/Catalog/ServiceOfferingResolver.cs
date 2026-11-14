@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-
 using Salon.Core.Catalog;
 using Salon.Data;
 

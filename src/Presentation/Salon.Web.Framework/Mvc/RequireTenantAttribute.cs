@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
-
 using Salon.Core.Tenancy;
 
 namespace Salon.Web.Framework.Mvc;

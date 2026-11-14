@@ -1,5 +1,4 @@
 using FluentValidation;
-
 using Salon.Core.Settings;
 using Salon.Services.Localization;
 

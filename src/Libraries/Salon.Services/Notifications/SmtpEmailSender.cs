@@ -1,12 +1,9 @@
 using MailKit;
 using MailKit.Net.Smtp;
 using MailKit.Security;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
 using MimeKit;
-
 using Salon.Core.Messaging;
 
 namespace Salon.Services.Notifications;

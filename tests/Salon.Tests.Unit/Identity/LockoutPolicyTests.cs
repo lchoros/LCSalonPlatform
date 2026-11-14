@@ -1,5 +1,4 @@
 using NodaTime;
-
 using Salon.Core.Identity;
 
 namespace Salon.Tests.Unit.Identity;

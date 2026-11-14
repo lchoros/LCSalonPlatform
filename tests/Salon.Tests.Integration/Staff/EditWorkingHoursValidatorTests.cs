@@ -1,11 +1,7 @@
 using System.Globalization;
-
 using FluentValidation.Results;
-
 using Microsoft.Extensions.DependencyInjection;
-
 using NodaTime;
-
 using Salon.Core.Staff;
 using Salon.Services;
 using Salon.Services.Localization;

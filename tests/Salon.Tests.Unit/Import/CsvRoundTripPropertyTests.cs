@@ -1,9 +1,7 @@
 using System.Text;
-
 using FsCheck;
 using FsCheck.Fluent;
 using FsCheck.Xunit;
-
 using Salon.Core.Import;
 using Salon.Plugin.Import.Csv;
 using Salon.Plugin.Import.Parsers;

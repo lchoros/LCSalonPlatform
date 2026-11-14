@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-
 using Salon.Services.Notifications;
 using Salon.Web.Framework.Booking;
 

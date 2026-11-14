@@ -1,7 +1,6 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
-
 using NodaTime;
 
 namespace Salon.Core.Booking;

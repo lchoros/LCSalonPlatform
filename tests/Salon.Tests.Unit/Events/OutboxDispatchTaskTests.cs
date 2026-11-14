@@ -2,9 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-
 using NSubstitute;
-
 using Salon.Core.Tasks;
 using Salon.Services.Events;
 

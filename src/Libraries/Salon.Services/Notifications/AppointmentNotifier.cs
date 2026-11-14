@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-
 using Salon.Core.Messaging;
 using Salon.Core.Settings;
 using Salon.Services.Locations;

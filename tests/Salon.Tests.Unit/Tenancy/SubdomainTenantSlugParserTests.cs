@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http;
-
 using Salon.Web.Framework.Tenancy;
 
 namespace Salon.Tests.Unit.Tenancy;

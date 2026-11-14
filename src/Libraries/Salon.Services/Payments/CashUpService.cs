@@ -1,10 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-
 using NodaTime;
-
 using Npgsql;
-
 using Salon.Core.Domain;
 using Salon.Core.Payments;
 using Salon.Core.Tenancy;

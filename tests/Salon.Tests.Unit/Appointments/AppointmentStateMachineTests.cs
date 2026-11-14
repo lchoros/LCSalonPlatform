@@ -1,7 +1,5 @@
 using NodaTime;
-
 using Salon.Core.Appointments;
-
 using static Salon.Core.Appointments.AppointmentStatus;
 
 namespace Salon.Tests.Unit.Appointments;

@@ -1,10 +1,7 @@
 using System.Globalization;
 using System.Net;
-
 using Microsoft.Extensions.DependencyInjection;
-
 using NodaTime;
-
 using Salon.Core.Appointments;
 using Salon.Core.Identity;
 using Salon.Core.Tenancy;

@@ -1,8 +1,6 @@
 using System.Reflection;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-
 using Salon.Core.Events;
 using Salon.Core.Tasks;
 

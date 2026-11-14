@@ -1,5 +1,4 @@
 using FluentValidation;
-
 using Salon.Services.Localization;
 
 namespace Salon.Web.Features.Identity.Login;

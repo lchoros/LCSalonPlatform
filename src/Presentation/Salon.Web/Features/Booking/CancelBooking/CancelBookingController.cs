@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-
 using NodaTime;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Domain;
 using Salon.Core.Payments;

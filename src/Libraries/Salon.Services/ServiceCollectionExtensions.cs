@@ -1,7 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-
 using NodaTime;
-
 using Salon.Core.Messaging;
 using Salon.Core.Tasks;
 using Salon.Core.Tenancy;

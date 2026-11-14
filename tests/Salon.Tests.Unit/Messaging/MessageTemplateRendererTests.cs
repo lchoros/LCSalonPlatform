@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-
 using Salon.Core.Messaging;
-
 using Shouldly;
-
 using Xunit;
 
 namespace Salon.Tests.Unit.Messaging;

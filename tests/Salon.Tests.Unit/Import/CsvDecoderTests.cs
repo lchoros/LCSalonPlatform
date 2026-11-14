@@ -1,5 +1,4 @@
 using System.Text;
-
 using Salon.Plugin.Import.Csv;
 
 namespace Salon.Tests.Unit.Import;

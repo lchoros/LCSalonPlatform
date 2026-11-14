@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-
 using Salon.Core.Identity;
 using Salon.Services.Identity;
 

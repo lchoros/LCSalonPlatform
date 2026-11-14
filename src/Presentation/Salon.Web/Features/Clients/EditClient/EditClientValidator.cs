@@ -1,7 +1,5 @@
 using FluentValidation;
-
 using NodaTime.Text;
-
 using Salon.Core.Clients;
 using Salon.Core.Payments;
 using Salon.Services.Clients;

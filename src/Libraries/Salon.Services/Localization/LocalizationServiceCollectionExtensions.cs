@@ -1,5 +1,4 @@
 using System.Reflection;
-
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Salon.Services.Localization;

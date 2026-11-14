@@ -1,14 +1,11 @@
 using System.Security.Claims;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-
 using NSubstitute;
-
 using Salon.Core.Identity;
 using Salon.Core.Tenancy;
 using Salon.Web.Framework.Mvc;

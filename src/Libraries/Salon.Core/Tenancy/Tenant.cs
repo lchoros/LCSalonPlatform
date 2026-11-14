@@ -1,5 +1,4 @@
 using NodaTime;
-
 using Salon.Core.Domain;
 
 namespace Salon.Core.Tenancy;

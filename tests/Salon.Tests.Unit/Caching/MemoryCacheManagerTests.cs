@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Caching.Memory;
-
 using Salon.Services.Caching;
 
 namespace Salon.Tests.Unit.Caching;

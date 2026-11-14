@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-
 using Salon.Core.Localization;
 using Salon.Services.Localization;
 

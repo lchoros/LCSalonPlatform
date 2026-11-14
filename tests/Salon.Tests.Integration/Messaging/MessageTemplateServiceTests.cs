@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
 using Salon.Core.Messaging;
 using Salon.Core.Tenancy;
 using Salon.Data;

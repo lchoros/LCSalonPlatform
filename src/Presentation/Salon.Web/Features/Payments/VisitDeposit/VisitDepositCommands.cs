@@ -1,10 +1,8 @@
 using FluentValidation;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Payments;
 using Salon.Services.Localization;
 using Salon.Services.Payments;
-
 using Deposit = Salon.Services.Payments.VisitDeposit;
 
 namespace Salon.Web.Features.Payments.VisitDeposit;

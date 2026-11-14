@@ -1,8 +1,6 @@
 using System.Reflection;
 using System.Reflection.Emit;
-
 using NodaTime;
-
 using Salon.Core.Events;
 
 namespace Salon.Tests.Unit.Events;

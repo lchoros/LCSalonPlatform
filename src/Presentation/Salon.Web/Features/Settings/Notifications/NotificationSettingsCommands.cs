@@ -1,7 +1,5 @@
 using System.Globalization;
-
 using NodaTime;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Settings;
 using Salon.Core.Staff;

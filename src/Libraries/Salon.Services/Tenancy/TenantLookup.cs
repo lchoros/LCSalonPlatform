@@ -1,7 +1,5 @@
 using System.Linq.Expressions;
-
 using Microsoft.EntityFrameworkCore;
-
 using Salon.Core.Tenancy;
 using Salon.Data;
 using Salon.Services.Caching;

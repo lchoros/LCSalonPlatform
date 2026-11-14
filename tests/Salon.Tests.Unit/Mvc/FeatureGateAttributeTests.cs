@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-
 using Salon.Web.Framework.Infrastructure;
 using Salon.Web.Framework.Mvc;
 

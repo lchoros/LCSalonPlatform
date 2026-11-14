@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-
 using NodaTime;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Tenancy;
 using Salon.Services.Booking;

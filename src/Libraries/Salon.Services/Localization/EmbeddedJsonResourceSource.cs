@@ -1,6 +1,5 @@
 using System.Reflection;
 using System.Text.Json;
-
 using Salon.Core.Localization;
 
 namespace Salon.Services.Localization;

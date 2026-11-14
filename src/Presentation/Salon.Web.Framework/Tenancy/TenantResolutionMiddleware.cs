@@ -1,11 +1,9 @@
 using System.Security.Claims;
-
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
 using Salon.Core.Tenancy;
 using Salon.Services.Tenancy;
 using Salon.Web.Framework.Identity;

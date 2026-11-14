@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
 using NodaTime;
-
 using Salon.Core.Appointments;
 using Salon.Core.Domain;
 using Salon.Core.Payments;

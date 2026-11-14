@@ -1,10 +1,8 @@
 using System.Reflection;
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-
 using Salon.Web.Framework.Infrastructure;
 
 namespace Salon.Web.Framework.Mvc;

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Tenancy;
 using Salon.Services.Tenancy;

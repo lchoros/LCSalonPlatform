@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
-
 using Salon.Web.Framework.Controllers;
 using Salon.Web.Framework.Identity;
 using Salon.Web.Framework.Mvc;

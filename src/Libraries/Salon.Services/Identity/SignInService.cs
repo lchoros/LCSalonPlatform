@@ -1,7 +1,5 @@
 using Microsoft.Extensions.Logging;
-
 using NodaTime;
-
 using Salon.Core.Identity;
 using Salon.Data;
 

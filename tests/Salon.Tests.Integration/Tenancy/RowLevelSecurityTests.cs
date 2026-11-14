@@ -1,10 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
 using NodaTime;
-
 using Npgsql;
-
 using Salon.Core.Catalog;
 using Salon.Core.Tenancy;
 using Salon.Data;

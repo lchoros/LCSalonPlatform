@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
-
 using Microsoft.Playwright;
 
 namespace Salon.Tests.E2E.Infrastructure;

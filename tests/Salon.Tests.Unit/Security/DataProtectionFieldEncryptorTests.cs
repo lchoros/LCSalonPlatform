@@ -1,7 +1,5 @@
 using System.Security.Cryptography;
-
 using Microsoft.AspNetCore.DataProtection;
-
 using Salon.Core.Clients;
 using Salon.Web.Framework.Security;
 

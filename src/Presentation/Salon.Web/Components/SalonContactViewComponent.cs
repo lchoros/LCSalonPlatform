@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-
 using Salon.Services.Locations;
 
 namespace Salon.Web.Components;

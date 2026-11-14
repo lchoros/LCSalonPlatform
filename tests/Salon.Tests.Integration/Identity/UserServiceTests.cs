@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-
 using Salon.Core.Identity;
 using Salon.Core.Tenancy;
 using Salon.Services.Identity;

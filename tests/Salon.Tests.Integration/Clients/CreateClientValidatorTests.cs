@@ -1,9 +1,6 @@
 using System.Globalization;
-
 using FluentValidation.Results;
-
 using Microsoft.Extensions.DependencyInjection;
-
 using Salon.Core.Clients;
 using Salon.Services;
 using Salon.Services.Localization;

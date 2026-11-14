@@ -1,11 +1,8 @@
 using System.Net;
-
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
 using NodaTime;
-
 using Salon.Core.Appointments;
 using Salon.Core.Catalog;
 using Salon.Core.Domain;

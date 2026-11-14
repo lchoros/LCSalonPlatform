@@ -1,7 +1,5 @@
 using System.Diagnostics;
-
 using Microsoft.AspNetCore.Mvc;
-
 using Salon.Core.Tenancy;
 using Salon.Services.Tenancy;
 using Salon.Web.Framework.Controllers;

@@ -1,11 +1,8 @@
 using FluentValidation;
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-
 using NodaTime;
 using NodaTime.Text;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Tenancy;
 using Salon.Services.Appointments;

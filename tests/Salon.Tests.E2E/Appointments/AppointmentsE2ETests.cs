@@ -1,10 +1,7 @@
 using Deque.AxeCore.Playwright;
-
 using Microsoft.Playwright;
-
 using NodaTime;
 using NodaTime.Text;
-
 using Salon.Core.Identity;
 using Salon.Tests.E2E.Infrastructure;
 

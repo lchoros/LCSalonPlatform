@@ -1,5 +1,4 @@
 using System.Net;
-
 using Salon.Tests.Integration.Infrastructure;
 
 namespace Salon.Tests.Integration.Localization;

@@ -1,12 +1,9 @@
 using System.Net;
 using System.Text.RegularExpressions;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
 using NodaTime;
 using NodaTime.Text;
-
 using Salon.Core.Appointments;
 using Salon.Core.Appointments.Events;
 using Salon.Core.Catalog;

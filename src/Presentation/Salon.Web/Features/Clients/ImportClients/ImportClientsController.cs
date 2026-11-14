@@ -1,8 +1,6 @@
 using FluentValidation;
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-
 using Salon.Core.Cqrs;
 using Salon.Core.Identity;
 using Salon.Core.Import;

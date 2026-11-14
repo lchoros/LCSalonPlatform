@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-
 using Salon.Core.Events;
 
 namespace Salon.Tests.Integration.Events;

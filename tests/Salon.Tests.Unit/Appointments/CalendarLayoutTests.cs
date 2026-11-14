@@ -1,5 +1,4 @@
 using NodaTime;
-
 using Salon.Core.Staff;
 using Salon.Services.Appointments;
 

@@ -1,5 +1,4 @@
 using System.Text;
-
 using Salon.Core.Import;
 using Salon.Core.Plugins;
 using Salon.Plugin.Import;

@@ -1,8 +1,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-
 using NSubstitute;
-
 using Salon.Web.Framework.Tenancy;
 
 namespace Salon.Tests.Unit.Tenancy;

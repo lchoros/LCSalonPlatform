@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-
 using NodaTime;
-
 using Salon.Core.Appointments;
 using Salon.Core.Booking;
 using Salon.Core.Clients;

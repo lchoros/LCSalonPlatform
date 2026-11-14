@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-
 using NodaTime;
-
 using Salon.Core.Locations;
 using Salon.Core.Tenancy;
 using Salon.Data;

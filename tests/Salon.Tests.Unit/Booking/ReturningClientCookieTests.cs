@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
-
 using Salon.Web.Framework.Booking;
 
 namespace Salon.Tests.Unit.Booking;

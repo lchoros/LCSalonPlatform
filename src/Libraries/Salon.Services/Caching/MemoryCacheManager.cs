@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Salon.Services.Caching;

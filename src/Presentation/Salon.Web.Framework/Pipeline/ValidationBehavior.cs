@@ -1,6 +1,5 @@
 using FluentValidation;
 using FluentValidation.Results;
-
 using Salon.Core.Cqrs;
 
 namespace Salon.Web.Framework.Pipeline;

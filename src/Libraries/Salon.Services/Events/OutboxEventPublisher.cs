@@ -1,5 +1,4 @@
 using NodaTime;
-
 using Salon.Core.Events;
 using Salon.Core.Tenancy;
 using Salon.Data;

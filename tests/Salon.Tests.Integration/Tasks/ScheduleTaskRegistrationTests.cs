@@ -1,8 +1,6 @@
 using Hangfire;
 using Hangfire.Storage;
-
 using Microsoft.Extensions.DependencyInjection;
-
 using Salon.Core.Tasks;
 using Salon.Tests.Integration.Infrastructure;
 

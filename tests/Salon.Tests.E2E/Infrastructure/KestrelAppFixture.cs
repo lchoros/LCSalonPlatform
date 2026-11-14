@@ -6,9 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Playwright;
-
 using NodaTime;
-
 using Salon.Core.Appointments;
 using Salon.Core.Catalog;
 using Salon.Core.Identity;

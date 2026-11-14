@@ -1,5 +1,4 @@
 using NodaTime;
-
 using Salon.Core.Domain;
 using Salon.Core.Payments;
 using Salon.Core.Reports;

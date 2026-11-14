@@ -1,5 +1,4 @@
 using NodaTime;
-
 using Salon.Core.Catalog;
 
 namespace Salon.Tests.Unit.Catalog;

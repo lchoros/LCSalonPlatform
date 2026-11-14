@@ -1,5 +1,4 @@
 using System.Text.Json;
-
 using Salon.Core.Localization;
 using Salon.Core.Messaging;
 

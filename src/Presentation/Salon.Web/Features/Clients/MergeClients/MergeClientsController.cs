@@ -1,7 +1,5 @@
 using System.Security.Claims;
-
 using Microsoft.AspNetCore.Mvc;
-
 using Salon.Core.Clients;
 using Salon.Core.Cqrs;
 using Salon.Core.Identity;
@@ -9,7 +7,6 @@ using Salon.Services.Clients;
 using Salon.Services.Localization;
 using Salon.Web.Framework.Controllers;
 using Salon.Web.Framework.Mvc;
-
 using Card = Salon.Services.Clients.ClientCard;
 
 namespace Salon.Web.Features.Clients.MergeClients;

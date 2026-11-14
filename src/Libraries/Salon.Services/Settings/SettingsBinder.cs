@@ -1,10 +1,8 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
-
 using NodaTime;
 using NodaTime.Text;
-
 using Salon.Core.Settings;
 
 namespace Salon.Services.Settings;

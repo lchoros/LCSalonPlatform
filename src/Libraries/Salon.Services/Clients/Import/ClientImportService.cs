@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-
 using Salon.Core.Clients;
 using Salon.Core.Import;
 using Salon.Core.Tenancy;

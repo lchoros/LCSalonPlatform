@@ -1,8 +1,6 @@
 using System.Data;
 using System.Data.Common;
-
 using Microsoft.EntityFrameworkCore.Diagnostics;
-
 using Salon.Core.Tenancy;
 
 namespace Salon.Data.Tenancy;
