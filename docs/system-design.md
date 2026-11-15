@@ -163,7 +163,10 @@ entries (a service, or the variants that share `Service.VariantGroup`) and appli
 The shared partials `_SearchBox`, `_FilterTiles` and `_Pager` (models and `ListUrl` in `Salon.Web.Framework/Lists`)
 render them as GET forms and links, so a filtered page is an address. The booking page and the admin services list
 use them. The look is one vocabulary in `Styles/app.css`: five accents (`.accent-1` to `.accent-5`) give cards and
-tiles a two-colour border and a soft glow.
+tiles a two-colour border and a soft glow. The admin pages use the same vocabulary one size down (ADR 0033):
+`btn-compact`, `field-compact`, `page-title`, `panel`, `list-card`, `empty-state`, `stat`; the menu marks the area
+of the page with `nav-link` and `aria-current="true"`. A view takes its classes from `app.css` and does not carry
+utility strings of its own for buttons, fields, notices or panels.
 
 Client messages (ADR 0025): each booking message has one rule (`AppointmentBookedNotice`, `AppointmentCancelledNotice`,
 `AppointmentMovedNotice` in `Salon.Services/Notifications`) and one consumer per channel, SMS and email, so the outbox

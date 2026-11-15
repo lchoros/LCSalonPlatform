@@ -65,7 +65,7 @@
   .accent-4 { --accent-from: #8b5cf6; --accent-to: #ec4899; --accent-glow: rgb(139 92 246 / 0.35); }
   .accent-5 { --accent-from: #f59e0b; --accent-to: #facc15; --accent-glow: rgb(245 158 11 / 0.35); }
 
-  .choice-card, .variant-card, .filter-tile {
+  .choice-card, .variant-card, .filter-tile, .panel {
     border: 1.5px solid transparent;
     background:
       linear-gradient(#fff, #fff) padding-box,
@@ -238,5 +238,86 @@
 
   .facts > dd {
     @apply font-medium text-stone-900;
+  }
+
+  /* The admin pages (ADR 0033) use the same vocabulary, one size down: controls are 44 px tall with 14 px text,
+     because the desk works with a mouse as often as with a thumb. */
+  .btn-compact {
+    @apply min-h-11 text-sm;
+  }
+
+  .field-compact {
+    @apply min-h-11;
+  }
+
+  /* A page's name, with a short mark in the brand colours under it. */
+  .page-title {
+    @apply text-2xl font-bold tracking-tight sm:text-3xl;
+  }
+
+  .page-title::after {
+    content: "";
+    @apply mt-2 block h-1 w-10 rounded-full;
+    background: linear-gradient(90deg, #f43f5e, #8b5cf6, #3b82f6);
+  }
+
+  /* The same colours as a hairline across the top of every page: painted on the header itself, so the page gains
+     no element that carries nothing. */
+  .brand-line {
+    @apply pt-1;
+    background-image: linear-gradient(90deg, #f43f5e, #fb923c, #8b5cf6, #3b82f6, #22d3ee);
+    background-position: top;
+    background-repeat: no-repeat;
+    background-size: 100% 0.25rem;
+  }
+
+  /* The admin menu: the area you are in is the dark one. */
+  .nav-link {
+    @apply inline-flex min-h-11 items-center rounded-lg px-3 py-2 font-medium text-stone-800 transition-colors hover:bg-stone-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900;
+  }
+
+  .nav-link[aria-current="true"] {
+    @apply bg-stone-900 text-white hover:bg-stone-900;
+  }
+
+  /* A section of a page: a white surface with the thin border and glow; give it an accent to make it stand out. */
+  .panel {
+    @apply rounded-xl p-4;
+  }
+
+  /* Rows that belong together (clients, visits, lines of a report). */
+  .list-card {
+    @apply divide-y divide-stone-200 rounded-xl border border-stone-200 bg-white shadow-sm;
+  }
+
+  .list-card > :first-child, .list-card > :first-child > a {
+    @apply rounded-t-xl;
+  }
+
+  .list-card > :last-child, .list-card > :last-child > a {
+    @apply rounded-b-xl;
+  }
+
+  /* "Nothing here yet". */
+  .empty-state {
+    @apply rounded-xl border border-dashed border-stone-300 bg-white p-6 text-center text-stone-600;
+  }
+
+  /* The quiet link back to where you came from. */
+  .back-link {
+    @apply inline-flex min-h-11 items-center text-sm font-medium text-stone-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900;
+  }
+
+  /* One number that matters, in a panel of its own. */
+  .stat {
+    @apply flex flex-col gap-1;
+  }
+
+  .stat-label {
+    @apply text-sm text-stone-600;
+  }
+
+  .stat-value {
+    @apply text-2xl font-bold tabular-nums text-stone-900;
   }
 }

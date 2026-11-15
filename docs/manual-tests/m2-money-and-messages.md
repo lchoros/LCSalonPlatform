@@ -209,6 +209,18 @@ The demo data changed. Drop and recreate `salon_dev` first (see "Clean up"), the
       are my estimates.
 - [ ] Q6. Admin, Services: the same search, tiles and pages. A variant says which service it is a variant of.
 
+## R. The look of the admin pages (after PR #76 is merged too)
+- [ ] R1. Sign in as the owner. Every page has a thin line of colours on top and a short coloured mark under its
+      title.
+- [ ] R2. Tap each link of the menu in turn. The link of the area you are in is dark, and only that one. On
+      "Calendar" the dark one is "Calendar", not "Appointments".
+- [ ] R3. Services, "Add a service": "Services" stays dark.
+- [ ] R4. Reports: four tiles on top (taken, visits, no-show rate, not paid). On a wide screen the sections under
+      them sit in two columns; on a phone in one.
+- [ ] R5. Settings: the four tabs look like the category tiles on the booking page; the open one is dark.
+- [ ] R6. On a phone nothing scrolls sideways on Services, Clients, Appointments, Calendar, Till, Reports, Staff and
+      Settings.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

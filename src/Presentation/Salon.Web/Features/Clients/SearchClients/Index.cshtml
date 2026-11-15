@@ -2,35 +2,35 @@
 @model SearchClientsViewModel
 @{
     ViewData["Title"] = T["Clients.Search.Title"];
-    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 px-3 py-2 text-base shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
+    const string inputClass = "field field-compact";
 }
 <section class="space-y-6">
     @if (Model.Flash is { } flash)
     {
-        <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
     }
     <header class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Clients.Search.Title"]</h1>
-        <a href="/admin/clients/new" data-testid="add-client" class="inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700">@T["Clients.Search.Add"]</a>
+        <h1 class="page-title">@T["Clients.Search.Title"]</h1>
+        <a href="/admin/clients/new" data-testid="add-client" class="btn btn-compact btn-primary">@T["Clients.Search.Add"]</a>
     </header>
 
     <form method="get" asp-action="Index" role="search" class="flex flex-col gap-3 sm:flex-row sm:items-end" data-testid="client-search-form">
         <div class="flex-1 space-y-1">
-            <label for="q" class="block text-sm font-medium">@T["Clients.Search.Query"]</label>
+            <label for="q" class="field-label">@T["Clients.Search.Query"]</label>
             <input id="q" name="q" type="search" value="@Model.Query" maxlength="100" autocomplete="off" enterkeyhint="search" class="@inputClass" />
         </div>
-        <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100">@T["Clients.Search.Submit"]</button>
+        <button type="submit" class="btn btn-compact btn-secondary">@T["Clients.Search.Submit"]</button>
     </form>
 
     @if (Model.Clients.Count == 0)
     {
-        <p data-testid="empty-state" class="rounded-md border border-dashed border-stone-300 p-6 text-center text-stone-600">
+        <p data-testid="empty-state" class="empty-state">
             @(Model.Query is { } query ? T.Format("Clients.Search.NoMatch", query) : T["Clients.Search.Empty"])
         </p>
     }
     else
     {
-        <ul class="divide-y divide-stone-200 rounded-lg border border-stone-200 bg-white shadow-sm" data-testid="client-list">
+        <ul class="list-card" data-testid="client-list">
             @foreach (var client in Model.Clients)
             {
                 <li data-testid="client-row">

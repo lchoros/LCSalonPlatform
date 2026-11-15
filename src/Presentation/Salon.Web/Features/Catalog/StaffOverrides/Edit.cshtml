@@ -5,25 +5,25 @@
 @model StaffOverridesForm
 @{
     ViewData["Title"] = T["Catalog.StaffOverrides.Title"];
-    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 px-2 py-2 text-base tabular-nums shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
+    const string inputClass = "field field-compact px-2 tabular-nums";
     var defaultPrice = new Money(Model.DefaultPrice, Model.Currency).ToDisplayString(CultureInfo.CurrentCulture);
     var pricePlaceholder = Model.DefaultPrice.ToString("0.00", CultureInfo.CurrentCulture);
 }
 <section class="mx-auto max-w-2xl space-y-6">
     <header class="space-y-1">
-        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Catalog.StaffOverrides.Title"]</h1>
+        <h1 class="page-title">@T["Catalog.StaffOverrides.Title"]</h1>
         <p class="text-lg text-stone-700" data-testid="service-name">@Model.ServiceName</p>
         <p class="text-sm text-stone-500" data-testid="service-defaults">@T.Format("Catalog.StaffOverrides.Default", Model.DefaultDurationMinutes, defaultPrice)</p>
         <p class="text-sm text-stone-500">@T["Catalog.StaffOverrides.Hint"]</p>
     </header>
     @if (Model.Rows.Count == 0)
     {
-        <p data-testid="empty-state" class="rounded-md border border-dashed border-stone-300 p-6 text-center text-stone-600">@T["Catalog.StaffOverrides.Empty"]</p>
+        <p data-testid="empty-state" class="empty-state">@T["Catalog.StaffOverrides.Empty"]</p>
     }
     else
     {
         <form method="post" asp-action="Edit" asp-route-id="@Model.ServiceId" class="space-y-4" novalidate data-testid="staff-overrides-form">
-            <div asp-validation-summary="ModelOnly" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert"></div>
+            <div asp-validation-summary="ModelOnly" class="notice notice-error" role="alert"></div>
 
             <table class="w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-lg border border-stone-200 bg-white text-left text-sm shadow-sm">
                 <thead class="bg-stone-50 text-xs font-medium uppercase tracking-wide text-stone-500">
@@ -64,8 +64,8 @@
             </table>
 
             <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
-                <a href="/admin/services/@Model.ServiceId" class="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100">@T["Catalog.StaffOverrides.Cancel"]</a>
-                <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700">@T["Catalog.StaffOverrides.Submit"]</button>
+                <a href="/admin/services/@Model.ServiceId" class="btn btn-compact btn-secondary">@T["Catalog.StaffOverrides.Cancel"]</a>
+                <button type="submit" class="btn btn-compact btn-primary">@T["Catalog.StaffOverrides.Submit"]</button>
             </div>
         </form>
     }

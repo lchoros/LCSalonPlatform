@@ -15,10 +15,10 @@
     var dayPath = "/admin/appointments?date=" + LocalDatePattern.Iso.Format(visit.Start.Date);
     var feePath = VisitFeeController.BasePath + "/" + visit.AppointmentId;
     ViewData["Title"] = T["Payments.Fee.Title"];
-    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 bg-white px-3 py-2 text-base shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
-    const string primaryClass = "inline-flex min-h-11 w-full items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700 sm:w-auto";
-    const string secondaryClass = "inline-flex min-h-11 w-full items-center justify-center rounded-md border border-stone-300 bg-white px-4 py-2 text-base font-medium hover:bg-stone-100 sm:w-auto";
-    const string cardClass = "space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm";
+    const string inputClass = "field field-compact";
+    const string primaryClass = "btn btn-compact btn-primary w-full sm:w-auto";
+    const string secondaryClass = "btn btn-compact btn-secondary w-full sm:w-auto";
+    const string cardClass = "space-y-3 panel";
 }
 @functions {
     string When(Instant at, DateTimeZone zone) => at.InZone(zone).LocalDateTime.ToString("g", CultureInfo.CurrentCulture);
@@ -31,16 +31,16 @@
     };
 }
 <section class="mx-auto max-w-lg space-y-6">
-    <a href="@dayPath" data-testid="back" class="inline-flex min-h-11 items-center text-sm font-medium text-stone-700 hover:underline">&larr; @T["Payments.Fee.Back"]</a>
-    <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Payments.Fee.Title"]</h1>
+    <a href="@dayPath" data-testid="back" class="back-link">&larr; @T["Payments.Fee.Back"]</a>
+    <h1 class="page-title">@T["Payments.Fee.Title"]</h1>
 
     @if (Model.Flash is { } flash)
     {
-        <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
     }
     @if (Model.Error is { } error)
     {
-        <p role="alert" data-testid="error" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">@error</p>
+        <p role="alert" data-testid="error" class="notice notice-error">@error</p>
     }
 
     <section class="@cardClass" data-testid="fee-visit" data-status="@visit.Status">
@@ -71,7 +71,7 @@
             {
                 <form method="post" action="@feePath" asp-antiforgery="true" class="space-y-3" data-testid="charge-form">
                     <div class="space-y-1">
-                        <label for="amount" class="block text-sm font-medium">@T.Format("Payments.Fee.Amount", visit.Price.Currency)</label>
+                        <label for="amount" class="field-label">@T.Format("Payments.Fee.Amount", visit.Price.Currency)</label>
                         <input id="amount" name="amount" type="text" inputmode="decimal" value="@chargeable.Amount.ToString("0.00", culture)" required aria-describedby="amount-hint" class="@inputClass tabular-nums" data-testid="fee-amount" />
                         <p id="amount-hint" class="text-sm text-stone-600">@T.Format("Payments.Fee.AmountHint", (visit.Price with { Amount = visit.MaxFee }).ToDisplayString(culture))</p>
                     </div>
@@ -137,7 +137,7 @@
                 <p class="text-sm text-stone-600">@T["Payments.Fee.Pay.Hint"]</p>
                 <form method="post" action="@feePath/paid" asp-antiforgery="true" class="space-y-3" data-testid="pay-form">
                     <div class="space-y-1">
-                        <label for="method" class="block text-sm font-medium">@T["Payments.Fee.Pay.Method"]</label>
+                        <label for="method" class="field-label">@T["Payments.Fee.Pay.Method"]</label>
                         <select id="method" name="method" class="@inputClass" data-testid="pay-method">
                             @foreach (var method in Enum.GetValues<PaymentMethod>())
                             {
@@ -153,7 +153,7 @@
                 <h2 class="text-lg font-semibold">@T["Payments.Fee.Waive.Title"]</h2>
                 <form method="post" action="@feePath/waive" asp-antiforgery="true" class="space-y-3" data-testid="waive-form">
                     <div class="space-y-1">
-                        <label for="reason" class="block text-sm font-medium">@T["Payments.Fee.Waive.Reason"]</label>
+                        <label for="reason" class="field-label">@T["Payments.Fee.Waive.Reason"]</label>
                         <textarea id="reason" name="reason" rows="2" maxlength="@ClientAccountEntry.NoteMaxLength" required aria-describedby="reason-hint" class="@inputClass" data-testid="waive-reason"></textarea>
                         <p id="reason-hint" class="text-sm text-stone-600">@T["Payments.Fee.Waive.Hint"]</p>
                     </div>

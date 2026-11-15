@@ -7,9 +7,9 @@
     var board = Model.Board;
     var culture = CultureInfo.CurrentCulture;
     ViewData["Title"] = T["Appointments.Day.Title"];
-    const string buttonClass = "inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700";
-    const string navClass = "inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-stone-300 px-3 py-2 text-sm font-medium hover:bg-stone-100";
-    const string actionClass = "inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium hover:bg-stone-100";
+    const string buttonClass = "btn btn-compact btn-primary";
+    const string navClass = "btn btn-compact btn-secondary min-w-11 px-3";
+    const string actionClass = "btn btn-compact btn-secondary px-3";
 }
 @functions {
     static string Time(LocalTime time) => time.ToString("t", CultureInfo.CurrentCulture);
@@ -24,15 +24,15 @@
 <section class="space-y-6">
     @if (Model.Flash is { } flash)
     {
-        <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
     }
     @if (Model.Error is { } error)
     {
-        <p role="alert" data-testid="error" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">@error</p>
+        <p role="alert" data-testid="error" class="notice notice-error">@error</p>
     }
     <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div class="space-y-2">
-            <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Appointments.Day.Title"]</h1>
+            <h1 class="page-title">@T["Appointments.Day.Title"]</h1>
             <nav aria-label="@T["Appointments.Day.Title"]" class="flex items-center gap-2">
                 <a href="@DayListController.DayPath(board.Day.PlusDays(-1))" data-testid="prev-day" class="@navClass" aria-label="@T["Appointments.Day.Previous"]">&larr;</a>
                 <time datetime="@board.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-testid="day" class="min-w-0 flex-1 text-center text-base font-medium sm:text-lg">@board.Day.ToString("D", culture)</time>
@@ -48,14 +48,14 @@
 
     @if (board.Staff.Count == 0)
     {
-        <p data-testid="empty-state" class="rounded-md border border-dashed border-stone-300 p-6 text-center text-stone-600">@T["Appointments.Day.NoStaff"]</p>
+        <p data-testid="empty-state" class="empty-state">@T["Appointments.Day.NoStaff"]</p>
     }
     else
     {
         <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-testid="day-board">
             @foreach (var column in board.Staff)
             {
-                <section class="flex flex-col gap-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" data-testid="staff-column" data-staff-id="@column.StaffMemberId">
+                <section class="flex flex-col gap-3 panel" data-testid="staff-column" data-staff-id="@column.StaffMemberId">
                     <h2 class="flex items-center gap-2 text-lg font-semibold">
                         <span class="size-3 shrink-0 rounded-full" style="background-color: @column.Colour" aria-hidden="true"></span>
                         <span data-testid="staff-name">@column.DisplayName</span>
@@ -69,7 +69,7 @@
                         <ul class="space-y-3">
                             @foreach (var appointment in column.Appointments)
                             {
-                                <li class="space-y-2 rounded-md border border-stone-200 p-3" data-testid="appointment" data-status="@appointment.Status">
+                                <li class="space-y-2 rounded-lg border border-stone-200 bg-stone-50 p-3" data-testid="appointment" data-status="@appointment.Status">
                                     <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                                         <span class="font-semibold tabular-nums" data-testid="appointment-time">@Time(appointment.Start)–@Time(appointment.End)</span>
                                         <span class="rounded px-1.5 py-0.5 text-xs font-medium @BadgeClass(appointment.Status)" data-testid="status-badge">@T[$"Appointments.Status.{appointment.Status}"]</span>
@@ -78,7 +78,7 @@
                                     <p class="text-sm text-stone-600" data-testid="appointment-service">@appointment.ServiceName</p>
                                     @if (appointment.Status == AppointmentStatus.Arrived)
                                     {
-                                        <a href="/admin/payments/checkout/@appointment.Id" data-testid="checkout-link" class="inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-700">@T["Appointments.Day.Checkout"]</a>
+                                        <a href="/admin/payments/checkout/@appointment.Id" data-testid="checkout-link" class="btn btn-compact btn-primary px-3">@T["Appointments.Day.Checkout"]</a>
                                     }
                                     @if (appointment.Actions.Count > 0)
                                     {

@@ -14,6 +14,16 @@
     var salonName = !signedIn && TenantContext.TenantId is { } tenantId
         ? (await TenantLookup.FindByIdAsync(tenantId))?.Name
         : null;
+    // The calendar lives under the appointments address, so the list is the current area only when the calendar is not.
+    var onCalendar = In("/admin/appointments/calendar") is not null;
+}
+@functions {
+    // The admin menu marks the area the page belongs to (ADR 0033): the address is the area's or lies under it. The value is "true", not "page": the link names the area, which is often not the page itself.
+    string? In(string area)
+    {
+        var path = Context.Request.Path.Value ?? string.Empty;
+        return path.Equals(area, StringComparison.OrdinalIgnoreCase) || path.StartsWith(area + "/", StringComparison.OrdinalIgnoreCase) ? "true" : null;
+    }
 }
 <html lang="@lang" class="h-full bg-stone-50">
 <head>
@@ -23,7 +33,7 @@
     <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
 </head>
 <body class="min-h-full flex flex-col text-stone-900 antialiased">
-    <header class="border-b border-stone-200 bg-white">
+    <header class="brand-line border-b border-stone-200 bg-white">
         <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2">
             @if (salonName is not null)
             {
@@ -37,43 +47,43 @@
             {
                 <form method="post" action="/account/logout" asp-antiforgery="true" class="flex items-center gap-3 text-sm">
                     <span class="truncate max-w-40 sm:max-w-xs" data-testid="user-name">@User.Identity!.Name</span>
-                    <button type="submit" data-testid="sign-out" class="inline-flex min-h-11 items-center rounded-md border border-stone-300 px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.SignOut"]</button>
+                    <button type="submit" data-testid="sign-out" class="btn btn-compact btn-secondary px-3">@T["Layout.SignOut"]</button>
                 </form>
                 @* Admin nav: one link per area the signed-in role may open (ADR 0009); wraps under the brand on a phone. *@
                 <nav aria-label="@T["Layout.Nav.Admin"]" data-testid="admin-nav" class="-mx-3 flex w-full flex-wrap gap-1 text-sm sm:order-none sm:mx-0 sm:w-auto">
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.CatalogManage))
                     {
-                        <a href="/admin/services" data-testid="nav-services" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Services"]</a>
+                        <a href="/admin/services" data-testid="nav-services" aria-current="@In("/admin/services")" class="nav-link">@T["Layout.Nav.Services"]</a>
                     }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView))
                     {
-                        <a href="/admin/clients" data-testid="nav-clients" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Clients"]</a>
+                        <a href="/admin/clients" data-testid="nav-clients" aria-current="@In("/admin/clients")" class="nav-link">@T["Layout.Nav.Clients"]</a>
                     }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.BookingsManage) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView))
                     {
-                        <a href="/admin/appointments" data-testid="nav-appointments" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Appointments"]</a>
-                        <a href="/admin/appointments/calendar" data-testid="nav-calendar" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Calendar"]</a>
+                        <a href="/admin/appointments" data-testid="nav-appointments" aria-current="@(onCalendar ? null : In("/admin/appointments"))" class="nav-link">@T["Layout.Nav.Appointments"]</a>
+                        <a href="/admin/appointments/calendar" data-testid="nav-calendar" aria-current="@In("/admin/appointments/calendar")" class="nav-link">@T["Layout.Nav.Calendar"]</a>
                     }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.PaymentsRecord) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView))
                     {
-                        <a href="/admin/payments/cash-up" data-testid="nav-cash-up" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.CashUp"]</a>
+                        <a href="/admin/payments/cash-up" data-testid="nav-cash-up" aria-current="@In("/admin/payments/cash-up")" class="nav-link">@T["Layout.Nav.CashUp"]</a>
                     }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.ReportsView) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView))
                     {
-                        <a href="/admin/reports" data-testid="nav-reports" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Reports"]</a>
+                        <a href="/admin/reports" data-testid="nav-reports" aria-current="@In("/admin/reports")" class="nav-link">@T["Layout.Nav.Reports"]</a>
                     }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.StaffManage))
                     {
-                        <a href="/admin/staff" data-testid="nav-staff" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Staff"]</a>
+                        <a href="/admin/staff" data-testid="nav-staff" aria-current="@In("/admin/staff")" class="nav-link">@T["Layout.Nav.Staff"]</a>
                     }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.SettingsManage))
                     {
-                        <a href="/admin/settings/notifications" data-testid="nav-settings" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Settings"]</a>
+                        <a href="/admin/settings/notifications" data-testid="nav-settings" aria-current="@In("/admin/settings")" class="nav-link">@T["Layout.Nav.Settings"]</a>
                     }
                     else if (User.HasClaim(UserClaimTypes.Permission, Permissions.TemplatesManage))
                     {
                         @* A manager may edit the messages to clients but none of the other settings (ADR 0030). *@
-                        <a href="/admin/settings/messages" data-testid="nav-settings" class="inline-flex min-h-11 items-center rounded-md px-3 py-2 font-medium hover:bg-stone-100">@T["Layout.Nav.Settings"]</a>
+                        <a href="/admin/settings/messages" data-testid="nav-settings" aria-current="@In("/admin/settings")" class="nav-link">@T["Layout.Nav.Settings"]</a>
                     }
                 </nav>
             }
