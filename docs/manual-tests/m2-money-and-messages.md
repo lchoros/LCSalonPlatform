@@ -221,6 +221,20 @@ The demo data changed. Drop and recreate `salon_dev` first (see "Clean up"), the
 - [ ] R6. On a phone nothing scrolls sideways on Services, Clients, Appointments, Calendar, Till, Reports, Staff and
       Settings.
 
+## S. Visits nobody marked (after the visits without an outcome PR is merged too)
+The demo salon books visits for the coming days only, so make an old one first: book a visit for today, then wait
+until tomorrow, or use a visit you left unmarked on an earlier day of testing.
+- [ ] S1. Appointments: above the day a yellow line says "1 earlier visit has no outcome yet." with "Review them".
+      The calendar shows the same line.
+- [ ] S2. "Review them": the visit is listed with its day, time, client, service and person, and two buttons.
+- [ ] S3. "Client came": the line "The visit is marked as completed." appears and the visit leaves the list.
+      Reports, "Completed visits not paid" now lists it with a Checkout link.
+- [ ] S4. With another old visit, "Did not come": it becomes a no-show. If the policy has a no-show fee, the fee page
+      opens.
+- [ ] S5. With nothing left, the list says "Every past visit has an outcome." and the yellow line is gone from
+      Appointments.
+- [ ] S6. A visit of today that is over is not on the list: it is on today's day list.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.
