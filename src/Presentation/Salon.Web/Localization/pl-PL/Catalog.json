@@ -118,5 +118,20 @@
   "Catalog.Edit.Validation.DepositPercentRange": "Zadatek musi mieścić się między 0 a 100 procent.",
   "Catalog.CreateService.DepositPercent": "Zadatek (% ceny)",
   "Catalog.CreateService.DepositPercentHint": "Zostaw puste, aby użyć zasady salonu. 0 oznacza brak zadatku dla tej usługi.",
-  "Catalog.CreateService.Validation.DepositPercentRange": "Zadatek musi mieścić się między 0 a 100 procent."
+  "Catalog.CreateService.Validation.DepositPercentRange": "Zadatek musi mieścić się między 0 a 100 procent.",
+  "Catalog.List.Search": "Szukaj usługi",
+  "Catalog.List.AllCategories": "Wszystkie",
+  "Catalog.List.FilterLabel": "Filtruj według kategorii",
+  "Catalog.List.NoMatch": "Żadna usługa nie pasuje.",
+  "Catalog.List.ShowAll": "Pokaż wszystkie usługi",
+  "Catalog.List.VariantOf": "Wariant: {0}",
+  "Catalog.Variant.Legend": "Wariant innej usługi (opcjonalnie)",
+  "Catalog.Variant.Hint": "Usługi o tym samym wspólnym tytule klient widzi jako jedną pozycję z zakresem cen. Wypełnij oba pola albo żadne.",
+  "Catalog.Variant.Group": "Wspólny tytuł",
+  "Catalog.Variant.GroupHint": "Na przykład: Keratyna",
+  "Catalog.Variant.Label": "Czym różni się ten wariant",
+  "Catalog.Variant.LabelHint": "Na przykład: Długie włosy",
+  "Catalog.Variant.Validation.Incomplete": "Wypełnij wspólny tytuł i różnicę albo zostaw oba pola puste.",
+  "Catalog.Variant.Validation.GroupTooLong": "Wspólny tytuł może mieć najwyżej {0} znaków.",
+  "Catalog.Variant.Validation.LabelTooLong": "Różnica może mieć najwyżej {0} znaków."
 }

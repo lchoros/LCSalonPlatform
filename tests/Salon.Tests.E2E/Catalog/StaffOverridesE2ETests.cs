@@ -19,7 +19,7 @@ public class StaffOverridesE2ETests(KestrelAppFixture app) : IClassFixture<Kestr
     [Fact]
     public async Task The_demo_owner_changes_annas_price_and_the_public_list_quotes_from_the_cheapest()
     {
-        var tenantId = await app.EnsureTenantAsync(Slug, "Studio 20", [("Cut & blow-dry", 45, 45m), ("Beard trim", 20, 15m)]);
+        var tenantId = await app.EnsureTenantAsync(Slug, "Studio 20", [("HAIR MEN 17: Haircut Scissors", 30, 16m), ("Beard trim", 20, 15m)]);
         await app.EnsureDemoStaffAsync(tenantId);
         await app.EnsureUserAsync(tenantId, Email, "Studio 20 Owner", Role.Owner, Password);
         await using var context = await app.Browser.NewContextAsync(new BrowserNewContextOptions
@@ -30,7 +30,7 @@ public class StaffOverridesE2ETests(KestrelAppFixture app) : IClassFixture<Kestr
 
         // The demo seed gives Anna her own price, so the public list already says "from" the list price.
         await page.GotoAsync(app.TenantUrl(Slug) + "/services");
-        (await page.GetByTestId("service-price").First.TextContentAsync()).ShouldBe("from £45.00");
+        (await page.GetByTestId("service-price").First.TextContentAsync()).ShouldBe("from £16.00");
 
         await page.GotoAsync(app.TenantUrl(Slug) + "/admin/services");
         await page.GetByLabel("Email").FillAsync(Email);
@@ -44,16 +44,16 @@ public class StaffOverridesE2ETests(KestrelAppFixture app) : IClassFixture<Kestr
         await page.ReachAsync("**/admin/services/*/staff");
 
         var styled = await StylesheetLoadedAsync(page);
-        (await page.GetByTestId("service-name").TextContentAsync()).ShouldBe("Cut & blow-dry");
+        (await page.GetByTestId("service-name").TextContentAsync()).ShouldBe("HAIR MEN 17: Haircut Scissors");
         var rows = page.GetByTestId("override-row");
         (await rows.CountAsync()).ShouldBe(3);
         var anna = rows.Filter(new LocatorFilterOptions { HasText = "Anna Kowalska" });
         var priya = rows.Filter(new LocatorFilterOptions { HasText = "Priya Shah" });
-        (await anna.GetByTestId("override-price").InputValueAsync()).ShouldBe("55.00");
-        (await anna.GetByTestId("override-duration").InputValueAsync()).ShouldBe("60");
+        (await anna.GetByTestId("override-price").InputValueAsync()).ShouldBe("18.00");
+        (await anna.GetByTestId("override-duration").InputValueAsync()).ShouldBe("45");
         (await priya.GetByTestId("override-offers").IsCheckedAsync()).ShouldBeFalse();
 
-        await anna.GetByTestId("override-price").FillAsync("40");
+        await anna.GetByTestId("override-price").FillAsync("12");
         if (styled)
         {
             (await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Save" }).BoundingBoxAsync()).ShouldNotBeNull().Height.ShouldBeGreaterThanOrEqualTo(44);
@@ -70,11 +70,11 @@ public class StaffOverridesE2ETests(KestrelAppFixture app) : IClassFixture<Kestr
 
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Save" }).ClickAsync();
         await page.ReachAsync("**/admin/services");
-        (await page.GetByTestId("flash").TextContentAsync()).ShouldBe("Staff prices and durations for “Cut & blow-dry” have been saved.");
+        (await page.GetByTestId("flash").TextContentAsync()).ShouldBe("Staff prices and durations for “HAIR MEN 17: Haircut Scissors” have been saved.");
 
         await page.GotoAsync(app.TenantUrl(Slug) + "/services");
-        (await page.GetByTestId("service-price").First.TextContentAsync()).ShouldBe("from £40.00");
-        (await page.GetByTestId("service-duration").First.TextContentAsync()).ShouldBe("45 min");
+        (await page.GetByTestId("service-price").First.TextContentAsync()).ShouldBe("from £12.00");
+        (await page.GetByTestId("service-duration").First.TextContentAsync()).ShouldBe("30 min");
         await page.ScreenshotAsync(new PageScreenshotOptions
         {
             Path = Path.Combine(KestrelAppFixture.ScreenshotDirectory, "services-public-from-price-mobile-390.png"),

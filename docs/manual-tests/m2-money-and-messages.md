@@ -1,6 +1,6 @@
 # Manual test: M2 money and messages
 
-For the owner, after PRs #65, #66 and #67 are merged (section L also needs #68, section M #69, section N #72, section O #73, section P #74). About 45 minutes. Tick a box when the step behaves as written.
+For the owner, after PRs #65, #66 and #67 are merged (section L also needs #68, section M #69, section N #72, section O #73, section P #74, section Q #75). About 45 minutes. Tick a box when the step behaves as written.
 If a step does not, note its number (for example "D4") and what you saw; that is all an agent needs to find it.
 
 Nothing here charges a card or sends a real text or email. Texts and emails land in Mailpit.
@@ -195,6 +195,19 @@ Sign out and in again first: the "Reports" link needs a permission your old sess
       characters. Opening it shows your visit with the cancel button.
 - [ ] P2. On the Messages page the example of the standard booking confirmation says "Texts needed: 1".
 - [ ] P3. A cancel link from a booking made before this change (a long one) still opens its visit.
+
+## Q. The salon's catalogue (after PR #75 is merged too)
+The demo data changed. Drop and recreate `salon_dev` first (see "Clean up"), then start the app.
+- [ ] Q1. `/book` lists your services under Hair, Brows, Eyelashes, Waxing and Beauty, with a search box, squared
+      category tiles and "Page 1 of …" at the bottom. Cards have a thin coloured border, one colour per category.
+- [ ] Q2. Tap "Brows": only brow services are left. Tap "All".
+- [ ] Q3. Search for "keratin": one card "HAIR WOMEN 14: Keratin" with "£70.00 – £85.00" and six options listed.
+      Pick one: the next page names it in full.
+- [ ] Q4. On the time page the days are small squares.
+- [ ] Q5. "HAIR WOMEN 01: Full Colour" shows "Option 1" and "Option 2". These are placeholders: in the admin, open
+      each under Services and type the real name in "What makes this one different". Check the durations too; they
+      are my estimates.
+- [ ] Q6. Admin, Services: the same search, tiles and pages. A variant says which service it is a variant of.
 
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the

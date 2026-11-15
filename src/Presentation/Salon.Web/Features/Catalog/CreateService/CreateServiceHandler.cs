@@ -37,6 +37,8 @@ public sealed class CreateServiceHandler(
             Duration = Duration.FromMinutes(request.DurationMinutes),
             Price = request.Price,
             DepositPercent = request.DepositPercent,
+            VariantGroup = ServiceRules.NormalizeVariant(request.VariantGroup),
+            VariantLabel = ServiceRules.NormalizeVariant(request.VariantLabel),
             Currency = tenant.Currency,
             SortOrder = lastSortOrder + 1,
             CategoryId = request.CategoryId,

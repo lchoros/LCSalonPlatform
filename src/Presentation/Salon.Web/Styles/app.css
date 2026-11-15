@@ -50,14 +50,118 @@
     @apply block text-sm font-medium text-red-700;
   }
 
-  /* Tappable card (a service): the whole surface is the link; the border darkens on hover, the ring shows on focus. */
+  /* The look (ADR 0032): white surfaces with a thin two-colour border and a soft glow of the same colour underneath.
+     An element takes one of five accents with .accent-1 to .accent-5; .accent-0 and no accent are neutral grey. The
+     border is a gradient painted behind a white padding box, so no image and no inline style is needed. */
+  .accent-0, .accent-1, .accent-2, .accent-3, .accent-4, .accent-5 {
+    --accent-from: var(--color-stone-300);
+    --accent-to: var(--color-stone-300);
+    --accent-glow: rgb(28 25 23 / 0.12);
+  }
+
+  .accent-1 { --accent-from: #f43f5e; --accent-to: #fb923c; --accent-glow: rgb(244 63 94 / 0.35); }
+  .accent-2 { --accent-from: #3b82f6; --accent-to: #22d3ee; --accent-glow: rgb(59 130 246 / 0.35); }
+  .accent-3 { --accent-from: #10b981; --accent-to: #a3e635; --accent-glow: rgb(16 185 129 / 0.35); }
+  .accent-4 { --accent-from: #8b5cf6; --accent-to: #ec4899; --accent-glow: rgb(139 92 246 / 0.35); }
+  .accent-5 { --accent-from: #f59e0b; --accent-to: #facc15; --accent-glow: rgb(245 158 11 / 0.35); }
+
+  .choice-card, .variant-card, .filter-tile {
+    border: 1.5px solid transparent;
+    background:
+      linear-gradient(#fff, #fff) padding-box,
+      linear-gradient(110deg, var(--accent-from, var(--color-stone-300)), var(--accent-to, var(--color-stone-300))) border-box;
+    box-shadow: 0 14px 26px -20px var(--accent-glow, rgb(28 25 23 / 0.12));
+  }
+
+  /* Tappable card (a service): the whole surface is the link; it lifts on hover, the ring shows on focus. */
   .choice-card {
-    @apply flex min-h-14 flex-col gap-1 rounded-xl border border-stone-200 bg-white p-4 shadow-sm transition-colors hover:border-stone-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+    @apply flex min-h-14 flex-col gap-1 rounded-xl p-4 transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+  }
+
+  /* A service with variants: the same card, opened by its summary; each variant inside is a link of its own. */
+  .variant-card {
+    @apply rounded-xl;
+  }
+
+  .variant-card > summary {
+    @apply flex min-h-14 cursor-pointer list-none flex-col gap-1 rounded-xl p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+  }
+
+  .variant-card > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .variant-card[open] .variant-chevron {
+    @apply rotate-180;
+  }
+
+  .variant-list {
+    @apply divide-y divide-stone-200 border-t border-stone-200 px-4;
+  }
+
+  .variant-link {
+    @apply flex min-h-12 items-center justify-between gap-3 py-2 text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900;
+  }
+
+  .variant-link:hover .variant-name {
+    @apply underline underline-offset-4;
+  }
+
+  /* Filter tiles (categories): squared, one accent each; the chosen one turns dark. Scroll sideways on a phone. */
+  .filter-tiles {
+    @apply -mx-4 flex snap-x gap-2 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pb-2 [scrollbar-width:thin] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0;
+  }
+
+  .filter-tile {
+    @apply inline-flex min-h-12 shrink-0 snap-start items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold text-stone-900 transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+  }
+
+  .filter-tile.is-on {
+    background: var(--color-stone-900);
+    @apply border-stone-900 text-white shadow-none;
+  }
+
+  /* Search: one field and one button on a line, 48 px tall. */
+  .search-box {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  .search-input {
+    @apply block min-h-12 min-w-0 flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 shadow-sm focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-900/20;
+  }
+
+  .search-submit {
+    @apply inline-flex min-h-12 shrink-0 items-center justify-center rounded-lg bg-stone-900 px-4 py-2 text-base font-semibold text-white transition-colors hover:bg-stone-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2;
+  }
+
+  .search-clear {
+    @apply inline-flex min-h-11 shrink-0 items-center rounded-md px-2 text-sm font-medium text-stone-700 underline underline-offset-4 hover:text-stone-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900;
+  }
+
+  /* Pager: previous, where you are, next; the count of items underneath on a phone, at the end of the row on a desk. */
+  .pager {
+    @apply flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-sm;
+  }
+
+  .pager-link {
+    @apply inline-flex min-h-11 items-center justify-center rounded-lg border border-stone-300 bg-white px-3 py-2 font-semibold text-stone-900 transition-colors hover:bg-stone-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2;
+  }
+
+  .pager-link.is-disabled {
+    @apply border-dashed text-stone-600 hover:bg-white;
+  }
+
+  .pager-status {
+    @apply font-medium text-stone-900 tabular-nums;
+  }
+
+  .pager-summary {
+    @apply w-full text-center text-stone-600 tabular-nums;
   }
 
   /* Horizontal rows (people, days): scroll inside their own box, snap to items, bleed to the screen edge on a phone. */
   .scroll-row {
-    @apply -mx-4 flex snap-x gap-2 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pb-2 sm:mx-0 sm:scroll-px-0 sm:px-0;
+    @apply -mx-4 flex snap-x gap-2 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pb-2 [scrollbar-width:thin] sm:mx-0 sm:scroll-px-0 sm:px-0;
   }
 
   /* Pills (people) and tiles (days) share three states: selected, free, and muted-but-tappable (no free time). */
@@ -65,8 +169,9 @@
     @apply inline-flex min-h-11 shrink-0 snap-start items-center justify-center rounded-full border px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
   }
 
+  /* A day: a 56 px square with the weekday, the day of the month and the month, tight enough to stay square. */
   .tile {
-    @apply inline-flex min-h-16 w-16 shrink-0 snap-start flex-col items-center justify-center rounded-xl border px-1 py-2 leading-tight transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+    @apply inline-flex size-14 shrink-0 snap-start flex-col items-center justify-center gap-px rounded-lg border p-0.5 leading-none transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
   }
 
   .is-on {

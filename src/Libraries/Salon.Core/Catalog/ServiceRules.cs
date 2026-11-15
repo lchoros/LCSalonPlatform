@@ -18,6 +18,21 @@ public static class ServiceRules
     public const int MaxBufferAfterMinutes = 120;
     public const int MaxProcessingMinutes = 240;
     public const decimal MaxPrice = 100_000m;
+    public const int VariantGroupMaxLength = 150;
+    public const int VariantLabelMaxLength = 100;
+
+    /// <summary>Joins a variant's title and label into the full name of the service: "Keratin · Long hair".</summary>
+    public const string VariantSeparator = " · ";
+
+    /// <summary>The stored form of a variant title or label: trimmed, null when blank.</summary>
+    public static string? NormalizeVariant(string? text) => string.IsNullOrWhiteSpace(text) ? null : text.Trim();
+
+    /// <summary>A service is a variant when it has both a title and a label, and not one when it has neither; one without the other is a mistake.</summary>
+    public static bool VariantIsComplete(string? group, string? label) => (NormalizeVariant(group) is null) == (NormalizeVariant(label) is null);
+
+    public static bool VariantGroupFits(string? group) => group is null || group.Trim().Length <= VariantGroupMaxLength;
+
+    public static bool VariantLabelFits(string? label) => label is null || label.Trim().Length <= VariantLabelMaxLength;
 
     /// <summary>The stored form of a name: trimmed, never null.</summary>
     public static string NormalizeName(string? name) => name?.Trim() ?? string.Empty;

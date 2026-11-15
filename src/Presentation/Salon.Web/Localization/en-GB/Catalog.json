@@ -118,5 +118,20 @@
   "Catalog.Edit.Validation.DepositPercentRange": "The deposit must be between 0 and 100 percent.",
   "Catalog.CreateService.DepositPercent": "Deposit (% of the price)",
   "Catalog.CreateService.DepositPercentHint": "Leave empty to use the salon's rule. 0 means no deposit for this service.",
-  "Catalog.CreateService.Validation.DepositPercentRange": "The deposit must be between 0 and 100 percent."
+  "Catalog.CreateService.Validation.DepositPercentRange": "The deposit must be between 0 and 100 percent.",
+  "Catalog.List.Search": "Search services",
+  "Catalog.List.AllCategories": "All",
+  "Catalog.List.FilterLabel": "Filter by category",
+  "Catalog.List.NoMatch": "No service matches.",
+  "Catalog.List.ShowAll": "Show all services",
+  "Catalog.List.VariantOf": "Variant of {0}",
+  "Catalog.Variant.Legend": "Variant of another service (optional)",
+  "Catalog.Variant.Hint": "Services with the same shared title are shown to clients as one entry with a price range. Fill in both fields or neither.",
+  "Catalog.Variant.Group": "Shared title",
+  "Catalog.Variant.GroupHint": "For example: Keratin",
+  "Catalog.Variant.Label": "What makes this one different",
+  "Catalog.Variant.LabelHint": "For example: Long hair",
+  "Catalog.Variant.Validation.Incomplete": "Fill in the shared title and the difference, or leave both empty.",
+  "Catalog.Variant.Validation.GroupTooLong": "Use at most {0} characters for the shared title.",
+  "Catalog.Variant.Validation.LabelTooLong": "Use at most {0} characters for the difference."
 }

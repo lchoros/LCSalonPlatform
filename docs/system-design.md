@@ -158,6 +158,13 @@ Background work (ADR 0005 schedule tasks, all per salon through `ITenantScopeRun
 Reminders are computed from the appointment when due and claimed by a unique `appointment_reminders` row before the SMS
 is handed over, so a client is never texted twice for one moment.
 
+Lists (ADR 0032): `Paged<T>` and `Pages.Cut` in Core cut any list into pages; `ServiceCatalogue` turns services into
+entries (a service, or the variants that share `Service.VariantGroup`) and applies the category filter and the search.
+The shared partials `_SearchBox`, `_FilterTiles` and `_Pager` (models and `ListUrl` in `Salon.Web.Framework/Lists`)
+render them as GET forms and links, so a filtered page is an address. The booking page and the admin services list
+use them. The look is one vocabulary in `Styles/app.css`: five accents (`.accent-1` to `.accent-5`) give cards and
+tiles a two-colour border and a soft glow.
+
 Client messages (ADR 0025): each booking message has one rule (`AppointmentBookedNotice`, `AppointmentCancelledNotice`,
 `AppointmentMovedNotice` in `Salon.Services/Notifications`) and one consumer per channel, SMS and email, so the outbox
 retries a failed channel alone: `outbox_messages.completed_consumers` lists the consumers that are done with an event,

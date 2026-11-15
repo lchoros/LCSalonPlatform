@@ -43,6 +43,17 @@ public class Service : BaseEntity, ITenantEntity
     /// <summary>Where inside the service the processing window starts; <c>0 ≤ x ≤ Duration − ProcessingMinutes</c>. 0 when there is no processing time.</summary>
     public int ProcessingStartsAfterMinutes { get; set; }
 
+    /// <summary>
+    /// The title this service shares with its sibling variants (ADR 0032), e.g. "Keratin" for "Keratin · Long hair".
+    /// Services of one category with the same title are listed as one entry with a price range. Null for a service
+    /// without variants. <see cref="Name"/> stays the full name, so every screen and message that names the service
+    /// is unambiguous without knowing about variants.
+    /// </summary>
+    public string? VariantGroup { get; set; }
+
+    /// <summary>What tells this variant from its siblings, e.g. "Long hair"; set together with <see cref="VariantGroup"/>.</summary>
+    public string? VariantLabel { get; set; }
+
     /// <summary>Deposit for this service as a percentage of the price (ADR 0023); null follows the salon's default, 0 means none.</summary>
     public decimal? DepositPercent { get; set; }
 

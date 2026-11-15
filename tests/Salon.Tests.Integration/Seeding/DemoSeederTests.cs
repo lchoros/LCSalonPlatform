@@ -24,7 +24,7 @@ public class DemoSeederTests(SalonWebApplicationFactory factory) : IAsyncLifetim
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
-    public async Task Seeding_twice_yields_one_tenant_and_six_services_owned_by_it()
+    public async Task Seeding_twice_yields_one_tenant_and_its_catalogue_once()
     {
         (await SeedAsync()).ShouldBeTrue();
         (await SeedAsync()).ShouldBeFalse();
@@ -38,13 +38,14 @@ public class DemoSeederTests(SalonWebApplicationFactory factory) : IAsyncLifetim
         tenant.IsActive.ShouldBeTrue();
 
         var services = await ServicesAsync(tenant.Id);
-        services.Count.ShouldBe(6);
+        services.Count.ShouldBe(66);
         services.ShouldAllBe(s => s.TenantId == tenant.Id);
         services.ShouldAllBe(s => s.Currency == "GBP");
         services.ShouldAllBe(s => s.IsActive);
         services.ShouldAllBe(s => s.Price > 0m && s.Duration.TotalMinutes >= 5);
-        services.Select(s => s.SortOrder).ShouldBe([1, 2, 3, 4, 5, 6]);
-        services.Select(s => s.Name).ShouldBe(["Cut & blow-dry", "Colour (roots)", "Balayage", "Beard trim", "Manicure", "Pedicure"]);
+        services.Select(s => s.SortOrder).ShouldBe(Enumerable.Range(1, 66));
+        services[2].Name.ShouldBe("HAIR KIDS 22: Girl's Haircut");
+        services[^1].Name.ShouldBe("BEAUTY04: Microdermabrasion");
     }
 
     [Fact]
@@ -55,13 +56,13 @@ public class DemoSeederTests(SalonWebApplicationFactory factory) : IAsyncLifetim
         await using (var scope = factory.CreateTenantScope(tenantId))
         {
             var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
-            db.Services.Remove(await db.Services.SingleAsync(s => s.Name == "Pedicure"));
+            db.Services.Remove(await db.Services.SingleAsync(s => s.Name == "WAXING03: Ear Wax"));
             await db.SaveChangesAsync();
         }
 
         (await SeedAsync()).ShouldBeFalse();
 
-        (await ServicesAsync(tenantId)).Count.ShouldBe(5);
+        (await ServicesAsync(tenantId)).Count.ShouldBe(65);
     }
 
     [Fact]
@@ -76,8 +77,8 @@ public class DemoSeederTests(SalonWebApplicationFactory factory) : IAsyncLifetim
         response.IsSuccessStatusCode.ShouldBeTrue();
         var html = await response.Content.ReadAsStringAsync();
         html.ShouldContain("Studio 20");
-        html.ShouldContain("Balayage");
-        html.ShouldContain("£140.00");
+        html.ShouldContain("HAIR WOMEN 13: Olaplex");
+        html.ShouldContain("£20.00");
     }
 
     [Fact]
@@ -105,7 +106,7 @@ public class DemoSeederTests(SalonWebApplicationFactory factory) : IAsyncLifetim
         }
 
         (await TenantsAsync()).Count.ShouldBe(1);
-        (await ServicesAsync(tenantId)).Count.ShouldBe(6);
+        (await ServicesAsync(tenantId)).Count.ShouldBe(66);
         (await UsersAsync(tenantId)).Select(u => u.Email).ShouldBe(["owner@studio-20.local", "desk@studio-20.local"], ignoreOrder: true);
     }
 

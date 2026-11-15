@@ -61,7 +61,7 @@ public class DemoSeederStaffTests(SalonWebApplicationFactory factory) : IAsyncLi
             var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
             db.Appointments.RemoveRange(await db.Appointments.ToListAsync()); // appointments hold their staff member (Restrict)
             db.StaffMembers.RemoveRange(await db.StaffMembers.ToListAsync());
-            db.Services.Remove(await db.Services.SingleAsync(s => s.Name == "Pedicure"));
+            db.Services.Remove(await db.Services.SingleAsync(s => s.Name == "WAXING03: Ear Wax"));
             await db.SaveChangesAsync();
         }
         (await HoursAsync(tenantId)).ShouldBeEmpty("deleting a person cascades to their rota");
@@ -72,7 +72,7 @@ public class DemoSeederStaffTests(SalonWebApplicationFactory factory) : IAsyncLi
         (await HoursAsync(tenantId)).Count.ShouldBe(18);
         await using (var scope = factory.CreateTenantScope(tenantId))
         {
-            (await scope.ServiceProvider.GetRequiredService<SalonDbContext>().Services.CountAsync()).ShouldBe(5, "the catalogue is never re-seeded");
+            (await scope.ServiceProvider.GetRequiredService<SalonDbContext>().Services.CountAsync()).ShouldBe(65, "the catalogue is never re-seeded");
         }
 
         (await SeedAsync()).ShouldBeFalse();

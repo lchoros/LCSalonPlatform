@@ -85,5 +85,12 @@
   "Booking.Public.Deposit.Note": "The salon will tell you how to pay it.",
   "Booking.Contact.Title": "Where to find us",
   "Booking.Contact.Map": "Open in maps",
-  "Booking.Contact.Call": "Call {0}"
+  "Booking.Contact.Call": "Call {0}",
+  "Booking.Public.AllCategories": "All",
+  "Booking.Public.Categories": "Categories",
+  "Booking.Public.SearchServices": "Search services",
+  "Booking.Public.NoMatch": "No service matches.",
+  "Booking.Public.ShowAll": "Show all services",
+  "Booking.Public.PriceRange": "{0} – {1}",
+  "Booking.Public.Variants": "Options: {0}"
 }

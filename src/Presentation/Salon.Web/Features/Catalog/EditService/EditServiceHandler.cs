@@ -37,6 +37,8 @@ public sealed class EditServiceHandler(SalonDbContext db, ITenantContext tenantC
         service.Duration = Duration.FromMinutes(request.DurationMinutes);
         service.Price = request.Price;
         service.DepositPercent = request.DepositPercent;
+        service.VariantGroup = ServiceRules.NormalizeVariant(request.VariantGroup);
+        service.VariantLabel = ServiceRules.NormalizeVariant(request.VariantLabel);
         service.CategoryId = request.CategoryId;
         service.BufferAfterMinutes = request.BufferAfterMinutes;
         service.ProcessingMinutes = request.ProcessingMinutes;

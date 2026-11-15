@@ -85,5 +85,12 @@
   "Booking.Public.Deposit.Note": "Salon poinformuje Cię, jak go wpłacić.",
   "Booking.Contact.Title": "Gdzie nas znaleźć",
   "Booking.Contact.Map": "Otwórz w mapach",
-  "Booking.Contact.Call": "Zadzwoń: {0}"
+  "Booking.Contact.Call": "Zadzwoń: {0}",
+  "Booking.Public.AllCategories": "Wszystkie",
+  "Booking.Public.Categories": "Kategorie",
+  "Booking.Public.SearchServices": "Szukaj usługi",
+  "Booking.Public.NoMatch": "Żadna usługa nie pasuje.",
+  "Booking.Public.ShowAll": "Pokaż wszystkie usługi",
+  "Booking.Public.PriceRange": "{0} – {1}",
+  "Booking.Public.Variants": "Warianty: {0}"
 }

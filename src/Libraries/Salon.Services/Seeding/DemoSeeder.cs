@@ -46,18 +46,9 @@ public sealed class DemoSeeder(
     /// <summary>How far ahead the appointment seed looks for days with free times (a rota with weekend gaps needs a few).</summary>
     private const int AppointmentLookaheadDays = 14;
 
-    /// <summary>In display order; the sort order of each category is its position here.</summary>
-    private static readonly string[] Categories = ["Hair", "Barbering", "Nails"];
+    private static readonly string[] Categories = Studio20Catalogue.Categories;
 
-    private static readonly DemoService[] Services =
-    [
-        new("Cut & blow-dry", "Consultation, wash, cut and finish.", 45, 45m, "Hair", Buffer: 5),
-        new("Colour (roots)", "Regrowth tint up to 2 cm, blow-dry included.", 90, 65m, "Hair", Buffer: 15, Processing: 30, ProcessingStartsAfter: 20),
-        new("Balayage", "Hand-painted lightening, toner and blow-dry.", 150, 140m, "Hair", Buffer: 15, Processing: 45, ProcessingStartsAfter: 45),
-        new("Beard trim", "Shape, trim and hot-towel finish.", 20, 15m, "Barbering", Buffer: 5),
-        new("Manicure", "File, cuticle care and polish.", 45, 28m, "Nails", Buffer: 5),
-        new("Pedicure", "Soak, file, cuticle care and polish.", 60, 35m, "Nails", Buffer: 5),
-    ];
+    private static readonly IReadOnlyList<DemoService> Services = Studio20Catalogue.Services;
 
     /// <summary>A colourist, a barber with a lunch break (two ranges) and a nail technician on alternate days: the shapes the rota screens must show.</summary>
     private static readonly DemoStaff[] Staff =
@@ -73,11 +64,11 @@ public sealed class DemoSeeder(
             [new TimeRange(new LocalTime(9, 0), new LocalTime(15, 0))]),
     ];
 
-    /// <summary>Anna, the senior stylist, takes an hour and charges more for a cut; Priya, the nail technician, does not cut hair (ADR 0018).</summary>
+    /// <summary>Anna, the senior stylist, takes longer and charges more for a scissor cut; Priya, the beautician, does not cut hair (ADR 0018).</summary>
     private static readonly DemoOverride[] Overrides =
     [
-        new("Anna Kowalska", "Cut & blow-dry", 60, 55m, Offers: true),
-        new("Priya Shah", "Cut & blow-dry", null, null, Offers: false),
+        new("Anna Kowalska", "HAIR MEN 17: Haircut Scissors", 45, 18m, Offers: true),
+        new("Priya Shah", "HAIR MEN 17: Haircut Scissors", null, null, Offers: false),
     ];
 
     /// <summary>Twelve regulars: UK numbers in E.164, a few with health notes and patch-test dates, two Polish names, eight with marketing consent.</summary>
@@ -185,6 +176,8 @@ public sealed class DemoSeeder(
                 {
                     Name = service.Name,
                     Description = service.Description,
+                    VariantGroup = service.VariantGroup,
+                    VariantLabel = service.VariantLabel,
                     Duration = Duration.FromMinutes(service.Minutes),
                     Price = service.Price,
                     Currency = "GBP",
@@ -204,7 +197,7 @@ public sealed class DemoSeeder(
 
         logger.LogInformation(
             "Seeded demo tenant {Slug} with {ServiceCount} services, {StaffCount} staff, {ClientCount} clients and {AppointmentCount} appointments",
-            Slug, Services.Length, Staff.Length, Clients.Length, appointments);
+            Slug, Services.Count, Staff.Length, Clients.Length, appointments);
         return true;
     }
 
@@ -245,7 +238,8 @@ public sealed class DemoSeeder(
 
     /// <summary>
     /// Gives the salon in scope an address and a phone number when it has no location at all (ADR 0027); returns false
-    /// otherwise. The street is made up and the number is from the range Ofcom keeps for drama, so it reaches nobody.
+    /// otherwise. The address is the pilot salon's public one; the phone number is from the range Ofcom keeps for drama, so it reaches
+    /// nobody (the repository is public; the salon enters its real number under Settings).
     /// </summary>
     private async Task<bool> SeedLocationAsync(SalonDbContext db, CancellationToken cancellationToken)
     {
@@ -257,10 +251,10 @@ public sealed class DemoSeeder(
         var now = clock.GetCurrentInstant();
         db.Locations.Add(new Location
         {
-            AddressLine1 = "20 Example Street",
-            City = "London",
-            Postcode = "N1 9GU",
-            Phone = "020 7946 0020",
+            AddressLine1 = "20 Drake Street",
+            City = "Rochdale",
+            Postcode = "OL16 1NT",
+            Phone = "01632 960020",
             CreatedAt = now,
             UpdatedAt = now,
         });
@@ -514,8 +508,6 @@ public sealed class DemoSeeder(
     /// <param name="Buffer">Clean-up minutes after the service (ADR 0013).</param>
     /// <param name="Processing">Minutes the client waits while the stylist is free; 0 for none.</param>
     /// <param name="ProcessingStartsAfter">Where inside the service the processing window starts.</param>
-    private sealed record DemoService(string Name, string Description, int Minutes, decimal Price, string Category, int Buffer = 0, int Processing = 0, int ProcessingStartsAfter = 0);
-
     private sealed record DemoStaff(string Name, string Colour, IReadOnlyList<IsoDayOfWeek> Days, IReadOnlyList<TimeRange> Ranges);
 
     /// <param name="Minutes">This person's duration for the service; null for the list duration.</param>

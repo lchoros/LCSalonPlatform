@@ -17,6 +17,8 @@ namespace Salon.Web.Features.Catalog.CreateService;
 /// <param name="ProcessingMinutes">Time the client waits inside the service; 0–<see cref="ServiceRules.MaxProcessingMinutes"/>, step 5.</param>
 /// <param name="ProcessingStartsAfterMinutes">Offset of the processing window; ignored (stored as 0) without processing time.</param>
 /// <param name="DepositPercent">Deposit for this service as a whole percentage of the price (ADR 0023); blank follows the salon's default, 0 means none.</param>
+/// <param name="VariantGroup">The title this service shares with its sibling variants (ADR 0032); set together with <paramref name="VariantLabel"/> or not at all.</param>
+/// <param name="VariantLabel">What tells this variant from its siblings.</param>
 public sealed record CreateServiceCommand(
     string Name,
     string? Description,
@@ -26,4 +28,6 @@ public sealed record CreateServiceCommand(
     int BufferAfterMinutes = 0,
     int ProcessingMinutes = 0,
     int ProcessingStartsAfterMinutes = 0,
-    int? DepositPercent = null) : ICommand<Guid>;
+    int? DepositPercent = null,
+    string? VariantGroup = null,
+    string? VariantLabel = null) : ICommand<Guid>;

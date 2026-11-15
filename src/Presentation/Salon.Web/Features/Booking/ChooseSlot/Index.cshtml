@@ -54,9 +54,9 @@
         {
             var on = day.Date == r.SelectedDate;
             <a href="/book/@r.ServiceId?date=@Iso(day.Date)@staffQuery" class="tile @State(on, day.HasSlots)" aria-current="@(on ? "date" : null)" data-testid="day" data-has-slots="@day.HasSlots.ToString().ToLowerInvariant()">
-                <span class="text-xs font-medium uppercase">@day.Date.ToString("ddd", culture)</span>
-                <span class="text-xl font-bold tabular-nums">@day.Date.Day</span>
-                <span class="text-xs">@day.Date.ToString("MMM", culture)</span>
+                <span class="text-[0.6875rem] font-semibold uppercase">@day.Date.ToString("ddd", culture)</span>
+                <span class="text-lg font-bold tabular-nums">@day.Date.Day</span>
+                <span class="text-[0.6875rem]">@day.Date.ToString("MMM", culture)</span>
             </a>
         }
     </nav>

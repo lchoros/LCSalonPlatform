@@ -38,6 +38,16 @@ public sealed class EditServiceValidator : AbstractValidator<EditServiceCommand>
             .Must(percent => percent is null or (>= 0 and <= (int)DepositRules.MaxPercent))
             .WithMessage(_ => localizer["Catalog.Edit.Validation.DepositPercentRange"]);
 
+        RuleFor(c => c.VariantGroup)
+            .Must(ServiceRules.VariantGroupFits)
+            .WithMessage(_ => localizer.Format("Catalog.Variant.Validation.GroupTooLong", ServiceRules.VariantGroupMaxLength));
+
+        RuleFor(c => c.VariantLabel)
+            .Must(ServiceRules.VariantLabelFits)
+            .WithMessage(_ => localizer.Format("Catalog.Variant.Validation.LabelTooLong", ServiceRules.VariantLabelMaxLength))
+            .Must((c, label) => ServiceRules.VariantIsComplete(c.VariantGroup, label))
+            .WithMessage(_ => localizer["Catalog.Variant.Validation.Incomplete"]);
+
         RuleFor(c => c.BufferAfterMinutes)
             .Must(ServiceRules.IsBufferInRange)
             .WithMessage(_ => localizer.Format("Catalog.Edit.Validation.BufferOutOfRange", ServiceRules.MaxBufferAfterMinutes))

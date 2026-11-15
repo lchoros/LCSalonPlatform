@@ -1,0 +1,26 @@
+@using Salon.Web.Framework.Lists
+@model PagerModel
+@* Shared pager (ADR 0032): previous, "page n of m", next, and how many items the list holds. Links, no script. *@
+@if (Model.IsNeeded)
+{
+    <nav aria-label="@T["Common.Pager.Label"]" class="pager" data-testid="pager" data-page="@Model.Page" data-pages="@Model.TotalPages">
+        @if (Model.Page > 1)
+        {
+            <a href="@Model.PageUrl(Model.Page - 1)" rel="prev" class="pager-link" data-testid="pager-previous">&larr; @T["Common.Pager.Previous"]</a>
+        }
+        else
+        {
+            <span class="pager-link is-disabled" aria-hidden="true">&larr; @T["Common.Pager.Previous"]</span>
+        }
+        <span class="pager-status" aria-current="page" data-testid="pager-status">@T.Format("Common.Pager.Status", Model.Page, Model.TotalPages)</span>
+        @if (Model.Page < Model.TotalPages)
+        {
+            <a href="@Model.PageUrl(Model.Page + 1)" rel="next" class="pager-link" data-testid="pager-next">@T["Common.Pager.Next"] &rarr;</a>
+        }
+        else
+        {
+            <span class="pager-link is-disabled" aria-hidden="true">@T["Common.Pager.Next"] &rarr;</span>
+        }
+        <span class="pager-summary" data-testid="pager-summary">@T.Format("Common.Pager.Summary", Model.From, Model.To, Model.Total)</span>
+    </nav>
+}

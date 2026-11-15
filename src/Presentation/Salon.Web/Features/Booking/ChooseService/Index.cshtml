@@ -3,6 +3,8 @@
 @model ChooseServiceViewModel
 @{
     ViewData["Title"] = T["Booking.Public.ChooseService"];
+    var culture = CultureInfo.CurrentCulture;
+    var choice = Model.Choice;
 }
 <section class="mx-auto max-w-2xl space-y-6">
     <header class="space-y-3">
@@ -14,39 +16,93 @@
         </div>
         <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Booking.Public.ChooseService"]</h1>
     </header>
-    @if (Model.Groups.Count == 0)
+    @if (choice.ShowFilters)
+    {
+        <div class="space-y-3" data-testid="service-filters">
+            <partial name="_SearchBox" model="Model.Search" />
+            @if (choice.Categories.Count > 1)
+            {
+                <partial name="_FilterTiles" model="Model.Filter" />
+            }
+        </div>
+    }
+    @if (choice.TotalServices == 0)
     {
         <p data-testid="empty-state" class="rounded-xl border border-dashed border-stone-300 p-6 text-center text-stone-600">@T["Booking.Public.NoServices"]</p>
+    }
+    else if (choice.Entries.Total == 0)
+    {
+        <div class="space-y-3 rounded-xl border border-dashed border-stone-300 p-6 text-center" data-testid="no-match">
+            <p class="text-stone-700">@T["Booking.Public.NoMatch"]</p>
+            <a href="/book" class="btn btn-secondary" data-testid="show-all">@T["Booking.Public.ShowAll"]</a>
+        </div>
     }
     else
     {
         @foreach (var group in Model.Groups)
         {
-            <section class="space-y-3" data-testid="service-group" data-category="@(group.CategoryName ?? string.Empty)">
+            <section class="space-y-3" data-testid="service-group" data-category="@(group.Key ?? string.Empty)">
                 @if (Model.ShowHeadings)
                 {
-                    <h2 class="text-lg font-semibold" data-testid="group-heading">@(group.CategoryName ?? T["Booking.Public.OtherServices"])</h2>
+                    <h2 class="text-lg font-semibold" data-testid="group-heading">@(group.Key ?? T["Booking.Public.OtherServices"])</h2>
                 }
                 <ul class="grid gap-3 sm:grid-cols-2" data-testid="service-list">
-                    @foreach (var service in group.Services)
+                    @foreach (var entry in group)
                     {
-                        <li>
-                            <a href="/book/@service.Id" data-testid="book-service" class="choice-card">
-                                <span class="flex items-start justify-between gap-3">
-                                    <span class="text-lg font-semibold leading-snug">@service.Name</span>
-                                    <span class="shrink-0 text-lg font-semibold tabular-nums">@service.Price.ToDisplayString(CultureInfo.CurrentCulture)</span>
-                                </span>
-                                @if (service.Description is { } description)
-                                {
-                                    <span class="text-sm text-stone-600">@description</span>
-                                }
-                                <span class="text-sm text-stone-600">@T.Format("Booking.Public.DurationMinutes", (int)service.Duration.TotalMinutes)</span>
-                            </a>
-                        </li>
+                        if (!entry.IsVariantGroup)
+                        {
+                            var service = entry.Services[0];
+                            <li>
+                                <a href="/book/@service.Id" data-testid="book-service" class="choice-card accent-@entry.Accent">
+                                    <span class="flex items-start justify-between gap-3">
+                                        <span class="text-lg font-semibold leading-snug">@service.Name</span>
+                                        <span class="shrink-0 text-lg font-semibold tabular-nums">@service.Price.ToDisplayString(culture)</span>
+                                    </span>
+                                    @if (service.Description is { } description)
+                                    {
+                                        <span class="text-sm text-stone-600">@description</span>
+                                    }
+                                    <span class="text-sm text-stone-600">@T.Format("Booking.Public.DurationMinutes", (int)service.Duration.TotalMinutes)</span>
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            @* A search that found these variants shows them at once; otherwise the card opens on a tap. *@
+                            <li class="sm:col-span-2">
+                                <details class="variant-card accent-@entry.Accent" data-testid="variant-group" open="@(choice.Search is not null)">
+                                    <summary data-testid="variant-summary">
+                                        <span class="flex items-start justify-between gap-3">
+                                            <span class="text-lg font-semibold leading-snug" data-testid="variant-title">@entry.Title</span>
+                                            <span class="shrink-0 text-lg font-semibold tabular-nums" data-testid="variant-prices">@(entry.MinPrice == entry.MaxPrice ? entry.MinPrice.ToDisplayString(culture) : T.Format("Booking.Public.PriceRange", entry.MinPrice.ToDisplayString(culture), entry.MaxPrice.ToDisplayString(culture)))</span>
+                                        </span>
+                                        <span class="flex items-center justify-between gap-3 text-sm text-stone-600">
+                                            <span>@T.Format("Booking.Public.Variants", entry.Services.Count)</span>
+                                            <svg class="variant-chevron size-5 shrink-0 transition-transform" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7.5l5 5 5-5" /></svg>
+                                        </span>
+                                    </summary>
+                                    <ul class="variant-list">
+                                        @foreach (var variant in entry.Services)
+                                        {
+                                            <li>
+                                                <a href="/book/@variant.Id" data-testid="book-variant" class="variant-link">
+                                                    <span class="flex min-w-0 flex-col">
+                                                        <span class="variant-name font-medium">@variant.Name</span>
+                                                        <span class="text-sm text-stone-600">@T.Format("Booking.Public.DurationMinutes", (int)variant.Duration.TotalMinutes)</span>
+                                                    </span>
+                                                    <span class="shrink-0 font-semibold tabular-nums">@variant.Price.ToDisplayString(culture)</span>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </details>
+                            </li>
+                        }
                     }
                 </ul>
             </section>
         }
+        <partial name="_Pager" model="Model.Pager" />
     }
     @await Component.InvokeAsync("SalonContact")
 </section>
