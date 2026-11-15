@@ -30,7 +30,9 @@ public sealed class CheckoutController(IDispatcher dispatcher, ILocalizationServ
     public async Task<IActionResult> Show(Guid appointmentId, CancellationToken cancellationToken)
     {
         var bill = await dispatcher.SendAsync(new CheckoutQuery(appointmentId), cancellationToken);
-        return bill is null ? NotFound() : View(new CheckoutViewModel(bill, TakeFlash(), null));
+
+        // A refused change to the products on the bill comes back here with its reason (the BillProducts slice).
+        return bill is null ? NotFound() : View(new CheckoutViewModel(bill, TakeFlash(), TakeProblem(), await SellableAsync(bill, cancellationToken)));
     }
 
     [HttpPost("")]
@@ -67,11 +69,21 @@ public sealed class CheckoutController(IDispatcher dispatcher, ILocalizationServ
         }
 
         var bill = await dispatcher.SendAsync(new CheckoutQuery(appointmentId), cancellationToken);
-        return bill is null ? NotFound() : View("Show", new CheckoutViewModel(bill, null, error));
+        return bill is null ? NotFound() : View("Show", new CheckoutViewModel(bill, null, error, await SellableAsync(bill, cancellationToken)));
     }
+
+    /// <summary>Where the product forms post; the BillProducts slice owns the routes.</summary>
+    public static string ProductsPath(Guid appointmentId) => $"{BasePath}/{appointmentId}/products";
+
+    public static string RemoveProductPath(Guid appointmentId, Guid lineId) => $"{BasePath}/{appointmentId}/products/{lineId}/remove";
+
+    /// <summary>Products are rung up only on a bill that can be paid; for any other visit the list is not read.</summary>
+    private async Task<IReadOnlyList<SellableProduct>> SellableAsync(VisitBill bill, CancellationToken cancellationToken)
+        => bill.CanPay ? await dispatcher.SendAsync(new SellableProductsQuery(), cancellationToken) : [];
 
     private Guid? CurrentUserId() => Guid.TryParse(User.FindFirstValue(UserClaimTypes.Subject), out var id) ? id : null;
 }
 
 /// <param name="Error">A refused request, already localized.</param>
-public sealed record CheckoutViewModel(VisitBill Bill, string? Flash, string? Error);
+/// <param name="Sellable">The products the desk can ring up; empty when the bill cannot be paid or the salon sells none.</param>
+public sealed record CheckoutViewModel(VisitBill Bill, string? Flash, string? Error, IReadOnlyList<SellableProduct> Sellable);

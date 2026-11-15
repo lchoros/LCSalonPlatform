@@ -79,4 +79,7 @@ public enum ClientAccountEntryKind
 
     /// <summary>The client paid for a visit at the checkout (ADR 0024): the price less the deposit the salon held.</summary>
     VisitPayment = 7,
+
+    /// <summary>The client paid for products on a visit's bill (ADR 0037): the lines of <see cref="VisitProductLine"/> this entry settles.</summary>
+    ProductSale = 8,
 }

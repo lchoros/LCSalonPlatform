@@ -55,7 +55,7 @@ public sealed class RecordStockController(IDispatcher dispatcher, ILocalizationS
                 SetFlash(localizer.Format("Products.Stock.CountMatches", result.OnHand));
                 break;
             default:
-                TempData[StockKindSegments.ProblemTempDataKey] = localizer.Format($"Products.Stock.Refused.{result.Outcome}", result.OnHand);
+                SetProblem(localizer.Format($"Products.Stock.Refused.{result.Outcome}", result.OnHand));
                 break;
         }
 

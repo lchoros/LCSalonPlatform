@@ -29,6 +29,12 @@ public class StockMovement : BaseEntity, ITenantEntity
     /// <summary>Why something was written off; an optional remark otherwise (a supplier, an invoice number).</summary>
     public string? Note { get; set; }
 
+    /// <summary>
+    /// The visit on whose bill the units were sold (ADR 0037). Also set on the count that a sale forces when the record
+    /// held fewer than the client took home: the bottle in their hand is the count.
+    /// </summary>
+    public Guid? AppointmentId { get; set; }
+
     public Instant At { get; set; }
 
     /// <summary>The login that added the line.</summary>
@@ -48,4 +54,7 @@ public enum StockMovementKind
 
     /// <summary>Somebody counted the shelf and the number differed; the line is the difference, either way.</summary>
     Counted = 4,
+
+    /// <summary>Sold to a client on a visit's bill (ADR 0037); takes from the shelf when the bill is paid.</summary>
+    Sold = 5,
 }

@@ -36,7 +36,7 @@ public sealed class ProductCardController(IDispatcher dispatcher) : SalonControl
             product,
             PagerModel.For(product.History, number => PageAddress(id, number)),
             User.HasClaim(UserClaimTypes.Permission, Permissions.CatalogManage),
-            TempData[StockKindSegments.ProblemTempDataKey] as string,
+            TakeProblem(),
             TakeFlash()));
     }
 

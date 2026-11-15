@@ -12,7 +12,7 @@
     var dayPath = "/admin/appointments?date=" + LocalDatePattern.Iso.Format(bill.Start.Date);
     var checkoutPath = CheckoutController.BasePath + "/" + bill.AppointmentId;
     var feesTotal = bill.OpenFees.Sum(f => f.Amount.Amount);
-    var somethingToPay = bill.Outstanding.Amount > 0m || bill.OpenFees.Count > 0;
+    var somethingToPay = bill.ToPay.Amount > 0m || bill.OpenFees.Count > 0;
     ViewData["Title"] = T["Payments.Checkout.Title"];
     const string inputClass = "field field-compact";
     const string primaryClass = "btn btn-compact btn-primary w-full sm:w-auto";
@@ -54,9 +54,36 @@
                 <dt>@T.Format("Payments.Checkout.PaidWith", T[$"Payments.Method.{paid.Method}"])</dt>
                 <dd class="text-right tabular-nums" data-testid="bill-paid">−@paid.Amount.ToDisplayString(culture)</dd>
             }
-            <dt class="border-t border-stone-200 pt-2 font-semibold">@T["Payments.Checkout.Outstanding"]</dt>
-            <dd class="border-t border-stone-200 pt-2 text-right text-xl font-bold tabular-nums" data-testid="bill-outstanding">@bill.Outstanding.ToDisplayString(culture)</dd>
         </dl>
+        @if (bill.Products.Count > 0)
+        {
+            @* Products rung up on this bill (ADR 0037): an unpaid line can still be taken off, a paid one says how it was paid. *@
+            <ul class="space-y-2 border-t border-stone-200 pt-2" data-testid="bill-products">
+                @foreach (var line in bill.Products)
+                {
+                    <li class="flex items-center justify-between gap-3" data-testid="bill-product" data-paid="@line.IsPaid.ToString().ToLowerInvariant()">
+                        <span class="min-w-0 flex-1">
+                            <span class="block" data-testid="bill-product-name">@T.Format("Payments.Checkout.Products.Line", line.Name, line.Quantity)</span>
+                            @if (line.IsPaid)
+                            {
+                                <span class="block text-sm text-stone-600" data-testid="bill-product-paid">@T.Format("Payments.Checkout.PaidWith", line.PaidWith is { } paidWith ? T[$"Payments.Method.{paidWith}"] : "—")</span>
+                            }
+                        </span>
+                        <span class="tabular-nums @(line.IsPaid ? "text-stone-500" : null)" data-testid="bill-product-total">@line.Total.ToDisplayString(culture)</span>
+                        @if (!line.IsPaid)
+                        {
+                            <form method="post" action="@CheckoutController.RemoveProductPath(bill.AppointmentId, line.LineId)" asp-antiforgery="true">
+                                <button type="submit" class="btn btn-compact btn-secondary px-3" data-testid="remove-product">@T["Payments.Checkout.Products.Remove"]<span class="sr-only">: @line.Name</span></button>
+                            </form>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+        <p class="flex items-baseline justify-between gap-4 border-t border-stone-200 pt-2">
+            <span class="font-semibold">@T["Payments.Checkout.Outstanding"]</span>
+            <span class="text-xl font-bold tabular-nums" data-testid="bill-outstanding">@bill.ToPay.ToDisplayString(culture)</span>
+        </p>
         @if (bill.Payment is { } payment)
         {
             <p class="text-sm text-stone-600" data-testid="bill-payment">
@@ -66,6 +93,32 @@
             </p>
         }
     </section>
+
+    @if (Model.Sellable.Count > 0)
+    {
+        <section class="@cardClass" data-testid="add-product-step">
+            <h2 class="text-lg font-semibold">@T["Payments.Checkout.Products.Title"]</h2>
+            <form method="post" action="@CheckoutController.ProductsPath(bill.AppointmentId)" asp-antiforgery="true" class="space-y-3" data-testid="add-product-form">
+                <div class="grid gap-3 sm:grid-cols-[1fr_6rem]">
+                    <div class="space-y-1">
+                        <label for="product" class="field-label">@T["Payments.Checkout.Products.Product"]</label>
+                        <select id="product" name="product" class="@inputClass" data-testid="bill-product-select">
+                            @foreach (var product in Model.Sellable)
+                            {
+                                <option value="@product.Id">@T.Format("Payments.Checkout.Products.Option", product.Name, product.Price.ToDisplayString(culture))</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="quantity" class="field-label">@T["Payments.Checkout.Products.Quantity"]</label>
+                        <input id="quantity" name="quantity" type="number" inputmode="numeric" min="1" max="@ProductSaleRules.MaxQuantity" step="1" value="1" required class="@inputClass" data-testid="bill-product-quantity" />
+                    </div>
+                </div>
+                <p class="text-sm text-stone-600">@T["Payments.Checkout.Products.Hint"]</p>
+                <button type="submit" class="@secondaryClass" data-testid="add-product">@T["Payments.Checkout.Products.Add"]</button>
+            </form>
+        </section>
+    }
 
     @if (!bill.CanPay)
     {
@@ -107,7 +160,7 @@
                     </fieldset>
                     <p class="flex items-baseline justify-between gap-4 rounded-md bg-stone-50 p-3" data-testid="bill-total">
                         <span class="text-sm text-stone-700">@T["Payments.Checkout.TotalWithFees"]</span>
-                        <span class="text-xl font-bold tabular-nums">@((bill.Outstanding with { Amount = bill.Outstanding.Amount + feesTotal }).ToDisplayString(culture))</span>
+                        <span class="text-xl font-bold tabular-nums">@((bill.ToPay with { Amount = bill.ToPay.Amount + feesTotal }).ToDisplayString(culture))</span>
                     </p>
                 }
                 <div class="space-y-1">

@@ -23,6 +23,7 @@ public class TillRulesTests
     [InlineData(ClientAccountEntryKind.DepositPaid, 1)]
     [InlineData(ClientAccountEntryKind.FeePayment, 1)]
     [InlineData(ClientAccountEntryKind.VisitPayment, 1)]
+    [InlineData(ClientAccountEntryKind.ProductSale, 1)]
     [InlineData(ClientAccountEntryKind.DepositReturned, -1)]
     [InlineData(ClientAccountEntryKind.NoShowFee, 0)]
     [InlineData(ClientAccountEntryKind.LateCancellationFee, 0)]
@@ -59,7 +60,7 @@ public class TillRulesTests
     [Property(MaxTest = 200)]
     public Property The_methods_always_add_up_to_everything_in_less_everything_out()
     {
-        var kinds = new[] { ClientAccountEntryKind.DepositPaid, ClientAccountEntryKind.DepositReturned, ClientAccountEntryKind.FeePayment, ClientAccountEntryKind.VisitPayment, ClientAccountEntryKind.FeeWaived };
+        var kinds = new[] { ClientAccountEntryKind.DepositPaid, ClientAccountEntryKind.DepositReturned, ClientAccountEntryKind.FeePayment, ClientAccountEntryKind.VisitPayment, ClientAccountEntryKind.ProductSale, ClientAccountEntryKind.FeeWaived };
         var line =
             from kind in Gen.Elements(kinds)
             from method in Gen.Elements(Enum.GetValues<PaymentMethod>())

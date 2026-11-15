@@ -35,7 +35,4 @@ public static class StockKindSegments
         };
         return known;
     }
-
-    /// <summary>TempData key of the reason a stock change was refused: written by the slice that records, read by the product page.</summary>
-    public const string ProblemTempDataKey = "StockProblem";
 }

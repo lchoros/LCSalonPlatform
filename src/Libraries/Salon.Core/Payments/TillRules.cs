@@ -12,12 +12,12 @@ public static class TillRules
     public static decimal Outstanding(decimal price, decimal depositHeld) => Math.Max(0m, price - Math.Max(0m, depositHeld));
 
     /// <summary>
-    /// +1 for money that came in (a deposit, a fee paid, a visit paid), -1 for money that went out (a deposit returned),
-    /// 0 for lines that moved no money (a fee added or waived).
+    /// +1 for money that came in (a deposit, a fee paid, a visit paid, products sold), -1 for money that went out (a
+    /// deposit returned), 0 for lines that moved no money (a fee added or waived).
     /// </summary>
     public static int Direction(ClientAccountEntryKind kind) => kind switch
     {
-        ClientAccountEntryKind.DepositPaid or ClientAccountEntryKind.FeePayment or ClientAccountEntryKind.VisitPayment => 1,
+        ClientAccountEntryKind.DepositPaid or ClientAccountEntryKind.FeePayment or ClientAccountEntryKind.VisitPayment or ClientAccountEntryKind.ProductSale => 1,
         ClientAccountEntryKind.DepositReturned => -1,
         _ => 0,
     };

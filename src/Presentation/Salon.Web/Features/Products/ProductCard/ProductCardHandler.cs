@@ -56,7 +56,8 @@ public sealed class ProductCardHandler(
                 m.OnHandAfter,
                 m.Note,
                 m.At.InZone(zone).LocalDateTime,
-                m.ByUserId is { } userId && users.TryGetValue(userId, out var name) ? name : null))
+                m.ByUserId is { } userId && users.TryGetValue(userId, out var name) ? name : null,
+                m.Kind == StockMovementKind.Counted && m.AppointmentId is not null))
             .ToList();
 
         return new ProductCard(

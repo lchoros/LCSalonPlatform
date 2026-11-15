@@ -70,6 +70,19 @@ public interface IClientAccountService
     /// </summary>
     Task<VisitBill> PayBillAsync(Guid appointmentId, PaymentMethod method, IReadOnlyCollection<Guid> feeAppointmentIds, Guid? byUserId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Puts a product on the visit's bill (ADR 0037), at the product's price of this moment. A product that already has
+    /// an unpaid line on the bill gets its quantity raised instead of a second line. Nothing is paid and no stock moves
+    /// until the bill is paid. Throws <see cref="ClientAccountException"/> when the visit is unknown or has not reached
+    /// the chair, the product is not one the salon sells, or the quantity is out of range.
+    /// </summary>
+    Task<VisitBill> AddProductAsync(Guid appointmentId, Guid productId, int quantity, Guid? byUserId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Takes an unpaid product line off the visit's bill. Throws <see cref="ClientAccountException"/> when the visit or
+    /// the line is unknown, or the line is already paid: money that was taken is not undone by editing a bill.
+    /// </summary>
+    Task<VisitBill> RemoveProductAsync(Guid appointmentId, Guid lineId, CancellationToken cancellationToken = default);
 
 
     /// <summary>What the client owes, every fee and every deposit on their account, newest first. Empty for a client without any or an unknown id.</summary>
@@ -156,6 +169,7 @@ public sealed record DepositReturn(Instant At, string? ByName, PaymentMethod? Me
 /// <param name="DepositHeld">A deposit received for this visit and not returned: it comes off the bill.</param>
 /// <param name="Payment">The payment taken for the visit; null while it is unpaid or the deposit covered it.</param>
 /// <param name="OpenFees">The client's unsettled fees from other visits, oldest debt last.</param>
+/// <param name="Products">The products on this bill in the order they were rung up, paid or not (ADR 0037).</param>
 public sealed record VisitBill(
     Guid AppointmentId,
     Guid ClientId,
@@ -167,13 +181,27 @@ public sealed record VisitBill(
     Money Price,
     Money? DepositHeld,
     VisitPaymentLine? Payment,
-    IReadOnlyList<FeeLine> OpenFees)
+    IReadOnlyList<FeeLine> OpenFees,
+    IReadOnlyList<BillProductLine> Products)
 {
     /// <summary>Only a visit the client turned up for is paid for.</summary>
     public bool CanPay => Status is AppointmentStatus.Arrived or AppointmentStatus.Completed;
 
     /// <summary>What is left to pay for the visit itself: nothing once it is paid, else the price less the deposit held.</summary>
     public Money Outstanding => Price with { Amount = Payment is null ? TillRules.Outstanding(Price.Amount, DepositHeld?.Amount ?? 0m) : 0m };
+
+    /// <summary>What is left to pay for products: the lines nobody has paid for yet.</summary>
+    public Money ProductsOutstanding => Price with { Amount = ProductSaleRules.Outstanding(Products.Select(p => (p.Quantity, p.UnitPrice.Amount, p.IsPaid))) };
+
+    /// <summary>The visit and the products together, before any fee from an earlier visit.</summary>
+    public Money ToPay => Price with { Amount = Outstanding.Amount + ProductsOutstanding.Amount };
+}
+
+/// <summary>A product on a visit's bill (ADR 0037), with the name and the price it had when it was rung up.</summary>
+/// <param name="PaidWith">How it was paid; null while it is unpaid.</param>
+public sealed record BillProductLine(Guid LineId, Guid ProductId, string Name, int Quantity, Money UnitPrice, PaymentMethod? PaidWith, bool IsPaid)
+{
+    public Money Total => UnitPrice with { Amount = ProductSaleRules.LineTotal(Quantity, UnitPrice.Amount) };
 }
 
 /// <summary>The payment taken for a visit at the checkout.</summary>
@@ -279,6 +307,18 @@ public enum ClientAccountRefusal
 
     /// <summary>The visit is already paid (or covered by its deposit) and no open fee was chosen.</summary>
     NothingToPay = 14,
+
+    /// <summary>The product is unknown to the salon, no longer used or has no price: it is not one the salon sells (ADR 0037).</summary>
+    ProductNotForSale = 15,
+
+    /// <summary>A bill line holds between one and <see cref="ProductSaleRules.MaxQuantity"/> units.</summary>
+    QuantityOutOfRange = 16,
+
+    /// <summary>The product line is already paid; a paid line stays on the bill.</summary>
+    ProductLinePaid = 17,
+
+    /// <summary>The shelf of a product on the bill kept changing while the bill was paid; nothing was recorded.</summary>
+    StockNotRecorded = 18,
 }
 
 /// <summary>A request the account refuses; <see cref="Refusal"/> says why, for the message the screen shows.</summary>

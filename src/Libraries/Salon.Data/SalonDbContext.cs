@@ -85,6 +85,9 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     /// <summary>The history of every shelf; lines are only ever added (ADR 0036).</summary>
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
 
+    /// <summary>Products on the bills of visits; a line is fixed once it is paid (ADR 0037).</summary>
+    public DbSet<VisitProductLine> VisitProductLines => Set<VisitProductLine>();
+
     /// <summary>Platform-level (no tenant filter, no RLS): the dispatcher reads every tenant's pending events (ADR 0007).</summary>
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 

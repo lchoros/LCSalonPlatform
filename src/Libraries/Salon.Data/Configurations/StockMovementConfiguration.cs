@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Salon.Core.Appointments;
 using Salon.Core.Products;
 
 namespace Salon.Data.Configurations;
@@ -20,6 +21,8 @@ internal sealed class StockMovementConfiguration : IEntityTypeConfiguration<Stoc
         builder.HasIndex(m => new { m.TenantId, m.ProductId, m.At });
         // Restrict: the history outlives a tidy-up of whatever it points at.
         builder.HasOne<Product>().WithMany().HasForeignKey(m => m.ProductId).OnDelete(DeleteBehavior.Restrict);
+        // The visit a sale belongs to (ADR 0037).
+        builder.HasOne<Appointment>().WithMany().HasForeignKey(m => m.AppointmentId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Core.Tenancy.Tenant>().WithMany().HasForeignKey(m => m.TenantId).OnDelete(DeleteBehavior.Restrict);
     }
 }

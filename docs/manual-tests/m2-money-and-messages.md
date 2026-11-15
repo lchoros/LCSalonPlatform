@@ -272,6 +272,21 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] U10. Sign in as `desk@studio-20.local`: the list and the product page open, "A delivery arrived" and "Used in
       the salon" are there, "Count the shelf", "Write off", "Edit" and "Add product" are not.
 
+## V. Selling a product on a visit's bill (after PR #80 is merged too)
+- [ ] V1. Mark a visit of today as arrived and open its Checkout. Below the bill there is "Add a product" with the
+      products that have a price. "Colour tube" is not in the list.
+- [ ] V2. Choose "Shampoo 250 ml", 2, "Add to the bill". The bill shows "Shampoo 250 ml × 2", £25.00, and "Left to
+      pay" is the visit plus £25.00. Products still shows the same number on the shampoo's shelf.
+- [ ] V3. Add the shampoo once more: the line says "× 3", not a second line. "Take off" removes it; add 2 again.
+- [ ] V4. "Record payment" by card. The visit is completed, the line says "Paid: Card at the salon's terminal" and
+      has no "Take off".
+- [ ] V5. Till: the day lists "Visit paid" and "Products sold" as two lines; the takings are their sum.
+- [ ] V6. Products, the shampoo: two fewer on the shelf and the newest line of the history is "Sold −2".
+- [ ] V7. Back on the same Checkout, add a "Hair oil 100 ml" and pay cash: a paid visit can still sell a bottle.
+- [ ] V8. Count a product's shelf down to 0, then sell one of it on a bill and pay. The history shows "Found at a
+      sale +1" and then "Sold −1"; the shelf is 0, not below.
+- [ ] V9. Reports, this week: "What it was for" names "Products sold".
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

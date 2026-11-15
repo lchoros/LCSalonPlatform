@@ -125,7 +125,8 @@ public class CancellationPolicyTests
     {
         foreach (var kind in Enum.GetValues<ClientAccountEntryKind>())
         {
-            new[] { ClientAccountRules.IsFee(kind), ClientAccountRules.IsSettlement(kind), ClientAccountRules.IsDeposit(kind), ClientAccountRules.IsVisitPayment(kind) }.Count(family => family).ShouldBe(1, kind.ToString());
+            // Products sold are a fifth family (ADR 0037); the rule itself is unchanged: one family each, no kind without one.
+            new[] { ClientAccountRules.IsFee(kind), ClientAccountRules.IsSettlement(kind), ClientAccountRules.IsDeposit(kind), ClientAccountRules.IsVisitPayment(kind), ClientAccountRules.IsProductSale(kind) }.Count(family => family).ShouldBe(1, kind.ToString());
         }
     }
 }

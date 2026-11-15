@@ -81,5 +81,7 @@
   "Products.Stock.Refused.NoteRequired": "Podaj powód spisania.",
   "Products.Stock.Refused.NotEnough": "Według stanu na półce jest tylko {0}. Jeśli jest więcej, najpierw policz półkę.",
   "Products.Stock.Refused.TooMany": "To więcej, niż można zapisać na jednej półce.",
-  "Products.Stock.Refused.ChangedMeanwhile": "Ktoś inny zmienił tę półkę w tej samej chwili. Nic nie zapisano. Na półce jest {0}; sprawdź i spróbuj ponownie."
+  "Products.Stock.Refused.ChangedMeanwhile": "Ktoś inny zmienił tę półkę w tej samej chwili. Nic nie zapisano. Na półce jest {0}; sprawdź i spróbuj ponownie.",
+  "Products.Kind.Sold": "Sprzedano",
+  "Products.Kind.CountedAtSale": "Znaleziono przy sprzedaży"
 }
