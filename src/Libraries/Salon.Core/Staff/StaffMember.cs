@@ -46,6 +46,12 @@ public partial class StaffMember : BaseEntity, ITenantEntity
 
     public Instant CreatedAt { get; set; }
 
+    /// <summary>
+    /// The secret of this person's calendar address (ADR 0038); null while the address is switched off. Replacing it
+    /// switches the old address off.
+    /// </summary>
+    public string? CalendarFeedToken { get; set; }
+
     /// <summary>True for <c>#RRGGBB</c> in either case; the entity stores the upper-case form.</summary>
     public static bool IsValidColour(string? colour) => colour is not null && ColourPattern().IsMatch(colour);
 
