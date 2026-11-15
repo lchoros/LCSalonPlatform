@@ -1,0 +1,7 @@
+@model int
+@* How many earlier visits nobody marked, with the way to the list (ADR 0034). The address belongs to the
+   "without outcome" slice; a shared view may only link to it. *@
+<p role="status" class="notice notice-warn flex flex-wrap items-center justify-between gap-x-4" data-testid="without-outcome-notice" data-count="@Model">
+    <span>@(Model == 1 ? T["Appointments.Outcome.Notice.One"] : T.Format("Appointments.Outcome.Notice.Many", Model))</span>
+    <a href="/admin/appointments/without-outcome" class="inline-flex min-h-11 items-center font-semibold underline underline-offset-4" data-testid="without-outcome-link">@T["Appointments.Outcome.Notice.Review"]</a>
+</p>

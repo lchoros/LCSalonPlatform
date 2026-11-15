@@ -96,6 +96,11 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `/admin/appointments/new` (client picker, service, staff or any, date, slots from `IAvailabilityService` as small POST
   forms, booked through `IBookingService` as `Source.Admin`), behind `Bookings.Manage` + `Clients.View` because both
   show client names (ADR 0012).
+- `Appointments/WithoutOutcome` — `/admin/appointments/without-outcome?page=` (ADR 0034): the visits of earlier days that
+  still hold their time (`VisitOutcomeRules`: active status, ended before today began in the salon zone), the latest
+  first, with `POST {id}/{came|did-not-come}`. `IVisitOutcomeService` (Services) counts, lists and records through
+  `IBookingService`, so a booked visit that "came" gets two history rows and two events in one transaction. The view
+  component `VisitsWithoutOutcome` puts the count on the day list and the calendar. Same permissions as the day list.
 - `Appointments/Calendar` — `/admin/appointments/calendar?view=day|week&date=&staff=` (ADR 0016): a CSS-grid timetable
   computed by the pure `CalendarLayout` in Services, an appointment card at `calendar/{id}` with the day list's status
   buttons and a move form posting to `calendar/{id}/move` (`IBookingService.MoveAsync`, re-checked through the engine,

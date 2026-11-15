@@ -98,5 +98,19 @@
   "Appointments.Calendar.Card.DepositNone": "None asked for",
   "Appointments.Calendar.Card.DepositOpen": "Deposit details",
   "Appointments.Day.Checkout": "Checkout",
-  "Appointments.Calendar.Card.Checkout": "Checkout"
+  "Appointments.Calendar.Card.Checkout": "Checkout",
+  "Appointments.Outcome.Title": "Visits without an outcome",
+  "Appointments.Outcome.Lead": "These visits are over, but nobody recorded whether the client came. Mark each one, so that the reports, the fees and the client's history are right.",
+  "Appointments.Outcome.Empty": "Every past visit has an outcome. Nothing to do here.",
+  "Appointments.Outcome.Back": "Back to appointments",
+  "Appointments.Outcome.Choice.Came": "Client came",
+  "Appointments.Outcome.Choice.DidNotCome": "Did not come",
+  "Appointments.Outcome.Open": "Open visit",
+  "Appointments.Outcome.With": "with {0}",
+  "Appointments.Outcome.Recorded.Came": "The visit is marked as completed. Take the payment from the checkout if it is still open.",
+  "Appointments.Outcome.Recorded.DidNotCome": "The visit is marked as a no-show.",
+  "Appointments.Outcome.NotRecorded": "Nothing was changed: this visit already has an outcome, or that outcome does not fit it.",
+  "Appointments.Outcome.Notice.One": "1 earlier visit has no outcome yet.",
+  "Appointments.Outcome.Notice.Many": "{0} earlier visits have no outcome yet.",
+  "Appointments.Outcome.Notice.Review": "Review them"
 }

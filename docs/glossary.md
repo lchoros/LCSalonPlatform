@@ -22,6 +22,7 @@
 | Variant | Wariant | A service that shares a title with siblings (`Service.VariantGroup`) and differs by its label (`VariantLabel`): "Keratin · Long hair". Clients see one entry with a price range |
 | Placeholder | Znacznik | `{{Name}}` in a message's wording, replaced when the message is sent; each message offers its own list |
 | SMS segment | Część SMS-a | One billed text: 160 characters in the basic alphabet, 70 once a letter such as "ą" is used |
+| Visit without an outcome | Wizyta bez wyniku | A visit of an earlier day that is still booked, confirmed or arrived: nobody recorded whether the client came (ADR 0034) |
 | No-show rate | Odsetek nieobecności | No-shows over visits that had an outcome (completed plus no-shows) |
 | Patch test | Test uczuleniowy | Allergy test before colour/lash/brow tint |
 | Consultation form | Formularz konsultacyjny | Signed client questionnaire |

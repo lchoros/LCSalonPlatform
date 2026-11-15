@@ -1,0 +1,67 @@
+@using System.Globalization
+@using NodaTime
+@using Salon.Core.Appointments
+@using Salon.Web.Features.Appointments.WithoutOutcome
+@model WithoutOutcomeViewModel
+@{
+    var culture = CultureInfo.CurrentCulture;
+    var visits = Model.Visits;
+    ViewData["Title"] = T["Appointments.Outcome.Title"];
+}
+@functions {
+    static string Time(LocalTime time) => time.ToString("t", CultureInfo.CurrentCulture);
+
+    static string ButtonClass(VisitOutcome outcome) => outcome == VisitOutcome.Came ? "btn btn-compact btn-primary" : "btn btn-compact btn-secondary";
+}
+<section class="space-y-6">
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+    <header class="space-y-2">
+        <a href="@WithoutOutcomeController.DayListPath" class="back-link" data-testid="back">&larr; @T["Appointments.Outcome.Back"]</a>
+        <h1 class="page-title">@T["Appointments.Outcome.Title"]</h1>
+        <p class="max-w-prose text-stone-600">@T["Appointments.Outcome.Lead"]</p>
+    </header>
+
+    @if (visits.Total == 0)
+    {
+        <p data-testid="empty-state" class="empty-state">@T["Appointments.Outcome.Empty"]</p>
+    }
+    else
+    {
+        <ul class="list-card" data-testid="without-outcome-list" data-total="@visits.Total">
+            @foreach (var visit in visits.Items)
+            {
+                <li class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between" data-testid="visit" data-status="@visit.Status">
+                    <div class="min-w-0 space-y-1">
+                        <p class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                            <time datetime="@visit.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" class="font-semibold" data-testid="visit-day">@visit.Day.ToString("D", culture)</time>
+                            <span class="tabular-nums text-stone-700" data-testid="visit-time">@Time(visit.Start)–@Time(visit.End)</span>
+                            <span class="rounded bg-stone-100 px-1.5 py-0.5 text-xs font-medium text-stone-700" data-testid="status-badge">@T[$"Appointments.Status.{visit.Status}"]</span>
+                        </p>
+                        <p class="text-base" data-testid="visit-client">@visit.ClientName</p>
+                        <p class="flex flex-wrap items-center gap-x-2 text-sm text-stone-600">
+                            <span data-testid="visit-service">@visit.ServiceName</span>
+                            <span class="inline-flex items-center gap-1.5" data-testid="visit-staff">
+                                <span class="size-2.5 shrink-0 rounded-full" style="background-color: @visit.StaffColour" aria-hidden="true"></span>
+                                @T.Format("Appointments.Outcome.With", visit.StaffName)
+                            </span>
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        @foreach (var choice in visit.Choices)
+                        {
+                            var segment = VisitOutcomeSegments.Segment(choice);
+                            <form method="post" action="@WithoutOutcomeController.RecordPath(visit.Id, choice, visits.Page)" asp-antiforgery="true" data-testid="outcome-@segment">
+                                <button type="submit" class="@ButtonClass(choice)">@T[$"Appointments.Outcome.Choice.{choice}"]<span class="sr-only">: @visit.ClientName, @visit.Day.ToString("d", culture)</span></button>
+                            </form>
+                        }
+                        <a href="@(WithoutOutcomeController.CardPath)/@visit.Id" class="back-link px-2" data-testid="open-visit">@T["Appointments.Outcome.Open"]<span class="sr-only">: @visit.ClientName, @visit.Day.ToString("d", culture)</span></a>
+                    </div>
+                </li>
+            }
+        </ul>
+        <partial name="_Pager" model="Model.Pager" />
+    }
+</section>
