@@ -13,6 +13,7 @@ using Salon.Services.Locations;
 using Salon.Services.Messaging;
 using Salon.Services.Notifications;
 using Salon.Services.Payments;
+using Salon.Services.Products;
 using Salon.Services.Reports;
 using Salon.Services.Seeding;
 using Salon.Services.Settings;
@@ -63,6 +64,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICashUpService, CashUpService>();
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<ILocationService, LocationService>();
+        services.AddScoped<IStockService, StockService>();
         services.AddScoped<DemoSeeder>();
 
         services.AddOptions<EmailOptions>().BindConfiguration(EmailOptions.SectionName);
