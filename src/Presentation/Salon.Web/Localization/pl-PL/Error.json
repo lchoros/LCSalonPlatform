@@ -1,5 +1,5 @@
 {
   "Error.Title": "Coś poszło nie tak",
-  "Error.Description": "Podczas przetwarzania żądania wystąpił błąd.",
+  "Error.Description": "Przepraszamy, coś po naszej stronie nie zadziałało. Spróbuj ponownie za chwilę.",
   "Error.RequestId": "Identyfikator żądania"
 }

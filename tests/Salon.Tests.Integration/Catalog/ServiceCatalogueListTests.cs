@@ -198,7 +198,7 @@ public class ServiceCatalogueListTests(SalonWebApplicationFactory factory) : IAs
 
         var nothing = await GetAsync(client, "/book?q=keratin+brows");
         nothing.ShouldContain("data-testid=\"no-match\"");
-        nothing.ShouldContain("No service matches.");
+        nothing.ShouldContain("No services match.");
         nothing.ShouldContain("href=\"/book\" class=\"btn btn-secondary\" data-testid=\"show-all\"");
         nothing.ShouldNotContain("data-testid=\"pager\"");
     }

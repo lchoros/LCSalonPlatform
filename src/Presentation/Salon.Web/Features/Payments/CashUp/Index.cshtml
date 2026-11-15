@@ -22,7 +22,7 @@
         <p class="text-stone-600">@T["Payments.CashUp.Lead"]</p>
         <div class="flex items-center gap-2">
             <a href="@DayPath(day.Day.PlusDays(-1))" data-testid="prev-day" class="@navClass" aria-label="@T["Appointments.Day.Previous"]">&larr;</a>
-            <time datetime="@iso" data-testid="day" class="min-w-0 flex-1 text-center text-base font-medium sm:text-lg">@day.Day.ToString("D", culture)</time>
+            <time datetime="@iso" data-testid="day" class="min-w-0 flex-1 text-center text-base font-medium sm:text-lg">@day.Day.ToDayHeading(culture)</time>
             @if (day.Day < day.Today)
             {
                 <a href="@DayPath(day.Day.PlusDays(1))" data-testid="next-day" class="@navClass" aria-label="@T["Appointments.Day.Next"]">&rarr;</a>

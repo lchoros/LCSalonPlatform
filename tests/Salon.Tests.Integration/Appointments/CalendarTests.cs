@@ -93,6 +93,7 @@ public partial class CalendarTests(SalonWebApplicationFactory factory) : IAsyncL
         html.ShouldContain($"href=\"/admin/appointments?date={Iso(_day)}\"");
         html.ShouldContain($"href=\"{CalendarPath}/{tomsVisit.Id}\"");
         html.ShouldNotContain("<script", Case.Sensitive, "the calendar ships no inline script");
+        html.ShouldContain($">{_day.DayOfWeek} {_day.Day} ", Case.Sensitive, "the day is named by its weekday first");
 
         var filtered = await GetAsync(client, DayPath(_day, _annaId));
         Count(filtered, "data-testid=\"calendar-column\"").ShouldBe(1);

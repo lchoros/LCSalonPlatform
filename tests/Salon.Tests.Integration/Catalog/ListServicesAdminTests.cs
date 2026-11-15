@@ -55,8 +55,8 @@ public partial class ListServicesAdminTests(SalonWebApplicationFactory factory) 
         CardNames(html).ShouldBe(["Cut &amp; blow-dry", "Balayage", "Manicure", "Retired perm"]);
         html.ShouldContain("£140.00");
         html.ShouldContain("45 min");
-        html.ShouldContain("5 min buffer");
-        html.ShouldContain("15 min buffer");
+        html.ShouldContain("5 min clean-up");
+        html.ShouldContain("15 min clean-up");
         html.ShouldContain("45 min processing");
         html.ShouldContain($"href=\"/admin/services/{_cutId}\"");
         html.ShouldContain("href=\"/admin/services/new\"");

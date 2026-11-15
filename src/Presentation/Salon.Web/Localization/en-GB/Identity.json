@@ -8,6 +8,6 @@
   "Identity.Login.Validation.EmailRequired": "Enter your email.",
   "Identity.Login.Validation.PasswordRequired": "Enter your password.",
   "Identity.Denied.Title": "Access denied",
-  "Identity.Denied.Description": "Your role does not allow this page. Ask the salon owner if you need access.",
+  "Identity.Denied.Description": "You do not have access to this page. Ask the salon owner if you need it.",
   "Identity.Denied.Back": "Back to services"
 }

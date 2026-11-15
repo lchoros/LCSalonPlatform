@@ -4,7 +4,7 @@ using Salon.Tests.E2E.Infrastructure;
 
 namespace Salon.Tests.E2E.Booking;
 
-/// <summary>Home → "View services" in one tap on a phone and on a desktop; the list renders, is axe-clean and does not scroll sideways.</summary>
+/// <summary>Home → "Services and prices" in one tap on a phone and on a desktop; the list renders, is axe-clean and does not scroll sideways.</summary>
 public class ListServicesE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppFixture>
 {
     private const string Slug = "studio-20";

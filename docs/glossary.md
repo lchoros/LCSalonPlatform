@@ -6,8 +6,9 @@
 | Location | Lokalizacja | `Location` — a physical salon address with phone and email; the first active one is the salon's main location (ADR 0027) |
 | Staff member | Pracownik / Specjalista | `StaffMember` — bookable person |
 | Service | Usługa | `Service` — e.g. "Women's cut & blow-dry" |
-| Processing time | Czas działania (np. farby) | Gap inside a service when the stylist is free |
-| Buffer | Przerwa techniczna | Time after a service before the next can start |
+| Processing time | Czas działania (np. farby) | Gap inside a service when the staff member is free |
+| Buffer | Przerwa techniczna | Time after a service before the next can start. The screen calls it "clean-up time" (ADR 0035); the code keeps `Buffer` |
+| Counted text | Tekst z liczbą | A resource key with two values, `Key.One` and `Key.Many`, read through `Plural(key, count, …)` (ADR 0035) |
 | Appointment | Wizyta | `Appointment` — one client visit, one or more items |
 | Deposit | Zadatek | Amount asked for at booking (`Appointment.DepositAmount`) and recorded on the client account when received; kept by the salon and counted toward the fee when the client misses the visit or cancels late (zadatek, not zaliczka — different legal meaning in PL) |
 | No-show | Nieobecność / Nie przyszedł | Client did not attend |

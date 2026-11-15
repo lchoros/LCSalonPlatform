@@ -85,7 +85,7 @@ public class CreateClientValidatorTests
     }
 
     [Theory]
-    [InlineData("en-GB", "Enter the patch test date as YYYY-MM-DD.")]
+    [InlineData("en-GB", "Choose a valid date for the patch test.")]
     [InlineData("pl-PL", "Podaj datę testu uczuleniowego w formacie RRRR-MM-DD.")]
     public void The_patch_test_date_is_optional_but_must_be_an_ISO_date(string culture, string message)
     {

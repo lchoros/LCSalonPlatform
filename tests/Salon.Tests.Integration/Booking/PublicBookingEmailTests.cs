@@ -30,7 +30,7 @@ public partial class PublicBookingTests
         email.To.ShouldBe(ClientEmail);
         email.Subject.ShouldBe("Your Cut at Studio 20 is booked");
         var text = email.TextBody.ShouldNotBeNull();
-        text.ShouldStartWith("Hi Olivia,\nyour Cut with Anna at Studio 20 is booked for ");
+        text.ShouldStartWith("Hi Olivia,\nYour Cut with Anna at Studio 20 is booked for ");
         text.ShouldContain($"/v/{appointment.PublicToken}");
         email.HtmlBody.ShouldStartWith("<p>Hi Olivia,<br>");
         email.HtmlBody.ShouldContain($"/v/{appointment.PublicToken}\">", Case.Sensitive, "the link is clickable");

@@ -68,7 +68,6 @@
   "Staff.TimeOff.WholeDay": "Cały dzień",
   "Staff.TimeOff.Delete": "Usuń",
   "Staff.TimeOff.PastSummary": "Minione ({0})",
-  "Staff.TimeOff.PastMore": "Starsze wpisy ({0}) nie są wyświetlane.",
   "Staff.TimeOff.Hours": "Godziny pracy",
   "Staff.TimeOff.Back": "Wróć do pracowników",
   "Staff.TimeOff.Added": "Nieobecność została dodana.",
@@ -83,5 +82,7 @@
   "Staff.TimeOff.Validation.Step": "Godziny muszą być wielokrotnością {0} minut.",
   "Staff.TimeOff.Validation.EndAfterStart": "Godzina zakończenia musi być późniejsza niż godzina rozpoczęcia.",
   "Staff.TimeOff.Validation.ReasonTooLong": "Powód może mieć najwyżej {0} znaków.",
-  "Staff.TimeOff.Validation.Overlap": "Ta osoba ma już nieobecność w tym okresie."
+  "Staff.TimeOff.Validation.Overlap": "Ta osoba ma już nieobecność w tym okresie.",
+  "Staff.TimeOff.PastMore.One": "Starsze wpisy ({0}) nie są wyświetlane.",
+  "Staff.TimeOff.PastMore.Many": "Starsze wpisy ({0}) nie są wyświetlane."
 }

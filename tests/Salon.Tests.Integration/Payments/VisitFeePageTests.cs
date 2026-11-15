@@ -130,8 +130,8 @@ public class VisitFeePageTests(SalonWebApplicationFactory factory) : IAsyncLifet
     }
 
     [Theory]
-    [InlineData("0", "Enter an amount above zero with at most two decimals.")]
-    [InlineData("abc", "Enter an amount above zero with at most two decimals.")]
+    [InlineData("0", "Enter an amount above zero, with at most two decimal places.")]
+    [InlineData("abc", "Enter an amount above zero, with at most two decimal places.")]
     [InlineData("20.01", "The amount must be above zero and no more than the limit shown under the field.")]
     public async Task A_wrong_amount_shows_the_preview_again_with_the_reason_and_adds_nothing(string amount, string message)
     {

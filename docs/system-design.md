@@ -50,7 +50,7 @@ slice, on a tenant-owned entity without `ITenantEntity`, and on any type outside
 | --- | --- | --- |
 | `ISettingService` (ADR 0004) | Services/Settings | typed classes (`BookingSettings`), one row per property per tenant, cached per tenant, invalidated on save |
 | `IStaticCacheManager` | Services/Caching | `CacheKey` with prefixes; `MemoryCacheManager` keeps a key index for prefix removal |
-| `ILocalizationService` (ADR 0006) | Services/Localization | embedded `*.Localization.<culture>.json` per assembly, merged at startup, duplicate or unsupported → startup failure, pl-PL → en-GB → key fallback |
+| `ILocalizationService` (ADR 0006) | Services/Localization | embedded `*.Localization.<culture>.json` per assembly, merged at startup, duplicate or unsupported → startup failure, pl-PL → en-GB → key fallback; counted text reads `Key.One` or `Key.Many` through `LocalizationPlurals.Plural` (ADR 0035); `DayFormatter.ToDayHeading` names the weekday first |
 | `IEventPublisher` / `IConsumer<T>` (ADR 0007) | Services/Events | publisher writes an `OutboxMessage` on the handler's DbContext (atomic with the command); `OutboxDispatcher` runs consumers per tenant scope with retry (30 s doubling, 1 h cap), dead-letter after 5 attempts, per-row saves; `OutboxDispatchTask` every minute |
 | `IScheduleTask` (ADR 0005) | Services/Tasks | Hangfire recurring jobs, one distributed lock per task, Postgres storage schema `hangfire` |
 | Plugins | Web.Framework/Plugins | `IPlugin` + embedded `plugin.json`, validated at startup; `IWidgetPlugin` renders into `<widget-zone>` |

@@ -97,7 +97,6 @@
   "Clients.Merge.Confirm.HealthNotesRecorded": "Odnotowane",
   "Clients.Merge.Confirm.ConsentGranted": "Udzielona",
   "Clients.Merge.Confirm.WhatHappens": "Co się stanie",
-  "Clients.Merge.Confirm.Appointments": "Wszystkie wizyty ({0}) klienta {1} i ich historia przechodzą do karty {2}.",
   "Clients.Merge.Confirm.NotesRule": "Notatki obu kart zostaną połączone, najpierw notatki zachowanej karty.",
   "Clients.Merge.Confirm.HealthRule": "Uwagi zdrowotne i test uczuleniowy zachowanej karty pozostają; dane drugiej karty zostaną użyte tylko tam, gdzie zachowana karta ich nie ma.",
   "Clients.Merge.Confirm.ContactRule": "Numer telefonu i e-mail zachowanej karty pozostają; dane drugiej karty uzupełnią tylko puste pola, a następnie zostaną usunięte.",
@@ -130,8 +129,6 @@
   "Clients.Import.Preview.Invalid": "Nie można zaimportować",
   "Clients.Import.Preview.Rows": "Wiersze pliku",
   "Clients.Import.Preview.Row": "Wiersz",
-  "Clients.Import.Preview.More": "…oraz {0} kolejnych wierszy, których tu nie pokazano.",
-  "Clients.Import.Preview.Confirm": "Importuj {0} nowych klientów",
   "Clients.Import.Preview.NothingToImport": "Nie ma nic nowego do zaimportowania.",
   "Clients.Import.Preview.Back": "Wybierz inny plik",
   "Clients.Import.Status.New": "Nowy",
@@ -161,5 +158,12 @@
   "Clients.Edit.DepositPercentHint": "Zostaw puste, aby stosować zasady usługi i salonu. 0: nigdy nie wymagaj zadatku od tego klienta; liczba: zawsze wymagaj.",
   "Clients.Edit.Validation.DepositPercentRange": "Zadatek musi mieścić się między 0 a 100 procent.",
   "Clients.Fees.Deposits": "Zadatki",
-  "Clients.History.Payment": "Płatność"
+  "Clients.History.Payment": "Płatność",
+  "Clients.Import.Preview.More.One": "…oraz {0} kolejny wiersz, którego tu nie pokazano.",
+  "Clients.Import.Preview.More.Many": "…oraz kolejne wiersze, których tu nie pokazano: {0}.",
+  "Clients.Import.Preview.Confirm.One": "Importuj {0} nowego klienta",
+  "Clients.Import.Preview.Confirm.Many": "Importuj {0} nowych klientów",
+  "Clients.Merge.Confirm.Appointments.One": "Wizyta klienta {1} i jej historia przechodzą do karty {2}.",
+  "Clients.Merge.Confirm.Appointments.Many": "Wszystkie wizyty ({0}) klienta {1} i ich historia przechodzą do karty {2}.",
+  "Clients.Merge.Confirm.NoAppointments": "{0} nie ma wizyt do przeniesienia."
 }

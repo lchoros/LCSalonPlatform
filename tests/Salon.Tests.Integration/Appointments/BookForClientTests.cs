@@ -72,7 +72,7 @@ public partial class BookForClientTests(SalonWebApplicationFactory factory) : IA
         form.ShouldContain("Olivia Brown");
         form.ShouldContain("Cut");
         form.ShouldContain("Anna Kowalska");
-        form.ShouldContain("Any available");
+        form.ShouldContain("Anyone available");
         form.ShouldContain("__RequestVerificationToken");
         var expected = await SlotsAsync(_studio.Id, _a, null);
         expected.ShouldNotBeEmpty();

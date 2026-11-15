@@ -39,6 +39,7 @@ Gate: the pilot salon pays; then 3 paying salons before scaling up.
 - [!] First hosting: Dockerfile, staging + prod, deploy job (Tier 2)
 - [!] Stripe Connect plugin: onboarding, online deposits, card on file, refunds (Tier 2)
 - [!] Real SMS/email plugins: Twilio (UK), SMSAPI.pl (PL), Postmark/SES (Tier 2)
+- [x] English wording pass (owner's focus, ADR 0035): every en-GB string, the standard messages and the main screens read as a British client and desk would; counted text with `Key.One` / `Key.Many` through `LocalizationPlurals.Plural`; the salon's front page offers a booking first; weekday-first day headings (`DayFormatter`). Not built: a Polish plural rule
 - [ ] Polish UI complete, legal pages, DPA in sign-up
 - [!] Own SaaS billing (Tier 2)
 - [x] Reports: takings, bookings, no-shows, top services, utilisation — `Reports/Overview` at `admin/reports` behind the new `Reports.View` permission (Owner and Manager): one period (this or last week or month, or two dates), takings per method, per kind and per day added up with the till's rules, visits by outcome with the no-show rate, fees, completed visits nobody took payment for with a link to their checkout, top services, and per person revenue and utilisation from the rota less time off (ADR 0026). Not built: export, charts, comparison with the period before

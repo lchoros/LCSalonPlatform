@@ -65,7 +65,7 @@ public class MessageTemplatesPageTests(SalonWebApplicationFactory factory) : IAs
         var sms = await GetAsync(client, ConfirmationSms);
 
         sms.ShouldContain("data-testid=\"status\">Standard wording<");
-        sms.ShouldContain(">Hi {{ClientFirstName}}, your {{ServiceName}} at {{SalonName}} is booked for {{AppointmentStart}}. Need to cancel? {{CancelUrl}}</textarea>");
+        sms.ShouldContain(">Hi {{ClientFirstName}}, your {{ServiceName}} at {{SalonName}} is booked for {{AppointmentStart}}. Change or cancel: {{CancelUrl}}</textarea>");
         sms.ShouldNotContain("data-testid=\"subject\"", Case.Sensitive, "a text has no subject");
         foreach (var token in new[] { "SalonName", "ClientFirstName", "ServiceName", "StaffName", "AppointmentStart", "CancelUrl" })
         {

@@ -36,7 +36,7 @@
             <h1 class="page-title">@T["Appointments.Day.Title"]</h1>
             <nav aria-label="@T["Appointments.Day.Title"]" class="flex items-center gap-2">
                 <a href="@DayListController.DayPath(board.Day.PlusDays(-1))" data-testid="prev-day" class="@navClass" aria-label="@T["Appointments.Day.Previous"]">&larr;</a>
-                <time datetime="@board.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-testid="day" class="min-w-0 flex-1 text-center text-base font-medium sm:text-lg">@board.Day.ToString("D", culture)</time>
+                <time datetime="@board.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-testid="day" class="min-w-0 flex-1 text-center text-base font-medium sm:text-lg">@board.Day.ToDayHeading(culture)</time>
                 <a href="@DayListController.DayPath(board.Day.PlusDays(1))" data-testid="next-day" class="@navClass" aria-label="@T["Appointments.Day.Next"]">&rarr;</a>
                 <a href="@DayListController.ListPath" data-testid="today" class="@navClass">@T["Appointments.Day.Today"]</a>
             </nav>

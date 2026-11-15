@@ -6,14 +6,17 @@
     @if (Model.TenantName is { } tenantName)
     {
         <h1 class="page-title" data-testid="tenant-name">@tenantName</h1>
-        <p class="max-w-prose text-stone-600">@T["Home.BookingOpensSoon"]</p>
-        <a href="/services" data-testid="view-services" class="btn btn-primary">@T["Home.ViewServices"]</a>
+        <p class="max-w-prose text-stone-600" data-testid="book-lead">@T["Home.BookLead"]</p>
+        <div class="flex flex-col gap-3 sm:flex-row">
+            <a href="/book" data-testid="book-now" class="btn btn-primary">@T["Home.Book"]</a>
+            <a href="/services" data-testid="view-services" class="btn btn-secondary">@T["Home.ViewServices"]</a>
+        </div>
+        @await Component.InvokeAsync("SalonContact")
     }
     else
     {
         <h1 class="page-title">@T["Layout.Brand"]</h1>
         <p class="max-w-prose text-stone-600">@T["Home.PlatformTagline"]</p>
-        <p class="text-sm text-stone-500">@T["Home.PhaseNote"]</p>
     }
     <widget-zone name="@WidgetZones.PublicHomeBottom" />
 </section>

@@ -121,7 +121,7 @@ public partial class EditWorkingHoursTests(SalonWebApplicationFactory factory) :
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var html = await response.Content.ReadAsStringAsync();
-        html.ShouldContain("The ranges on this day overlap.");
+        html.ShouldContain("The two shifts on this day overlap.");
         html.ShouldContain("data-testid=\"staff-name\">Tom Reed<");
         InputTag(html, "Days[0].Ranges[0].End").ShouldContain("value=\"13:05\"");
         (await HoursAsync(_studio.Id)).Select(h => h.Id).Order().ShouldBe(before.Select(h => h.Id).Order());

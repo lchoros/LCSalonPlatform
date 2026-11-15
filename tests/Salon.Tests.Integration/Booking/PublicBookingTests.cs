@@ -168,7 +168,9 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         {
             var response = await PostCodeAsync(client, verifyPath, wrong);
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
-            (await response.Content.ReadAsStringAsync()).ShouldContain($"{5 - attempt} attempts left");
+            // "1 attempt", never "1 attempts" (ADR 0035).
+            var left = 5 - attempt;
+            (await response.Content.ReadAsStringAsync()).ShouldContain(left == 1 ? "You have 1 attempt left." : $"You have {left} attempts left.");
         }
 
         var fifth = await PostCodeAsync(client, verifyPath, wrong);

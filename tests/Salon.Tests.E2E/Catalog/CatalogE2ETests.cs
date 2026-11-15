@@ -79,7 +79,7 @@ public class CatalogE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppFi
         await page.ReachAsync("**/admin/services");
 
         (await page.GetByTestId("flash").TextContentAsync()).ShouldBe("Service “Cut & blow-dry” has been saved.");
-        (await page.GetByTestId("service-buffer").First.TextContentAsync()).ShouldBe("10 min buffer");
+        (await page.GetByTestId("service-buffer").First.TextContentAsync()).ShouldBe("10 min clean-up");
     }
 
     /// <summary>True when a stylesheet resolved with rules in it (a 404 or an empty body parses to zero rules).</summary>
