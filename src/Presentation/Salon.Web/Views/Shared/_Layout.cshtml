@@ -68,6 +68,10 @@
                     {
                         <a href="/admin/payments/cash-up" data-testid="nav-cash-up" aria-current="@In("/admin/payments/cash-up")" class="nav-link">@T["Layout.Nav.CashUp"]</a>
                     }
+                    @if (User.HasClaim(UserClaimTypes.Permission, Permissions.BookingsManage))
+                    {
+                        <a href="/admin/products" data-testid="nav-products" aria-current="@In("/admin/products")" class="nav-link">@T["Layout.Nav.Products"]</a>
+                    }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.ReportsView) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView))
                     {
                         <a href="/admin/reports" data-testid="nav-reports" aria-current="@In("/admin/reports")" class="nav-link">@T["Layout.Nav.Reports"]</a>

@@ -32,6 +32,8 @@ public partial class AdminMenuTests(SalonWebApplicationFactory factory) : IAsync
     [InlineData("/admin/appointments", "nav-appointments")]
     [InlineData("/admin/appointments/calendar", "nav-calendar")]
     [InlineData("/admin/payments/cash-up", "nav-cash-up")]
+    [InlineData("/admin/products", "nav-products")]
+    [InlineData("/admin/products/new", "nav-products")]
     [InlineData("/admin/reports", "nav-reports")]
     [InlineData("/admin/staff", "nav-staff")]
     [InlineData("/admin/settings/salon-details", "nav-settings")]
@@ -64,7 +66,7 @@ public partial class AdminMenuTests(SalonWebApplicationFactory factory) : IAsync
         var html = await GetAsync(client, "/admin/staff");
 
         html.ShouldContain("<header class=\"brand-line ");
-        MenuLinkPattern().Count(html).ShouldBe(8, "an owner sees eight areas");
+        MenuLinkPattern().Count(html).ShouldBe(9, "an owner sees nine areas, products among them (ADR 0036)");
         html.ShouldContain("<h1 class=\"page-title\">");
     }
 

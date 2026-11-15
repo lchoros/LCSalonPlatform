@@ -1,0 +1,147 @@
+@using System.Globalization
+@using Salon.Core.Products
+@using Salon.Web.Features.Products.ProductCard
+@model ProductCardViewModel
+@{
+    var product = Model.Product;
+    ViewData["Title"] = product.Name;
+    var culture = CultureInfo.CurrentCulture;
+    const string inputClass = "field field-compact";
+
+    static string Signed(int quantity) => quantity > 0 ? "+" + quantity.ToString(CultureInfo.CurrentCulture) : "−" + Math.Abs(quantity).ToString(CultureInfo.CurrentCulture);
+}
+<section class="space-y-6">
+    <a href="@ProductCardController.ListPath" class="back-link" data-testid="back">&larr; @T["Products.Card.Back"]</a>
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+    @if (Model.Problem is { } problem)
+    {
+        <p role="alert" data-testid="stock-problem" class="notice notice-error">@problem</p>
+    }
+    <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div class="min-w-0 space-y-1">
+            <h1 class="page-title" data-testid="product-name">@product.Name</h1>
+            <p class="flex flex-wrap gap-x-3 gap-y-1 text-stone-600">
+                @if (product.Brand is { } brand)
+                {
+                    <span data-testid="product-brand">@brand</span>
+                }
+                @if (product.Code is { } code)
+                {
+                    <span class="tabular-nums" data-testid="product-code">@code</span>
+                }
+                <span class="tabular-nums" data-testid="product-price">@(product.Price is { } price ? price.ToDisplayString(culture) : T["Products.List.NotForSale"])</span>
+            </p>
+            @if (!product.IsActive)
+            {
+                <p><span class="rounded bg-stone-100 px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-stone-500" data-testid="badge-not-in-use">@T["Products.Card.NotInUse"]</span></p>
+            }
+        </div>
+        @if (Model.CanManage)
+        {
+            <a href="@ProductCardController.EditPath(product.Id)" class="btn btn-compact btn-secondary" data-testid="edit-product">@T["Products.Card.Edit"]</a>
+        }
+    </header>
+
+    <div class="panel stat @(product.IsLow ? "accent-1" : "accent-3")" data-testid="on-hand-panel" data-low="@product.IsLow.ToString().ToLowerInvariant()">
+        <p class="stat-label">@T["Products.Card.OnHand"]</p>
+        <p class="stat-value" data-testid="on-hand">@product.OnHand</p>
+        @if (product.IsLow)
+        {
+            <p class="text-sm font-medium text-amber-900" data-testid="low-note">@T.Format("Products.Card.LowNote", product.LowStockAt)</p>
+        }
+        else if (product.LowStockAt is { } lowAt)
+        {
+            <p class="text-sm text-stone-600">@T.Format("Products.Card.LowAt", lowAt)</p>
+        }
+    </div>
+
+    <div class="grid items-start gap-4 sm:grid-cols-2">
+        <form method="post" action="@ProductCardController.StockPath(product.Id, StockMovementKind.Received)" asp-antiforgery="true" class="panel space-y-3" data-testid="form-received">
+            <h2 class="text-lg font-semibold">@T["Products.Stock.Received.Title"]</h2>
+            <div class="space-y-1">
+                <label for="received-number" class="field-label">@T["Products.Stock.Units"]</label>
+                <input id="received-number" name="number" type="number" inputmode="numeric" min="1" max="@StockRules.MaxQuantity" step="1" required class="@inputClass" data-testid="received-number" />
+            </div>
+            <div class="space-y-1">
+                <label for="received-note" class="field-label">@T["Products.Stock.NoteOptional"]</label>
+                <input id="received-note" name="note" type="text" maxlength="@StockMovement.NoteMaxLength" autocomplete="off" aria-describedby="received-note-hint" class="@inputClass" />
+                <p id="received-note-hint" class="text-sm text-stone-500">@T["Products.Stock.Received.NoteHint"]</p>
+            </div>
+            <button type="submit" class="btn btn-compact btn-primary w-full" data-testid="submit-received">@T["Products.Stock.Received.Submit"]</button>
+        </form>
+
+        <form method="post" action="@ProductCardController.StockPath(product.Id, StockMovementKind.UsedInSalon)" asp-antiforgery="true" class="panel space-y-3" data-testid="form-used">
+            <h2 class="text-lg font-semibold">@T["Products.Stock.Used.Title"]</h2>
+            <div class="space-y-1">
+                <label for="used-number" class="field-label">@T["Products.Stock.Units"]</label>
+                <input id="used-number" name="number" type="number" inputmode="numeric" min="1" max="@StockRules.MaxQuantity" step="1" value="1" required class="@inputClass" data-testid="used-number" />
+            </div>
+            <div class="space-y-1">
+                <label for="used-note" class="field-label">@T["Products.Stock.NoteOptional"]</label>
+                <input id="used-note" name="note" type="text" maxlength="@StockMovement.NoteMaxLength" autocomplete="off" class="@inputClass" />
+            </div>
+            <button type="submit" class="btn btn-compact btn-primary w-full" data-testid="submit-used">@T["Products.Stock.Used.Submit"]</button>
+        </form>
+
+        @if (Model.CanManage)
+        {
+            <form method="post" action="@ProductCardController.StockPath(product.Id, StockMovementKind.Counted)" asp-antiforgery="true" class="panel space-y-3" data-testid="form-counted">
+                <h2 class="text-lg font-semibold">@T["Products.Stock.Counted.Title"]</h2>
+                <div class="space-y-1">
+                    <label for="counted-number" class="field-label">@T["Products.Stock.Counted.Number"]</label>
+                    <input id="counted-number" name="number" type="number" inputmode="numeric" min="0" max="@StockRules.MaxOnHand" step="1" required aria-describedby="counted-hint" class="@inputClass" data-testid="counted-number" />
+                    <p id="counted-hint" class="text-sm text-stone-500">@T["Products.Stock.Counted.Hint"]</p>
+                </div>
+                <button type="submit" class="btn btn-compact btn-secondary w-full" data-testid="submit-counted">@T["Products.Stock.Counted.Submit"]</button>
+            </form>
+
+            <form method="post" action="@ProductCardController.StockPath(product.Id, StockMovementKind.WrittenOff)" asp-antiforgery="true" class="panel space-y-3" data-testid="form-written-off">
+                <h2 class="text-lg font-semibold">@T["Products.Stock.WrittenOff.Title"]</h2>
+                <div class="space-y-1">
+                    <label for="written-off-number" class="field-label">@T["Products.Stock.Units"]</label>
+                    <input id="written-off-number" name="number" type="number" inputmode="numeric" min="1" max="@StockRules.MaxQuantity" step="1" required class="@inputClass" data-testid="written-off-number" />
+                </div>
+                <div class="space-y-1">
+                    <label for="written-off-note" class="field-label">@T["Products.Stock.WrittenOff.Reason"]</label>
+                    <input id="written-off-note" name="note" type="text" maxlength="@StockMovement.NoteMaxLength" autocomplete="off" required aria-describedby="written-off-hint" class="@inputClass" data-testid="written-off-note" />
+                    <p id="written-off-hint" class="text-sm text-stone-500">@T["Products.Stock.WrittenOff.ReasonHint"]</p>
+                </div>
+                <button type="submit" class="btn btn-compact btn-danger w-full" data-testid="submit-written-off">@T["Products.Stock.WrittenOff.Submit"]</button>
+            </form>
+        }
+    </div>
+
+    <section class="space-y-3" data-testid="stock-history" data-total="@product.History.Total">
+        <h2 class="text-lg font-semibold">@T["Products.Card.History"]</h2>
+        @if (product.History.Total == 0)
+        {
+            <p class="empty-state" data-testid="history-empty">@T["Products.Card.HistoryEmpty"]</p>
+        }
+        else
+        {
+            <ul class="list-card">
+                @foreach (var line in product.History.Items)
+                {
+                    <li class="flex items-start justify-between gap-3 px-4 py-3" data-testid="stock-line" data-kind="@line.Kind">
+                        <div class="min-w-0 space-y-0.5">
+                            <p class="font-medium" data-testid="line-kind">@T[$"Products.Kind.{line.Kind}"]</p>
+                            <p class="text-sm text-stone-600"><span class="tabular-nums">@line.At.ToString("g", culture)</span> · @(line.ByName ?? T["Products.Card.UnknownUser"])</p>
+                            @if (line.Note is { } note)
+                            {
+                                <p class="text-sm text-stone-600" data-testid="line-note">@note</p>
+                            }
+                        </div>
+                        <div class="shrink-0 text-right tabular-nums">
+                            <p class="font-semibold @(line.Quantity > 0 ? "text-green-800" : "text-stone-900")" data-testid="line-quantity">@Signed(line.Quantity)</p>
+                            <p class="text-sm text-stone-600" data-testid="line-after">@T.Format("Products.Card.After", line.OnHandAfter)</p>
+                        </div>
+                    </li>
+                }
+            </ul>
+            <partial name="_Pager" model="Model.Pager" />
+        }
+    </section>
+</section>

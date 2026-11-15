@@ -1,0 +1,70 @@
+@using System.Globalization
+@using Salon.Web.Features.Products.ListProducts
+@model ListProductsViewModel
+@{
+    ViewData["Title"] = T["Products.List.Title"];
+    var culture = CultureInfo.CurrentCulture;
+}
+<section class="space-y-6">
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+    <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div class="space-y-1">
+            <h1 class="page-title">@T["Products.List.Title"]</h1>
+            <p class="text-stone-600">@T["Products.List.Subtitle"]</p>
+        </div>
+        @if (Model.CanManage)
+        {
+            <a href="@ListProductsController.NewPath" data-testid="add-product" class="btn btn-compact btn-primary">@T["Products.List.Add"]</a>
+        }
+    </header>
+    @if (Model.Page.Total == 0)
+    {
+        <p data-testid="empty-state" class="empty-state">@(Model.CanManage ? T["Products.List.Empty"] : T["Products.List.EmptyForStaff"])</p>
+    }
+    else
+    {
+        <div class="space-y-3" data-testid="product-filters">
+            <partial name="_SearchBox" model="Model.Search" />
+            <partial name="_FilterTiles" model="Model.Filter" />
+        </div>
+        @if (Model.Page.Products.Items.Count == 0)
+        {
+            <div class="empty-state space-y-3" data-testid="no-match">
+                <p class="text-stone-700">@(Model.Page.Show == ProductFilter.Low && Model.Page.Search is null ? T["Products.List.NothingLow"] : T["Products.List.NoMatch"])</p>
+                <a href="@ListProductsController.Path" class="btn btn-compact btn-secondary" data-testid="show-all">@T["Products.List.ShowAll"]</a>
+            </div>
+        }
+        else
+        {
+            <ul class="grid gap-3 sm:grid-cols-2" data-testid="product-list" data-total="@Model.Page.Products.Total">
+                @foreach (var product in Model.Page.Products.Items)
+                {
+                    <li class="panel @(product.IsLow ? "accent-1" : null) @(product.IsActive ? null : "opacity-60")" data-testid="product-card" data-low="@product.IsLow.ToString().ToLowerInvariant()">
+                        <a href="@ListProductsController.CardPath(product.Id)" class="flex min-h-11 items-start justify-between gap-3" data-testid="open-product">
+                            <span class="min-w-0 flex-1 space-y-1">
+                                <span class="block text-lg font-semibold leading-snug" data-testid="product-name">@product.Name</span>
+                                @if (product.Brand is { } brand)
+                                {
+                                    <span class="block text-sm text-stone-600" data-testid="product-brand">@brand</span>
+                                }
+                                <span class="block text-sm text-stone-600 tabular-nums" data-testid="product-price">@(product.Price is { } price ? price.ToDisplayString(culture) : T["Products.List.NotForSale"])</span>
+                            </span>
+                            <span class="shrink-0 text-right">
+                                <span class="block text-2xl font-bold tabular-nums" data-testid="product-on-hand">@product.OnHand</span>
+                                <span class="block text-xs font-medium uppercase tracking-wide text-stone-500">@T["Products.List.OnHand"]</span>
+                                @if (product.IsLow)
+                                {
+                                    <span class="mt-1 inline-block rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-amber-900" data-testid="badge-low">@T["Products.List.Low"]</span>
+                                }
+                            </span>
+                        </a>
+                    </li>
+                }
+            </ul>
+            <partial name="_Pager" model="Model.Pager" />
+        }
+    }
+</section>
