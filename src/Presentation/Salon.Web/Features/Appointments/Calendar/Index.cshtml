@@ -14,11 +14,11 @@
     var step = isWeek ? 7 : 1;
     var isoDay = LocalDatePattern.Iso.Format(board.Day);
     ViewData["Title"] = T["Appointments.Calendar.Title"];
-    const string buttonClass = "inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700";
-    const string navClass = "inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-stone-300 px-3 py-2 text-sm font-medium hover:bg-stone-100";
-    const string chipClass = "inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium";
-    const string chipOn = "border-stone-900 bg-stone-900 text-white";
-    const string chipOff = "border-stone-300 bg-white hover:bg-stone-100";
+    const string buttonClass = "btn btn-compact btn-primary";
+    const string navClass = "btn btn-compact btn-secondary min-w-11 px-3";
+    const string chipClass = "filter-tile accent-0 gap-2";
+    const string chipOn = "is-on";
+    const string chipOff = "";
     var rowsStyle = $"grid-template-rows: repeat({grid.RowCount}, 1rem)";
 }
 @functions {
@@ -42,11 +42,11 @@
 <section class="space-y-4">
     @if (Model.Flash is { } flash)
     {
-        <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
     }
     <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div class="space-y-2">
-            <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Appointments.Calendar.Title"]</h1>
+            <h1 class="page-title">@T["Appointments.Calendar.Title"]</h1>
             <nav aria-label="@T["Appointments.Calendar.Title"]" class="flex items-center gap-2">
                 <a href="@CalendarController.Path(board.View, board.Day.PlusDays(-step), board.SelectedStaffId)" data-testid="prev" class="@navClass" aria-label="@T["Appointments.Calendar.Previous"]">&larr;</a>
                 @if (isWeek)
@@ -65,9 +65,9 @@
             </nav>
         </div>
         <div class="flex flex-wrap items-center gap-2">
-            <nav aria-label="@T["Appointments.Calendar.ViewSwitch"]" class="inline-flex rounded-md border border-stone-300" data-testid="view-switch">
-                <a href="@CalendarController.Path(CalendarView.Day, board.Day, board.SelectedStaffId)" data-testid="view-day" aria-current="@(isWeek ? null : "page")" class="inline-flex min-h-11 items-center px-4 py-2 text-sm font-medium @(isWeek ? "hover:bg-stone-100" : "bg-stone-900 text-white") rounded-l-md">@T["Appointments.Calendar.Day"]</a>
-                <a href="@CalendarController.Path(CalendarView.Week, board.Day, board.SelectedStaffId)" data-testid="view-week" aria-current="@(isWeek ? "page" : null)" class="inline-flex min-h-11 items-center px-4 py-2 text-sm font-medium @(isWeek ? "bg-stone-900 text-white" : "hover:bg-stone-100") rounded-r-md">@T["Appointments.Calendar.Week"]</a>
+            <nav aria-label="@T["Appointments.Calendar.ViewSwitch"]" class="inline-flex rounded-lg border border-stone-300 bg-white" data-testid="view-switch">
+                <a href="@CalendarController.Path(CalendarView.Day, board.Day, board.SelectedStaffId)" data-testid="view-day" aria-current="@(isWeek ? null : "page")" class="inline-flex min-h-11 items-center px-4 py-2 text-sm font-medium @(isWeek ? "hover:bg-stone-100" : "bg-stone-900 text-white") rounded-l-lg">@T["Appointments.Calendar.Day"]</a>
+                <a href="@CalendarController.Path(CalendarView.Week, board.Day, board.SelectedStaffId)" data-testid="view-week" aria-current="@(isWeek ? "page" : null)" class="inline-flex min-h-11 items-center px-4 py-2 text-sm font-medium @(isWeek ? "bg-stone-900 text-white" : "hover:bg-stone-100") rounded-r-lg">@T["Appointments.Calendar.Week"]</a>
             </nav>
             <a href="@(CalendarController.DayListPath)?date=@isoDay" data-testid="day-list" class="@navClass">@T["Appointments.Calendar.DayList"]</a>
             <a href="@(CalendarController.DayListPath)/new?date=@isoDay@(board.SelectedStaffId is { } bookStaff ? $"&staffId={bookStaff}" : string.Empty)" data-testid="book" class="@buttonClass">@T["Appointments.Calendar.Book"]</a>
@@ -76,7 +76,7 @@
 
     @if (board.Staff.Count == 0)
     {
-        <p data-testid="empty-state" class="rounded-md border border-dashed border-stone-300 p-6 text-center text-stone-600">@T["Appointments.Calendar.NoStaff"]</p>
+        <p data-testid="empty-state" class="empty-state">@T["Appointments.Calendar.NoStaff"]</p>
     }
     else
     {
@@ -96,7 +96,7 @@
         </nav>
 
         @* The timetable. Week view scrolls sideways inside this box only; the day view with every person is replaced by a list on a phone. *@
-        <div data-testid="calendar-grid" data-view="@CalendarController.ViewSegment(board.View)" class="rounded-lg border border-stone-200 bg-white shadow-sm @(isWeek ? "overflow-x-auto" : string.Empty) @(allStaffDay ? "hidden sm:block" : string.Empty)">
+        <div data-testid="calendar-grid" data-view="@CalendarController.ViewSegment(board.View)" class="rounded-xl border border-stone-200 bg-white shadow-sm @(isWeek ? "overflow-x-auto" : string.Empty) @(allStaffDay ? "hidden sm:block" : string.Empty)">
             <div class="flex @(isWeek ? "min-w-[42rem]" : string.Empty)">
                 <div class="w-12 shrink-0 border-r border-stone-200" aria-hidden="true">
                     <div class="h-10 border-b border-stone-200"></div>
@@ -164,7 +164,7 @@
             <div class="space-y-4 sm:hidden" data-testid="calendar-list">
                 @foreach (var column in board.Columns)
                 {
-                    <section class="space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" data-testid="calendar-list-staff" data-staff-id="@column.Staff.Id">
+                    <section class="space-y-3 panel" data-testid="calendar-list-staff" data-staff-id="@column.Staff.Id">
                         <h2 class="flex items-center gap-2 text-lg font-semibold">
                             <span class="size-3 shrink-0 rounded-full" style="background-color: @column.Staff.Colour" aria-hidden="true"></span>
                             <a href="@CalendarController.Path(CalendarView.Day, column.Date, column.Staff.Id)" class="hover:underline">@column.Staff.DisplayName</a>

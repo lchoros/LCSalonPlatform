@@ -12,25 +12,25 @@
     var cardPath = "/admin/appointments/calendar/" + visit.AppointmentId;
     var depositPath = VisitDepositController.BasePath + "/" + visit.AppointmentId;
     ViewData["Title"] = T["Payments.Deposit.Title"];
-    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 bg-white px-3 py-2 text-base shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
-    const string primaryClass = "inline-flex min-h-11 w-full items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700 sm:w-auto";
-    const string secondaryClass = "inline-flex min-h-11 w-full items-center justify-center rounded-md border border-stone-300 bg-white px-4 py-2 text-base font-medium hover:bg-stone-100 sm:w-auto";
-    const string cardClass = "space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm";
+    const string inputClass = "field field-compact";
+    const string primaryClass = "btn btn-compact btn-primary w-full sm:w-auto";
+    const string secondaryClass = "btn btn-compact btn-secondary w-full sm:w-auto";
+    const string cardClass = "space-y-3 panel";
 }
 @functions {
     string When(Instant at, DateTimeZone zone) => at.InZone(zone).LocalDateTime.ToString("g", CultureInfo.CurrentCulture);
 }
 <section class="mx-auto max-w-lg space-y-6">
-    <a href="@cardPath" data-testid="back" class="inline-flex min-h-11 items-center text-sm font-medium text-stone-700 hover:underline">&larr; @T["Payments.Deposit.Back"]</a>
-    <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Payments.Deposit.Title"]</h1>
+    <a href="@cardPath" data-testid="back" class="back-link">&larr; @T["Payments.Deposit.Back"]</a>
+    <h1 class="page-title">@T["Payments.Deposit.Title"]</h1>
 
     @if (Model.Flash is { } flash)
     {
-        <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
     }
     @if (Model.Error is { } error)
     {
-        <p role="alert" data-testid="error" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">@error</p>
+        <p role="alert" data-testid="error" class="notice notice-error">@error</p>
     }
 
     <section class="@cardClass" data-testid="deposit-visit" data-status="@visit.Status">
@@ -57,12 +57,12 @@
             <p class="text-sm text-stone-600">@T["Payments.Deposit.Record.Hint"]</p>
             <form method="post" action="@depositPath" asp-antiforgery="true" class="space-y-3" data-testid="record-deposit-form">
                 <div class="space-y-1">
-                    <label for="amount" class="block text-sm font-medium">@T.Format("Payments.Deposit.Amount", visit.Price.Currency)</label>
+                    <label for="amount" class="field-label">@T.Format("Payments.Deposit.Amount", visit.Price.Currency)</label>
                     <input id="amount" name="amount" type="text" inputmode="decimal" value="@(visit.Due?.Amount.ToString("0.00", culture))" required aria-describedby="amount-hint" class="@inputClass tabular-nums" data-testid="deposit-amount" />
                     <p id="amount-hint" class="text-sm text-stone-600">@T.Format("Payments.Deposit.AmountHint", visit.Price.ToDisplayString(culture))</p>
                 </div>
                 <div class="space-y-1">
-                    <label for="method" class="block text-sm font-medium">@T["Payments.Fee.Pay.Method"]</label>
+                    <label for="method" class="field-label">@T["Payments.Fee.Pay.Method"]</label>
                     <select id="method" name="method" class="@inputClass" data-testid="deposit-method">
                         @foreach (var method in Enum.GetValues<PaymentMethod>())
                         {
@@ -114,7 +114,7 @@
                 <p class="text-sm text-stone-600">@T["Payments.Deposit.Return.Hint"]</p>
                 <form method="post" action="@depositPath/return" asp-antiforgery="true" class="space-y-3" data-testid="return-deposit-form">
                     <div class="space-y-1">
-                        <label for="method" class="block text-sm font-medium">@T["Payments.Deposit.Return.Method"]</label>
+                        <label for="method" class="field-label">@T["Payments.Deposit.Return.Method"]</label>
                         <select id="method" name="method" class="@inputClass" data-testid="return-method">
                             @foreach (var method in Enum.GetValues<PaymentMethod>())
                             {

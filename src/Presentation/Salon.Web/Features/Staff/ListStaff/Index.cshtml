@@ -5,8 +5,8 @@
 @model ListStaffViewModel
 @{
     ViewData["Title"] = T["Staff.List.Title"];
-    const string buttonClass = "inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700";
-    const string linkClass = "inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-sm font-medium hover:bg-stone-100";
+    const string buttonClass = "btn btn-compact btn-primary";
+    const string linkClass = "btn btn-compact btn-secondary";
 }
 @functions {
     string DayShort(IsoDayOfWeek day) => T[$"Common.DayShort.{day}"];
@@ -20,25 +20,25 @@
 <section class="space-y-6">
     @if (Model.Flash is { } flash)
     {
-        <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
     }
     <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div class="space-y-1">
-            <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Staff.List.Title"]</h1>
+            <h1 class="page-title">@T["Staff.List.Title"]</h1>
             <p class="text-stone-600">@T["Staff.List.Subtitle"]</p>
         </div>
         <a href="/admin/staff/new" data-testid="add-staff" class="@buttonClass">@T["Staff.List.Add"]</a>
     </header>
     @if (Model.Staff.Count == 0)
     {
-        <p data-testid="empty-state" class="rounded-md border border-dashed border-stone-300 p-6 text-center text-stone-600">@T["Staff.List.Empty"]</p>
+        <p data-testid="empty-state" class="empty-state">@T["Staff.List.Empty"]</p>
     }
     else
     {
         <ul class="grid gap-3 sm:grid-cols-2" data-testid="staff-list">
             @foreach (var person in Model.Staff)
             {
-                <li class="flex flex-col gap-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm @(person.IsActive ? "" : "opacity-60")" data-testid="staff-card" data-active="@person.IsActive.ToString().ToLowerInvariant()">
+                <li class="flex flex-col gap-3 panel @(person.IsActive ? "" : "opacity-60")" data-testid="staff-card" data-active="@person.IsActive.ToString().ToLowerInvariant()">
                     <div class="flex items-start gap-3">
                         <span class="mt-1.5 size-3 shrink-0 rounded-full" style="background-color: @person.Colour" aria-hidden="true"></span>
                         <div class="min-w-0 flex-1 space-y-1">

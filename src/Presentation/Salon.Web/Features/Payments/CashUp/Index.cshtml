@@ -8,17 +8,17 @@
     var culture = CultureInfo.CurrentCulture;
     var iso = LocalDatePattern.Iso.Format(day.Day);
     ViewData["Title"] = T["Payments.CashUp.Title"];
-    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 bg-white px-3 py-2 text-base shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
-    const string primaryClass = "inline-flex min-h-11 w-full items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700 sm:w-auto";
-    const string navClass = "inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-stone-300 bg-white px-3 py-2 text-base font-medium hover:bg-stone-100";
-    const string cardClass = "space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm";
+    const string inputClass = "field field-compact";
+    const string primaryClass = "btn btn-compact btn-primary w-full sm:w-auto";
+    const string navClass = "btn btn-compact btn-secondary min-w-11 px-3";
+    const string cardClass = "space-y-3 panel";
 }
 @functions {
     static string DayPath(NodaTime.LocalDate day) => CashUpController.Path + "?date=" + LocalDatePattern.Iso.Format(day);
 }
 <section class="mx-auto max-w-2xl space-y-6">
     <header class="space-y-3">
-        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Payments.CashUp.Title"]</h1>
+        <h1 class="page-title">@T["Payments.CashUp.Title"]</h1>
         <p class="text-stone-600">@T["Payments.CashUp.Lead"]</p>
         <div class="flex items-center gap-2">
             <a href="@DayPath(day.Day.PlusDays(-1))" data-testid="prev-day" class="@navClass" aria-label="@T["Appointments.Day.Previous"]">&larr;</a>
@@ -33,14 +33,14 @@
 
     @if (Model.Flash is { } flash)
     {
-        <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
     }
     @if (Model.Error is { } error)
     {
-        <p role="alert" data-testid="error" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">@error</p>
+        <p role="alert" data-testid="error" class="notice notice-error">@error</p>
     }
 
-    <section class="@cardClass" data-testid="totals">
+    <section class="@cardClass accent-3" data-testid="totals">
         <h2 class="text-lg font-semibold">@T["Payments.CashUp.Totals"]</h2>
         @if (day.Totals.Count == 0)
         {
@@ -83,13 +83,13 @@
             <p class="text-sm text-stone-600" data-testid="closed-by">@T.Format("Payments.CashUp.ClosedBy", closed.ByName ?? T["Payments.Fee.History.Unknown"], closed.ClosedAt.LocalDateTime.ToString("g", culture))</p>
             @if (day.ChangedSinceClose)
             {
-                <p role="status" class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" data-testid="changed-since-close">@T.Format("Payments.CashUp.ChangedSinceClose", day.ExpectedCash.ToDisplayString(culture))</p>
+                <p role="status" class="notice notice-warn" data-testid="changed-since-close">@T.Format("Payments.CashUp.ChangedSinceClose", day.ExpectedCash.ToDisplayString(culture))</p>
             }
         </section>
     }
     else if (day.Day <= day.Today)
     {
-        <section class="@cardClass" data-testid="close-step">
+        <section class="@cardClass accent-5" data-testid="close-step">
             <h2 class="text-lg font-semibold">@T["Payments.CashUp.Close.Title"]</h2>
             <p class="flex items-baseline justify-between gap-4 rounded-md bg-stone-50 p-3">
                 <span class="text-sm text-stone-700">@T["Payments.CashUp.Expected"]</span>
@@ -98,12 +98,12 @@
             <form method="post" action="@CashUpController.Path" asp-antiforgery="true" class="space-y-3" data-testid="close-form">
                 <input type="hidden" name="date" value="@iso" />
                 <div class="space-y-1">
-                    <label for="countedCash" class="block text-sm font-medium">@T.Format("Payments.CashUp.CountedLabel", day.ExpectedCash.Currency)</label>
+                    <label for="countedCash" class="field-label">@T.Format("Payments.CashUp.CountedLabel", day.ExpectedCash.Currency)</label>
                     <input id="countedCash" name="countedCash" type="text" inputmode="decimal" value="@(Model.CountedCash?.ToString("0.00", culture))" required aria-describedby="counted-hint" class="@inputClass tabular-nums" data-testid="counted-cash" />
                     <p id="counted-hint" class="text-sm text-stone-600">@T["Payments.CashUp.CountedHint"]</p>
                 </div>
                 <div class="space-y-1">
-                    <label for="note" class="block text-sm font-medium">@T["Payments.CashUp.Note"]</label>
+                    <label for="note" class="field-label">@T["Payments.CashUp.Note"]</label>
                     <textarea id="note" name="note" rows="2" maxlength="@CashUp.NoteMaxLength" class="@inputClass" data-testid="cash-up-note">@Model.Note</textarea>
                 </div>
                 <button type="submit" class="@primaryClass" data-testid="close-day">@T["Payments.CashUp.Close.Submit"]</button>
@@ -119,7 +119,7 @@
         }
         else
         {
-            <ul class="divide-y divide-stone-200 rounded-md border border-stone-200" data-testid="movement-list">
+            <ul class="list-card" data-testid="movement-list">
                 @foreach (var movement in day.Movements)
                 {
                     <li class="flex flex-col gap-1 p-3 sm:flex-row sm:items-center sm:justify-between" data-testid="movement" data-kind="@movement.Kind">

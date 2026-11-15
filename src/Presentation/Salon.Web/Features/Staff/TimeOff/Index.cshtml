@@ -6,9 +6,9 @@
 @model TimeOffViewModel
 @{
     ViewData["Title"] = T["Staff.TimeOff.Title"];
-    const string inputClass = "block w-full min-h-11 rounded-md border border-stone-300 px-3 py-2 text-base tabular-nums shadow-sm focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900";
-    const string buttonClass = "inline-flex min-h-11 items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700";
-    const string linkClass = "inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-sm font-medium hover:bg-stone-100";
+    const string inputClass = "field field-compact tabular-nums";
+    const string buttonClass = "btn btn-compact btn-primary";
+    const string linkClass = "btn btn-compact btn-secondary";
     var stepSeconds = WorkingHoursRules.StepMinutes * 60;
     var datePattern = LocalDatePattern.Create("d", CultureInfo.CurrentCulture);
     var formErrors = Errors(AddTimeOffValidator.OverlapKey);
@@ -28,19 +28,19 @@
 <section class="mx-auto max-w-2xl space-y-6" data-testid="time-off-page">
     @if (Model.Flash is { } flash)
     {
-        <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
     }
     <header class="space-y-1">
-        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Staff.TimeOff.Title"]</h1>
+        <h1 class="page-title">@T["Staff.TimeOff.Title"]</h1>
         <p class="text-lg text-stone-700" data-testid="staff-name">@timeOff.DisplayName</p>
         <p class="text-sm text-stone-500">@T["Staff.TimeOff.Hint"]</p>
     </header>
 
-    <form method="post" asp-action="Add" asp-route-id="@timeOff.StaffMemberId" class="space-y-4 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" novalidate data-testid="time-off-form">
+    <form method="post" asp-action="Add" asp-route-id="@timeOff.StaffMemberId" class="space-y-4 panel" novalidate data-testid="time-off-form">
         <h2 class="text-lg font-semibold">@T["Staff.TimeOff.AddHeading"]</h2>
         @if (formErrors.Count > 0)
         {
-            <p role="alert" data-testid="form-error" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">@string.Join(" ", formErrors)</p>
+            <p role="alert" data-testid="form-error" class="notice notice-error">@string.Join(" ", formErrors)</p>
         }
         <div class="grid grid-cols-2 gap-3">
             @foreach (var (name, labelKey, value) in new[] { ("FromDate", "Staff.TimeOff.From", Model.Form.FromDate), ("ToDate", "Staff.TimeOff.To", Model.Form.ToDate) })
@@ -48,10 +48,10 @@
                 var errors = Errors(name);
                 var errorId = $"{name}-error";
                 <div class="space-y-1">
-                    <label for="@name" class="block text-sm font-medium">@T[labelKey]</label>
+                    <label for="@name" class="field-label">@T[labelKey]</label>
                     <input id="@name" name="@name" type="date" value="@value" required aria-describedby="@errorId" aria-invalid="@(errors.Count > 0 ? "true" : "false")"
                            class="@inputClass @(errors.Count > 0 ? "input-validation-error" : "")" />
-                    <span id="@errorId" class="block text-sm text-red-700" data-testid="@($"{name}-error")">@string.Join(" ", errors)</span>
+                    <span id="@errorId" class="field-error" data-testid="@($"{name}-error")">@string.Join(" ", errors)</span>
                 </div>
             }
         </div>
@@ -64,10 +64,10 @@
                     var errors = Errors(name);
                     var errorId = $"{name}-error";
                     <div class="space-y-1">
-                        <label for="@name" class="block text-sm font-medium">@T[labelKey]</label>
+                        <label for="@name" class="field-label">@T[labelKey]</label>
                         <input id="@name" name="@name" type="time" step="@stepSeconds" value="@value" aria-describedby="@errorId" aria-invalid="@(errors.Count > 0 ? "true" : "false")"
                                class="@inputClass @(errors.Count > 0 ? "input-validation-error" : "")" />
-                        <span id="@errorId" class="block text-sm text-red-700" data-testid="@($"{name}-error")">@string.Join(" ", errors)</span>
+                        <span id="@errorId" class="field-error" data-testid="@($"{name}-error")">@string.Join(" ", errors)</span>
                     </div>
                 }
             </div>
@@ -76,10 +76,10 @@
             var reasonErrors = Errors("Reason");
         }
         <div class="space-y-1">
-            <label for="Reason" class="block text-sm font-medium">@T["Staff.TimeOff.Reason"]</label>
+            <label for="Reason" class="field-label">@T["Staff.TimeOff.Reason"]</label>
             <input id="Reason" name="Reason" type="text" value="@Model.Form.Reason" maxlength="@StaffTimeOff.ReasonMaxLength" autocomplete="off" aria-describedby="Reason-error" aria-invalid="@(reasonErrors.Count > 0 ? "true" : "false")"
                    class="@inputClass @(reasonErrors.Count > 0 ? "input-validation-error" : "")" />
-            <span id="Reason-error" class="block text-sm text-red-700" data-testid="Reason-error">@string.Join(" ", reasonErrors)</span>
+            <span id="Reason-error" class="field-error" data-testid="Reason-error">@string.Join(" ", reasonErrors)</span>
         </div>
         <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
             <button type="submit" class="@buttonClass" data-testid="add-time-off">@T["Staff.TimeOff.Add"]</button>
@@ -90,14 +90,14 @@
         <h2 id="upcoming-heading" class="text-lg font-semibold">@T["Staff.TimeOff.Upcoming"]</h2>
         @if (timeOff.Upcoming.Count == 0)
         {
-            <p data-testid="empty-state" class="rounded-md border border-dashed border-stone-300 p-6 text-center text-stone-600">@T["Staff.TimeOff.Empty"]</p>
+            <p data-testid="empty-state" class="empty-state">@T["Staff.TimeOff.Empty"]</p>
         }
         else
         {
             <ul class="space-y-3" data-testid="upcoming-list">
                 @foreach (var entry in timeOff.Upcoming)
                 {
-                    <li class="flex flex-col gap-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between" data-testid="time-off-entry" data-whole-day="@entry.IsWholeDay.ToString().ToLowerInvariant()">
+                    <li class="flex flex-col gap-3 panel sm:flex-row sm:items-center sm:justify-between" data-testid="time-off-entry" data-whole-day="@entry.IsWholeDay.ToString().ToLowerInvariant()">
                         <div class="min-w-0 space-y-1">
                             <p class="font-semibold tabular-nums" data-testid="entry-dates">@Dates(entry, datePattern)</p>
                             <p class="text-sm text-stone-600 tabular-nums" data-testid="entry-time">@Times(entry)</p>
@@ -119,7 +119,7 @@
 
     @if (timeOff.PastTotal > 0)
     {
-        <details class="rounded-lg border border-stone-200 bg-white shadow-sm" data-testid="past">
+        <details class="rounded-xl border border-stone-200 bg-white shadow-sm" data-testid="past">
             <summary class="min-h-11 cursor-pointer px-4 py-3 font-semibold">@T.Format("Staff.TimeOff.PastSummary", timeOff.PastTotal)</summary>
             <ul class="divide-y divide-stone-200 border-t border-stone-200" data-testid="past-list">
                 @foreach (var entry in timeOff.Past)

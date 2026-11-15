@@ -14,24 +14,24 @@
     var canMerge = !card.IsMerged && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsMerge);
     const string labelClass = "text-sm text-stone-500";
     const string valueClass = "text-base";
-    const string secondaryButtonClass = "inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100";
+    const string secondaryButtonClass = "btn btn-compact btn-secondary";
 }
 <section class="mx-auto max-w-2xl space-y-6" data-testid="client-card">
     @if (Model.Flash is { } flash)
     {
-        <p role="status" data-testid="flash" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">@flash</p>
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
     }
     @if (card.IsMerged)
     {
-        <p role="status" data-testid="merged-banner" class="flex flex-col gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+        <p role="status" data-testid="merged-banner" class="flex flex-col gap-2 notice notice-warn sm:flex-row sm:items-center sm:justify-between">
             <span>@T.Format("Clients.Card.MergedInto", Model.MergedIntoName ?? string.Empty)</span>
             <a href="/admin/clients/@card.MergedIntoClientId" data-testid="merged-into-link" class="inline-flex min-h-11 items-center font-medium underline">@T["Clients.Card.OpenMergedInto"]</a>
         </p>
     }
-    <a href="/admin/clients" class="inline-flex min-h-11 items-center text-sm font-medium text-stone-700 hover:underline">&larr; @T["Clients.Card.Back"]</a>
+    <a href="/admin/clients" class="back-link">&larr; @T["Clients.Card.Back"]</a>
     <header class="space-y-1">
         <p class="text-sm text-stone-500">@T["Clients.Card.Title"]</p>
-        <h1 class="flex flex-wrap items-center gap-2 text-2xl font-bold tracking-tight sm:text-3xl">
+        <h1 class="flex flex-wrap items-center gap-2 page-title">
             <span data-testid="client-name">@card.FullName</span>
             @if (!card.IsActive)
             {
@@ -41,7 +41,7 @@
         <p class="text-sm text-stone-500">@T.Format("Clients.Card.Since", card.CreatedAt.InZone(Model.Zone).Date.ToString("d", culture))</p>
     </header>
 
-    <section class="space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
+    <section class="space-y-3 panel">
         <h2 class="text-lg font-semibold">@T["Clients.Card.Contact"]</h2>
         <dl class="grid gap-3 sm:grid-cols-3">
             <div>
@@ -61,7 +61,7 @@
 
     @if (Model.Account.Fees.Count > 0 || Model.Account.Deposits.Count > 0)
     {
-        <section class="space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" data-testid="client-fees">
+        <section class="space-y-3 panel" data-testid="client-fees">
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="text-lg font-semibold">@T["Clients.Fees.Title"]</h2>
                 @if (Model.Account.Owed is { } owed)
@@ -75,7 +75,7 @@
             </div>
             @if (Model.Account.Fees.Count > 0)
             {
-            <ul class="divide-y divide-stone-200 rounded-md border border-stone-200" data-testid="fee-list">
+            <ul class="list-card" data-testid="fee-list">
                 @foreach (var fee in Model.Account.Fees)
                 {
                     var feeBadge = fee.Status switch
@@ -102,7 +102,7 @@
             @if (Model.Account.Deposits.Count > 0)
             {
                 <h3 class="text-base font-semibold">@T["Clients.Fees.Deposits"]</h3>
-                <ul class="divide-y divide-stone-200 rounded-md border border-stone-200" data-testid="deposit-list">
+                <ul class="list-card" data-testid="deposit-list">
                     @foreach (var deposit in Model.Account.Deposits)
                     {
                         <li data-testid="deposit-row" data-held="@deposit.IsHeld.ToString().ToLowerInvariant()">
@@ -120,7 +120,7 @@
         </section>
     }
 
-    <section class="space-y-4 rounded-lg border border-stone-200 bg-white p-4 shadow-sm" data-testid="history">
+    <section class="space-y-4 panel" data-testid="history">
         <h2 class="text-lg font-semibold">@T["Clients.History.Title"]</h2>
         <dl class="grid grid-cols-2 gap-3">
             <div class="rounded-md bg-stone-50 p-3">
@@ -140,7 +140,7 @@
         }
         else
         {
-            <ul class="divide-y divide-stone-200 rounded-md border border-stone-200" data-testid="upcoming-list">
+            <ul class="list-card" data-testid="upcoming-list">
                 @foreach (var visit in history.Upcoming)
                 {
                     <partial name="_Visit" model="visit" />
@@ -155,7 +155,7 @@
         }
         else
         {
-            <ul class="divide-y divide-stone-200 rounded-md border border-stone-200" data-testid="past-list">
+            <ul class="list-card" data-testid="past-list">
                 @foreach (var visit in history.Past)
                 {
                     <partial name="_Visit" model="visit" />
@@ -164,7 +164,7 @@
         }
     </section>
 
-    <section class="space-y-2 rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
+    <section class="space-y-2 panel">
         <h2 class="text-lg font-semibold">@T["Clients.Card.Notes"]</h2>
         @if (card.Notes is { } notes)
         {
@@ -181,7 +181,7 @@
         <p class="text-sm text-amber-900">@T["Clients.Card.HealthNotesHint"]</p>
         @if (card.HealthNotesUnreadable)
         {
-            <p role="alert" class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" data-testid="health-notes-unreadable">@T["Clients.Card.HealthNotesUnreadable"]</p>
+            <p role="alert" class="notice notice-error" data-testid="health-notes-unreadable">@T["Clients.Card.HealthNotesUnreadable"]</p>
         }
         else if (card.HealthNotes is { } healthNotes)
         {
@@ -197,7 +197,7 @@
         </dl>
     </section>
 
-    <section class="space-y-2 rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
+    <section class="space-y-2 panel">
         <h2 class="text-lg font-semibold">@T["Clients.Card.MarketingConsent"]</h2>
         @if (card.MarketingConsent && card.MarketingConsentAt is { } consentAt)
         {

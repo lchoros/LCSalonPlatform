@@ -45,7 +45,7 @@
 }
 <section class="space-y-6" data-testid="import-preview">
     <header class="space-y-2">
-        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Clients.Import.Preview.Title"]</h1>
+        <h1 class="page-title">@T["Clients.Import.Preview.Title"]</h1>
         <p class="text-sm text-stone-600" data-testid="import-summary">@T.Format("Clients.Import.Preview.Summary", Model.FileName, Model.Format, Model.Total)</p>
     </header>
 
@@ -64,7 +64,7 @@
         </div>
     </dl>
 
-    <ul class="divide-y divide-stone-200 rounded-lg border border-stone-200 bg-white shadow-sm" aria-label="@T["Clients.Import.Preview.Rows"]">
+    <ul class="list-card" aria-label="@T["Clients.Import.Preview.Rows"]">
         @foreach (var row in Model.Rows)
         {
             <li data-testid="import-row" data-status="@row.Status" class="flex flex-col gap-2 p-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
@@ -93,16 +93,16 @@
     }
 
     <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
-        <a href="/admin/clients/import" class="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-base font-medium hover:bg-stone-100">@T["Clients.Import.Preview.Back"]</a>
+        <a href="/admin/clients/import" class="btn btn-compact btn-secondary">@T["Clients.Import.Preview.Back"]</a>
         @if (Model.NewCount > 0)
         {
             <form method="post" action="/admin/clients/import/@Model.Token/confirm" asp-antiforgery="true" class="flex">
-                <button type="submit" data-testid="import-confirm" class="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-base font-medium text-white hover:bg-stone-700 sm:w-auto">@T.Format("Clients.Import.Preview.Confirm", Model.NewCount)</button>
+                <button type="submit" data-testid="import-confirm" class="btn btn-compact btn-primary w-full sm:w-auto">@T.Format("Clients.Import.Preview.Confirm", Model.NewCount)</button>
             </form>
         }
         else
         {
-            <p data-testid="nothing-new" class="rounded-md border border-dashed border-stone-300 p-3 text-center text-sm text-stone-600">@T["Clients.Import.Preview.NothingToImport"]</p>
+            <p data-testid="nothing-new" class="empty-state p-3 text-sm">@T["Clients.Import.Preview.NothingToImport"]</p>
         }
     </div>
 </section>
