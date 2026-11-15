@@ -145,5 +145,9 @@
   "Payments.Fee.Refused.ProductNotForSale": "Tego produktu nie można sprzedać: nie ma ceny albo salon już go nie używa.",
   "Payments.Fee.Refused.QuantityOutOfRange": "Podaj liczbę sztuk od 1 do 99. Jeden produkt na rachunku to najwyżej 99 sztuk.",
   "Payments.Fee.Refused.ProductLinePaid": "Ten produkt jest już zapłacony i zostaje na rachunku.",
-  "Payments.Fee.Refused.StockNotRecorded": "Stan produktu z tego rachunku ciągle się zmieniał. Nic nie zapisano; spróbuj ponownie."
+  "Payments.Fee.Refused.StockNotRecorded": "Stan produktu z tego rachunku ciągle się zmieniał. Nic nie zapisano; spróbuj ponownie.",
+  "Payments.Checkout.Rebook.Title": "Zarezerwuj następną wizytę",
+  "Payments.Checkout.Rebook.Lead": "Ponownie {0}, {1}. Wybierz, za ile tygodni, a potem godzinę.",
+  "Payments.Checkout.Rebook.Weeks.One": "Za {0} tydz.",
+  "Payments.Checkout.Rebook.Weeks.Many": "Za {0} tyg."
 }

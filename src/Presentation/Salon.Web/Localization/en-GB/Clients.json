@@ -165,5 +165,8 @@
   "Clients.Import.Preview.Confirm.Many": "Import {0} new clients",
   "Clients.Merge.Confirm.Appointments.One": "The one appointment of {1} and its history move to {2}.",
   "Clients.Merge.Confirm.Appointments.Many": "All {0} appointments of {1} and their history move to {2}.",
-  "Clients.Merge.Confirm.NoAppointments": "{0} has no appointments to move."
+  "Clients.Merge.Confirm.NoAppointments": "{0} has no appointments to move.",
+  "Clients.Card.Book": "Book a visit",
+  "Clients.Purchases.Title": "Products bought",
+  "Clients.Purchases.Line": "{0} × {1}"
 }

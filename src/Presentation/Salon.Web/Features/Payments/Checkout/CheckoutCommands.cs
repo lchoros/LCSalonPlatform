@@ -1,13 +1,18 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
+using NodaTime.Text;
 using Salon.Core.Appointments;
 using Salon.Core.Cqrs;
 using Salon.Core.Domain;
 using Salon.Core.Payments;
+using Salon.Core.Settings;
 using Salon.Data;
 using Salon.Services.Appointments;
 using Salon.Services.Localization;
 using Salon.Services.Payments;
+using Salon.Services.Settings;
+using Salon.Web.Framework.Lists;
 
 namespace Salon.Web.Features.Payments.Checkout;
 
@@ -87,5 +92,38 @@ public sealed class PayBillHandler(IClientAccountService account, IBookingServic
         // Paying is how a visit ends at the desk: no second tap on "Complete".
         await booking.CompleteAsync(request.AppointmentId, request.ByUserId, cancellationToken);
         return bill with { Status = AppointmentStatus.Completed };
+    }
+}
+/// <summary>
+/// The one-tap choices for a client's next visit (ADR 0039): the same service with the same person, so many weeks
+/// after this visit, each as an address of the booking form. A query: no transaction, tenant required.
+/// </summary>
+public sealed record RebookChoicesQuery(Guid ClientId, Guid ServiceId, Guid StaffMemberId, LocalDate VisitDay, DateTimeZone Zone) : IQuery<IReadOnlyList<RebookChoice>>;
+
+/// <param name="Day">The day the booking form opens on.</param>
+/// <param name="Url">The booking form with the client, the service, the person and the day filled in.</param>
+public sealed record RebookChoice(int Weeks, LocalDate Day, string Url);
+
+/// <summary>Reads the salon's weeks from <see cref="RebookSettings"/> and lets <see cref="RebookRules"/> pick the days; nothing is booked here.</summary>
+public sealed class RebookChoicesHandler(ISettingService settings, IClock clock) : IRequestHandler<RebookChoicesQuery, IReadOnlyList<RebookChoice>>
+{
+    public async Task<IReadOnlyList<RebookChoice>> HandleAsync(RebookChoicesQuery request, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var today = clock.GetCurrentInstant().InZone(request.Zone).Date;
+        var weeks = RebookRules.Choices(await settings.LoadAsync<RebookSettings>(cancellationToken));
+        return weeks
+            .Select(w =>
+            {
+                var day = RebookRules.Day(request.VisitDay, today, w);
+                var url = ListUrl.Build(
+                    CheckoutController.BookPath,
+                    ("clientId", request.ClientId.ToString()),
+                    ("serviceId", request.ServiceId.ToString()),
+                    ("staffId", request.StaffMemberId.ToString()),
+                    ("date", LocalDatePattern.Iso.Format(day)));
+                return new RebookChoice(w, day, url);
+            })
+            .ToArray();
     }
 }
