@@ -30,6 +30,7 @@
     {
         <p role="alert" data-testid="error" class="notice notice-error">@error</p>
     }
+    @await Component.InvokeAsync("VisitsWithoutOutcome")
     <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div class="space-y-2">
             <h1 class="page-title">@T["Appointments.Day.Title"]</h1>

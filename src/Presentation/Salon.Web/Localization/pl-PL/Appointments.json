@@ -98,5 +98,19 @@
   "Appointments.Calendar.Card.DepositNone": "Nie wymagano",
   "Appointments.Calendar.Card.DepositOpen": "Szczegóły zadatku",
   "Appointments.Day.Checkout": "Rozlicz wizytę",
-  "Appointments.Calendar.Card.Checkout": "Rozlicz wizytę"
+  "Appointments.Calendar.Card.Checkout": "Rozlicz wizytę",
+  "Appointments.Outcome.Title": "Wizyty bez wyniku",
+  "Appointments.Outcome.Lead": "Te wizyty już minęły, ale nikt nie zapisał, czy klient przyszedł. Oznacz każdą, aby raporty, opłaty i historia klienta były poprawne.",
+  "Appointments.Outcome.Empty": "Każda miniona wizyta ma wynik. Nie ma tu nic do zrobienia.",
+  "Appointments.Outcome.Back": "Wróć do wizyt",
+  "Appointments.Outcome.Choice.Came": "Klient przyszedł",
+  "Appointments.Outcome.Choice.DidNotCome": "Nie przyszedł",
+  "Appointments.Outcome.Open": "Otwórz wizytę",
+  "Appointments.Outcome.With": "u: {0}",
+  "Appointments.Outcome.Recorded.Came": "Wizyta jest oznaczona jako zakończona. Jeśli płatność jest jeszcze otwarta, przyjmij ją w kasie.",
+  "Appointments.Outcome.Recorded.DidNotCome": "Wizyta jest oznaczona jako nieobecność.",
+  "Appointments.Outcome.NotRecorded": "Nic nie zostało zmienione: ta wizyta ma już wynik albo ten wynik do niej nie pasuje.",
+  "Appointments.Outcome.Notice.One": "Wcześniejsze wizyty bez wyniku: 1.",
+  "Appointments.Outcome.Notice.Many": "Wcześniejsze wizyty bez wyniku: {0}.",
+  "Appointments.Outcome.Notice.Review": "Przejrzyj"
 }
