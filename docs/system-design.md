@@ -108,6 +108,12 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   (Services), which refuses a shelf below zero and, through the row version `xmin`, the slower of two simultaneous
   changes. `StockRules` and `ProductRules` (Core) are pure. List, page, deliveries and uses need `Bookings.Manage`;
   counting and writing off need `Catalog.Manage` too.
+- `Payments/BillProducts` — `POST /admin/payments/checkout/{appointmentId}/products` and `.../products/{lineId}/remove`
+  (ADR 0037): products on a visit's bill. `VisitProductLine` copies name and price when rung up; unpaid lines can be
+  changed and removed, paid ones point at their `ProductSale` account line. `IClientAccountService.PayBillAsync`
+  settles the visit (`VisitPayment`) and the products (`ProductSale`) with one method and, in the same transaction,
+  `IStockService.SellAsync` takes each product off its shelf (`Sold`, with the visit), counting the shelf up first
+  when the record reads short. The checkout page shows the lines and the form; same permissions as the checkout.
 - `Appointments/Calendar` — `/admin/appointments/calendar?view=day|week&date=&staff=` (ADR 0016): a CSS-grid timetable
   computed by the pure `CalendarLayout` in Services, an appointment card at `calendar/{id}` with the day list's status
   buttons and a move form posting to `calendar/{id}/move` (`IBookingService.MoveAsync`, re-checked through the engine,
