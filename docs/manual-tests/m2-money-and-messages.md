@@ -221,7 +221,7 @@ The demo data changed. Drop and recreate `salon_dev` first (see "Clean up"), the
 - [ ] R6. On a phone nothing scrolls sideways on Services, Clients, Appointments, Calendar, Till, Reports, Staff and
       Settings.
 
-## S. Visits nobody marked (after the visits without an outcome PR is merged too)
+## S. Visits nobody marked (after PR #77 is merged too)
 The demo salon books visits for the coming days only, so make an old one first: book a visit for today, then wait
 until tomorrow, or use a visit you left unmarked on an earlier day of testing.
 - [ ] S1. Appointments: above the day a yellow line says "1 earlier visit has no outcome yet." with "Review them".
