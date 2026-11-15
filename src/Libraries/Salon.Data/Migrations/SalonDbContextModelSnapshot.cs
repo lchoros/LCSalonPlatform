@@ -1093,6 +1093,89 @@ namespace Salon.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Salon.Core.Payments.VisitProductLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Instant>("AddedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("added_at");
+
+                    b.Property<Guid?>("AddedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("added_by_user_id");
+
+                    b.Property<Guid>("AppointmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("appointment_id");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<Guid?>("PaymentEntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("payment_entry_id");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("product_name");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("unit_price");
+
+                    b.HasKey("Id")
+                        .HasName("pk_visit_product_lines");
+
+                    b.HasIndex("AppointmentId")
+                        .HasDatabaseName("ix_visit_product_lines_appointment_id");
+
+                    b.HasIndex("PaymentEntryId")
+                        .HasDatabaseName("ix_visit_product_lines_payment_entry_id");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_visit_product_lines_product_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_visit_product_lines_tenant_id");
+
+                    b.HasIndex("TenantId", "AppointmentId", "AddedAt")
+                        .HasDatabaseName("ix_visit_product_lines_tenant_id_appointment_id_added_at");
+
+                    b.HasIndex("TenantId", "AppointmentId", "ProductId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_visit_product_lines_one_unpaid_line_per_product")
+                        .HasFilter("payment_entry_id IS NULL");
+
+                    b.ToTable("visit_product_lines", "salon", t =>
+                        {
+                            t.HasCheckConstraint("ck_visit_product_lines_quantity_positive", "quantity > 0");
+
+                            t.HasCheckConstraint("ck_visit_product_lines_unit_price_not_negative", "unit_price >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Salon.Core.Products.Product", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1174,6 +1257,10 @@ namespace Salon.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid?>("AppointmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("appointment_id");
+
                     b.Property<Instant>("At")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("at");
@@ -1209,6 +1296,9 @@ namespace Salon.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_stock_movements");
+
+                    b.HasIndex("AppointmentId")
+                        .HasDatabaseName("ix_stock_movements_appointment_id");
 
                     b.HasIndex("ProductId")
                         .HasDatabaseName("ix_stock_movements_product_id");
@@ -1700,6 +1790,36 @@ namespace Salon.Data.Migrations
                         .HasConstraintName("fk_client_account_entries_tenants_tenant_id");
                 });
 
+            modelBuilder.Entity("Salon.Core.Payments.VisitProductLine", b =>
+                {
+                    b.HasOne("Salon.Core.Appointments.Appointment", null)
+                        .WithMany()
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_visit_product_lines_appointments_appointment_id");
+
+                    b.HasOne("Salon.Core.Payments.ClientAccountEntry", null)
+                        .WithMany()
+                        .HasForeignKey("PaymentEntryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_visit_product_lines_client_account_entries_payment_entry_id");
+
+                    b.HasOne("Salon.Core.Products.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_visit_product_lines_products_product_id");
+
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_visit_product_lines_tenants_tenant_id");
+                });
+
             modelBuilder.Entity("Salon.Core.Products.Product", b =>
                 {
                     b.HasOne("Salon.Core.Tenancy.Tenant", null)
@@ -1712,6 +1832,12 @@ namespace Salon.Data.Migrations
 
             modelBuilder.Entity("Salon.Core.Products.StockMovement", b =>
                 {
+                    b.HasOne("Salon.Core.Appointments.Appointment", null)
+                        .WithMany()
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_stock_movements_appointments_appointment_id");
+
                     b.HasOne("Salon.Core.Products.Product", null)
                         .WithMany()
                         .HasForeignKey("ProductId")

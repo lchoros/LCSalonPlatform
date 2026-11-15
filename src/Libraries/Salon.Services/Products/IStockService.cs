@@ -13,9 +13,18 @@ public interface IStockService
     /// Records <paramref name="number"/> units of <paramref name="kind"/> for the product. For a delivery, a use or a
     /// write-off the number is how many units moved; for <see cref="StockMovementKind.Counted"/> it is what the shelf
     /// holds, and the line is the difference. Nothing is written unless the outcome is
-    /// <see cref="StockOutcome.Recorded"/>.
+    /// <see cref="StockOutcome.Recorded"/>. A sale is not recorded here: it belongs to a bill and goes through
+    /// <see cref="SellAsync"/>.
     /// </summary>
     Task<StockResult> RecordAsync(Guid productId, StockMovementKind kind, int number, string? note, Guid? byUserId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Takes <paramref name="quantity"/> units off the shelf as sold on the bill of <paramref name="appointmentId"/>
+    /// (ADR 0037). A sale is never refused for a shelf that reads too low: the client is holding the units, so the
+    /// record was wrong, and a count line puts it right first. Both lines carry the visit. The slower of two
+    /// simultaneous changes is tried again against the shelf as it then is.
+    /// </summary>
+    Task<StockResult> SellAsync(Guid productId, int quantity, Guid appointmentId, Guid? byUserId, CancellationToken cancellationToken = default);
 }
 
 public enum StockOutcome

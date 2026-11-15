@@ -26,9 +26,15 @@ public static class StockRules
     public static int Direction(StockMovementKind kind) => kind switch
     {
         StockMovementKind.Received => 1,
-        StockMovementKind.UsedInSalon or StockMovementKind.WrittenOff => -1,
+        StockMovementKind.UsedInSalon or StockMovementKind.WrittenOff or StockMovementKind.Sold => -1,
         _ => 0,
     };
+
+    /// <summary>
+    /// What a sale needs the shelf to hold first (ADR 0037): nothing when the record covers it, else the units the
+    /// record is short. The client is holding them, so the record was wrong and a count puts it right before the sale.
+    /// </summary>
+    public static int ShortFor(int onHand, int quantity) => Math.Max(0, quantity - Math.Max(0, onHand));
 
     /// <summary>
     /// The signed change a typed number means for the shelf. For a count the number is what the shelf holds, so the

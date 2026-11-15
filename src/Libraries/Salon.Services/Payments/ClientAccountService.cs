@@ -8,6 +8,7 @@ using Salon.Core.Payments;
 using Salon.Core.Settings;
 using Salon.Core.Tenancy;
 using Salon.Data;
+using Salon.Services.Products;
 using Salon.Services.Settings;
 using Salon.Services.Tenancy;
 
@@ -24,6 +25,7 @@ internal sealed class ClientAccountService(
     ITenantLookup tenantLookup,
     ISettingService settings,
     IPaymentProvider payments,
+    IStockService stock,
     IClock clock,
     ILogger<ClientAccountService> logger) : IClientAccountService
 {
@@ -220,6 +222,27 @@ internal sealed class ClientAccountService(
 
         var (_, deposits, visitPayments) = await LinesAsync(db.ClientAccountEntries.Where(e => e.AppointmentId == appointmentId), zone, cancellationToken).ConfigureAwait(false);
         var account = await GetAccountAsync(visit.ClientId, cancellationToken).ConfigureAwait(false);
+
+        // The products rung up on this bill, each with the method of the line that paid for it (ADR 0037).
+        var productRows = await db.VisitProductLines.AsNoTracking()
+            .Where(l => l.AppointmentId == appointmentId)
+            .OrderBy(l => l.AddedAt).ThenBy(l => l.Id)
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+        var saleIds = productRows.Where(l => l.PaymentEntryId is not null).Select(l => l.PaymentEntryId!.Value).Distinct().ToArray();
+        var saleMethods = await db.ClientAccountEntries.AsNoTracking()
+            .Where(e => saleIds.Contains(e.Id))
+            .ToDictionaryAsync(e => e.Id, e => e.Method, cancellationToken).ConfigureAwait(false);
+        var products = productRows
+            .Select(l => new BillProductLine(
+                l.Id,
+                l.ProductId,
+                l.ProductName,
+                l.Quantity,
+                new Money(l.UnitPrice, l.Currency),
+                l.PaymentEntryId is { } saleId && saleMethods.TryGetValue(saleId, out var paidWith) ? paidWith : null,
+                l.IsPaid))
+            .ToArray();
+
         return new VisitBill(
             visit.Id,
             visit.ClientId,
@@ -231,7 +254,92 @@ internal sealed class ClientAccountService(
             visit.Price,
             Held(deposits)?.Amount,
             visitPayments.Count > 0 ? visitPayments[0] : null,
-            account.Fees.Where(f => f.Status == FeeStatus.Owed).ToArray());
+            account.Fees.Where(f => f.Status == FeeStatus.Owed).ToArray(),
+            products);
+    }
+
+    public async Task<VisitBill> AddProductAsync(Guid appointmentId, Guid productId, int quantity, Guid? byUserId, CancellationToken cancellationToken = default)
+    {
+        var tenantId = RequireTenant();
+        var bill = await GetBillAsync(appointmentId, cancellationToken).ConfigureAwait(false) ?? throw new ClientAccountException(ClientAccountRefusal.NotFound);
+        if (!bill.CanPay)
+        {
+            throw new ClientAccountException(ClientAccountRefusal.VisitNotPayable);
+        }
+
+        if (!ProductSaleRules.IsQuantity(quantity))
+        {
+            throw new ClientAccountException(ClientAccountRefusal.QuantityOutOfRange);
+        }
+
+        // Another salon's product is filtered out and reads as unknown; so does one without a price.
+        var product = await db.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == productId, cancellationToken).ConfigureAwait(false);
+        if (product is null || !ProductSaleRules.IsForSale(product))
+        {
+            throw new ClientAccountException(ClientAccountRefusal.ProductNotForSale);
+        }
+
+        // Two tills ringing the same product up at once: the unique index lets one line in, the other try finds it.
+        for (var attempt = 1; ; attempt++)
+        {
+            var line = await db.VisitProductLines
+                .FirstOrDefaultAsync(l => l.AppointmentId == appointmentId && l.ProductId == productId && l.PaymentEntryId == null, cancellationToken).ConfigureAwait(false);
+            if (line is null)
+            {
+                line = new VisitProductLine
+                {
+                    TenantId = tenantId,
+                    AppointmentId = appointmentId,
+                    ProductId = productId,
+                    ProductName = product.Name,
+                    Currency = product.Currency,
+                    AddedAt = clock.GetCurrentInstant(),
+                    AddedByUserId = byUserId,
+                };
+                db.VisitProductLines.Add(line);
+            }
+
+            if (!ProductSaleRules.IsQuantity(line.Quantity + quantity))
+            {
+                db.Entry(line).State = EntityState.Detached;
+                throw new ClientAccountException(ClientAccountRefusal.QuantityOutOfRange);
+            }
+
+            // One line has one price: the product's price now, also for units rung up a moment ago.
+            line.Quantity += quantity;
+            line.ProductName = product.Name;
+            line.UnitPrice = product.RetailPrice!.Value;
+            try
+            {
+                await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                break;
+            }
+            catch (DbUpdateException ex) when (attempt == 1 && ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+            {
+                db.Entry(line).State = EntityState.Detached;
+            }
+        }
+
+        logger.LogInformation("Product {ProductId} x{Quantity} put on the bill of appointment {AppointmentId} by user {UserId}", productId, quantity, appointmentId, byUserId);
+        return await GetBillAsync(appointmentId, cancellationToken).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"The bill of appointment {appointmentId} was changed but cannot be read back.");
+    }
+
+    public async Task<VisitBill> RemoveProductAsync(Guid appointmentId, Guid lineId, CancellationToken cancellationToken = default)
+    {
+        var line = await db.VisitProductLines.FirstOrDefaultAsync(l => l.Id == lineId && l.AppointmentId == appointmentId, cancellationToken).ConfigureAwait(false)
+            ?? throw new ClientAccountException(ClientAccountRefusal.NotFound);
+        if (line.IsPaid)
+        {
+            throw new ClientAccountException(ClientAccountRefusal.ProductLinePaid);
+        }
+
+        // An unpaid line is only what the desk rang up; no money and no stock has moved, so it simply goes.
+        db.VisitProductLines.Remove(line);
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        logger.LogInformation("Product line {LineId} taken off the bill of appointment {AppointmentId}", lineId, appointmentId);
+        return await GetBillAsync(appointmentId, cancellationToken).ConfigureAwait(false)
+            ?? throw new ClientAccountException(ClientAccountRefusal.NotFound);
     }
 
     public async Task<VisitBill> PayBillAsync(Guid appointmentId, PaymentMethod method, IReadOnlyCollection<Guid> feeAppointmentIds, Guid? byUserId, CancellationToken cancellationToken = default)
@@ -247,7 +355,11 @@ internal sealed class ClientAccountService(
 
         var fees = bill.OpenFees.Where(f => feeAppointmentIds.Contains(f.AppointmentId)).ToArray();
         var due = bill.Outstanding;
-        if (due.Amount == 0m && fees.Length == 0)
+        var unpaidProducts = await db.VisitProductLines
+            .Where(l => l.AppointmentId == appointmentId && l.PaymentEntryId == null)
+            .OrderBy(l => l.AddedAt).ThenBy(l => l.Id)
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+        if (due.Amount == 0m && fees.Length == 0 && unpaidProducts.Count == 0)
         {
             throw new ClientAccountException(ClientAccountRefusal.NothingToPay);
         }
@@ -271,6 +383,42 @@ internal sealed class ClientAccountService(
             };
             await InsertAsync(entry, ClientAccountRefusal.NothingToPay, cancellationToken).ConfigureAwait(false);
             logger.LogInformation("Visit {AppointmentId} paid: {Amount} {Currency} by {Method}, recorded by user {UserId} through {Provider}", appointmentId, due.Amount, due.Currency, method, byUserId, payments.SystemName);
+        }
+
+        if (unpaidProducts.Count > 0)
+        {
+            // The products on the bill are one more line of money (ADR 0037), kept apart from the visit so the till and
+            // the reports can tell services from retail. Every unit leaves its shelf in the same transaction.
+            var sold = due with { Amount = unpaidProducts.Sum(l => ProductSaleRules.LineTotal(l.Quantity, l.UnitPrice)) };
+            var result = await RecordAsync(payments.RecordInSalonPaymentAsync(new PaymentRequest(tenantId, appointmentId, sold, method), cancellationToken), appointmentId).ConfigureAwait(false);
+            var sale = new ClientAccountEntry
+            {
+                TenantId = tenantId,
+                ClientId = bill.ClientId,
+                AppointmentId = appointmentId,
+                Kind = ClientAccountEntryKind.ProductSale,
+                Amount = sold.Amount,
+                Currency = sold.Currency,
+                Method = method,
+                ProviderSystemName = payments.SystemName,
+                ProviderReference = result.ProviderReference,
+                ByUserId = byUserId,
+            };
+            await InsertAsync(sale, ClientAccountRefusal.NothingToPay, cancellationToken).ConfigureAwait(false);
+            foreach (var line in unpaidProducts)
+            {
+                line.PaymentEntryId = sale.Id;
+                var stocked = await stock.SellAsync(line.ProductId, line.Quantity, appointmentId, byUserId, cancellationToken).ConfigureAwait(false);
+                if (!stocked.IsRecorded)
+                {
+                    // The caller's transaction takes the money line back with it; nothing is half sold.
+                    logger.LogWarning("Product {ProductId} on the bill of appointment {AppointmentId} could not leave its shelf: {Outcome}", line.ProductId, appointmentId, stocked.Outcome);
+                    throw new ClientAccountException(ClientAccountRefusal.StockNotRecorded);
+                }
+            }
+
+            await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            logger.LogInformation("Products on appointment {AppointmentId} paid: {Amount} {Currency} by {Method}, {Lines} lines, recorded by user {UserId} through {Provider}", appointmentId, sold.Amount, sold.Currency, method, unpaidProducts.Count, byUserId, payments.SystemName);
         }
 
         // Fees from earlier visits ride on the same bill, each settled by its own line so the account stays readable.
