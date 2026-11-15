@@ -274,6 +274,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         await settings.SaveAsync(new BookingSettings());
         await settings.SaveAsync(new NotificationSettings());
         await settings.SaveAsync(new CancellationPolicySettings());
+        await settings.SaveAsync(new RebookSettings());
     }
 
     /// <summary>
