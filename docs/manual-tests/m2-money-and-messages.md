@@ -235,6 +235,26 @@ until tomorrow, or use a visit you left unmarked on an earlier day of testing.
       Appointments.
 - [ ] S6. A visit of today that is over is not on the list: it is on today's day list.
 
+## T. The English wording (after PR #78 is merged too)
+Read these as a client and as the desk would. Tell me any sentence that sounds wrong to you: you know your clients.
+- [ ] T1. Open `http://studio-20.localhost:5227/` signed out. The page says "Book your appointment online at any
+      time." with "Book an appointment" first, "Services and prices" second and "Where to find us" below. Nothing
+      about "M1".
+- [ ] T2. "Book an appointment" opens "Choose a service" in one tap.
+- [ ] T3. Book a visit and type a wrong code four times. The messages count down "4 attempts left", "3", "2" and
+      then "You have 1 attempt left."
+- [ ] T4. Settings, Deposits and cancellations: set the free hours to 1 and save. On the booking page, step 3 says
+      "Free up to 1 hour before the visit." Set it back afterwards.
+- [ ] T5. The confirmation text in Mailpit ends "Change or cancel:" and the link. The email starts
+      "Hi Olivia," and then "Your …" with a capital.
+- [ ] T6. Appointments, Calendar and Till name the weekday: "Monday 16 November 2026".
+- [ ] T7. Services, edit a service: the field is "Clean-up time after the service (minutes)" and the list shows
+      "10 min clean-up". Nowhere does it say "buffer" or "stylist".
+- [ ] T8. Services, Categories: a category with one service says "1 service".
+- [ ] T9. Staff, working hours: make two shifts overlap. The message is "The two shifts on this day overlap."
+- [ ] T10. Settings, Messages, a text: the note under the length says an emoji or a curly apostrophe makes each
+      text hold 70 characters.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.
