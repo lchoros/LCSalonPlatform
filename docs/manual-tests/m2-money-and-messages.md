@@ -298,6 +298,16 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] W5. "Make a new address": the old address now answers "not found", the new one works.
 - [ ] W6. "Switch the address off": the address answers "not found".
 
+## X. After the visit (after PR #82 is merged too)
+- [ ] X1. Pay a visit at the Checkout. Below the bill: "Book the next visit" with "In 4 weeks", "In 6 weeks" and
+      "In 8 weeks", each with its date.
+- [ ] X2. Tap "In 6 weeks": the booking form opens with the client, the same service, the same person and that day.
+      Pick a time and book.
+- [ ] X3. A visit that is only booked or arrived does not offer the next visit.
+- [ ] X4. Open the client's card: "Book a visit" is under the name and opens the booking form for that client.
+- [ ] X5. After a product was sold to the client (section V), the card has "Products bought" with the product, how
+      many, the date and the amount. Tapping a row opens that bill.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

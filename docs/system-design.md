@@ -84,6 +84,9 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `Booking/CancelBooking` — the public flow under `/book` (ADR 0014): service → staff or any → day and slot → name and
   phone → 6-digit SMS code → booked, with a signed cancel link (`/book/cancel/{token}`) in the confirmation SMS. Three
   taps to a slot on a phone; server-rendered, no JavaScript needed.
+- `Payments/Checkout` also offers the next visit (ADR 0039): for a completed visit, `RebookChoicesQuery` turns the
+  salon's `RebookSettings` (weeks) into addresses of the booking form with client, service, person and day filled in.
+  `Clients/ClientCard` shows "Book a visit" and "Products bought" (`IClientAccountService.GetPurchasesAsync`).
 - `Staff/ListStaff`, `Staff/CreateStaff`, `Staff/EditStaff`, `Staff/EditWorkingHours`, `Staff/TimeOff` — `/admin/staff`,
   `/admin/staff/new`, `/admin/staff/{id}/edit`, `/admin/staff/{id}/hours`, `/admin/staff/{id}/time-off`, all behind
   `Staff.Manage` (ADR 0010, 0015); `CreateStaff` publishes `StaffMemberCreated`, the hours form replaces a person's

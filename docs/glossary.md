@@ -39,3 +39,4 @@
 | Gift voucher | Bon podarunkowy | Prepaid voucher |
 | Rota | Grafik | Staff working schedule |
 | Calendar address | Adres kalendarza | A staff member's private address (`/calendar/{token}.ics`) that a calendar app subscribes to; shows their visits one way, the client by first name and initial (ADR 0038) |
+| Rebook | Następna wizyta | Booking the client's next visit from the checkout of the one just paid: same service, same person, so many weeks on (`RebookSettings`, ADR 0039) |
