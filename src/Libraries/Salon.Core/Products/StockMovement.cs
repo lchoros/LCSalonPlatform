@@ -57,4 +57,7 @@ public enum StockMovementKind
 
     /// <summary>Sold to a client on a visit's bill (ADR 0037); takes from the shelf when the bill is paid.</summary>
     Sold = 5,
+
+    /// <summary>A client brought it back and it went on the shelf again (ADR 0040); adds to the shelf, with the visit it was sold on.</summary>
+    Returned = 6,
 }

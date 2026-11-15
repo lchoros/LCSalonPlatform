@@ -149,5 +149,16 @@
   "Payments.Checkout.Rebook.Title": "Zarezerwuj następną wizytę",
   "Payments.Checkout.Rebook.Lead": "Ponownie {0}, {1}. Wybierz, za ile tygodni, a potem godzinę.",
   "Payments.Checkout.Rebook.Weeks.One": "Za {0} tydz.",
-  "Payments.Checkout.Rebook.Weeks.Many": "Za {0} tyg."
+  "Payments.Checkout.Rebook.Weeks.Many": "Za {0} tyg.",
+  "Payments.Kind.ProductReturn": "Zwrot produktów",
+  "Payments.Checkout.Products.ReturnedCount": "Zwrócono: {0}",
+  "Payments.Checkout.Products.Return.Open": "Zwrot tego produktu",
+  "Payments.Checkout.Products.Return.Quantity": "Ile sztuk wróciło",
+  "Payments.Checkout.Products.Return.Method": "Jak oddajesz pieniądze",
+  "Payments.Checkout.Products.Return.BackOnShelf": "Można sprzedać ponownie: wraca na półkę",
+  "Payments.Checkout.Products.Return.Hint": "Oddaj pieniądze jak zwykle, a potem zapisz to tutaj. Odznacz pole, jeśli produkt był otwarty lub uszkodzony.",
+  "Payments.Checkout.Products.Return.Submit": "Zapisz zwrot",
+  "Payments.Checkout.Products.Returned": "Zwrot został zapisany.",
+  "Payments.Fee.Refused.ProductLineNotPaid": "Zwrócić można tylko zapłacony produkt. Ten po prostu usuń z rachunku.",
+  "Payments.Fee.Refused.ReturnMoreThanKept": "Klient nie ma już tylu sztuk tego produktu. Sprawdź, ile wróciło."
 }

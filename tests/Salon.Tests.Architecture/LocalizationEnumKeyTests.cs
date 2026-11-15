@@ -62,9 +62,9 @@ public partial class LocalizationResourceTests
         // The product page names each kind, confirms each with a counted text (ADR 0035) and explains each refusal (ADR 0036).
         var expected = new List<string>();
         expected.AddRange(Enum.GetNames<StockMovementKind>().Select(kind => $"Products.Kind.{kind}"));
-        // A sale is recorded by paying a bill, not from the product page (ADR 0037), so it has a name and no confirmation here.
+        // A sale and a return are recorded on a bill, not from the product page (ADR 0037, ADR 0040), so they have a name and no confirmation here.
         expected.AddRange(Enum.GetValues<StockMovementKind>()
-            .Where(kind => kind != StockMovementKind.Sold)
+            .Where(kind => kind is not (StockMovementKind.Sold or StockMovementKind.Returned))
             .SelectMany(kind => new[]
             {
                 $"Products.Stock.Recorded.{kind}{LocalizationPlurals.OneSuffix}",

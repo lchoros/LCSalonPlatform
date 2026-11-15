@@ -1136,6 +1136,10 @@ namespace Salon.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("quantity");
 
+                    b.Property<int>("ReturnedQuantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("returned_quantity");
+
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
@@ -1171,6 +1175,8 @@ namespace Salon.Data.Migrations
                     b.ToTable("visit_product_lines", "salon", t =>
                         {
                             t.HasCheckConstraint("ck_visit_product_lines_quantity_positive", "quantity > 0");
+
+                            t.HasCheckConstraint("ck_visit_product_lines_returned_within_quantity", "returned_quantity >= 0 AND returned_quantity <= quantity");
 
                             t.HasCheckConstraint("ck_visit_product_lines_unit_price_not_negative", "unit_price >= 0");
                         });

@@ -90,6 +90,24 @@ public class BillProductsE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
         (await page.GetByTestId("on-hand").TextContentAsync()).ShouldBe("2");
         (await page.GetByTestId("stock-line").First.GetByTestId("line-kind").TextContentAsync()).ShouldBe("Sold");
         (await page.GetByTestId("stock-line").First.GetByTestId("line-quantity").TextContentAsync()).ShouldBe("−2");
+
+        // 6. The client brings one bottle back unopened (ADR 0040): the return sits behind a disclosure on the paid line.
+        await page.GotoAsync(app.TenantUrl(Slug) + checkout);
+        await page.ReachAsync("**" + checkout);
+        await page.GetByTestId("return-open").ClickAsync();
+        (await page.GetByTestId("return-quantity").InputValueAsync()).ShouldBe("1");
+        (await page.GetByTestId("return-back-on-shelf").IsCheckedAsync()).ShouldBeTrue();
+        await CheckPageAsync(page, styled, "return-submit", "checkout-return-mobile-390.png");
+        await page.GetByTestId("return-submit").ClickAsync();
+        await Assertions.Expect(page.GetByTestId("flash")).ToHaveTextAsync("The return has been recorded.");
+        await page.ReachAsync(url => new Uri(url).AbsolutePath == checkout);
+        (await page.GetByTestId("bill-product-returned").TextContentAsync()).ShouldBe("Returned: 1");
+
+        // 7. The bottle is on the shelf again and the history says where it came from.
+        await page.GotoAsync($"{app.TenantUrl(Slug)}/admin/products/{productId}");
+        await page.ReachAsync($"**/admin/products/{productId}");
+        (await page.GetByTestId("on-hand").TextContentAsync()).ShouldBe("3");
+        (await page.GetByTestId("stock-line").First.GetByTestId("line-kind").TextContentAsync()).ShouldBe("Returned by a client");
     }
 
     /// <summary>Touch target (when styled), no sideways scroll, a screenshot for the PR and an axe pass.</summary>

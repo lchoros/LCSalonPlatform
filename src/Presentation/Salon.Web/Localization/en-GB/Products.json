@@ -83,5 +83,6 @@
   "Products.Stock.Refused.TooMany": "That is more than a shelf can hold on record.",
   "Products.Stock.Refused.ChangedMeanwhile": "Someone else changed this shelf at the same moment. Nothing was recorded. The shelf holds {0}; check and try again.",
   "Products.Kind.Sold": "Sold",
-  "Products.Kind.CountedAtSale": "Found at a sale"
+  "Products.Kind.CountedAtSale": "Found at a sale",
+  "Products.Kind.Returned": "Returned by a client"
 }

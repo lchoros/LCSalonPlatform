@@ -14,12 +14,15 @@ internal sealed class VisitProductLineConfiguration : IEntityTypeConfiguration<V
         {
             t.HasCheckConstraint("ck_visit_product_lines_quantity_positive", "quantity > 0");
             t.HasCheckConstraint("ck_visit_product_lines_unit_price_not_negative", "unit_price >= 0");
+            // A client cannot bring back more than they bought (ADR 0040).
+            t.HasCheckConstraint("ck_visit_product_lines_returned_within_quantity", "returned_quantity >= 0 AND returned_quantity <= quantity");
         });
         builder.HasKey(l => l.Id);
         builder.Property(l => l.ProductName).HasMaxLength(ProductRules.NameMaxLength).IsRequired();
         builder.Property(l => l.UnitPrice).HasPrecision(10, 2);
         builder.Property(l => l.Currency).HasMaxLength(VisitProductLine.CurrencyLength).IsRequired();
         builder.Ignore(l => l.IsPaid);
+        builder.Ignore(l => l.Kept);
         builder.Ignore(l => l.Total);
         // The checkout reads a visit's lines in the order they were rung up.
         builder.HasIndex(l => new { l.TenantId, l.AppointmentId, l.AddedAt });

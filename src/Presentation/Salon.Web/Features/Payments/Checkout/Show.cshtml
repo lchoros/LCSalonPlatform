@@ -61,12 +61,16 @@
             <ul class="space-y-2 border-t border-stone-200 pt-2" data-testid="bill-products">
                 @foreach (var line in bill.Products)
                 {
-                    <li class="flex items-center justify-between gap-3" data-testid="bill-product" data-paid="@line.IsPaid.ToString().ToLowerInvariant()">
+                    <li class="flex flex-wrap items-center justify-between gap-3" data-testid="bill-product" data-paid="@line.IsPaid.ToString().ToLowerInvariant()">
                         <span class="min-w-0 flex-1">
                             <span class="block" data-testid="bill-product-name">@T.Format("Payments.Checkout.Products.Line", line.Name, line.Quantity)</span>
                             @if (line.IsPaid)
                             {
                                 <span class="block text-sm text-stone-600" data-testid="bill-product-paid">@T.Format("Payments.Checkout.PaidWith", line.PaidWith is { } paidWith ? T[$"Payments.Method.{paidWith}"] : "—")</span>
+                            }
+                            @if (line.Returned > 0)
+                            {
+                                <span class="block text-sm font-medium text-amber-900" data-testid="bill-product-returned">@T.Format("Payments.Checkout.Products.ReturnedCount", line.Returned)</span>
                             }
                         </span>
                         <span class="tabular-nums @(line.IsPaid ? "text-stone-500" : null)" data-testid="bill-product-total">@line.Total.ToDisplayString(culture)</span>
@@ -75,6 +79,37 @@
                             <form method="post" action="@CheckoutController.RemoveProductPath(bill.AppointmentId, line.LineId)" asp-antiforgery="true">
                                 <button type="submit" class="btn btn-compact btn-secondary px-3" data-testid="remove-product">@T["Payments.Checkout.Products.Remove"]<span class="sr-only">: @line.Name</span></button>
                             </form>
+                        }
+                        @if (line.IsPaid && line.Kept > 0)
+                        {
+                            @* A return (ADR 0040) sits behind a disclosure so it is never one stray tap away from the bill. *@
+                            var returnId = "return-" + line.LineId.ToString("N");
+                            <details class="basis-full" data-testid="return-product">
+                                <summary class="inline-flex min-h-11 cursor-pointer items-center text-sm font-medium underline underline-offset-2" data-testid="return-open">@T["Payments.Checkout.Products.Return.Open"]<span class="sr-only">: @line.Name</span></summary>
+                                <form method="post" action="@CheckoutController.ReturnProductPath(bill.AppointmentId, line.LineId)" asp-antiforgery="true" class="mt-2 space-y-3 rounded-md bg-stone-50 p-3" data-testid="return-form">
+                                    <div class="grid gap-3 sm:grid-cols-2">
+                                        <div class="space-y-1">
+                                            <label for="@(returnId)-quantity" class="field-label">@T["Payments.Checkout.Products.Return.Quantity"]</label>
+                                            <input id="@(returnId)-quantity" name="quantity" type="number" inputmode="numeric" min="1" max="@line.Kept" step="1" value="1" required class="@inputClass" data-testid="return-quantity" />
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label for="@(returnId)-method" class="field-label">@T["Payments.Checkout.Products.Return.Method"]</label>
+                                            <select id="@(returnId)-method" name="method" class="@inputClass" data-testid="return-method">
+                                                @foreach (var method in Enum.GetValues<PaymentMethod>())
+                                                {
+                                                    <option value="@method">@T[$"Payments.Method.{method}"]</option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <label for="@(returnId)-shelf" class="flex min-h-11 items-center gap-3">
+                                        <input id="@(returnId)-shelf" name="backOnShelf" type="checkbox" value="true" checked class="size-5 shrink-0 rounded border-stone-400" data-testid="return-back-on-shelf" />
+                                        <span class="text-sm">@T["Payments.Checkout.Products.Return.BackOnShelf"]</span>
+                                    </label>
+                                    <p class="text-sm text-stone-600">@T["Payments.Checkout.Products.Return.Hint"]</p>
+                                    <button type="submit" class="btn btn-compact btn-danger w-full sm:w-auto" data-testid="return-submit">@T["Payments.Checkout.Products.Return.Submit"]</button>
+                                </form>
+                            </details>
                         }
                     </li>
                 }

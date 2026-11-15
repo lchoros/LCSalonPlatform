@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Salon.Core.Cqrs;
 using Salon.Core.Identity;
+using Salon.Core.Payments;
 using Salon.Services.Localization;
 using Salon.Services.Payments;
 using Salon.Web.Framework.Controllers;
@@ -11,7 +12,8 @@ namespace Salon.Web.Features.Payments.BillProducts;
 
 /// <summary>
 /// The products on a visit's bill (ADR 0037): <c>POST /admin/payments/checkout/{appointmentId}/products</c> rings one
-/// up, <c>POST .../products/{lineId}/remove</c> takes an unpaid one off. Tenant only, behind the checkout's own
+/// up, <c>POST .../products/{lineId}/remove</c> takes an unpaid one off, <c>POST .../products/{lineId}/return</c>
+/// gives the money back for a paid one (ADR 0040). Tenant only, behind the checkout's own
 /// permissions (<see cref="Permissions.PaymentsRecord"/> and <see cref="Permissions.ClientsView"/>): whoever takes the
 /// payment rings up the bottle. Every answer is a redirect to the checkout of the visit, with a confirmation or with
 /// the reason nothing changed; another salon's id is a 404 like a missing one.
@@ -56,6 +58,37 @@ public sealed class BillProductsController(IDispatcher dispatcher, ILocalization
         {
             await dispatcher.SendAsync(new RemoveBillProductCommand(appointmentId, lineId), cancellationToken);
             SetFlash(localizer["Payments.Checkout.Products.Removed"]);
+        }
+        catch (ClientAccountException ex) when (ex.Refusal != ClientAccountRefusal.NotFound)
+        {
+            SetProblem(localizer[$"Payments.Fee.Refused.{ex.Refusal}"]);
+        }
+        catch (ClientAccountException)
+        {
+            return NotFound();
+        }
+
+        return BackToTheBill(appointmentId);
+    }
+
+    /// <summary>
+    /// A client brings back units of a paid line (ADR 0040): the money goes back with the chosen method and, when the
+    /// box is ticked, the units go back on the shelf. An unticked box posts nothing, so absent means "not back on the shelf".
+    /// </summary>
+    [HttpPost("{lineId:guid}/return")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Return(Guid appointmentId, Guid lineId, int? quantity, PaymentMethod? method, bool? backOnShelf, CancellationToken cancellationToken)
+    {
+        if (method is not { } chosen || !Enum.IsDefined(chosen))
+        {
+            SetProblem(localizer["Payments.Checkout.Validation.MethodRequired"]);
+            return BackToTheBill(appointmentId);
+        }
+
+        try
+        {
+            await dispatcher.SendAsync(new ReturnBillProductCommand(appointmentId, lineId, quantity ?? 0, chosen, backOnShelf ?? false, CurrentUserId()), cancellationToken);
+            SetFlash(localizer["Payments.Checkout.Products.Returned"]);
         }
         catch (ClientAccountException ex) when (ex.Refusal != ClientAccountRefusal.NotFound)
         {

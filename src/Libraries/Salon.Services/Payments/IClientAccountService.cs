@@ -84,6 +84,15 @@ public interface IClientAccountService
     /// </summary>
     Task<VisitBill> RemoveProductAsync(Guid appointmentId, Guid lineId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Records that the client brought back <paramref name="quantity"/> units of a paid product line and was given the
+    /// money for them with <paramref name="method"/> (ADR 0040). The money goes on the account as its own line that
+    /// points at the sale; the units go back on the shelf only when <paramref name="backOnShelf"/> says they can be
+    /// sold again. Throws <see cref="ClientAccountException"/> when the visit or the line is unknown, the line was
+    /// not paid, the quantity is more than the client still has, or the payment plugin refuses.
+    /// </summary>
+    Task<VisitBill> ReturnProductAsync(Guid appointmentId, Guid lineId, int quantity, PaymentMethod method, bool backOnShelf, Guid? byUserId, CancellationToken cancellationToken = default);
+
 
     /// <summary>What the client owes, every fee and every deposit on their account, newest first. Empty for a client without any or an unknown id.</summary>
     Task<ClientAccount> GetAccountAsync(Guid clientId, CancellationToken cancellationToken = default);
@@ -211,9 +220,13 @@ public sealed record VisitBill(
 
 /// <summary>A product on a visit's bill (ADR 0037), with the name and the price it had when it was rung up.</summary>
 /// <param name="PaidWith">How it was paid; null while it is unpaid.</param>
-public sealed record BillProductLine(Guid LineId, Guid ProductId, string Name, int Quantity, Money UnitPrice, PaymentMethod? PaidWith, bool IsPaid)
+/// <param name="Returned">Units the client brought back and was given the money for (ADR 0040).</param>
+public sealed record BillProductLine(Guid LineId, Guid ProductId, string Name, int Quantity, Money UnitPrice, PaymentMethod? PaidWith, bool IsPaid, int Returned = 0)
 {
     public Money Total => UnitPrice with { Amount = ProductSaleRules.LineTotal(Quantity, UnitPrice.Amount) };
+
+    /// <summary>Units the client still has; a paid line with some left can still be returned.</summary>
+    public int Kept => Quantity - Returned;
 }
 
 /// <summary>The payment taken for a visit at the checkout.</summary>
@@ -339,6 +352,12 @@ public enum ClientAccountRefusal
 
     /// <summary>The shelf of a product on the bill kept changing while the bill was paid; nothing was recorded.</summary>
     StockNotRecorded = 18,
+
+    /// <summary>Only a product that was paid for can be returned; an unpaid one is simply taken off the bill.</summary>
+    ProductLineNotPaid = 19,
+
+    /// <summary>More units were to be returned than the client still has of that line.</summary>
+    ReturnMoreThanKept = 20,
 }
 
 /// <summary>A request the account refuses; <see cref="Refusal"/> says why, for the message the screen shows.</summary>

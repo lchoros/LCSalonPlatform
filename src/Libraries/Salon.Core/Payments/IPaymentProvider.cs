@@ -20,6 +20,9 @@ public interface IPaymentProvider : IPlugin
     Task<PaymentResult> RecordInSalonPaymentAsync(PaymentRequest request, CancellationToken cancellationToken = default);
 
     Task<PaymentResult> RecordNoShowFeeAsync(PaymentRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Records that money went back to a client for something they returned (ADR 0040). A gateway refunds here; Manual only records.</summary>
+    Task<PaymentResult> RecordRefundAsync(PaymentRequest request, CancellationToken cancellationToken = default);
 }
 
 public enum PaymentMethod

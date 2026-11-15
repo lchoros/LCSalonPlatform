@@ -1,4 +1,5 @@
 using Salon.Core.Cqrs;
+using Salon.Core.Payments;
 using Salon.Services.Payments;
 
 namespace Salon.Web.Features.Payments.BillProducts;
@@ -29,5 +30,21 @@ public sealed class RemoveBillProductHandler(IClientAccountService account) : IR
     {
         ArgumentNullException.ThrowIfNull(request);
         return account.RemoveProductAsync(request.AppointmentId, request.LineId, cancellationToken);
+    }
+}
+/// <summary>
+/// Records that the client brought back units of a paid product line and was given the money (ADR 0040). A command,
+/// so the money line, the bill line and the shelf change together in the pipeline's transaction (ADR 0003).
+/// </summary>
+/// <param name="BackOnShelf">True when the units can be sold again and go back on their shelf.</param>
+/// <param name="ByUserId">The login that records; set by the controller, never from the form.</param>
+public sealed record ReturnBillProductCommand(Guid AppointmentId, Guid LineId, int Quantity, PaymentMethod Method, bool BackOnShelf, Guid? ByUserId) : ICommand<VisitBill>;
+
+public sealed class ReturnBillProductHandler(IClientAccountService account) : IRequestHandler<ReturnBillProductCommand, VisitBill>
+{
+    public Task<VisitBill> HandleAsync(ReturnBillProductCommand request, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return account.ReturnProductAsync(request.AppointmentId, request.LineId, request.Quantity, request.Method, request.BackOnShelf, request.ByUserId, cancellationToken);
     }
 }

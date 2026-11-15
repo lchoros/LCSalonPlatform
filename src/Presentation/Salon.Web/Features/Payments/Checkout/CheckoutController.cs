@@ -91,6 +91,8 @@ public sealed class CheckoutController(IDispatcher dispatcher, ILocalizationServ
 
     public static string RemoveProductPath(Guid appointmentId, Guid lineId) => $"{BasePath}/{appointmentId}/products/{lineId}/remove";
 
+    public static string ReturnProductPath(Guid appointmentId, Guid lineId) => $"{BasePath}/{appointmentId}/products/{lineId}/return";
+
     /// <summary>Products are rung up only on a bill that can be paid; for any other visit the list is not read.</summary>
     private async Task<IReadOnlyList<SellableProduct>> SellableAsync(VisitBill bill, CancellationToken cancellationToken)
         => bill.CanPay ? await dispatcher.SendAsync(new SellableProductsQuery(), cancellationToken) : [];
