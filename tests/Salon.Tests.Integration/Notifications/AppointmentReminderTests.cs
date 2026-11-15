@@ -119,7 +119,7 @@ public class AppointmentReminderTests(SalonWebApplicationFactory factory) : IAsy
         var email = factory.Emails.Messages.ShouldHaveSingleItem();
         email.To.ShouldBe("olivia.green@example.com");
         email.Subject.ShouldBe("Reminder: your Cut at Studio 20");
-        email.TextBody.ShouldNotBeNull().ShouldStartWith("Hi Olivia,\na quick reminder that your Cut with Anna at Studio 20 is on Sat 21 Nov, 14:00.");
+        email.TextBody.ShouldNotBeNull().ShouldStartWith("Hi Olivia,\nA quick reminder that your Cut with Anna at Studio 20 is on Sat 21 Nov, 14:00.");
         (await RemindersAsync(_studio.Id)).ShouldHaveSingleItem().Outcome.ShouldBe(ReminderOutcome.Sent);
         (await SendDueAsync(_studio.Id, Now + Duration.FromMinutes(5))).ShouldBe(0);
         factory.Emails.Messages.ShouldHaveSingleItem("never a second copy by email either");

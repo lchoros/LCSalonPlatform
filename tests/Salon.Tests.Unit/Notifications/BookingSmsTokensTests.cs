@@ -39,11 +39,11 @@ public class BookingSmsTokensTests
         var tokens = BookingSmsTokens.Confirmation("Studio 20", "Olivia", "Cut & blow-dry", "Anna Kowalska", Start, London, CultureInfo.GetCultureInfo("en-GB"), "https://s.example/c/tok");
 
         var rendered = MessageTemplateRenderer.Render(
-            "Hi {{ClientFirstName}}, your {{ServiceName}} at {{SalonName}} is booked for {{AppointmentStart}}. Need to cancel? {{CancelUrl}}",
+            "Hi {{ClientFirstName}}, your {{ServiceName}} at {{SalonName}} is booked for {{AppointmentStart}}. Change or cancel: {{CancelUrl}}",
             tokens);
 
         rendered.IsComplete.ShouldBeTrue();
-        rendered.Text.ShouldBe("Hi Olivia, your Cut & blow-dry at Studio 20 is booked for Tue 17 Nov, 10:00. Need to cancel? https://s.example/c/tok");
+        rendered.Text.ShouldBe("Hi Olivia, your Cut & blow-dry at Studio 20 is booked for Tue 17 Nov, 10:00. Change or cancel: https://s.example/c/tok");
     }
 
     [Fact]

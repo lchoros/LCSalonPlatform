@@ -10,8 +10,8 @@ namespace Salon.Tests.Integration.Localization;
 [Collection(SharedDatabase.Name)]
 public class RequestCultureTests(SalonWebApplicationFactory factory) : IAsyncLifetime
 {
-    private const string PolishBookingText = "Rezerwacje online ruszą tutaj w M1.";
-    private const string EnglishBookingText = "Online booking opens here in M1.";
+    private const string PolishBookingText = "Zarezerwuj wizytę online o dowolnej porze.";
+    private const string EnglishBookingText = "Book your appointment online at any time.";
     private const string PolishTagline = "Rezerwacje online i zarządzanie salonem dla Wielkiej Brytanii i Polski.";
     private const string EnglishTagline = "Booking and salon management for the UK and Poland.";
 

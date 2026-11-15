@@ -73,7 +73,7 @@ public class EditWorkingHoursValidatorTests
     }
 
     [Theory]
-    [InlineData("en-GB", "Enter a time as HH:MM.")]
+    [InlineData("en-GB", "Enter a time such as 09:30.")]
     [InlineData("pl-PL", "Podaj godzinę w formacie GG:MM.")]
     public void Text_that_is_not_a_time_is_reported_once_per_field(string culture, string message)
     {
@@ -112,7 +112,7 @@ public class EditWorkingHoursValidatorTests
     }
 
     [Theory]
-    [InlineData("en-GB", "The ranges on this day overlap.")]
+    [InlineData("en-GB", "The two shifts on this day overlap.")]
     [InlineData("pl-PL", "Przedziały w tym dniu nakładają się.")]
     public void Overlapping_ranges_are_reported_on_the_day(string culture, string message)
     {
@@ -131,7 +131,7 @@ public class EditWorkingHoursValidatorTests
     }
 
     [Theory]
-    [InlineData("en-GB", "At most 2 ranges per day.")]
+    [InlineData("en-GB", "At most 2 shifts a day.")]
     [InlineData("pl-PL", "Najwyżej 2 przedziały dziennie.")]
     public void More_than_two_slots_on_a_day_fail(string culture, string message)
     {

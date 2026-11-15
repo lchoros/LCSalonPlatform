@@ -167,6 +167,63 @@ public partial class LocalizationResourceTests
         HostViews().Any(v => ViewKeyPattern().IsMatch(File.ReadAllText(v))).ShouldBeTrue("the key regex no longer matches any view; the guard would be silent");
     }
 
+    [Fact]
+    public void Every_counted_text_has_a_value_for_one_and_for_many()
+    {
+        // ADR 0035: Key.One and Key.Many come as a pair, in every culture.
+        foreach (var (culture, entries) in Resources.Value)
+        {
+            var one = entries.Keys.Where(k => k.EndsWith(LocalizationPlurals.OneSuffix, StringComparison.Ordinal)).Select(k => k[..^LocalizationPlurals.OneSuffix.Length]).ToHashSet(StringComparer.Ordinal);
+            var many = entries.Keys.Where(k => k.EndsWith(LocalizationPlurals.ManySuffix, StringComparison.Ordinal)).Select(k => k[..^LocalizationPlurals.ManySuffix.Length]).ToHashSet(StringComparer.Ordinal);
+
+            var unpaired = one.Except(many).Concat(many.Except(one)).Order(StringComparer.Ordinal).ToList();
+
+            unpaired.ShouldBeEmpty($"{culture} has a counted text with only one of .One and .Many: {string.Join(", ", unpaired)}");
+            one.ShouldNotBeEmpty($"{culture} has no counted text; the guard would be silent");
+        }
+    }
+
+    [Fact]
+    public void Every_counted_text_the_host_asks_for_exists()
+    {
+        var known = Resources.Value[SupportedCultures.EnGb];
+        var missing = new List<string>();
+        var asked = 0;
+
+        foreach (var file in HostViews().Concat(HostCode()))
+        {
+            foreach (Match match in PluralKeyPattern().Matches(File.ReadAllText(file)))
+            {
+                asked++;
+                var key = match.Groups["key"].Value;
+                if (!known.ContainsKey(key + LocalizationPlurals.OneSuffix) || !known.ContainsKey(key + LocalizationPlurals.ManySuffix))
+                {
+                    missing.Add($"{Path.GetRelativePath(HostRoot(), file)}: {key}");
+                }
+            }
+        }
+
+        missing.ShouldBeEmpty("counted texts are asked for that no resource file defines with .One and .Many: " + string.Join("; ", missing));
+        asked.ShouldBeGreaterThan(0, "the regex no longer matches any Plural call; the guard would be silent");
+    }
+
+    [Theory]
+    [InlineData("YYYY-MM-DD")]
+    [InlineData("HH:MM")]
+    [InlineData("walking skeleton")]
+    [InlineData("stylist")]
+    public void The_English_text_avoids_wording_that_was_weeded_out(string phrase)
+    {
+        // The English pass of 2026-11-15: no forms a British client or the desk would stumble over.
+        var offenders = Resources.Value[SupportedCultures.EnGb]
+            .Where(e => e.Value.Contains(phrase, StringComparison.OrdinalIgnoreCase))
+            .Select(e => e.Key)
+            .Order(StringComparer.Ordinal)
+            .ToList();
+
+        offenders.ShouldBeEmpty($"'{phrase}' is back in en-GB: {string.Join(", ", offenders)}");
+    }
+
     [Theory]
     [InlineData("Salon Platform")]
     [InlineData("Online booking")]
@@ -193,6 +250,16 @@ public partial class LocalizationResourceTests
 
         views.ShouldNotBeEmpty("no .cshtml files found in the host");
         return views;
+    }
+
+    /// <summary>Every C# file in the host project, skipping build output.</summary>
+    private static List<string> HostCode()
+    {
+        var root = HostRoot();
+        return Directory.EnumerateFiles(root, "*.cs", SearchOption.AllDirectories)
+            .Where(f => !Path.GetRelativePath(root, f).Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .Any(segment => segment is "bin" or "obj"))
+            .ToList();
     }
 
     private static string HostRoot() => Path.Combine(RepositoryRoot(), "src", "Presentation", "Salon.Web");
@@ -226,6 +293,10 @@ public partial class LocalizationResourceTests
     /// <summary>T["Key"], T.Get("Key" and T.Format("Key" as written in Razor.</summary>
     [GeneratedRegex("\\bT(?:\\[\\s*|\\.(?:Get|Format)\\(\\s*)\"(?<key>[^\"]+)\"")]
     private static partial Regex ViewKeyPattern();
+
+    /// <summary>T.Plural("Key" in Razor and localizer.Plural("Key" in a controller.</summary>
+    [GeneratedRegex("\\.Plural\\(\\s*\"(?<key>[^\"]+)\"")]
+    private static partial Regex PluralKeyPattern();
 
     [GeneratedRegex("\\{\\d+\\}")]
     private static partial Regex PlaceholderPattern();

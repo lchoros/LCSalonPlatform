@@ -65,7 +65,7 @@ public sealed class VerifyCodeController(IDispatcher dispatcher, ILocalizationSe
             case PublicBookingVerificationOutcome.Booked:
                 return Redirect($"/book/done/{result.AppointmentId}");
             case PublicBookingVerificationOutcome.WrongCode:
-                ModelState.AddModelError(nameof(VerifyCodeForm.Code), localizer.Format("Booking.Public.Verify.Wrong", result.AttemptsLeft));
+                ModelState.AddModelError(nameof(VerifyCodeForm.Code), localizer.Plural("Booking.Public.Verify.Wrong", result.AttemptsLeft));
                 return View(ViewModelFor(pending, VerifyState.Open));
             case PublicBookingVerificationOutcome.Expired:
                 return View(ViewModelFor(pending, VerifyState.StartAgain, localizer["Booking.Public.Verify.Expired"]));

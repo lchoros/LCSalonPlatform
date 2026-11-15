@@ -87,7 +87,34 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var html = await response.Content.ReadAsStringAsync();
         html.ShouldContain("href=\"/services\"");
-        html.ShouldContain("View services");
+        html.ShouldContain("Services and prices");
+    }
+
+    [Fact]
+    public async Task The_salon_home_page_invites_a_booking_first()
+    {
+        using var client = ClientFor("studio-20.localhost");
+
+        var html = await (await client.GetAsync(new Uri("/", UriKind.Relative))).Content.ReadAsStringAsync();
+
+        html.ShouldContain("data-testid=\"book-lead\">Book your appointment online at any time.");
+        html.ShouldContain("<a href=\"/book\" data-testid=\"book-now\" class=\"btn btn-primary\">Book an appointment</a>");
+        html.IndexOf("data-testid=\"book-now\"", StringComparison.Ordinal)
+            .ShouldBeLessThan(html.IndexOf("data-testid=\"view-services\"", StringComparison.Ordinal), "booking is the first thing offered");
+        html.ShouldNotContain("opens here", Case.Insensitive, "no build notes on a page clients read");
+    }
+
+    [Fact]
+    public async Task The_platform_page_carries_no_build_notes()
+    {
+        using var client = ClientFor("localhost");
+
+        var html = await (await client.GetAsync(new Uri("/", UriKind.Relative))).Content.ReadAsStringAsync();
+
+        html.ShouldContain("No marketplace, no commission");
+        html.ShouldNotContain("walking skeleton");
+        html.ShouldNotContain("phase 1");
+        html.ShouldNotContain("data-testid=\"book-now\"", Case.Sensitive, "there is no salon to book at");
     }
 
     [Fact]

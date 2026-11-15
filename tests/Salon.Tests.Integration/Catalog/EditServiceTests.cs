@@ -63,7 +63,7 @@ public partial class EditServiceTests(SalonWebApplicationFactory factory) : IAsy
         html.ShouldContain($"<option selected=\"selected\" value=\"{_hairId}\">Hair</option>");
         html.ShouldNotContain("Retired");
         html.ShouldContain("Clients can book this service");
-        html.ShouldContain("Buffer after the service (minutes)");
+        html.ShouldContain("Clean-up time after the service (minutes)");
         html.ShouldContain("Processing time (minutes)");
     }
 
@@ -116,7 +116,7 @@ public partial class EditServiceTests(SalonWebApplicationFactory factory) : IAsy
         var html = await list.Content.ReadAsStringAsync();
         html.ShouldContain("data-testid=\"flash\"");
         html.ShouldContain("Service “Cut &amp; finish” has been saved.");
-        html.ShouldContain("10 min buffer");
+        html.ShouldContain("10 min clean-up");
         html.ShouldContain("15 min processing");
     }
 

@@ -281,7 +281,7 @@ public class CheckoutAndCashUpTests(SalonWebApplicationFactory factory) : IAsync
 
         var bad = await PostAsync(client, TillPath, [new("date", today), new("countedCash", "abc")], page);
         bad.StatusCode.ShouldBe(HttpStatusCode.OK);
-        WebUtility.HtmlDecode(await bad.Content.ReadAsStringAsync()).ShouldContain("Enter the cash counted: zero or more, with at most two decimals.");
+        WebUtility.HtmlDecode(await bad.Content.ReadAsStringAsync()).ShouldContain("Enter the cash counted: zero or more, with at most two decimal places.");
 
         var closed = await PostAsync(client, TillPath, [new("date", today), new("countedCash", "15.50"), new("note", "Tip left in the drawer")], page);
 

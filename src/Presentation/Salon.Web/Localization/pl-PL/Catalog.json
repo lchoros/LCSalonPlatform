@@ -85,7 +85,6 @@
   "Catalog.Categories.Restore": "Przywróć",
   "Catalog.Categories.Inactive": "Nieaktywna",
   "Catalog.Categories.Empty": "Nie ma jeszcze kategorii. Dodaj pierwszą powyżej, aby pogrupować usługi.",
-  "Catalog.Categories.ServiceCount": "Usługi: {0}",
   "Catalog.Categories.Back": "Wróć do usług",
   "Catalog.Categories.Added": "Kategoria „{0}” została dodana.",
   "Catalog.Categories.Renamed": "Zmieniono nazwę kategorii na „{0}”.",
@@ -133,5 +132,7 @@
   "Catalog.Variant.LabelHint": "Na przykład: Długie włosy",
   "Catalog.Variant.Validation.Incomplete": "Wypełnij wspólny tytuł i różnicę albo zostaw oba pola puste.",
   "Catalog.Variant.Validation.GroupTooLong": "Wspólny tytuł może mieć najwyżej {0} znaków.",
-  "Catalog.Variant.Validation.LabelTooLong": "Różnica może mieć najwyżej {0} znaków."
+  "Catalog.Variant.Validation.LabelTooLong": "Różnica może mieć najwyżej {0} znaków.",
+  "Catalog.Categories.ServiceCount.One": "Usługi: {0}",
+  "Catalog.Categories.ServiceCount.Many": "Usługi: {0}"
 }

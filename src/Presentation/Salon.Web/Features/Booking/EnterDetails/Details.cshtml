@@ -52,7 +52,7 @@
             <ul class="mt-1 list-disc space-y-1 pl-5">
                 @if (s.Policy.FreeChangeHours > 0)
                 {
-                    <li data-testid="terms-free">@T.Format("Booking.Public.Terms.FreeUntil", s.Policy.FreeChangeHours)</li>
+                    <li data-testid="terms-free">@T.Plural("Booking.Public.Terms.FreeUntil", s.Policy.FreeChangeHours)</li>
                     @if (s.Policy.LateCancellationFeePercent > 0m)
                     {
                         <li data-testid="terms-late">@T.Format("Booking.Public.Terms.LateFee", s.Policy.LateCancellationFeePercent.ToString("0.##", culture))</li>

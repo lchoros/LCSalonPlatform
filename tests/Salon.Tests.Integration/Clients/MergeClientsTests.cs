@@ -240,6 +240,22 @@ public class MergeClientsTests(SalonWebApplicationFactory factory) : IAsyncLifet
     }
 
     [Fact]
+    public async Task The_confirmation_counts_one_appointment_and_none_in_plain_English()
+    {
+        var noVisits = await CreateAsync(_studio.Id, new CreateClientRequest("Noah", "Reed", Phone: "07700 900555"));
+        using var owner = await factory.SignedInClientAsync(Host, _studio.Id, Role.Owner);
+
+        // Olivia Brown has one visit: "The one appointment", never "All 1 appointments" (ADR 0035).
+        var one = await GetAsync(owner, $"/admin/clients/{_targetId}/merge/{_sourceId}");
+        one.ShouldContain("The one appointment of Olivia Brown and its history move to Olivia Browne.");
+        one.ShouldNotContain("All 1 appointments");
+
+        var none = await GetAsync(owner, $"/admin/clients/{noVisits}/merge/{_targetId}");
+        none.ShouldContain("data-testid=\"merge-appointments\">Noah Reed has no appointments to move.<");
+        none.ShouldNotContain("All 0 appointments");
+    }
+
+    [Fact]
     public async Task The_confirmation_speaks_the_salon_language()
     {
         await VisitSeed.SalonAsync(factory, _other.Id);

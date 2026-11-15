@@ -61,6 +61,18 @@ public partial class ManageCategoriesTests(SalonWebApplicationFactory factory) :
     }
 
     [Fact]
+    public async Task A_category_with_one_service_says_one_service()
+    {
+        await AddServiceAsync(_studio.Id, "Manicure", _nailsId);
+        using var client = await OwnerClientAsync("studio-20.localhost", _studio.Id);
+
+        var html = await GetPageAsync(client);
+
+        html.ShouldContain("data-testid=\"category-service-count\">1 service<");
+        html.ShouldContain("data-testid=\"category-service-count\">2 services<");
+    }
+
+    [Fact]
     public async Task A_Polish_salon_shows_Polish_labels()
     {
         using var client = await OwnerClientAsync("salon-pl.localhost", _polish.Id);

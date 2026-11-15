@@ -52,7 +52,7 @@
     <section class="space-y-2 panel" data-testid="what-happens">
         <h2 class="text-lg font-semibold">@T["Clients.Merge.Confirm.WhatHappens"]</h2>
         <ul class="list-disc space-y-1 pl-5 text-base">
-            <li>@T.Format("Clients.Merge.Confirm.Appointments", Model.SourceHistory.VisitsTotal, Model.Source.FullName, Model.Target.FullName)</li>
+            <li data-testid="merge-appointments">@(Model.SourceHistory.VisitsTotal == 0 ? T.Format("Clients.Merge.Confirm.NoAppointments", Model.Source.FullName) : T.Plural("Clients.Merge.Confirm.Appointments", Model.SourceHistory.VisitsTotal, Model.Source.FullName, Model.Target.FullName))</li>
             <li>@T["Clients.Merge.Confirm.NotesRule"]</li>
             <li>@T["Clients.Merge.Confirm.HealthRule"]</li>
             <li>@T["Clients.Merge.Confirm.ContactRule"]</li>

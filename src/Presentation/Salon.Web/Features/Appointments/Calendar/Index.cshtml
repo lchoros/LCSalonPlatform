@@ -59,7 +59,7 @@
                 }
                 else
                 {
-                    <time datetime="@isoDay" data-testid="range" class="min-w-0 flex-1 text-center text-base font-medium sm:text-lg">@board.Day.ToString("D", culture)</time>
+                    <time datetime="@isoDay" data-testid="range" class="min-w-0 flex-1 text-center text-base font-medium sm:text-lg">@board.Day.ToDayHeading(culture)</time>
                 }
                 <a href="@CalendarController.Path(board.View, board.Day.PlusDays(step), board.SelectedStaffId)" data-testid="next" class="@navClass" aria-label="@T["Appointments.Calendar.Next"]">&rarr;</a>
                 <a href="@CalendarController.TodayPath(board.View, board.SelectedStaffId)" data-testid="today" class="@navClass">@T["Appointments.Calendar.Today"]</a>

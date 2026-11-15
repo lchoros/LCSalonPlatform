@@ -110,7 +110,7 @@
                     {
                         var iso = LocalDatePattern.Iso.Format(day.Day);
                         <li class="flex items-center justify-between gap-4 px-3" data-testid="takings-day" data-day="@iso">
-                            <a href="@(ReportsController.TillPath + "?date=" + iso)" class="inline-flex min-h-11 items-center font-medium underline underline-offset-2">@day.Day.ToString("D", culture)</a>
+                            <a href="@(ReportsController.TillPath + "?date=" + iso)" class="inline-flex min-h-11 items-center font-medium underline underline-offset-2">@day.Day.ToDayHeading(culture)</a>
                             <span class="tabular-nums @(day.Amount.Amount < 0m ? "text-red-800" : string.Empty)">@day.Amount.ToDisplayString(culture)</span>
                         </li>
                     }

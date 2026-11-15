@@ -135,7 +135,7 @@
             </ul>
             @if (timeOff.PastTotal > timeOff.Past.Count)
             {
-                <p class="px-4 py-3 text-sm text-stone-500" data-testid="past-more">@T.Format("Staff.TimeOff.PastMore", timeOff.PastTotal - timeOff.Past.Count)</p>
+                <p class="px-4 py-3 text-sm text-stone-500" data-testid="past-more">@T.Plural("Staff.TimeOff.PastMore", timeOff.PastTotal - timeOff.Past.Count)</p>
             }
         </details>
     }

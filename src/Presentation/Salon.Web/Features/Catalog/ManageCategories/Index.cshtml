@@ -47,7 +47,7 @@
                 var errorId = $"rename-error-{category.Id}";
                 <li class="space-y-2 panel @(category.IsActive ? "" : "opacity-60")" data-testid="category-row" data-active="@category.IsActive.ToString().ToLowerInvariant()">
                     <div class="flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-wide text-stone-500">
-                        <span data-testid="category-service-count">@T.Format("Catalog.Categories.ServiceCount", category.ServiceCount)</span>
+                        <span data-testid="category-service-count">@T.Plural("Catalog.Categories.ServiceCount", category.ServiceCount)</span>
                         @if (!category.IsActive)
                         {
                             <span class="rounded bg-stone-100 px-2 py-0.5" data-testid="badge-inactive">@T["Catalog.Categories.Inactive"]</span>

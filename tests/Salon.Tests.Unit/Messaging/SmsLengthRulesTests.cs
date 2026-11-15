@@ -51,7 +51,7 @@ public class SmsLengthRulesTests
     [Fact]
     public void The_usual_signs_of_an_english_text_are_basic()
     {
-        SmsLengthRules.Measure("Hi Olivia, your Cut & blow-dry at Studio 20 is booked for Tue 18 Nov, 10:00. Need to cancel? https://studio-20.example/book/cancel/abc_DEF-123 £45.00 @ #1 (now)!").IsUnicode.ShouldBeFalse();
+        SmsLengthRules.Measure("Hi Olivia, your Cut & blow-dry at Studio 20 is booked for Tue 18 Nov, 10:00. Change or cancel: https://studio-20.example/book/cancel/abc_DEF-123 £45.00 @ #1 (now)!").IsUnicode.ShouldBeFalse();
     }
 
     [Theory]
@@ -59,6 +59,7 @@ public class SmsLengthRulesTests
     [InlineData("Do zobaczenia w środę")]
     [InlineData("See you soon 🙂")]
     [InlineData("“Smart quotes”")]
+    [InlineData("See you at Olivia’s")]
     public void Polish_letters_emoji_and_typographic_quotes_are_not(string text)
     {
         SmsLengthRules.Measure(text).IsUnicode.ShouldBeTrue();

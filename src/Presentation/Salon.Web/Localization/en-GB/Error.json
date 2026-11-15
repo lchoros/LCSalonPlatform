@@ -1,5 +1,5 @@
 {
   "Error.Title": "Something went wrong",
-  "Error.Description": "An error occurred while processing your request.",
+  "Error.Description": "Sorry, something on our side did not work. Please try again in a moment.",
   "Error.RequestId": "Request ID"
 }

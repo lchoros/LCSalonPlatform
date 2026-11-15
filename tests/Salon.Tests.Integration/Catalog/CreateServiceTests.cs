@@ -149,8 +149,8 @@ public class CreateServiceTests(SalonWebApplicationFactory factory) : IAsyncLife
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var html = await response.Content.ReadAsStringAsync();
-        html.ShouldContain("The buffer must be between 0 and 120 minutes.");
-        html.ShouldContain("The processing time must fit inside the duration");
+        html.ShouldContain("Clean-up time must be between 0 and 120 minutes.");
+        html.ShouldContain("Processing time must end before the service does.");
         // The encoder writes the apostrophe as &#x27;.
         html.ShouldContain("Choose one of the salon&#x27;s categories.");
         (await ServicesAsync(_studio.Id)).Count.ShouldBe(1);

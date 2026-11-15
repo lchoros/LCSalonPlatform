@@ -38,6 +38,18 @@ public partial class PublicBookingTests
     }
 
     [Fact]
+    public async Task A_notice_period_of_one_hour_reads_as_one_hour()
+    {
+        using var client = factory.ClientFor(HostA);
+        await SavePolicyAsync(_studio.Id, hours: 1, latePercent: 50, noShowPercent: 0);
+
+        var page = await GetAsync(client, DetailsPath(At(10, 0), _annaId));
+
+        page.ShouldContain("data-testid=\"terms-free\">Free up to 1 hour before the visit.<");
+        page.ShouldNotContain("1 hours");
+    }
+
+    [Fact]
     public async Task Outside_the_notice_period_the_link_changes_and_cancels_as_before()
     {
         using var client = factory.ClientFor(HostA);

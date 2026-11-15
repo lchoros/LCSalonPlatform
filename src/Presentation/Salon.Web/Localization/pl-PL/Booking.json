@@ -40,7 +40,6 @@
   "Booking.Public.Verify.Sent": "Wysłaliśmy 6-cyfrowy kod SMS-em na numer {0}. Kod jest ważny 10 minut.",
   "Booking.Public.Verify.Code": "Kod",
   "Booking.Public.Verify.Submit": "Potwierdź rezerwację",
-  "Booking.Public.Verify.Wrong": "Ten kod jest nieprawidłowy. Pozostało prób: {0}.",
   "Booking.Public.Verify.Expired": "Ten kod wygasł. Zacznij od nowa, aby otrzymać nowy.",
   "Booking.Public.Verify.TooMany": "Za dużo nieprawidłowych kodów. Zacznij od nowa, aby otrzymać nowy.",
   "Booking.Public.Verify.StartAgain": "Zacznij od nowa",
@@ -73,12 +72,10 @@
   "Booking.Public.Change.Keep": "Zostaw obecny termin",
   "Booking.Public.Cancel.ChangeInstead": "Zmień termin zamiast odwoływać",
   "Booking.Public.Terms.Title": "Zmiana i odwołanie wizyty",
-  "Booking.Public.Terms.FreeUntil": "Bezpłatnie do {0} godz. przed wizytą.",
   "Booking.Public.Terms.LateFee": "Późniejsze odwołanie może kosztować {0}% ceny.",
   "Booking.Public.Terms.NoShowFee": "Nieobecność bez odwołania może kosztować {0}% ceny.",
   "Booking.Public.Cancel.LateFee": "Do wizyty zostało niewiele czasu, więc to późne odwołanie. Salon może naliczyć opłatę {0}.",
   "Booking.Public.Cancel.DoneLateFee": "To było późne odwołanie. Salon może naliczyć opłatę {0}.",
-  "Booking.Public.Change.InsideNotice": "Do wizyty zostało mniej niż {0} godz., więc terminu nie można już zmienić online. Skontaktuj się z salonem.",
   "Booking.Public.Deposit.Due": "Tę wizytę zabezpiecza zadatek {0}. Salon poinformuje Cię, jak go wpłacić.",
   "Booking.Public.Deposit.DueFrom": "Tę wizytę zabezpiecza zadatek od {0}. Salon poinformuje Cię, jak go wpłacić.",
   "Booking.Public.Done.Deposit": "Zadatek",
@@ -92,5 +89,11 @@
   "Booking.Public.NoMatch": "Żadna usługa nie pasuje.",
   "Booking.Public.ShowAll": "Pokaż wszystkie usługi",
   "Booking.Public.PriceRange": "{0} – {1}",
-  "Booking.Public.Variants": "Warianty: {0}"
+  "Booking.Public.Variants": "Warianty: {0}",
+  "Booking.Public.Verify.Wrong.One": "Ten kod jest nieprawidłowy. Pozostała 1 próba.",
+  "Booking.Public.Verify.Wrong.Many": "Ten kod jest nieprawidłowy. Pozostało prób: {0}.",
+  "Booking.Public.Terms.FreeUntil.One": "Bezpłatnie do 1 godz. przed wizytą.",
+  "Booking.Public.Terms.FreeUntil.Many": "Bezpłatnie do {0} godz. przed wizytą.",
+  "Booking.Public.Change.InsideNotice.One": "Do wizyty została mniej niż 1 godz., więc terminu nie można już zmienić online. Skontaktuj się z salonem.",
+  "Booking.Public.Change.InsideNotice.Many": "Do wizyty zostało mniej niż {0} godz., więc terminu nie można już zmienić online. Skontaktuj się z salonem."
 }

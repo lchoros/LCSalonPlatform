@@ -89,7 +89,7 @@
 
     @if (Model.HiddenCount > 0)
     {
-        <p data-testid="import-more" class="text-sm text-stone-600">@T.Format("Clients.Import.Preview.More", Model.HiddenCount)</p>
+        <p data-testid="import-more" class="text-sm text-stone-600">@T.Plural("Clients.Import.Preview.More", Model.HiddenCount)</p>
     }
 
     <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
@@ -97,7 +97,7 @@
         @if (Model.NewCount > 0)
         {
             <form method="post" action="/admin/clients/import/@Model.Token/confirm" asp-antiforgery="true" class="flex">
-                <button type="submit" data-testid="import-confirm" class="btn btn-compact btn-primary w-full sm:w-auto">@T.Format("Clients.Import.Preview.Confirm", Model.NewCount)</button>
+                <button type="submit" data-testid="import-confirm" class="btn btn-compact btn-primary w-full sm:w-auto">@T.Plural("Clients.Import.Preview.Confirm", Model.NewCount)</button>
             </form>
         }
         else
