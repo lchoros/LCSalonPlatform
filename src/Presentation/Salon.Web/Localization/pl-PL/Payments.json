@@ -130,5 +130,20 @@
   "Payments.Kind.DepositPaid": "Wpłata zadatku",
   "Payments.Kind.DepositReturned": "Zwrot zadatku",
   "Payments.Kind.FeePayment": "Opłata zapłacona",
-  "Payments.Kind.VisitPayment": "Płatność za wizytę"
+  "Payments.Kind.VisitPayment": "Płatność za wizytę",
+  "Payments.Kind.ProductSale": "Sprzedaż produktów",
+  "Payments.Checkout.Products.Title": "Dodaj produkt",
+  "Payments.Checkout.Products.Product": "Produkt",
+  "Payments.Checkout.Products.Quantity": "Ile sztuk",
+  "Payments.Checkout.Products.Option": "{0} · {1}",
+  "Payments.Checkout.Products.Line": "{0} × {1}",
+  "Payments.Checkout.Products.Hint": "Produkt trafia na ten rachunek. Schodzi ze stanu, gdy rachunek zostanie zapłacony.",
+  "Payments.Checkout.Products.Add": "Dodaj do rachunku",
+  "Payments.Checkout.Products.Remove": "Usuń",
+  "Payments.Checkout.Products.Added": "„{0}” jest na rachunku.",
+  "Payments.Checkout.Products.Removed": "Produkt usunięto z rachunku.",
+  "Payments.Fee.Refused.ProductNotForSale": "Tego produktu nie można sprzedać: nie ma ceny albo salon już go nie używa.",
+  "Payments.Fee.Refused.QuantityOutOfRange": "Podaj liczbę sztuk od 1 do 99. Jeden produkt na rachunku to najwyżej 99 sztuk.",
+  "Payments.Fee.Refused.ProductLinePaid": "Ten produkt jest już zapłacony i zostaje na rachunku.",
+  "Payments.Fee.Refused.StockNotRecorded": "Stan produktu z tego rachunku ciągle się zmieniał. Nic nie zapisano; spróbuj ponownie."
 }

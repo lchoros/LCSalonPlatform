@@ -59,12 +59,40 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         using var tenantScope = _factory.Services.CreateScope();
         tenantScope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
         var tenantDb = tenantScope.ServiceProvider.GetRequiredService<SalonDbContext>();
+        await ClearSalesAsync(tenantDb);
         await tenantDb.ClientAccountEntries.ExecuteDeleteAsync();
         await tenantDb.CashUps.ExecuteDeleteAsync();
         await tenantDb.AppointmentStatusChanges.ExecuteDeleteAsync();
         await tenantDb.Appointments.ExecuteDeleteAsync();
         await tenantDb.PhoneVerifications.ExecuteDeleteAsync();
         await tenantDb.Clients.ExecuteDeleteAsync();
+    }
+
+    /// <summary>
+    /// Products on bills point at the account lines and the visits that are about to go (ADR 0037), and so do the stock
+    /// lines of their sales: the bill lines are removed and the stock lines let go of their visit. The shelves keep
+    /// their totals and their history.
+    /// </summary>
+    private static async Task ClearSalesAsync(SalonDbContext db)
+    {
+        await db.VisitProductLines.ExecuteDeleteAsync();
+        await db.StockMovements.Where(m => m.AppointmentId != null).ExecuteUpdateAsync(s => s.SetProperty(m => m.AppointmentId, (Guid?)null));
+    }
+
+    /// <summary>
+    /// Puts a product with a price on the salon's shelf, counted to <paramref name="onHand"/> through the stock service
+    /// like the app does. The name should be one no earlier run can have left behind.
+    /// </summary>
+    public async Task<Guid> AddProductAsync(Guid tenantId, string name, decimal price, int onHand)
+    {
+        using var scope = _factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
+        var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+        var product = new Core.Products.Product { Name = name, RetailPrice = price, Currency = "GBP" };
+        db.Products.Add(product);
+        await db.SaveChangesAsync();
+        await scope.ServiceProvider.GetRequiredService<Salon.Services.Products.IStockService>().RecordAsync(product.Id, Core.Products.StockMovementKind.Counted, onHand, null, null);
+        return product.Id;
     }
 
     /// <summary>Screenshots land in tests/Salon.Tests.E2E/screenshots so CI can upload them and PRs can attach them.</summary>
@@ -138,6 +166,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         {
             scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
             var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+            await ClearSalesAsync(db);
             await db.ClientAccountEntries.ExecuteDeleteAsync();
             await db.CashUps.ExecuteDeleteAsync();
             db.Appointments.RemoveRange(await db.Appointments.ToListAsync());

@@ -34,7 +34,8 @@ public sealed record ProductCard(
 /// <param name="Quantity">Signed: above zero came in, below zero went out.</param>
 /// <param name="At">In the salon's zone.</param>
 /// <param name="ByName">Who added the line; null when the login is gone or unknown.</param>
-public sealed record StockLine(Guid Id, StockMovementKind Kind, int Quantity, int OnHandAfter, string? Note, LocalDateTime At, string? ByName);
+/// <param name="AtSale">True for a count that a sale forced: the record held fewer than the client took home (ADR 0037).</param>
+public sealed record StockLine(Guid Id, StockMovementKind Kind, int Quantity, int OnHandAfter, string? Note, LocalDateTime At, string? ByName, bool AtSale = false);
 
 /// <param name="CanManage">True when the signed-in user may change the product, count the shelf and write units off.</param>
 /// <param name="Problem">Why the last change was refused, already localized; shown above the forms.</param>

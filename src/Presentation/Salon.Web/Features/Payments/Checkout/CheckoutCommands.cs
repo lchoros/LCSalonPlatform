@@ -1,7 +1,10 @@
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Salon.Core.Appointments;
 using Salon.Core.Cqrs;
+using Salon.Core.Domain;
 using Salon.Core.Payments;
+using Salon.Data;
 using Salon.Services.Appointments;
 using Salon.Services.Localization;
 using Salon.Services.Payments;
@@ -39,6 +42,27 @@ public sealed class CheckoutHandler(IClientAccountService account) : IRequestHan
     {
         ArgumentNullException.ThrowIfNull(request);
         return account.GetBillAsync(request.AppointmentId, cancellationToken);
+    }
+}
+
+/// <summary>The products the desk can ring up on a bill (ADR 0037): in use and priced, by name. A query: no transaction, tenant required.</summary>
+public sealed record SellableProductsQuery : IQuery<IReadOnlyList<SellableProduct>>;
+
+/// <param name="OnHand">What the record says is on the shelf; shown so the desk sees a shelf that reads empty.</param>
+public sealed record SellableProduct(Guid Id, string Name, Money Price, int OnHand);
+
+/// <summary>Reads through the tenant filter and picks with <see cref="ProductSaleRules"/>: a salon has tens of retail products.</summary>
+public sealed class SellableProductsHandler(SalonDbContext db) : IRequestHandler<SellableProductsQuery, IReadOnlyList<SellableProduct>>
+{
+    public async Task<IReadOnlyList<SellableProduct>> HandleAsync(SellableProductsQuery request, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var products = await db.Products.AsNoTracking().Where(p => p.IsActive && p.RetailPrice != null).ToListAsync(cancellationToken);
+        return products
+            .Where(ProductSaleRules.IsForSale)
+            .OrderBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase)
+            .Select(p => new SellableProduct(p.Id, p.Name, new Money(p.RetailPrice!.Value, p.Currency), p.StockOnHand))
+            .ToArray();
     }
 }
 
