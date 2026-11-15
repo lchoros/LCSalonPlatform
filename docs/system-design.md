@@ -101,6 +101,13 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   first, with `POST {id}/{came|did-not-come}`. `IVisitOutcomeService` (Services) counts, lists and records through
   `IBookingService`, so a booked visit that "came" gets two history rows and two events in one transaction. The view
   component `VisitsWithoutOutcome` puts the count on the day list and the calendar. Same permissions as the day list.
+- `Products/*` — `/admin/products` (ADR 0036): `ListProducts` (`?show=low|not-in-use&q=&page=`, shared list
+  components), `SaveProduct` (`new`, `{id}/edit`; `Catalog.Manage`), `ProductCard` (`{id}?page=`: the shelf, four
+  forms, the history) and `RecordStock` (`POST {id}/stock/{received|used|written-off|counted}`). `Product` carries the
+  running total `StockOnHand`; every change is an append-only `StockMovement` written with it by `IStockService`
+  (Services), which refuses a shelf below zero and, through the row version `xmin`, the slower of two simultaneous
+  changes. `StockRules` and `ProductRules` (Core) are pure. List, page, deliveries and uses need `Bookings.Manage`;
+  counting and writing off need `Catalog.Manage` too.
 - `Appointments/Calendar` — `/admin/appointments/calendar?view=day|week&date=&staff=` (ADR 0016): a CSS-grid timetable
   computed by the pure `CalendarLayout` in Services, an appointment card at `calendar/{id}` with the day list's status
   buttons and a move form posting to `calendar/{id}/move` (`IBookingService.MoveAsync`, re-checked through the engine,

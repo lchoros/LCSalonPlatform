@@ -1,0 +1,75 @@
+@using Salon.Core.Products
+@using Salon.Web.Features.Products.SaveProduct
+@model SaveProductCommand
+@{
+    var title = Model.IsNew ? T["Products.Save.TitleNew"] : T["Products.Save.TitleEdit"];
+    ViewData["Title"] = title;
+    const string inputClass = "field field-compact";
+    var back = Model.Id is { } id ? SaveProductController.CardPath(id) : SaveProductController.ListPath;
+}
+<section class="mx-auto max-w-lg space-y-6">
+    <h1 class="page-title">@title</h1>
+    <form method="post" asp-antiforgery="true" class="space-y-5" novalidate data-testid="product-form">
+        <div asp-validation-summary="ModelOnly" class="notice notice-error" role="alert"></div>
+
+        <div class="space-y-1">
+            <label asp-for="Name" class="field-label">@T["Products.Save.Name"]</label>
+            <input asp-for="Name" type="text" maxlength="@ProductRules.NameMaxLength" autocomplete="off" aria-describedby="name-hint name-error" class="@inputClass" data-testid="product-name-input" />
+            <p id="name-hint" class="text-sm text-stone-500">@T["Products.Save.NameHint"]</p>
+            <span asp-validation-for="Name" id="name-error" class="field-error"></span>
+        </div>
+
+        <div class="grid gap-5 sm:grid-cols-2">
+            <div class="space-y-1">
+                <label asp-for="Brand" class="field-label">@T["Products.Save.Brand"]</label>
+                <input asp-for="Brand" type="text" maxlength="@ProductRules.BrandMaxLength" autocomplete="off" aria-describedby="brand-error" class="@inputClass" />
+                <span asp-validation-for="Brand" id="brand-error" class="field-error"></span>
+            </div>
+            <div class="space-y-1">
+                <label asp-for="Code" class="field-label">@T["Products.Save.Code"]</label>
+                <input asp-for="Code" type="text" maxlength="@ProductRules.CodeMaxLength" autocomplete="off" aria-describedby="code-error" class="@inputClass" />
+                <span asp-validation-for="Code" id="code-error" class="field-error"></span>
+            </div>
+        </div>
+
+        <div class="space-y-1">
+            <label asp-for="RetailPrice" class="field-label">@T["Products.Save.RetailPrice"]</label>
+            <input asp-for="RetailPrice" type="text" inputmode="decimal" aria-describedby="price-hint price-error" class="@inputClass sm:max-w-xs" data-testid="product-price-input" />
+            <p id="price-hint" class="text-sm text-stone-500">@T["Products.Save.RetailPriceHint"]</p>
+            <span asp-validation-for="RetailPrice" id="price-error" class="field-error"></span>
+        </div>
+
+        <div class="space-y-1">
+            <label asp-for="LowStockAt" class="field-label">@T["Products.Save.LowStockAt"]</label>
+            <input asp-for="LowStockAt" type="number" inputmode="numeric" min="0" max="@ProductRules.MaxLowStockAt" step="1" aria-describedby="low-hint low-error" class="@inputClass sm:max-w-xs" data-testid="product-low-input" />
+            <p id="low-hint" class="text-sm text-stone-500">@T["Products.Save.LowStockAtHint"]</p>
+            <span asp-validation-for="LowStockAt" id="low-error" class="field-error"></span>
+        </div>
+
+        @if (Model.IsNew)
+        {
+            <input type="hidden" name="@nameof(SaveProductCommand.IsActive)" value="true" />
+            <div class="space-y-1">
+                <label asp-for="OpeningStock" class="field-label">@T["Products.Save.OpeningStock"]</label>
+                <input asp-for="OpeningStock" type="number" inputmode="numeric" min="0" max="@StockRules.MaxOnHand" step="1" aria-describedby="opening-hint opening-error" class="@inputClass sm:max-w-xs" data-testid="product-opening-input" />
+                <p id="opening-hint" class="text-sm text-stone-500">@T["Products.Save.OpeningStockHint"]</p>
+                <span asp-validation-for="OpeningStock" id="opening-error" class="field-error"></span>
+            </div>
+        }
+        else
+        {
+            <div class="flex items-start gap-3">
+                <input asp-for="IsActive" type="checkbox" class="mt-0.5 size-5 rounded border-stone-300" aria-describedby="active-hint" data-testid="product-active" />
+                <div>
+                    <label asp-for="IsActive" class="text-sm font-medium">@T["Products.Save.IsActive"]</label>
+                    <p id="active-hint" class="text-sm text-stone-500">@T["Products.Save.IsActiveHint"]</p>
+                </div>
+            </div>
+        }
+
+        <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+            <a href="@back" class="btn btn-compact btn-secondary">@T["Products.Save.Cancel"]</a>
+            <button type="submit" class="btn btn-compact btn-primary" data-testid="save-product">@T["Products.Save.Submit"]</button>
+        </div>
+    </form>
+</section>

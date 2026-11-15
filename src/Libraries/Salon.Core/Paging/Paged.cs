@@ -32,8 +32,18 @@ public static class Pages
     {
         ArgumentNullException.ThrowIfNull(all);
         var size = Math.Clamp(pageSize, 1, MaxPageSize);
-        var totalPages = all.Count == 0 ? 1 : ((all.Count - 1) / size) + 1;
-        var number = Math.Clamp(page ?? 1, 1, totalPages);
+        var number = Clamp(page, all.Count, size);
         return new Paged<T>(all.Skip((number - 1) * size).Take(size).ToArray(), number, size, all.Count);
+    }
+
+    /// <summary>
+    /// The page number to show out of <paramref name="total"/> items: the asked one moved inside the existing pages.
+    /// For a list that is cut in the database, which needs the number before it reads the rows.
+    /// </summary>
+    public static int Clamp(int? page, int total, int pageSize = DefaultPageSize)
+    {
+        var size = Math.Clamp(pageSize, 1, MaxPageSize);
+        var totalPages = total <= 0 ? 1 : ((total - 1) / size) + 1;
+        return Math.Clamp(page ?? 1, 1, totalPages);
     }
 }

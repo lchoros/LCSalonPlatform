@@ -1093,6 +1093,140 @@ namespace Salon.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Salon.Core.Products.Product", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Brand")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("brand");
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("code");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<int?>("LowStockAt")
+                        .HasColumnType("integer")
+                        .HasColumnName("low_stock_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("name");
+
+                    b.Property<decimal?>("RetailPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("retail_price");
+
+                    b.Property<int>("StockOnHand")
+                        .HasColumnType("integer")
+                        .HasColumnName("stock_on_hand");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_products");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_products_tenant_id");
+
+                    b.HasIndex("TenantId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_products_tenant_id_name");
+
+                    b.ToTable("products", "salon", t =>
+                        {
+                            t.HasCheckConstraint("ck_products_retail_price_not_negative", "retail_price IS NULL OR retail_price >= 0");
+
+                            t.HasCheckConstraint("ck_products_stock_on_hand_not_negative", "stock_on_hand >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Salon.Core.Products.StockMovement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Instant>("At")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("at");
+
+                    b.Property<Guid?>("ByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("by_user_id");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("integer")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("note");
+
+                    b.Property<int>("OnHandAfter")
+                        .HasColumnType("integer")
+                        .HasColumnName("on_hand_after");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_stock_movements");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_stock_movements_product_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_stock_movements_tenant_id");
+
+                    b.HasIndex("TenantId", "ProductId", "At")
+                        .HasDatabaseName("ix_stock_movements_tenant_id_product_id_at");
+
+                    b.ToTable("stock_movements", "salon", t =>
+                        {
+                            t.HasCheckConstraint("ck_stock_movements_on_hand_after_not_negative", "on_hand_after >= 0");
+
+                            t.HasCheckConstraint("ck_stock_movements_quantity_not_zero", "quantity <> 0");
+                        });
+                });
+
             modelBuilder.Entity("Salon.Core.Settings.Setting", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1564,6 +1698,33 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_client_account_entries_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Products.Product", b =>
+                {
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_products_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Products.StockMovement", b =>
+                {
+                    b.HasOne("Salon.Core.Products.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_stock_movements_products_product_id");
+
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_stock_movements_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Settings.Setting", b =>

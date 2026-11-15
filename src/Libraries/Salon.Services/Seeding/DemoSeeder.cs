@@ -7,6 +7,7 @@ using Salon.Core.Appointments;
 using Salon.Core.Catalog;
 using Salon.Core.Identity;
 using Salon.Core.Locations;
+using Salon.Core.Products;
 using Salon.Core.Staff;
 using Salon.Core.Tenancy;
 using Salon.Data;
@@ -14,6 +15,7 @@ using Salon.Services.Appointments;
 using Salon.Services.Availability;
 using Salon.Services.Clients;
 using Salon.Services.Identity;
+using Salon.Services.Products;
 using Salon.Services.Tenancy;
 
 namespace Salon.Services.Seeding;
@@ -89,6 +91,21 @@ public sealed class DemoSeeder(
     ];
 
     /// <summary>
+    /// A small shelf (ADR 0036): four products the salon sells and three it only uses at the chair (no price). Generic
+    /// names, no real brands. Two are at or under their warning number, so the demo shows what "low" looks like.
+    /// </summary>
+    private static readonly (string Name, string? Brand, decimal? Price, int LowStockAt, int OnHand)[] Products =
+    [
+        ("Shampoo 250 ml", "Salon Care", 12.50m, 3, 8),
+        ("Conditioner 250 ml", "Salon Care", 13.50m, 3, 2),
+        ("Hair oil 100 ml", "Salon Care", 18.00m, 2, 5),
+        ("Heat protection spray 200 ml", "Salon Care", 14.00m, 2, 4),
+        ("Colour tube 6.0 dark blonde", "Studio Colour", null, 4, 10),
+        ("Developer 6% 1 litre", "Studio Colour", null, 1, 1),
+        ("Nail polish remover 500 ml", null, null, 1, 3),
+    ];
+
+    /// <summary>
     /// Upcoming visits: which of the next days with free times (0 = the first), which client (by name order), which of the
     /// first three services, and the status to leave them in. Each takes the first free slot of a person without a visit
     /// that day yet, so the day list shows every column in use.
@@ -146,6 +163,11 @@ public sealed class DemoSeeder(
                     {
                         logger.LogInformation("Seeded {Count} demo appointments into the existing tenant {Slug}", count, Slug);
                     }
+
+                    if (await SeedProductsAsync(provider, ct).ConfigureAwait(false))
+                    {
+                        logger.LogInformation("Seeded {Count} demo products into the existing tenant {Slug}", Products.Length, Slug);
+                    }
                 }, cancellationToken).ConfigureAwait(false);
                 return false;
             }
@@ -193,6 +215,7 @@ public sealed class DemoSeeder(
             await SeedUsersAsync(provider.GetRequiredService<IUserService>(), ct).ConfigureAwait(false);
             await SeedClientsAsync(provider, ct).ConfigureAwait(false);
             appointments = await SeedAppointmentsAsync(provider, ct).ConfigureAwait(false) ?? 0;
+            await SeedProductsAsync(provider, ct).ConfigureAwait(false);
         }, cancellationToken).ConfigureAwait(false);
 
         logger.LogInformation(
@@ -259,6 +282,34 @@ public sealed class DemoSeeder(
             UpdatedAt = now,
         });
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return true;
+    }
+
+    /// <summary>
+    /// Puts a few products on the demo salon's shelves when it has none at all (ADR 0036); returns false otherwise. The
+    /// names are generic on purpose: the repository is public and the salon's real range is its own to enter. Each
+    /// shelf starts with a count through <see cref="IStockService"/>, so the demo shows a history; two are low.
+    /// </summary>
+    private static async Task<bool> SeedProductsAsync(IServiceProvider provider, CancellationToken cancellationToken)
+    {
+        var db = provider.GetRequiredService<SalonDbContext>();
+        if (await db.Products.AnyAsync(cancellationToken).ConfigureAwait(false))
+        {
+            return false;
+        }
+
+        var products = Products
+            .Select(p => (Demo: p, Row: new Product { Name = p.Name, Brand = p.Brand, RetailPrice = p.Price, Currency = "GBP", LowStockAt = p.LowStockAt }))
+            .ToList();
+        db.Products.AddRange(products.Select(p => p.Row));
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        var stock = provider.GetRequiredService<IStockService>();
+        foreach (var (demo, row) in products)
+        {
+            await stock.RecordAsync(row.Id, StockMovementKind.Counted, demo.OnHand, null, null, cancellationToken).ConfigureAwait(false);
+        }
+
         return true;
     }
 

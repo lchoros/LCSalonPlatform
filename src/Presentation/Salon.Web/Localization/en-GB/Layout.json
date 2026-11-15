@@ -9,5 +9,6 @@
   "Layout.Nav.Calendar": "Calendar",
   "Layout.Nav.Settings": "Settings",
   "Layout.Nav.CashUp": "Till",
-  "Layout.Nav.Reports": "Reports"
+  "Layout.Nav.Reports": "Reports",
+  "Layout.Nav.Products": "Products"
 }

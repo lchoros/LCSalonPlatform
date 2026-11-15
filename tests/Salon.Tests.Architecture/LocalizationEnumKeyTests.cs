@@ -1,8 +1,11 @@
 using Salon.Core.Localization;
 using Salon.Core.Messaging;
 using Salon.Core.Payments;
+using Salon.Core.Products;
 using Salon.Core.Reports;
+using Salon.Services.Localization;
 using Salon.Services.Payments;
+using Salon.Services.Products;
 
 namespace Salon.Tests.Architecture;
 
@@ -47,6 +50,27 @@ public partial class LocalizationResourceTests
         expected.AddRange(MessageTemplateCatalog.All.SelectMany(d => new[] { $"Settings.Messages.Name.{d.Key}", $"Settings.Messages.When.{d.Key}" }));
         expected.AddRange(MessageTemplateCatalog.All.SelectMany(d => d.TokenNames).Distinct().Select(token => $"Settings.Messages.Token.{token}"));
         expected.AddRange(Enum.GetNames<MessageChannel>().Select(channel => $"Settings.Messages.Channel.{channel}"));
+
+        var known = Resources.Value[SupportedCultures.EnGb];
+
+        expected.Where(key => !known.ContainsKey(key)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Every_kind_of_stock_change_and_every_refusal_has_its_text()
+    {
+        // The product page names each kind, confirms each with a counted text (ADR 0035) and explains each refusal (ADR 0036).
+        var expected = new List<string>();
+        expected.AddRange(Enum.GetNames<StockMovementKind>().SelectMany(kind => new[]
+        {
+            $"Products.Kind.{kind}",
+            $"Products.Stock.Recorded.{kind}{LocalizationPlurals.OneSuffix}",
+            $"Products.Stock.Recorded.{kind}{LocalizationPlurals.ManySuffix}",
+        }));
+        // A recorded change and a matching count are confirmations; an unknown product is a 404, not a message.
+        expected.AddRange(Enum.GetValues<StockOutcome>()
+            .Where(outcome => outcome is not (StockOutcome.Recorded or StockOutcome.CountMatches or StockOutcome.ProductNotFound))
+            .Select(outcome => $"Products.Stock.Refused.{outcome}"));
 
         var known = Resources.Value[SupportedCultures.EnGb];
 

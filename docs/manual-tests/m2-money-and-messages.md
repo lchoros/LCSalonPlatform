@@ -255,6 +255,23 @@ Read these as a client and as the desk would. Tell me any sentence that sounds w
 - [ ] T10. Settings, Messages, a text: the note under the length says an emoji or a curly apostrophe makes each
       text hold 70 characters.
 
+## U. Products and stock (after PR #79 is merged too)
+An existing `salon_dev` gets seven demo products on the next start, because it has none.
+- [ ] U1. The menu has "Products". The list shows seven products, each with a number "on the shelf"; two are
+      marked "Low".
+- [ ] U2. "Low stock (2)" shows only those two. Search "colour" finds the colour tube. "All" brings the list back.
+- [ ] U3. "Add product": name "Hairspray 300 ml", price 9.50, warn at 2, on the shelf today 6. Save. The product's
+      page shows 6 and one line "Stock count +6" with your name.
+- [ ] U4. "A delivery arrived": 12, note "Invoice 1042". The page says "12 units added. The shelf now holds 18."
+- [ ] U5. "Used in the salon": 1. The shelf holds 17.
+- [ ] U6. "Used in the salon": 50. Nothing changes and the red line says the record shows only 17.
+- [ ] U7. "Count the shelf": 15. The page says the count differed by 2 units and the shelf holds 15.
+- [ ] U8. "Write off": 1 without a reason is refused; with "Broken" it is recorded and the reason is in the history.
+- [ ] U9. "Edit": untick "The salon still uses this product". The list no longer shows it; "No longer used (1)"
+      does.
+- [ ] U10. Sign in as `desk@studio-20.local`: the list and the product page open, "A delivery arrived" and "Used in
+      the salon" are there, "Count the shelf", "Write off", "Edit" and "Add product" are not.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

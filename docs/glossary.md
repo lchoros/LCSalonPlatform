@@ -21,6 +21,11 @@
 | Takings | Utarg | Everything that came in on a day less everything that went back out, all methods |
 | Utilisation | Obłożenie | Booked time as a share of working time (rota less time off) in a period; unknown without working time |
 | Variant | Wariant | A service that shares a title with siblings (`Service.VariantGroup`) and differs by its label (`VariantLabel`): "Keratin · Long hair". Clients see one entry with a price range |
+| Product | Produkt | `Product` — something on the salon's shelf: sold to clients (it has a price) or used at the chair ("salon use only") (ADR 0036) |
+| Stock movement | Ruch magazynowy | `StockMovement` — one line of a shelf's history: a delivery, used in the salon, written off, or a count; never edited |
+| On the shelf | Stan (na półce) | `Product.StockOnHand` — whole units according to the lines; never below zero |
+| Stock count | Inwentaryzacja | The number a shelf really holds, typed by a manager; the line is the difference from the record |
+| Low stock | Niski stan | At or under the product's warning number (`LowStockAt`), zero included |
 | Placeholder | Znacznik | `{{Name}}` in a message's wording, replaced when the message is sent; each message offers its own list |
 | SMS segment | Część SMS-a | One billed text: 160 characters in the basic alphabet, 70 once a letter such as "ą" is used |
 | Visit without an outcome | Wizyta bez wyniku | A visit of an earlier day that is still booked, confirmed or arrived: nobody recorded whether the client came (ADR 0034) |
