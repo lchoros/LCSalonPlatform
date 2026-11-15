@@ -122,6 +122,9 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   settles the visit (`VisitPayment`) and the products (`ProductSale`) with one method and, in the same transaction,
   `IStockService.SellAsync` takes each product off its shelf (`Sold`, with the visit), counting the shelf up first
   when the record reads short. The checkout page shows the lines and the form; same permissions as the checkout.
+  `POST .../products/{lineId}/return` (ADR 0040) gives the money back for units of a paid line: a `ProductReturn`
+  account line that points at the sale, `ReturnedQuantity` on the bill line and, when the unit can be sold again,
+  `IStockService.ReturnAsync` (`Returned`). The payment plugin records it through `RecordRefundAsync`.
 - `Appointments/Calendar` — `/admin/appointments/calendar?view=day|week&date=&staff=` (ADR 0016): a CSS-grid timetable
   computed by the pure `CalendarLayout` in Services, an appointment card at `calendar/{id}` with the day list's status
   buttons and a move form posting to `calendar/{id}/move` (`IBookingService.MoveAsync`, re-checked through the engine,

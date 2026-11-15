@@ -28,6 +28,7 @@
 | Low stock | Niski stan | At or under the product's warning number (`LowStockAt`), zero included |
 | Bill line (product) | Pozycja rachunku (produkt) | `VisitProductLine` — a product rung up on a visit's bill with the name and price it had then; a draft until paid, fixed afterwards (ADR 0037) |
 | Product sale | Sprzedaż produktów | `ClientAccountEntryKind.ProductSale` — the money taken for the products on a bill, apart from the visit's payment; "Products sold" in the till and the reports |
+| Product return | Zwrot produktu | A client brings back units of a paid bill line: `ClientAccountEntryKind.ProductReturn` gives the money back at the price paid; the unit goes on the shelf again only when it can be sold (ADR 0040) |
 | Found at a sale | Znaleziono przy sprzedaży | The count line a sale adds when the record held fewer units than the client took home |
 | Placeholder | Znacznik | `{{Name}}` in a message's wording, replaced when the message is sent; each message offers its own list |
 | SMS segment | Część SMS-a | One billed text: 160 characters in the basic alphabet, 70 once a letter such as "ą" is used |
