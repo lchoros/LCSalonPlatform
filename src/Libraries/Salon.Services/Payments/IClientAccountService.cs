@@ -211,6 +211,15 @@ public sealed record VisitBill(
     /// <summary>The visit and the products together, before any fee from an earlier visit.</summary>
     public Money ToPay => Price with { Amount = Outstanding.Amount + ProductsOutstanding.Amount };
 
+    /// <summary>The client's open fees from earlier visits, added up.</summary>
+    public Money OpenFeesTotal => Price with { Amount = OpenFees.Sum(f => f.Amount.Amount) };
+
+    /// <summary>The most this bill can come to: the visit, the products and every open fee.</summary>
+    public Money ToPayWithFees => Price with { Amount = ToPay.Amount + OpenFeesTotal.Amount };
+
+    /// <summary>True while there is something a payment could settle: the visit, a product or an open fee.</summary>
+    public bool HasSomethingToPay => ToPay.Amount > 0m || OpenFees.Count > 0;
+
     /// <summary>The service of the visit, for booking the next one like it (ADR 0039).</summary>
     public Guid ServiceId { get; init; }
 

@@ -9,21 +9,14 @@
     var bill = Model.Bill;
     var culture = CultureInfo.CurrentCulture;
     var zone = bill.Start.Zone;
-    var dayPath = "/admin/appointments?date=" + LocalDatePattern.Iso.Format(bill.Start.Date);
-    var checkoutPath = CheckoutController.BasePath + "/" + bill.AppointmentId;
-    var feesTotal = bill.OpenFees.Sum(f => f.Amount.Amount);
-    var somethingToPay = bill.ToPay.Amount > 0m || bill.OpenFees.Count > 0;
     ViewData["Title"] = T["Payments.Checkout.Title"];
     const string inputClass = "field field-compact";
     const string primaryClass = "btn btn-compact btn-primary w-full sm:w-auto";
     const string secondaryClass = "btn btn-compact btn-secondary w-full sm:w-auto";
     const string cardClass = "space-y-3 panel";
 }
-@functions {
-    string When(Instant at, DateTimeZone zone) => at.InZone(zone).LocalDateTime.ToString("g", CultureInfo.CurrentCulture);
-}
 <section class="mx-auto max-w-lg space-y-6">
-    <a href="@dayPath" data-testid="back" class="back-link">&larr; @T["Payments.Fee.Back"]</a>
+    <a href="@Model.DayPath" data-testid="back" class="back-link">&larr; @T["Payments.Fee.Back"]</a>
     <h1 class="page-title">@T["Payments.Checkout.Title"]</h1>
 
     @if (Model.Flash is { } flash)
@@ -122,7 +115,7 @@
         @if (bill.Payment is { } payment)
         {
             <p class="text-sm text-stone-600" data-testid="bill-payment">
-                <time datetime="@InstantPattern.ExtendedIso.Format(payment.At)" class="tabular-nums">@When(payment.At, zone)</time>
+                <time datetime="@InstantPattern.ExtendedIso.Format(payment.At)" class="tabular-nums">@payment.At.ToShortDateTime(zone, culture)</time>
                 · @T.Format("Payments.Checkout.RecordedBy", payment.ByName ?? T["Payments.Fee.History.Unknown"])
                 <span class="block break-all" data-testid="bill-reference">@T.Format("Payments.Fee.History.Reference", payment.ProviderReference ?? "—")</span>
             </p>
@@ -170,11 +163,11 @@
             }
         </section>
     }
-    else if (somethingToPay)
+    else if (bill.HasSomethingToPay)
     {
         <section class="@cardClass" data-testid="pay-step">
             <h2 class="text-lg font-semibold">@T["Payments.Checkout.Pay.Title"]</h2>
-            <form method="post" action="@checkoutPath" asp-antiforgery="true" class="space-y-4" data-testid="pay-bill-form">
+            <form method="post" action="@Model.PayPath" asp-antiforgery="true" class="space-y-4" data-testid="pay-bill-form">
                 @if (bill.OpenFees.Count > 0)
                 {
                     <fieldset class="space-y-2" data-testid="open-fees">
@@ -195,7 +188,7 @@
                     </fieldset>
                     <p class="flex items-baseline justify-between gap-4 rounded-md bg-stone-50 p-3" data-testid="bill-total">
                         <span class="text-sm text-stone-700">@T["Payments.Checkout.TotalWithFees"]</span>
-                        <span class="text-xl font-bold tabular-nums">@((bill.ToPay with { Amount = bill.ToPay.Amount + feesTotal }).ToDisplayString(culture))</span>
+                        <span class="text-xl font-bold tabular-nums">@bill.ToPayWithFees.ToDisplayString(culture)</span>
                     </p>
                 }
                 <div class="space-y-1">
@@ -216,7 +209,7 @@
     {
         <section class="@cardClass" data-testid="bill-settled">
             <p class="font-medium">@T[bill.Payment is null ? "Payments.Checkout.CoveredByDeposit" : "Payments.Checkout.Settled"]</p>
-            <a href="/admin/payments/cash-up?date=@LocalDatePattern.Iso.Format((bill.Payment?.At ?? bill.Start.ToInstant()).InZone(zone).Date)" class="@secondaryClass" data-testid="open-cash-up">@T["Payments.Checkout.OpenCashUp"]</a>
+            <a href="@Model.TillPath" class="@secondaryClass" data-testid="open-cash-up">@T["Payments.Checkout.OpenCashUp"]</a>
         </section>
     }
 

@@ -21,8 +21,6 @@
     const string cardClass = "space-y-3 panel";
 }
 @functions {
-    string When(Instant at, DateTimeZone zone) => at.InZone(zone).LocalDateTime.ToString("g", CultureInfo.CurrentCulture);
-
     static string StatusClass(FeeStatus status) => status switch
     {
         FeeStatus.Paid => "bg-green-100 text-green-900",
@@ -108,13 +106,13 @@
             <h3 class="text-sm font-medium text-stone-600">@T["Payments.Fee.History"]</h3>
             <ol class="space-y-2 text-sm" data-testid="fee-history">
                 <li data-testid="fee-history-added">
-                    <time datetime="@InstantPattern.ExtendedIso.Format(fee.At)" class="tabular-nums text-stone-600">@When(fee.At, zone)</time>
+                    <time datetime="@InstantPattern.ExtendedIso.Format(fee.At)" class="tabular-nums text-stone-600">@fee.At.ToShortDateTime(zone, culture)</time>
                     <span class="block">@T.Format("Payments.Fee.History.Added", fee.ByName ?? T["Payments.Fee.History.Unknown"])</span>
                 </li>
                 @if (fee.Settlement is { } settled)
                 {
                     <li data-testid="fee-history-settled">
-                        <time datetime="@InstantPattern.ExtendedIso.Format(settled.At)" class="tabular-nums text-stone-600">@When(settled.At, zone)</time>
+                        <time datetime="@InstantPattern.ExtendedIso.Format(settled.At)" class="tabular-nums text-stone-600">@settled.At.ToShortDateTime(zone, culture)</time>
                         @if (settled.Kind == ClientAccountEntryKind.FeePayment)
                         {
                             <span class="block">@T.Format("Payments.Fee.History.Paid", T[$"Payments.Method.{settled.Method}"], settled.ByName ?? T["Payments.Fee.History.Unknown"])</span>

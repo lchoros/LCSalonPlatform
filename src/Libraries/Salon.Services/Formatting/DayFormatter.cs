@@ -17,4 +17,16 @@ public static class DayFormatter
 
         return day.ToString(Pattern, culture);
     }
+
+    /// <summary>
+    /// A moment as the salon saw it on its own clock, short date and time ("16/11/2026 14:05" in en-GB): for a line of
+    /// history that says when something was recorded. One place, so every page writes it the same way.
+    /// </summary>
+    public static string ToShortDateTime(this Instant at, DateTimeZone zone, CultureInfo culture)
+    {
+        ArgumentNullException.ThrowIfNull(zone);
+        ArgumentNullException.ThrowIfNull(culture);
+
+        return at.InZone(zone).LocalDateTime.ToString("g", culture);
+    }
 }

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using NodaTime.Text;
 using Salon.Core.Appointments;
 using Salon.Core.Cqrs;
 using Salon.Core.Identity;
@@ -103,4 +104,14 @@ public sealed class CheckoutController(IDispatcher dispatcher, ILocalizationServ
 /// <param name="Error">A refused request, already localized.</param>
 /// <param name="Sellable">The products the desk can ring up; empty when the bill cannot be paid or the salon sells none.</param>
 /// <param name="Rebook">One-tap choices for the client's next visit; empty until this one is completed.</param>
-public sealed record CheckoutViewModel(VisitBill Bill, string? Flash, string? Error, IReadOnlyList<SellableProduct> Sellable, IReadOnlyList<RebookChoice> Rebook);
+public sealed record CheckoutViewModel(VisitBill Bill, string? Flash, string? Error, IReadOnlyList<SellableProduct> Sellable, IReadOnlyList<RebookChoice> Rebook)
+{
+    /// <summary>The day list of the visit's day, for the way back; the Appointments module owns the route.</summary>
+    public string DayPath => "/admin/appointments?date=" + LocalDatePattern.Iso.Format(Bill.Start.Date);
+
+    /// <summary>Where the payment form posts: this bill.</summary>
+    public string PayPath => CheckoutController.BasePath + "/" + Bill.AppointmentId;
+
+    /// <summary>The till of the day the visit was paid, or took place.</summary>
+    public string TillPath => "/admin/payments/cash-up?date=" + LocalDatePattern.Iso.Format((Bill.Payment?.At ?? Bill.Start.ToInstant()).InZone(Bill.Start.Zone).Date);
+}
