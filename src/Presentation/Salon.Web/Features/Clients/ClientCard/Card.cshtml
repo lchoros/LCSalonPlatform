@@ -217,6 +217,33 @@
             <dt class="text-sm text-stone-600">@T["Clients.Card.LastPatchTestOn"]</dt>
             <dd class="text-base" data-testid="patch-test">@(card.LastPatchTestOn is { } patchTest ? patchTest.ToString("d", culture) : T["Clients.Card.NoPatchTest"])</dd>
         </dl>
+
+        @* Consultation forms (ADR 0058): when, for what and who took it. The answers are on the form's own page only. *@
+        <div class="space-y-2 border-t border-amber-300 pt-3" data-testid="client-consultations">
+            <h3 class="text-base font-semibold text-amber-900">@T["Clients.Consultations.Title"]</h3>
+            @if (Model.Consultations.Count == 0)
+            {
+                <p class="text-sm text-stone-600" data-testid="no-consultations">@T["Clients.Consultations.None"]</p>
+            }
+            else
+            {
+                <ul class="list-card" data-testid="consultation-list">
+                    @foreach (var consultation in Model.Consultations)
+                    {
+                        <li data-testid="consultation-row">
+                            <a href="@Model.ConsultationPath(consultation.Id)" data-testid="consultation-link" class="flex min-h-11 flex-col gap-1 bg-white p-3 hover:bg-stone-50 sm:flex-row sm:items-center sm:justify-between">
+                                <span class="font-medium tabular-nums" data-testid="consultation-day">@consultation.TakenOn.ToString("d", culture)</span>
+                                <span class="text-sm text-stone-600">@(consultation.For ?? T["Clients.Consultations.NoFor"])@if (consultation.TakenByName is { } takenBy) { <text> · @takenBy</text> }</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            }
+            @if (Model.CanTakeConsultation)
+            {
+                <a href="@Model.NewConsultationPath" data-testid="new-consultation" class="@secondaryButtonClass w-full sm:w-auto">@T["Clients.Consultations.New"]</a>
+            }
+        </div>
     </section>
 
     <section class="space-y-2 panel">
