@@ -103,5 +103,18 @@
   "Staff.CalendarFeed.Off": "Switch the address off",
   "Staff.CalendarFeed.SwitchedOn": "The address is on. Paste it into the calendar.",
   "Staff.CalendarFeed.Replaced": "There is a new address. The old one no longer works.",
-  "Staff.CalendarFeed.SwitchedOff": "The address is switched off. It no longer works."
+  "Staff.CalendarFeed.SwitchedOff": "The address is switched off. It no longer works.",
+  "Staff.List.Commission": "Commission",
+  "Staff.Commission.Title": "Commission",
+  "Staff.Commission.Back": "Back to staff",
+  "Staff.Commission.Lead": "What you pay each person as a share of their work and of the products sold on their visits. Leave a box empty for someone who is not paid that way.",
+  "Staff.Commission.None": "No active staff members.",
+  "Staff.Commission.Services": "On services",
+  "Staff.Commission.Products": "On products",
+  "Staff.Commission.Hint": "The report works out the commission for any period with the rates set here today. Only the owner can change them.",
+  "Staff.Commission.Submit": "Save the rates",
+  "Staff.Commission.SeeReport": "See it in the report",
+  "Staff.Commission.Saved": "The rates are saved.",
+  "Staff.Commission.Unchanged": "Nothing changed.",
+  "Staff.Commission.Validation.Rate": "Enter a percent from 0 to 100, with at most two decimals, or leave it empty."
 }

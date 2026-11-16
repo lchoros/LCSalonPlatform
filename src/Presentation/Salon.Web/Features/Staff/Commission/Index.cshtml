@@ -1,0 +1,65 @@
+@using System.Globalization
+@using Salon.Web.Features.Staff.Commission
+@model CommissionViewModel
+@{
+    ViewData["Title"] = T["Staff.Commission.Title"];
+    var culture = CultureInfo.CurrentCulture;
+    const string inputClass = "field field-compact tabular-nums w-24";
+}
+<section class="mx-auto max-w-2xl space-y-6">
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+    <a href="/admin/staff" class="back-link">&larr; @T["Staff.Commission.Back"]</a>
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Staff.Commission.Title"]</h1>
+        <p class="text-stone-600">@T["Staff.Commission.Lead"]</p>
+    </header>
+
+    @if (Model.Rates.Count == 0)
+    {
+        <p class="empty-state" data-testid="no-staff">@T["Staff.Commission.None"]</p>
+    }
+    else
+    {
+        <form method="post" asp-action="Index" class="space-y-5" novalidate data-testid="commission-form">
+            <div asp-validation-summary="ModelOnly" class="notice notice-error" role="alert"></div>
+            <ul class="list-card">
+                @for (var i = 0; i < Model.Rates.Count; i++)
+                {
+                    var rate = Model.Rates[i];
+                    var services = CommissionViewModel.FieldName(i, "Services");
+                    var products = CommissionViewModel.FieldName(i, "Products");
+                    <li class="space-y-3 p-3" data-testid="commission-row">
+                        <input type="hidden" name="@CommissionViewModel.FieldName(i, "StaffId")" value="@rate.StaffId" />
+                        <h2 class="font-medium" data-testid="commission-name">@rate.Name</h2>
+                        <div class="flex flex-wrap gap-4">
+                            <div class="space-y-1">
+                                <label for="services-@i" class="field-label">@T["Staff.Commission.Services"]</label>
+                                <span class="flex items-center gap-2">
+                                    <input id="services-@i" name="@services" value="@rate.Services?.ToString("0.##", culture)" type="text" inputmode="decimal" aria-describedby="services-error-@i" class="@inputClass @ViewData.ModelState.InvalidClass(services)" data-testid="commission-services" />
+                                    <span>%</span>
+                                </span>
+                                <p id="services-error-@i" class="text-sm text-red-700" data-testid="commission-error">@string.Join(" ", ViewData.ModelState.ErrorsFor(services))</p>
+                            </div>
+                            <div class="space-y-1">
+                                <label for="products-@i" class="field-label">@T["Staff.Commission.Products"]</label>
+                                <span class="flex items-center gap-2">
+                                    <input id="products-@i" name="@products" value="@rate.Products?.ToString("0.##", culture)" type="text" inputmode="decimal" aria-describedby="products-error-@i" class="@inputClass @ViewData.ModelState.InvalidClass(products)" data-testid="commission-products" />
+                                    <span>%</span>
+                                </span>
+                                <p id="products-error-@i" class="text-sm text-red-700" data-testid="commission-error">@string.Join(" ", ViewData.ModelState.ErrorsFor(products))</p>
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+            <p class="text-sm text-stone-600">@T["Staff.Commission.Hint"]</p>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <button type="submit" class="btn btn-compact btn-primary w-full sm:w-auto" data-testid="commission-submit">@T["Staff.Commission.Submit"]</button>
+                <a href="@CommissionController.ReportPath" class="text-sm underline" data-testid="commission-report">@T["Staff.Commission.SeeReport"]</a>
+            </div>
+        </form>
+    }
+</section>

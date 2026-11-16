@@ -373,6 +373,24 @@
                             </span>
                             <span class="tabular-nums font-medium">@person.Value.ToDisplayString(culture)</span>
                         </div>
+                        @if (person.HasRetail || person.HasCommission)
+                        {
+                            @* Products sold on the person's visits and their commission (ADR 0059). *@
+                            <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm" data-testid="staff-pay">
+                                @if (person.HasRetail)
+                                {
+                                    <dt>@T["Reports.Staff.Retail"]</dt>
+                                    <dd class="text-right tabular-nums" data-testid="staff-retail">@person.Retail!.Value.ToDisplayString(culture)</dd>
+                                }
+                                @if (person.Commission is { } commission)
+                                {
+                                    <dt>@ReportText.CommissionLabel(T, person, culture)</dt>
+                                    <dd class="text-right tabular-nums" data-testid="staff-commission">@commission.ToDisplayString(culture)</dd>
+                                    <dt class="font-semibold">@T["Reports.Staff.AfterCommission"]</dt>
+                                    <dd class="text-right font-semibold tabular-nums" data-testid="staff-after-commission">@person.AfterCommission!.Value.ToDisplayString(culture)</dd>
+                                }
+                            </dl>
+                        }
                         @if (person.Utilisation is { } used)
                         {
                             <div class="flex items-center justify-between gap-4 text-sm">

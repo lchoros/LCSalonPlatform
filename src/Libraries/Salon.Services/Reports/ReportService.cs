@@ -63,7 +63,7 @@ internal sealed class ReportService(
                 In(lines.Where(l => l.Kind == ClientAccountEntryKind.FeeWaived).Sum(l => l.Amount)),
                 In(lines.Where(l => l.Kind == ClientAccountEntryKind.FeePayment).Sum(l => l.Amount))),
             await TopServicesAsync(completed, In, cancellationToken).ConfigureAwait(false),
-            await StaffAsync(visits, period, In, cancellationToken).ConfigureAwait(false),
+            await StaffAsync(visits, period, start, end, In, cancellationToken).ConfigureAwait(false),
             await RetailAsync(lines, takings.Total, start, end, In, cancellationToken).ConfigureAwait(false),
             await ComparisonAsync(period, today, zone, lines, visits, In, cancellationToken).ConfigureAwait(false),
             unpaid,
@@ -344,12 +344,25 @@ internal sealed class ReportService(
             ReportRules.Change(noShowsNow, noShowsBefore));
     }
 
-    private async Task<IReadOnlyList<StaffLine>> StaffAsync(List<VisitRow> visits, ReportPeriod period, Func<decimal, Money> money, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<StaffLine>> StaffAsync(List<VisitRow> visits, ReportPeriod period, Instant start, Instant end, Func<decimal, Money> money, CancellationToken cancellationToken)
     {
         var people = await db.StaffMembers.AsNoTracking()
             .OrderBy(s => s.SortOrder).ThenBy(s => s.DisplayName).ThenBy(s => s.Id)
-            .Select(s => new { s.Id, s.DisplayName, Works = s.IsActive && s.IsBookable })
+            .Select(s => new { s.Id, s.DisplayName, Works = s.IsActive && s.IsBookable, s.ServiceCommissionPercent, s.ProductCommissionPercent })
             .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        // Products on the bills of a person's visits, paid in the period, as the retail figures count them (ADR 0044):
+        // on the day the money came in, at the price sold, for the units the clients kept (ADR 0059).
+        var sold = await (
+            from line in db.VisitProductLines.AsNoTracking()
+            join sale in db.ClientAccountEntries.AsNoTracking() on line.PaymentEntryId equals sale.Id
+            join visit in db.Appointments.AsNoTracking() on line.AppointmentId equals visit.Id
+            where sale.At >= start && sale.At < end
+            select new { visit.StaffMemberId, Kept = line.Quantity - line.ReturnedQuantity, line.UnitPrice })
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+        var retail = sold
+            .GroupBy(s => s.StaffMemberId)
+            .ToDictionary(g => g.Key, g => g.Sum(s => ProductSaleRules.LineTotal(Math.Max(0, s.Kept), s.UnitPrice)));
         var hours = await db.WorkingHours.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false);
         var timeOff = await db.StaffTimeOff.AsNoTracking()
             .Where(t => t.FromDate <= period.To && t.ToDate >= period.From)
@@ -364,12 +377,21 @@ internal sealed class ReportService(
             var working = person.Works
                 ? WorkingMinutes(period, hours.Where(h => h.StaffMemberId == person.Id).ToArray(), timeOff.Where(t => t.StaffMemberId == person.Id).ToArray())
                 : 0;
-            if (working == 0 && booked == 0 && done.Length == 0)
+            var products = retail.GetValueOrDefault(person.Id);
+            if (working == 0 && booked == 0 && done.Length == 0 && products == 0m)
             {
                 continue;
             }
 
-            result.Add(new StaffLine(person.DisplayName, done.Length, money(done.Sum(v => v.Price)), booked, working, ReportRules.Utilisation(booked, working)));
+            var value = done.Sum(v => v.Price);
+            var commission = CommissionRules.Total(value, person.ServiceCommissionPercent, products, person.ProductCommissionPercent);
+            result.Add(new StaffLine(person.DisplayName, done.Length, money(value), booked, working, ReportRules.Utilisation(booked, working))
+            {
+                Retail = products > 0m ? money(products) : null,
+                ServiceRate = person.ServiceCommissionPercent,
+                ProductRate = person.ProductCommissionPercent,
+                Commission = commission is { } earned ? money(earned) : null,
+            });
         }
 
         return result;

@@ -17,6 +17,29 @@ public static class ReportText
     }
 
     /// <summary>
+    /// The commission line's label with the rates it used (ADR 0059): "Commission (40% services, 10% products)", only
+    /// the rates the person has.
+    /// </summary>
+    public static string CommissionLabel(ILocalizationService localizer, Salon.Services.Reports.StaffLine person, CultureInfo culture)
+    {
+        ArgumentNullException.ThrowIfNull(localizer);
+        ArgumentNullException.ThrowIfNull(person);
+        ArgumentNullException.ThrowIfNull(culture);
+        var rates = new List<string>(2);
+        if (person.ServiceRate is { } services)
+        {
+            rates.Add(localizer.Format("Reports.Staff.ServiceRate", services.ToString("0.##", culture)));
+        }
+
+        if (person.ProductRate is { } products)
+        {
+            rates.Add(localizer.Format("Reports.Staff.ProductRate", products.ToString("0.##", culture)));
+        }
+
+        return localizer.Format("Reports.Staff.Commission", string.Join(", ", rates));
+    }
+
+    /// <summary>
     /// A change against the period before in words (ADR 0046), so it reads without colour or an arrow: "Up 35%",
     /// "Down 12.5%", "No change", or "Nothing before" when there is nothing to be more or less than.
     /// </summary>
