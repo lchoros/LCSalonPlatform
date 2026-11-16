@@ -60,6 +60,7 @@ public sealed class SaveProductHandler(
         product.Brand = ProductRules.NormalizeOptional(request.Brand);
         product.Code = ProductRules.NormalizeOptional(request.Code);
         product.RetailPrice = request.RetailPrice;
+        product.CostPrice = request.CostPrice;
         product.LowStockAt = request.LowStockAt;
         product.IsActive = request.IsActive;
     }

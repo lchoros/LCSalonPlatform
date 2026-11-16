@@ -1,5 +1,14 @@
 namespace Salon.Core.Products;
 
+/// <param name="Amount">Price less cost for one unit; below zero when it is sold at a loss.</param>
+/// <param name="Percent">Of the price; null when the price is zero.</param>
+public readonly record struct ProductMargin(decimal Amount, decimal? Percent);
+
+/// <param name="AtCost">Units times what each costs the salon, over the products that have a cost.</param>
+/// <param name="AtRetail">Units times the price to clients, over the products for sale.</param>
+/// <param name="WithoutCost">Products with units on the shelf and no cost: they are missing from <paramref name="AtCost"/>.</param>
+public readonly record struct ShelfValue(decimal AtCost, decimal AtRetail, int WithoutCost);
+
 /// <summary>
 /// The pure rules a product must satisfy (ADR 0036), shared by the slices that add and change one. The validators turn
 /// each failure into a localized message; these methods only decide.
@@ -29,6 +38,31 @@ public static class ProductRules
 
     /// <summary>No price means the salon does not sell it; a price is not negative, has at most two decimals and stays under <see cref="MaxPrice"/>.</summary>
     public static bool IsPriceValid(decimal? price) => price is null || (price >= 0m && price <= MaxPrice && decimal.Round(price.Value, 2) == price);
+
+    /// <summary>
+    /// What the salon keeps of one sold unit (ADR 0049): the price less the cost, and that as a share of the price
+    /// with one decimal. Null while either is unknown. The share is null for a price of zero, and below zero when
+    /// the product is sold under its cost.
+    /// </summary>
+    public static ProductMargin? Margin(decimal? price, decimal? cost)
+        => price is { } p && cost is { } c
+            ? new ProductMargin(p - c, p > 0m ? decimal.Round(100m * (p - c) / p, 1, MidpointRounding.AwayFromZero) : null)
+            : null;
+
+    /// <summary>
+    /// What the shelves hold in money (ADR 0049): every product with units on its shelf, in use or not, because a
+    /// stocktake counts what is there. A product without a cost adds nothing at cost and is counted as missing; one
+    /// that is not for sale adds nothing at the prices to clients.
+    /// </summary>
+    public static ShelfValue Shelf(IEnumerable<Product> products)
+    {
+        ArgumentNullException.ThrowIfNull(products);
+        var stocked = products.Where(p => p.StockOnHand > 0).ToArray();
+        return new ShelfValue(
+            stocked.Sum(p => p.StockOnHand * (p.CostPrice ?? 0m)),
+            stocked.Sum(p => p.StockOnHand * (p.RetailPrice ?? 0m)),
+            stocked.Count(p => p.CostPrice is null));
+    }
 
     /// <summary>No threshold never warns; otherwise zero ("warn when it is gone") up to <see cref="MaxLowStockAt"/>.</summary>
     public static bool IsLowStockAtValid(int? lowStockAt) => lowStockAt is null or (>= 0 and <= MaxLowStockAt);

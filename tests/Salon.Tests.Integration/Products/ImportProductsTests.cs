@@ -60,10 +60,10 @@ public partial class ImportProductsTests(SalonWebApplicationFactory factory) : I
 
         englishHtml.ShouldContain("Import products");
         englishHtml.ShouldContain("Up to 2000 rows and 2 MB.");
-        englishHtml.ShouldContain("Name,Brand,Code,Price,Stock,Low stock at");
+        englishHtml.ShouldContain("Name,Brand,Code,Price,Cost,Stock,Low stock at");
         englishHtml.ShouldContain("A product you already have is left as it is");
         polishHtml.ShouldContain("Import produktów");
-        polishHtml.ShouldContain("Nazwa;Marka;Kod;Cena;Stan;Stan minimalny");
+        polishHtml.ShouldContain("Nazwa;Marka;Kod;Cena;Koszt;Stan;Stan minimalny");
     }
 
     [Fact]

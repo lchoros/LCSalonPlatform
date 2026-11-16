@@ -17,6 +17,7 @@ namespace Salon.Web.Features.Products.SaveProduct;
 /// <param name="IsActive">False takes the product out of the list of products in use; its history stays.</param>
 /// <param name="OpeningStock">Only for a new product: what is on the shelf today. Recorded as its first count.</param>
 /// <param name="ByUserId">The login that saves; set by the controller, never from the form.</param>
+/// <param name="CostPrice">What the salon pays its supplier for one (ADR 0049); blank when nobody has said.</param>
 public sealed record SaveProductCommand(
     Guid? Id,
     string Name,
@@ -26,7 +27,8 @@ public sealed record SaveProductCommand(
     int? LowStockAt,
     bool IsActive,
     int? OpeningStock = null,
-    Guid? ByUserId = null) : ICommand<Guid?>
+    Guid? ByUserId = null,
+    decimal? CostPrice = null) : ICommand<Guid?>
 {
     public bool IsNew => Id is null;
 
@@ -34,7 +36,7 @@ public sealed record SaveProductCommand(
     public static SaveProductCommand From(Product product)
     {
         ArgumentNullException.ThrowIfNull(product);
-        return new SaveProductCommand(product.Id, product.Name, product.Brand, product.Code, product.RetailPrice, product.LowStockAt, product.IsActive);
+        return new SaveProductCommand(product.Id, product.Name, product.Brand, product.Code, product.RetailPrice, product.LowStockAt, product.IsActive, CostPrice: product.CostPrice);
     }
 
     /// <summary>The empty form for a new product.</summary>

@@ -151,6 +151,10 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
 - `Products/ExportProducts` — `GET /admin/products/stock.csv` behind `Catalog.Manage` (ADR 0047): every product with
   what is on the shelf today as a CSV file, under the headings the import reads, so the file of one salon is the
   product list of another. Written by `SalonControllerBase.CsvDownload` like the money file.
+- Product costs (ADR 0049): `Product.CostPrice` is kept by `Products/SaveProduct`, shown with the margin by
+  `Products/ProductCard` (`ProductRules.Margin`) and as the worth of the shelves by `Products/ListProducts`
+  (`ProductRules.Shelf`), read by the import and written by the stock file. The controllers take costs off the page
+  for anybody without `Catalog.Manage`.
 - `Clients/ImportClients` — `/admin/clients/import` behind `Clients.Manage` and `Features:ClientImport` (ADR 0019):
   upload a Booksy or Versum CSV, preview (new / duplicate / invalid), confirm. Parsing lives in the plugin
   `Salon.Plugin.Import`; the preview is kept server-side under a random token bound to the salon.

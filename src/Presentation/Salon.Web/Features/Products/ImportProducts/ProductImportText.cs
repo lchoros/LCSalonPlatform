@@ -34,6 +34,7 @@ public static class ProductImportText
             ProductImportProblem.BrandTooLong => localizer.Format("Products.Import.Problem.BrandTooLong", ProductRules.BrandMaxLength),
             ProductImportProblem.CodeTooLong => localizer.Format("Products.Import.Problem.CodeTooLong", ProductRules.CodeMaxLength),
             ProductImportProblem.InvalidPrice => localizer["Products.Import.Problem.InvalidPrice"],
+            ProductImportProblem.InvalidCost => localizer["Products.Import.Problem.InvalidCost"],
             ProductImportProblem.InvalidStock => localizer["Products.Import.Problem.InvalidStock"],
             ProductImportProblem.InvalidLowStockAt => localizer["Products.Import.Problem.InvalidLowStockAt"],
             ProductImportProblem.DuplicateName => localizer["Products.Import.Problem.DuplicateName"],
@@ -57,6 +58,7 @@ public static class ProductImportText
             product.Brand,
             product.Code,
             product.Price is { } price ? new Money(price, currency).ToDisplayString(culture) : null,
+            product.Cost is { } cost ? localizer.Format("Products.Import.Preview.Cost", new Money(cost, currency).ToDisplayString(culture)) : null,
             product.Stock is { } stock ? localizer.Format("Products.Import.Preview.OnShelf", stock) : null,
         };
         return string.Join(" · ", parts.Where(p => !string.IsNullOrEmpty(p))).OrDash();

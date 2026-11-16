@@ -20,6 +20,8 @@ public enum ProductImportProblem
     DuplicateName = 9,
     /// <summary>An earlier row of the same file has the same name.</summary>
     DuplicateInFile = 10,
+    /// <summary>Not an amount of money, below zero, more than two decimals or over the cap.</summary>
+    InvalidCost = 11,
 }
 
 /// <summary>
@@ -37,7 +39,11 @@ public sealed record ImportedProductRow(
     decimal? Price,
     int? Stock,
     int? LowStockAt,
-    IReadOnlyList<ProductImportProblem> Problems);
+    IReadOnlyList<ProductImportProblem> Problems)
+{
+    /// <summary>What the salon pays for one (ADR 0049); null when the file gives none.</summary>
+    public decimal? Cost { get; init; }
+}
 
 /// <summary>What the provider made of a file: rows, or an <see cref="Error"/> and no rows. The reasons a whole file is refused are those of a client file.</summary>
 public sealed record ProductImportParseResult(IReadOnlyList<string> Header, IReadOnlyList<ImportedProductRow> Rows, ClientImportError? Error)

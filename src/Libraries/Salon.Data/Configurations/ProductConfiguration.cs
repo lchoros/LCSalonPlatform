@@ -19,6 +19,7 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.Brand).HasMaxLength(ProductRules.BrandMaxLength);
         builder.Property(p => p.Code).HasMaxLength(ProductRules.CodeMaxLength);
         builder.Property(p => p.RetailPrice).HasPrecision(10, 2);
+        builder.Property(p => p.CostPrice).HasPrecision(10, 2);
         builder.Property(p => p.Currency).HasMaxLength(Product.CurrencyLength).IsRequired();
         builder.Ignore(p => p.Price);
         // Postgres' xmin as the row version: two people changing the same shelf at once make the slower one fail

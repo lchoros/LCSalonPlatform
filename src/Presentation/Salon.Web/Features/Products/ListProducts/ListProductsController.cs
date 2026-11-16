@@ -37,6 +37,12 @@ public sealed class ListProductsController(IDispatcher dispatcher, ILocalization
     public async Task<IActionResult> Index(string? show, string? q, int? page, CancellationToken cancellationToken)
     {
         var list = await dispatcher.SendAsync(new ListProductsQuery(show, q, page), cancellationToken);
+        var canManage = User.HasClaim(UserClaimTypes.Permission, Permissions.CatalogManage);
+        if (!canManage)
+        {
+            // What the stock cost is the owner's and the manager's to see (ADR 0049).
+            list = list with { Worth = null };
+        }
 
         var tiles = new List<FilterTile>
         {
@@ -53,7 +59,7 @@ public sealed class ListProductsController(IDispatcher dispatcher, ILocalization
             new FilterTilesModel(localizer["Products.List.FilterLabel"], tiles),
             new SearchBoxModel(Path, list.Search, localizer["Products.List.Search"], [(ShowParameter, ProductFilterSegments.Segment(list.Show))], ListAddress(list.Show, null)),
             PagerModel.For(list.Products, number => ListAddress(list.Show, list.Search, number)),
-            User.HasClaim(UserClaimTypes.Permission, Permissions.CatalogManage),
+            canManage,
             TakeFlash()));
     }
 

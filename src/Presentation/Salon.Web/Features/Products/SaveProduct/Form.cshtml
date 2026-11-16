@@ -40,6 +40,13 @@
         </div>
 
         <div class="space-y-1">
+            <label asp-for="CostPrice" class="field-label">@T["Products.Save.CostPrice"]</label>
+            <input asp-for="CostPrice" type="text" inputmode="decimal" aria-describedby="cost-hint cost-error" class="@inputClass sm:max-w-xs" data-testid="product-cost-input" />
+            <p id="cost-hint" class="text-sm text-stone-500">@T["Products.Save.CostPriceHint"]</p>
+            <span asp-validation-for="CostPrice" id="cost-error" class="field-error"></span>
+        </div>
+
+        <div class="space-y-1">
             <label asp-for="LowStockAt" class="field-label">@T["Products.Save.LowStockAt"]</label>
             <input asp-for="LowStockAt" type="number" inputmode="numeric" min="0" max="@ProductRules.MaxLowStockAt" step="1" aria-describedby="low-hint low-error" class="@inputClass sm:max-w-xs" data-testid="product-low-input" />
             <p id="low-hint" class="text-sm text-stone-500">@T["Products.Save.LowStockAtHint"]</p>

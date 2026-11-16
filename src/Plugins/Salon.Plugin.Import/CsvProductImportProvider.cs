@@ -23,6 +23,9 @@ public sealed class CsvProductImportProvider : IProductImportProvider
     private static readonly HashSet<string> PriceAliases = HeaderKey.Set(
         "Price", "Retail price", "Selling price", "Sale price", "RRP", "Cena", "Cena sprzedaży", "Cena detaliczna");
 
+    private static readonly HashSet<string> CostAliases = HeaderKey.Set(
+        "Cost", "Cost price", "Unit cost", "Purchase price", "Trade price", "Wholesale price", "Koszt", "Cena zakupu", "Cena hurtowa");
+
     private static readonly HashSet<string> StockAliases = HeaderKey.Set(
         "Stock", "Quantity", "Qty", "On hand", "In stock", "Stock on hand", "Stan", "Ilość", "Stan magazynowy");
 
@@ -74,6 +77,11 @@ public sealed class CsvProductImportProvider : IProductImportProvider
             problems.Add(ProductImportProblem.InvalidPrice);
         }
 
+        if (!ImportNumbers.TryMoney(Field(record, columns.Cost), out var cost))
+        {
+            problems.Add(ProductImportProblem.InvalidCost);
+        }
+
         if (!ImportNumbers.TryWhole(Field(record, columns.Stock), out var stock))
         {
             problems.Add(ProductImportProblem.InvalidStock);
@@ -92,7 +100,10 @@ public sealed class CsvProductImportProvider : IProductImportProvider
             price,
             stock,
             lowStockAt,
-            problems);
+            problems)
+        {
+            Cost = cost,
+        };
     }
 
     /// <summary>The trimmed text of a column; null when the file has no such column, the row is short, or the cell is blank.</summary>
@@ -100,13 +111,13 @@ public sealed class CsvProductImportProvider : IProductImportProvider
         => index >= 0 && index < record.Fields.Count && !string.IsNullOrWhiteSpace(record.Fields[index]) ? record.Fields[index].Trim() : null;
 
     /// <summary>Where each field is in the file; -1 for a column the file does not have. The first heading that fits wins.</summary>
-    private sealed record Columns(int Name, int Brand, int Code, int Price, int Stock, int LowStockAt)
+    private sealed record Columns(int Name, int Brand, int Code, int Price, int Cost, int Stock, int LowStockAt)
     {
         public static Columns Of(IReadOnlyList<string> header)
         {
             var keys = header.Select(HeaderKey.Of).ToList();
             int Find(HashSet<string> aliases) => keys.FindIndex(aliases.Contains);
-            return new Columns(Find(NameAliases), Find(BrandAliases), Find(CodeAliases), Find(PriceAliases), Find(StockAliases), Find(LowStockAliases));
+            return new Columns(Find(NameAliases), Find(BrandAliases), Find(CodeAliases), Find(PriceAliases), Find(CostAliases), Find(StockAliases), Find(LowStockAliases));
         }
     }
 }

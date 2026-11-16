@@ -57,7 +57,13 @@ public static class ProductFilterSegments
 public sealed record ProductListPage(Paged<ProductListItem> Products, ProductFilter Show, string? Search, int Total, int LowCount, int NotInUseCount)
 {
     public const int PageSize = 24;
+
+    /// <summary>What the shelves hold in money (ADR 0049); null without products, and for people who may not see costs.</summary>
+    public ShelfWorth? Worth { get; init; }
 }
+
+/// <param name="WithoutCost">Products on the shelves that have no cost yet and so are missing from <paramref name="AtCost"/>.</param>
+public sealed record ShelfWorth(Money AtCost, Money AtRetail, int WithoutCost);
 
 /// <param name="Price">What a client pays; null for a product the salon only uses itself.</param>
 public sealed record ProductListItem(Guid Id, string Name, string? Brand, Money? Price, int OnHand, bool IsLow, bool IsActive);
