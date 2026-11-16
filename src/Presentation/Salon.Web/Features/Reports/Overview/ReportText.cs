@@ -1,4 +1,6 @@
 using System.Globalization;
+using Salon.Core.Domain;
+using Salon.Services.Formatting;
 using Salon.Services.Localization;
 
 namespace Salon.Web.Features.Reports.Overview;
@@ -29,5 +31,24 @@ public static class ReportText
             > 0m => localizer.Format("Reports.Compare.Up", change.Value.ToString("0.#", culture)),
             _ => localizer.Format("Reports.Compare.Down", (-change.Value).ToString("0.#", culture)),
         };
+    }
+
+    /// <summary>
+    /// The profit on products (ADR 0052) as "£13.00 (52%)", or the amount alone when there is nothing to take a
+    /// share of. A loss keeps its minus.
+    /// </summary>
+    public static string Profit(ILocalizationService localizer, Money profit, decimal? share, CultureInfo culture)
+    {
+        ArgumentNullException.ThrowIfNull(localizer);
+        ArgumentNullException.ThrowIfNull(culture);
+        var amount = profit.ToDisplayString(culture);
+        if (share is not { } percent)
+        {
+            return amount;
+        }
+
+        // The same real minus sign the money beside it has, not a hyphen.
+        var written = percent < 0m ? "−" + (-percent).ToString("0.#", culture) : percent.ToString("0.#", culture);
+        return localizer.Format("Reports.Retail.ProfitWithShare", amount, written);
     }
 }

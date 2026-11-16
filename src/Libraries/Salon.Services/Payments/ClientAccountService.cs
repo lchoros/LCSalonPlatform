@@ -455,9 +455,17 @@ internal sealed class ClientAccountService(
                 ByUserId = byUserId,
             };
             await InsertAsync(sale, ClientAccountRefusal.NothingToPay, cancellationToken).ConfigureAwait(false);
+
+            // What each product costs the salon today is kept on the line (ADR 0052): the profit of this sale must not
+            // move when the cost changes later.
+            var soldIds = unpaidProducts.Select(l => l.ProductId).Distinct().ToArray();
+            var costs = await db.Products.AsNoTracking()
+                .Where(p => soldIds.Contains(p.Id))
+                .ToDictionaryAsync(p => p.Id, p => p.CostPrice, cancellationToken).ConfigureAwait(false);
             foreach (var line in unpaidProducts)
             {
                 line.PaymentEntryId = sale.Id;
+                line.UnitCost = costs.GetValueOrDefault(line.ProductId);
                 var stocked = await stock.SellAsync(line.ProductId, line.Quantity, appointmentId, byUserId, cancellationToken).ConfigureAwait(false);
                 if (!stocked.IsRecorded)
                 {

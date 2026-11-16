@@ -95,5 +95,11 @@
   "Reports.Chart.Title": "Takings each day",
   "Reports.Chart.Best": "Best day: {0}, {1}.",
   "Reports.Chart.NoBest": "No day of this period ended above zero.",
-  "Reports.Chart.Bar": "{0}: {1}"
+  "Reports.Chart.Bar": "{0}: {1}",
+  "Reports.Retail.Profit": "Profit on products",
+  "Reports.Retail.ProfitHint": "The price less what each one cost you on the day it was sold, for the units clients kept.",
+  "Reports.Retail.ProfitWithShare": "{0} ({1}%)",
+  "Reports.Retail.WithoutCost.One": "{0} unit was sold with no cost on record and is left out of the profit.",
+  "Reports.Retail.WithoutCost.Many": "{0} units were sold with no cost on record and are left out of the profit.",
+  "Reports.Retail.LineProfit": "Profit: {0}"
 }

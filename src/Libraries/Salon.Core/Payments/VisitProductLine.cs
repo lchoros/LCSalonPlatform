@@ -31,6 +31,13 @@ public class VisitProductLine : BaseEntity, ITenantEntity
     /// <summary>The price of one when it was put on the bill.</summary>
     public decimal UnitPrice { get; set; }
 
+    /// <summary>
+    /// What one cost the salon on the day it was paid for (ADR 0052), copied from the product then; null while the
+    /// line is unpaid, and for a sale made when nobody had said what the product costs. Never changes afterwards, so
+    /// the profit of a past sale does not move when the supplier changes the price.
+    /// </summary>
+    public decimal? UnitCost { get; set; }
+
     /// <summary>ISO 4217 code of <see cref="UnitPrice"/>.</summary>
     public required string Currency { get; set; }
 
@@ -56,6 +63,11 @@ public class VisitProductLine : BaseEntity, ITenantEntity
     public Money Total => new(ProductSaleRules.LineTotal(Quantity, UnitPrice), Currency);
 }
 
+/// <param name="Amount">Price less cost over the kept units that have a cost; null when none has one. Below zero for a loss.</param>
+/// <param name="Percent">Of what those units were sold for, one decimal; null without <paramref name="Amount"/> or when they were given away.</param>
+/// <param name="UnitsWithoutCost">Kept units sold with no cost on record; they are in neither figure.</param>
+public readonly record struct RetailProfit(decimal? Amount, decimal? Percent, int UnitsWithoutCost);
+
 /// <summary>What may go on a bill and how its lines add up (ADR 0037). Pure.</summary>
 public static class ProductSaleRules
 {
@@ -72,6 +84,42 @@ public static class ProductSaleRules
     }
 
     public static decimal LineTotal(int quantity, decimal unitPrice) => quantity * unitPrice;
+
+    /// <summary>
+    /// What the salon kept of the products it sold (ADR 0052): for every line with a cost on record, the price less
+    /// the cost, times the units the client still has. Units brought back earn nothing. Lines without a cost are not
+    /// guessed at: their kept units are counted so the figure is not taken for the whole.
+    /// </summary>
+    public static RetailProfit Profit(IEnumerable<(int Kept, decimal UnitPrice, decimal? UnitCost)> lines)
+    {
+        ArgumentNullException.ThrowIfNull(lines);
+        var profit = 0m;
+        var revenue = 0m;
+        var withoutCost = 0;
+        var costed = 0;
+        foreach (var (kept, unitPrice, unitCost) in lines)
+        {
+            if (kept <= 0)
+            {
+                continue;
+            }
+
+            if (unitCost is not { } cost)
+            {
+                withoutCost += kept;
+                continue;
+            }
+
+            costed += kept;
+            revenue += kept * unitPrice;
+            profit += kept * (unitPrice - cost);
+        }
+
+        return new RetailProfit(
+            costed > 0 ? profit : null,
+            costed > 0 && revenue > 0m ? decimal.Round(100m * profit / revenue, 1, MidpointRounding.AwayFromZero) : null,
+            withoutCost);
+    }
 
     /// <summary>What is left to pay for products: the lines nobody has paid for yet.</summary>
     public static decimal Outstanding(IEnumerable<(int Quantity, decimal UnitPrice, bool IsPaid)> lines)

@@ -20,6 +20,7 @@ internal sealed class VisitProductLineConfiguration : IEntityTypeConfiguration<V
         builder.HasKey(l => l.Id);
         builder.Property(l => l.ProductName).HasMaxLength(ProductRules.NameMaxLength).IsRequired();
         builder.Property(l => l.UnitPrice).HasPrecision(10, 2);
+        builder.Property(l => l.UnitCost).HasPrecision(10, 2);
         builder.Property(l => l.Currency).HasMaxLength(VisitProductLine.CurrencyLength).IsRequired();
         builder.Ignore(l => l.IsPaid);
         builder.Ignore(l => l.Kept);

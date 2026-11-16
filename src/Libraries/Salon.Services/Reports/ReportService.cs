@@ -244,7 +244,7 @@ internal sealed class ReportService(
             from line in db.VisitProductLines.AsNoTracking()
             join sale in db.ClientAccountEntries.AsNoTracking() on line.PaymentEntryId equals sale.Id
             where sale.At >= start && sale.At < end
-            select new { line.ProductId, line.ProductName, line.Quantity, line.UnitPrice, line.AppointmentId, line.AddedAt })
+            select new { line.ProductId, line.ProductName, line.Quantity, line.UnitPrice, line.UnitCost, line.ReturnedQuantity, line.AppointmentId, line.AddedAt })
             .ToListAsync(cancellationToken).ConfigureAwait(false);
         var ids = rows.Select(r => r.ProductId).Distinct().ToArray();
         var names = await db.Products.AsNoTracking()
@@ -256,10 +256,14 @@ internal sealed class ReportService(
             .Select(g => new ProductSalesLine(
                 names.TryGetValue(g.Key, out var name) ? name : g.OrderByDescending(r => r.AddedAt).First().ProductName,
                 g.Sum(r => r.Quantity),
-                money(g.Sum(r => ProductSaleRules.LineTotal(r.Quantity, r.UnitPrice)))))
+                money(g.Sum(r => ProductSaleRules.LineTotal(r.Quantity, r.UnitPrice))))
+            {
+                Profit = ProductSaleRules.Profit(g.Select(r => (r.Quantity - r.ReturnedQuantity, r.UnitPrice, r.UnitCost))).Amount is { } kept ? money(kept) : null,
+            })
             .OrderByDescending(p => p.Value.Amount).ThenByDescending(p => p.Units).ThenBy(p => p.Name, StringComparer.Ordinal)
             .ToArray();
 
+        var profit = ProductSaleRules.Profit(rows.Select(r => (r.Quantity - r.ReturnedQuantity, r.UnitPrice, r.UnitCost)));
         return new RetailReport(
             money(sold),
             money(returned),
@@ -268,7 +272,12 @@ internal sealed class ReportService(
             rows.Select(r => r.AppointmentId).Distinct().Count(),
             ReportRules.Share(sold - returned, takings.Amount),
             products.Take(SalonReport.MaxTopProducts).ToArray(),
-            products.Length);
+            products.Length)
+        {
+            Profit = profit.Amount is { } amount ? money(amount) : null,
+            ProfitShare = profit.Percent,
+            UnitsWithoutCost = profit.UnitsWithoutCost,
+        };
     }
 
     /// <summary>

@@ -85,12 +85,12 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
     /// Puts a product with a price on the salon's shelf, counted to <paramref name="onHand"/> through the stock service
     /// like the app does. The name should be one no earlier run can have left behind.
     /// </summary>
-    public async Task<Guid> AddProductAsync(Guid tenantId, string name, decimal price, int onHand)
+    public async Task<Guid> AddProductAsync(Guid tenantId, string name, decimal price, int onHand, decimal? cost = null)
     {
         using var scope = _factory.Services.CreateScope();
         scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
         var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
-        var product = new Core.Products.Product { Name = name, RetailPrice = price, Currency = "GBP" };
+        var product = new Core.Products.Product { Name = name, RetailPrice = price, CostPrice = cost, Currency = "GBP" };
         db.Products.Add(product);
         await db.SaveChangesAsync();
         await scope.ServiceProvider.GetRequiredService<Salon.Services.Products.IStockService>().RecordAsync(product.Id, Core.Products.StockMovementKind.Counted, onHand, null, null);

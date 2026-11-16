@@ -129,11 +129,29 @@ public sealed record RetailReport(
 
     /// <summary>More products were sold than <see cref="TopProducts"/> names.</summary>
     public bool HasMoreProducts => ProductCount > TopProducts.Count;
+
+    /// <summary>
+    /// What the salon kept of the products sold in the period after what they cost (ADR 0052): price less the cost of
+    /// the day, for the units the clients still have. Null when no unit sold has a cost on record.
+    /// </summary>
+    public Money? Profit { get; init; }
+
+    /// <summary><see cref="Profit"/> as a percentage of what those units were sold for.</summary>
+    public decimal? ProfitShare { get; init; }
+
+    /// <summary>Kept units sold with no cost on record; they are not in <see cref="Profit"/>.</summary>
+    public int UnitsWithoutCost { get; init; }
+
+    public bool HasUnitsWithoutCost => UnitsWithoutCost > 0;
 }
 
 /// <param name="Name">The product's name today; the name on the bill for one that is gone.</param>
 /// <param name="Value">What the units were rung up at.</param>
-public sealed record ProductSalesLine(string Name, int Units, Money Value);
+public sealed record ProductSalesLine(string Name, int Units, Money Value)
+{
+    /// <summary>What the salon kept of this product after its cost (ADR 0052); null when no unit sold has a cost on record.</summary>
+    public Money? Profit { get; init; }
+}
 
 /// <summary>
 /// The period set against the same days one period earlier (ADR 0046). Both sides count only days that have

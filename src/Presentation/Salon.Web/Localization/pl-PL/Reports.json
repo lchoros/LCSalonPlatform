@@ -95,5 +95,11 @@
   "Reports.Chart.Title": "Utarg w kolejnych dniach",
   "Reports.Chart.Best": "Najlepszy dzień: {0}, {1}.",
   "Reports.Chart.NoBest": "Żaden dzień tego okresu nie zakończył się na plusie.",
-  "Reports.Chart.Bar": "{0}: {1}"
+  "Reports.Chart.Bar": "{0}: {1}",
+  "Reports.Retail.Profit": "Zysk na produktach",
+  "Reports.Retail.ProfitHint": "Cena minus koszt zakupu z dnia sprzedaży, dla sztuk, które klienci zatrzymali.",
+  "Reports.Retail.ProfitWithShare": "{0} ({1}%)",
+  "Reports.Retail.WithoutCost.One": "{0} sztukę sprzedano bez zapisanego kosztu i nie wlicza się jej do zysku.",
+  "Reports.Retail.WithoutCost.Many": "Sztuki sprzedane bez zapisanego kosztu: {0}. Nie wlicza się ich do zysku.",
+  "Reports.Retail.LineProfit": "Zysk: {0}"
 }

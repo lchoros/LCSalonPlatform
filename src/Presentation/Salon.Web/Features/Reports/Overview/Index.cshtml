@@ -308,7 +308,19 @@
                     </dt>
                     <dd class="text-right font-bold tabular-nums" data-testid="retail-share">@ReportText.Percent(T, share, culture)</dd>
                 }
+                @if (retail.Profit is { } profit)
+                {
+                    <dt>
+                        <span class="block font-semibold">@T["Reports.Retail.Profit"]</span>
+                        <span class="block text-sm text-stone-600">@T["Reports.Retail.ProfitHint"]</span>
+                    </dt>
+                    <dd class="text-right font-bold tabular-nums" data-testid="retail-profit">@ReportText.Profit(T, profit, retail.ProfitShare, culture)</dd>
+                }
             </dl>
+            @if (retail.HasUnitsWithoutCost)
+            {
+                <p class="text-sm text-stone-600" data-testid="retail-without-cost">@T.Plural("Reports.Retail.WithoutCost", retail.UnitsWithoutCost)</p>
+            }
             @if (retail.TopProducts.Count > 0)
             {
                 <h3 class="@subheadClass">@T["Reports.Retail.Best"]</h3>
@@ -319,6 +331,10 @@
                             <span class="flex min-w-0 flex-col gap-0.5">
                                 <span class="font-medium">@product.Name</span>
                                 <span class="text-sm text-stone-600">@T.Format("Reports.Retail.LineUnits", product.Units)</span>
+                                @if (product.Profit is { } kept)
+                                {
+                                    <span class="text-sm text-stone-600" data-testid="top-product-profit">@T.Format("Reports.Retail.LineProfit", kept.ToDisplayString(culture))</span>
+                                }
                             </span>
                             <span class="tabular-nums font-medium">@product.Value.ToDisplayString(culture)</span>
                         </li>
