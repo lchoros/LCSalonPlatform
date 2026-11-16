@@ -83,5 +83,13 @@
   "Reports.Compare.Down": "Down {0}%",
   "Reports.Compare.NoChange": "No change",
   "Reports.Compare.NothingBefore": "Nothing before",
-  "Reports.Compare.Hint": "The same days one period earlier, counted only up to today, so a week or a month that is not over is compared like for like."
+  "Reports.Compare.Hint": "The same days one period earlier, counted only up to today, so a week or a month that is not over is compared like for like.",
+  "Reports.Export.Visits": "Download the visits",
+  "Reports.Export.Column.With": "With",
+  "Reports.Export.Column.Minutes": "Minutes",
+  "Reports.Export.Column.Status": "Status",
+  "Reports.Export.Column.BookedBy": "Booked",
+  "Reports.Export.Column.Price": "Price",
+  "Reports.Export.BookedBy.Online": "Online",
+  "Reports.Export.BookedBy.Admin": "At the salon"
 }

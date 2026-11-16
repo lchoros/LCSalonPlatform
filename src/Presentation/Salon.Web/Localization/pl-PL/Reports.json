@@ -83,5 +83,13 @@
   "Reports.Compare.Down": "Spadek o {0}%",
   "Reports.Compare.NoChange": "Bez zmian",
   "Reports.Compare.NothingBefore": "Brak wcześniej",
-  "Reports.Compare.Hint": "Te same dni jeden okres wcześniej, liczone tylko do dziś, więc niezakończony tydzień lub miesiąc porównuje się z takim samym odcinkiem."
+  "Reports.Compare.Hint": "Te same dni jeden okres wcześniej, liczone tylko do dziś, więc niezakończony tydzień lub miesiąc porównuje się z takim samym odcinkiem.",
+  "Reports.Export.Visits": "Pobierz wizyty",
+  "Reports.Export.Column.With": "Pracownik",
+  "Reports.Export.Column.Minutes": "Minuty",
+  "Reports.Export.Column.Status": "Status",
+  "Reports.Export.Column.BookedBy": "Rezerwacja",
+  "Reports.Export.Column.Price": "Cena",
+  "Reports.Export.BookedBy.Online": "Online",
+  "Reports.Export.BookedBy.Admin": "W salonie"
 }

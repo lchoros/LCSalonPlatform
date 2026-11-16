@@ -162,7 +162,14 @@
     </section>
 
     <section class="@cardClass" data-testid="visits">
-        <h2 class="text-lg font-semibold">@T["Reports.Visits.Title"]</h2>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-lg font-semibold">@T["Reports.Visits.Title"]</h2>
+            @if (Model.Visits.Total > 0)
+            {
+                @* Every visit of the period as a file for a spreadsheet (ADR 0047); the ExportVisits slice owns the address. *@
+                <a href="@ReportsController.VisitsExportPath(period)" class="btn btn-compact btn-secondary" data-testid="export-visits" download>@T["Reports.Export.Visits"]</a>
+            }
+        </div>
         <dl class="@listClass">
             <dt class="font-semibold">@T["Reports.Visits.Total"]</dt>
             <dd class="text-right font-bold tabular-nums" data-testid="visits-total">@Model.Visits.Total</dd>

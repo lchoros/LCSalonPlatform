@@ -137,5 +137,16 @@
   "Products.Import.Result.Skipped": "{0} już istniało, {1} nie udało się zaimportować.",
   "Products.Import.Result.ToProducts": "Przejdź do produktów",
   "Products.Import.Result.Again": "Importuj kolejny plik",
-  "Products.Import.StockNote": "Zaimportowano z {0}"
+  "Products.Import.StockNote": "Zaimportowano z {0}",
+  "Products.List.Export": "Pobierz listę produktów",
+  "Products.Export.Column.Name": "Nazwa",
+  "Products.Export.Column.Brand": "Marka",
+  "Products.Export.Column.Code": "Kod",
+  "Products.Export.Column.Price": "Cena",
+  "Products.Export.Column.Currency": "Waluta",
+  "Products.Export.Column.InStock": "Stan",
+  "Products.Export.Column.LowStockAt": "Stan minimalny",
+  "Products.Export.Column.InUse": "W użyciu",
+  "Products.Export.Yes": "Tak",
+  "Products.Export.No": "Nie"
 }

@@ -378,6 +378,17 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] AE4. "Last month" compares the whole month with the whole month before it.
 - [ ] AE5. Dates wholly in the future: the table is not shown.
 
+## AF. Visits and the stock list as files (after the branch `agent/m3-24-more-files` is merged too)
+- [ ] AF1. Reports, "This month": the Visits section has "Download the visits". The file opens in Excel with one row
+      per visit: date, time, client, service, with whom, minutes, status, booked online or at the salon, price.
+- [ ] AF2. The number of rows is the "Visits" total on the report. Cancelled visits and no-shows are rows too.
+- [ ] AF3. A period without a visit has no button.
+- [ ] AF4. Products has "Download the stock list" beside "Import from a file". The file has every product with what
+      is on the shelf today; a product you stopped using says "No" under "In use".
+- [ ] AF5. Sign in as the receptionist: Products shows the shelves and no download button.
+- [ ] AF6. Upload the downloaded stock file under "Import from a file": every row is "already exists" and nothing
+      changes.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

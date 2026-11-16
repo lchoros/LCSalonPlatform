@@ -33,6 +33,10 @@ public sealed class ReportsController(IDispatcher dispatcher) : SalonControllerB
     public static string MoneyExportPath(ReportPeriod period)
         => $"{Path}/money.csv?from={LocalDatePattern.Iso.Format(period.From)}&to={LocalDatePattern.Iso.Format(period.To)}";
 
+    /// <summary>The period's visits as a CSV file (ADR 0047); the ExportVisits slice owns the route.</summary>
+    public static string VisitsExportPath(ReportPeriod period)
+        => $"{Path}/visits.csv?from={LocalDatePattern.Iso.Format(period.From)}&to={LocalDatePattern.Iso.Format(period.To)}";
+
     private static readonly Dictionary<string, ReportPreset> Presets = new(StringComparer.OrdinalIgnoreCase)
     {
         ["this-week"] = ReportPreset.ThisWeek,

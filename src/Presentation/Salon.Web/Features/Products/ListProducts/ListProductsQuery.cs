@@ -64,4 +64,8 @@ public sealed record ProductListItem(Guid Id, string Name, string? Brand, Money?
 
 /// <param name="CanManage">True when the signed-in user may add and change products.</param>
 /// <param name="Flash">Confirmation left by the previous request (post-redirect-get), if any.</param>
-public sealed record ListProductsViewModel(ProductListPage Page, FilterTilesModel Filter, SearchBoxModel Search, PagerModel Pager, bool CanManage, string? Flash);
+public sealed record ListProductsViewModel(ProductListPage Page, FilterTilesModel Filter, SearchBoxModel Search, PagerModel Pager, bool CanManage, string? Flash)
+{
+    /// <summary>The stock list as a file (ADR 0047): for the people who keep the list, once there is a product to list.</summary>
+    public bool CanDownload => CanManage && Page.Total > 0;
+}

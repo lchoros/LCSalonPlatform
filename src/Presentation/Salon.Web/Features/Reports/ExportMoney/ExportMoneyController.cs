@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using NodaTime;
 using NodaTime.Text;
@@ -49,11 +48,6 @@ public sealed class ExportMoneyController(IDispatcher dispatcher, ILocalizationS
     {
         var journal = await dispatcher.SendAsync(new ExportMoneyQuery(ParseDate(from), ParseDate(to)), cancellationToken);
         var culture = CultureInfo.CurrentCulture;
-
-        // The separator a spreadsheet in this language expects; never the decimal sign itself.
-        var listSeparator = culture.TextInfo.ListSeparator;
-        var separator = listSeparator.Length == 1 && listSeparator != culture.NumberFormat.NumberDecimalSeparator ? listSeparator[0] : ';';
-
         var headers = Columns.Select(column => localizer[$"Reports.Export.Column.{column}"]).ToArray();
         var rows = journal.Lines.Select(line => (IReadOnlyList<CsvValue>)
         [
@@ -70,11 +64,8 @@ public sealed class ExportMoneyController(IDispatcher dispatcher, ILocalizationS
             CsvValue.Text(line.Reference),
         ]);
 
-        var csv = Csv.Write(headers, rows, separator);
-        var bytes = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(csv)).ToArray();
-        Response.Headers.CacheControl = "no-store";
         var name = $"money-{LocalDatePattern.Iso.Format(journal.Period.From)}-to-{LocalDatePattern.Iso.Format(journal.Period.To)}.csv";
-        return File(bytes, Csv.ContentType, name);
+        return CsvDownload(name, headers, rows);
     }
 
     private static LocalDate? ParseDate(string? date)

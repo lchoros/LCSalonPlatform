@@ -119,6 +119,42 @@ internal sealed class ReportService(
         return new MoneyJournal(period, lines);
     }
 
+    public async Task<VisitJournal> GetVisitLinesAsync(ReportPreset? preset, LocalDate? fromDay, LocalDate? toDay, CancellationToken cancellationToken = default)
+    {
+        var tenantId = tenantContext.TenantId ?? throw new TenantViolationException("Reports belong to a salon, but no tenant is set in the current scope.");
+        var tenant = await tenantLookup.FindByIdAsync(tenantId, cancellationToken).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Tenant {tenantId} does not exist.");
+        var zone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(tenant.TimeZoneId) ?? DateTimeZone.Utc;
+        var today = clock.GetCurrentInstant().InZone(zone).Date;
+        var period = ReportRules.Resolve(preset, fromDay, toDay, today).Period;
+        var start = zone.AtStartOfDay(period.From).ToInstant();
+        var end = zone.AtStartOfDay(period.To.PlusDays(1)).ToInstant();
+
+        // A visit counts on the day it starts, exactly as in the report (ADR 0026).
+        var rows = await (
+            from a in db.Appointments.AsNoTracking()
+            join c in db.Clients.AsNoTracking() on a.ClientId equals c.Id
+            join s in db.Services.AsNoTracking() on a.ServiceId equals s.Id
+            join m in db.StaffMembers.AsNoTracking() on a.StaffMemberId equals m.Id
+            where a.Start >= start && a.Start < end
+            orderby a.Start, a.Id
+            select new { a.Start, c.FirstName, c.LastName, Service = s.Name, Staff = m.DisplayName, a.DurationMinutes, a.Status, a.Source, a.PriceAmount, a.Currency })
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        var lines = rows
+            .Select(r => new VisitLine(
+                r.Start.InZone(zone),
+                r.FirstName + " " + r.LastName,
+                r.Service,
+                r.Staff,
+                r.DurationMinutes,
+                r.Status,
+                r.Source,
+                new Money(r.PriceAmount, r.Currency)))
+            .ToArray();
+        return new VisitJournal(period, lines);
+    }
+
     private static TakingsReport Takings(List<LedgerRow> lines, DateTimeZone zone, Func<decimal, Money> money)
     {
         // Only lines with a method moved money, exactly as on the till (ADR 0024).

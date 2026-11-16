@@ -137,5 +137,16 @@
   "Products.Import.Result.Skipped": "{0} already existed, {1} could not be imported.",
   "Products.Import.Result.ToProducts": "Go to the products",
   "Products.Import.Result.Again": "Import another file",
-  "Products.Import.StockNote": "Imported from {0}"
+  "Products.Import.StockNote": "Imported from {0}",
+  "Products.List.Export": "Download the stock list",
+  "Products.Export.Column.Name": "Name",
+  "Products.Export.Column.Brand": "Brand",
+  "Products.Export.Column.Code": "Code",
+  "Products.Export.Column.Price": "Price",
+  "Products.Export.Column.Currency": "Currency",
+  "Products.Export.Column.InStock": "In stock",
+  "Products.Export.Column.LowStockAt": "Low stock at",
+  "Products.Export.Column.InUse": "In use",
+  "Products.Export.Yes": "Yes",
+  "Products.Export.No": "No"
 }
