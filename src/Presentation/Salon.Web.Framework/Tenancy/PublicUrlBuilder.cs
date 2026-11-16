@@ -21,6 +21,14 @@ internal sealed class PublicUrlBuilder(IOptions<TenancyOptions> options, IHostEn
         return Build(tenantSlug, PublicBookingDefaults.ShortLinkPath(publicToken));
     }
 
+    public string SalonUrl(string tenantSlug, string pathAndQuery)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(pathAndQuery);
+        var parts = pathAndQuery.Split('?', 2);
+        var address = Build(tenantSlug, parts[0]);
+        return parts.Length == 2 ? address + "?" + parts[1] : address;
+    }
+
     private string Build(string tenantSlug, string path)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantSlug);

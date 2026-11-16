@@ -67,6 +67,9 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     /// <summary>One row per reminder handled for an appointment; the unique row is what prevents a second SMS (ADR 0020).</summary>
     public DbSet<AppointmentReminder> AppointmentReminders => Set<AppointmentReminder>();
 
+    /// <summary>One row per day a salon's summary went out; the unique row is what prevents a second email (ADR 0050).</summary>
+    public DbSet<DailySummaryDelivery> DailySummaryDeliveries => Set<DailySummaryDelivery>();
+
     /// <summary>Clients who want a visit the diary has no room for yet; closed, never deleted (ADR 0041).</summary>
     public DbSet<WaitlistEntry> WaitlistEntries => Set<WaitlistEntry>();
 
