@@ -29,8 +29,8 @@ and the reports still showed the sale.
 ## Not decided here
 - A reason for the return, a time limit, an exchange in one step: as for ADR 0040.
 - Finding a counter sale by product or by amount instead of by day. A receipt with a number to look it up by.
-- The return on a visit's bill still adds up its returned units without the one-statement claim. Two tills at once
-  can at worst both be refused by the database's cap; making it the same claim is a small follow-up in payments.
+- The return on a visit's bill had the same gap and worse: two requests at once could both record the money. It is
+  fixed by the same claim in the amendment to ADR 0040.
 
 ## Consequences
 - Migration `CounterSaleReturn`: one column with a default of 0 on `counter_sale_lines`, one check constraint on
