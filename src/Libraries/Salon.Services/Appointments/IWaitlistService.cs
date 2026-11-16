@@ -74,4 +74,8 @@ public sealed record WaitlistItem(
     LocalDate? NotAfter,
     string? Note,
     LocalDate BookingDay,
-    LocalDate WaitingSince);
+    LocalDate WaitingSince)
+{
+    /// <summary>True when the client put themselves on the list from the public booking pages (ADR 0055), not the desk.</summary>
+    public bool AskedOnline { get; init; }
+}

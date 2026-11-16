@@ -19,6 +19,10 @@ internal sealed class PhoneVerificationConfiguration : IEntityTypeConfiguration<
         builder.Property(v => v.LastName).HasMaxLength(PhoneVerification.NameMaxLength).IsRequired();
         builder.Property(v => v.Email).HasMaxLength(PhoneVerification.EmailMaxLength);
         builder.Property(v => v.ConsentWording).HasMaxLength(PhoneVerification.ConsentWordingMaxLength);
+        builder.Property(v => v.Purpose).HasConversion<int>().HasDefaultValue(PhoneVerificationPurpose.Booking);
+        builder.Property(v => v.WaitNotBefore).HasColumnType("date");
+        builder.Property(v => v.WaitNotAfter).HasColumnType("date");
+        builder.Property(v => v.WaitNote).HasMaxLength(Core.Appointments.WaitlistEntry.NoteMaxLength);
         // "How many codes went to this number in the last hour" (ADR 0014 anti-abuse).
         builder.HasIndex(v => new { v.TenantId, v.PhoneE164, v.CreatedAt });
         builder.HasOne<Service>().WithMany().HasForeignKey(v => v.ServiceId).OnDelete(DeleteBehavior.Restrict);

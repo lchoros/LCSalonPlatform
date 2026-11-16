@@ -25,7 +25,14 @@ public sealed record ChooseSlotResult(
     IReadOnlyList<StaffOption> Staff,
     Guid? SelectedStaffId,
     IReadOnlyList<SlotOption> Slots,
-    DateTimeZone Zone);
+    DateTimeZone Zone)
+{
+    /// <summary>Whether the salon offers "tell me when a time comes up" (ADR 0055).</summary>
+    public bool WaitlistOffered { get; init; }
+
+    /// <summary>Where that form is, with the chosen person carried along; the JoinWaitlist slice owns the route.</summary>
+    public string WaitlistPath => SelectedStaffId is { } staff ? $"/book/{ServiceId}/waitlist?staff={staff}" : $"/book/{ServiceId}/waitlist";
+}
 
 public sealed record DayOption(LocalDate Date, bool HasSlots);
 

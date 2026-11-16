@@ -1,0 +1,91 @@
+@using Salon.Core.Appointments
+@using Salon.Web.Features.Booking.JoinWaitlist
+@model JoinWaitlistViewModel
+@{
+    var s = Model.Summary;
+    var today = s.Today.ToIso();
+    ViewData["Title"] = T["Booking.Waitlist.Title"];
+}
+<section class="mx-auto max-w-lg space-y-6">
+    <header class="space-y-2">
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Booking.Waitlist.Title"]</h1>
+        <p class="text-stone-700">@T["Booking.Waitlist.Lead"]</p>
+    </header>
+
+    <div class="summary-bar flex-wrap items-start" data-testid="summary">
+        <dl class="min-w-0 flex-1 basis-56 space-y-1 text-sm">
+            <div>
+                <dt class="sr-only">@T["Booking.Public.Done.Service"]</dt>
+                <dd class="text-base font-semibold" data-testid="summary-service">@s.ServiceName</dd>
+            </div>
+            <div class="flex gap-2">
+                <dt class="text-stone-600">@T["Booking.Public.Done.Staff"]</dt>
+                <dd class="font-medium" data-testid="summary-staff">@(s.StaffName ?? T["Booking.Public.Anyone"])</dd>
+            </div>
+        </dl>
+        <a href="/book/@s.ServiceId" class="btn-link ml-auto">@T["Booking.Waitlist.BackToTimes"]</a>
+    </div>
+
+    <form method="post" asp-action="Form" class="space-y-5" novalidate data-testid="waitlist-form">
+        <div asp-validation-summary="ModelOnly" class="notice notice-error" role="alert"></div>
+        @* Plain field names (no "Form." prefix): the command binds them and the pipeline's failures are keyed the same way. *@
+        <input type="hidden" name="StaffMemberId" value="@Model.Form.StaffMemberId" />
+
+        <div class="grid gap-5 sm:grid-cols-2">
+            <div class="space-y-1.5">
+                <label for="FirstName" class="field-label">@T["Booking.Public.FirstName"]</label>
+                <input id="FirstName" name="FirstName" value="@Model.Form.FirstName" type="text" maxlength="100" autocomplete="given-name" autocapitalize="words" aria-describedby="first-name-error" class="field @ViewData.ModelState.InvalidClass("FirstName")" />
+                @Html.ValidationMessage("FirstName", null, new { id = "first-name-error", @class = "field-error" })
+            </div>
+            <div class="space-y-1.5">
+                <label for="LastName" class="field-label">@T["Booking.Public.LastName"]</label>
+                <input id="LastName" name="LastName" value="@Model.Form.LastName" type="text" maxlength="100" autocomplete="family-name" autocapitalize="words" aria-describedby="last-name-error" class="field @ViewData.ModelState.InvalidClass("LastName")" />
+                @Html.ValidationMessage("LastName", null, new { id = "last-name-error", @class = "field-error" })
+            </div>
+        </div>
+
+        <div class="space-y-1.5">
+            <label for="Phone" class="field-label">@T["Booking.Public.Phone"]</label>
+            <input id="Phone" name="Phone" value="@Model.Form.Phone" type="tel" inputmode="tel" maxlength="30" autocomplete="tel" aria-describedby="phone-hint phone-error" class="field tabular-nums @ViewData.ModelState.InvalidClass("Phone")" />
+            <p id="phone-hint" class="field-hint">@(s.RequireSmsVerification ? T["Booking.Waitlist.PhoneHintCode"] : T["Booking.Waitlist.PhoneHint"])</p>
+            @Html.ValidationMessage("Phone", null, new { id = "phone-error", @class = "field-error" })
+        </div>
+
+        <div class="space-y-1.5">
+            <label for="Email" class="field-label">@T["Booking.Public.Email"]</label>
+            <input id="Email" name="Email" value="@Model.Form.Email" type="email" inputmode="email" maxlength="254" autocomplete="email" autocapitalize="none" spellcheck="false" aria-describedby="email-error" class="field @ViewData.ModelState.InvalidClass("Email")" />
+            @Html.ValidationMessage("Email", null, new { id = "email-error", @class = "field-error" })
+        </div>
+
+        <fieldset class="space-y-3">
+            <legend class="field-label">@T["Booking.Waitlist.When"]</legend>
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div class="space-y-1.5">
+                    <label for="NotBefore" class="text-sm text-stone-700">@T["Booking.Waitlist.NotBefore"]</label>
+                    <input id="NotBefore" name="NotBefore" value="@Model.Form.NotBefore" type="date" min="@today" aria-describedby="not-before-error" class="field tabular-nums @ViewData.ModelState.InvalidClass("NotBefore")" data-testid="not-before" />
+                    @Html.ValidationMessage("NotBefore", null, new { id = "not-before-error", @class = "field-error" })
+                </div>
+                <div class="space-y-1.5">
+                    <label for="NotAfter" class="text-sm text-stone-700">@T["Booking.Waitlist.NotAfter"]</label>
+                    <input id="NotAfter" name="NotAfter" value="@Model.Form.NotAfter" type="date" min="@today" aria-describedby="not-after-error" class="field tabular-nums @ViewData.ModelState.InvalidClass("NotAfter")" data-testid="not-after" />
+                    @Html.ValidationMessage("NotAfter", null, new { id = "not-after-error", @class = "field-error" })
+                </div>
+            </div>
+            <p class="field-hint">@T["Booking.Waitlist.WhenHint"]</p>
+        </fieldset>
+
+        <div class="space-y-1.5">
+            <label for="Note" class="field-label">@T["Booking.Waitlist.Note"]</label>
+            <input id="Note" name="Note" value="@Model.Form.Note" type="text" maxlength="@WaitlistEntry.NoteMaxLength" aria-describedby="note-hint note-error" class="field @ViewData.ModelState.InvalidClass("Note")" data-testid="waitlist-note" />
+            <p id="note-hint" class="field-hint">@T["Booking.Waitlist.NoteHint"]</p>
+            @Html.ValidationMessage("Note", null, new { id = "note-error", @class = "field-error" })
+        </div>
+
+        <p class="text-sm text-stone-600" data-testid="waitlist-privacy">@T["Booking.Waitlist.Privacy"]</p>
+
+        <button type="submit" data-testid="submit-waitlist" class="btn btn-primary w-full">
+            @(s.RequireSmsVerification ? T["Booking.Public.SendCode"] : T["Booking.Waitlist.Submit"])
+        </button>
+    </form>
+    @await Component.InvokeAsync("SalonContact")
+</section>

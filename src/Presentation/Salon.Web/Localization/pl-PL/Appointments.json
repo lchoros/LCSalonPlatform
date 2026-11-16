@@ -144,5 +144,6 @@
   "Appointments.Waitlist.Refused.StaffUnknown": "Wybierz pracownika, który przyjmuje rezerwacje, albo dowolną osobę.",
   "Appointments.Waitlist.Refused.DaysInvalid": "Sprawdź dni: ostatni dzień nie może być przed pierwszym ani już minąć.",
   "Appointments.Waitlist.Refused.NoteTooLong": "Notatka może mieć najwyżej 200 znaków.",
-  "Appointments.Book.Waitlist": "Dodaj do listy oczekujących"
+  "Appointments.Book.Waitlist": "Dodaj do listy oczekujących",
+  "Appointments.Waitlist.AskedOnline": "Zgłoszenie online"
 }

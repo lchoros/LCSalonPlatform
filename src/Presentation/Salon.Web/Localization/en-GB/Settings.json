@@ -172,5 +172,18 @@
   "Settings.YourData.Notes.Title": "Good to know",
   "Settings.YourData.Notes.Format": "The files are CSV. Excel, Numbers and Google Sheets open them, and so does any other salon system.",
   "Settings.YourData.Notes.Health": "Health notes are not in any file. They stay encrypted on the card of the client.",
-  "Settings.YourData.Notes.Care": "A downloaded file holds personal data and is yours to keep safe. Each download of the client list is recorded with who took it."
+  "Settings.YourData.Notes.Care": "A downloaded file holds personal data and is yours to keep safe. Each download of the client list is recorded with who took it.",
+  "Settings.Nav.Waitlist": "Waitlist",
+  "Settings.Waitlist.Title": "Waitlist on the booking pages",
+  "Settings.Waitlist.Lead": "Let somebody who finds no time that suits leave their name and number. They appear on the waitlist of the desk, and you fill a freed time from your own clients.",
+  "Settings.Waitlist.Enabled": "Offer \"tell me when a time comes up\" on the booking pages",
+  "Settings.Waitlist.Hint": "The offer is shown under the times of every service.",
+  "Settings.Waitlist.Submit": "Save",
+  "Settings.Waitlist.SavedOn": "The booking pages now offer the waitlist.",
+  "Settings.Waitlist.SavedOff": "The booking pages no longer offer the waitlist.",
+  "Settings.Waitlist.Notes.Title": "Good to know",
+  "Settings.Waitlist.Notes.Checked": "The number is checked with a text message code before anybody reaches your list, the same way as a booking.",
+  "Settings.Waitlist.Notes.Desk": "Nobody is messaged automatically. The desk works the list from the top and gets in touch.",
+  "Settings.Waitlist.Notes.NoMarketplace": "These are your clients. Nobody else sees the list or offers them another salon.",
+  "Settings.Waitlist.ToList": "Open the waitlist"
 }

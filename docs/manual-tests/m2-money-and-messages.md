@@ -458,6 +458,18 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] AM6. Try to return more than is left: the page says why and nothing is recorded.
 - [ ] AM7. The arrow to yesterday shows yesterday's counter sales, or says there were none.
 
+## AN. The waitlist on the booking pages (after the branch `agent/m3-32-public-waitlist` is merged too; it has a migration)
+- [ ] AN1. Open the public booking pages and choose a service: under the times there is no offer of a waitlist.
+- [ ] AN2. As the owner, Settings, "Waitlist": tick the box and save.
+- [ ] AN3. The booking pages now say "No time that suits you? Ask us to tell you when one comes up" under the times.
+- [ ] AN4. Fill in a name and a mobile number you have not used, a remark, "Send code". The code is in the log and
+      in Mailpit. Enter it: "You are on the list".
+- [ ] AN5. As the owner, Appointments, Waitlist: the person is on the list with the remark, marked "Asked online",
+      and is a client card now.
+- [ ] AN6. Ask again with the same number and another remark: still one entry, with the new remark.
+- [ ] AN7. A wrong code says how many tries are left; after five the page offers to start again.
+- [ ] AN8. Untick the box in Settings: the offer is gone and the form's address is "not found".
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

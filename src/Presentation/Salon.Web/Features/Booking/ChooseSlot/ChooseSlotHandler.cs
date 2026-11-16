@@ -95,6 +95,9 @@ public sealed class ChooseSlotHandler(
             staff,
             staffId,
             byDay[selected].Select(s => new SlotOption(s.Start, s.Start.InZone(zone).TimeOfDay, s.StaffMemberId)).ToList(),
-            zone);
+            zone)
+        {
+            WaitlistOffered = rules.PublicWaitlist,
+        };
     }
 }

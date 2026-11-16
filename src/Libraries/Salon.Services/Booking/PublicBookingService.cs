@@ -114,7 +114,8 @@ internal sealed class PublicBookingService(
 
     public async Task<PendingVerification?> GetVerificationAsync(Guid verificationId, CancellationToken cancellationToken = default)
     {
-        var row = await db.PhoneVerifications.AsNoTracking().FirstOrDefaultAsync(v => v.Id == verificationId, cancellationToken).ConfigureAwait(false);
+        // A row made for the waitlist (ADR 0055) is not a booking: here it does not exist.
+        var row = await db.PhoneVerifications.AsNoTracking().FirstOrDefaultAsync(v => v.Id == verificationId && v.Purpose == PhoneVerificationPurpose.Booking, cancellationToken).ConfigureAwait(false);
         if (row is null)
         {
             return null;
@@ -127,7 +128,7 @@ internal sealed class PublicBookingService(
 
     public async Task<PublicBookingVerification> VerifyAndBookAsync(Guid verificationId, string? code, CancellationToken cancellationToken = default)
     {
-        var row = await db.PhoneVerifications.FirstOrDefaultAsync(v => v.Id == verificationId, cancellationToken).ConfigureAwait(false);
+        var row = await db.PhoneVerifications.FirstOrDefaultAsync(v => v.Id == verificationId && v.Purpose == PhoneVerificationPurpose.Booking, cancellationToken).ConfigureAwait(false);
         if (row is null)
         {
             return new PublicBookingVerification(PublicBookingVerificationOutcome.NotFound);

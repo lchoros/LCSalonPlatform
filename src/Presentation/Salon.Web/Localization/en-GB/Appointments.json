@@ -144,5 +144,6 @@
   "Appointments.Waitlist.Refused.StaffUnknown": "Choose a staff member who takes bookings, or anyone available.",
   "Appointments.Waitlist.Refused.DaysInvalid": "Check the days: the last day cannot be before the first, or already past.",
   "Appointments.Waitlist.Refused.NoteTooLong": "The note can have at most 200 characters.",
-  "Appointments.Book.Waitlist": "Put on the waitlist"
+  "Appointments.Book.Waitlist": "Put on the waitlist",
+  "Appointments.Waitlist.AskedOnline": "Asked online"
 }

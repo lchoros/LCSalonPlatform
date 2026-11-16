@@ -68,7 +68,10 @@ internal sealed class WaitlistService(
                     e.NotAfter,
                     e.Note,
                     WaitlistRules.BookingDay(e.NotBefore, today),
-                    e.CreatedAt.InZone(zone).Date);
+                    e.CreatedAt.InZone(zone).Date)
+                {
+                    AskedOnline = e.CreatedByUserId is null,
+                };
             })
             .ToArray();
     }
