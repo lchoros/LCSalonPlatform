@@ -1,0 +1,71 @@
+@using Salon.Core.Appointments
+@using Salon.Web.Features.Appointments.AddToWaitlist
+@model AddToWaitlistViewModel
+@{
+    ViewData["Title"] = T["Appointments.Waitlist.Add.Title"];
+    var form = Model.Form;
+    const string inputClass = "field field-compact";
+}
+<section class="mx-auto max-w-lg space-y-6">
+    <a href="/admin/clients/@form.ClientId" class="back-link" data-testid="back">&larr; @T["Clients.Merge.Back"]</a>
+    <header class="space-y-1">
+        <h1 class="page-title">@T["Appointments.Waitlist.Add.Title"]</h1>
+        <p class="text-lg text-stone-600" data-testid="waitlist-client">@form.ClientName</p>
+        <p class="text-stone-600">@T["Appointments.Waitlist.Add.Lead"]</p>
+    </header>
+    @if (Model.Error is { } error)
+    {
+        <p role="alert" data-testid="error" class="notice notice-error">@error</p>
+    }
+    <form method="post" action="@AddToWaitlistController.ListPath/new" asp-antiforgery="true" class="space-y-5" data-testid="waitlist-form">
+        <input type="hidden" name="clientId" value="@form.ClientId" />
+
+        <div class="space-y-1">
+            <label for="serviceId" class="field-label">@T["Appointments.Book.Service"]</label>
+            <select id="serviceId" name="serviceId" required class="@inputClass" data-testid="waitlist-service">
+                <option value="">@T["Appointments.Book.ChooseService"]</option>
+                @foreach (var service in form.Services)
+                {
+                    <option value="@service.Id" selected="@(service.Id == Model.ServiceId)">@service.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="space-y-1">
+            <label for="staffId" class="field-label">@T["Appointments.Book.Staff"]</label>
+            <select id="staffId" name="staffId" class="@inputClass" data-testid="waitlist-staff">
+                <option value="" selected="@(Model.StaffMemberId is null)">@T["Appointments.Book.AnyStaff"]</option>
+                @foreach (var person in form.Staff)
+                {
+                    <option value="@person.Id" selected="@(person.Id == Model.StaffMemberId)">@person.Name</option>
+                }
+            </select>
+        </div>
+
+        <fieldset class="panel space-y-3">
+            <legend class="px-1 font-semibold">@T["Appointments.Waitlist.Add.Days"]</legend>
+            <p id="days-hint" class="text-sm text-stone-500">@T["Appointments.Waitlist.Add.DaysHint"]</p>
+            <div class="grid gap-3 sm:grid-cols-2">
+                <div class="space-y-1">
+                    <label for="notBefore" class="field-label">@T["Appointments.Waitlist.Add.NotBefore"]</label>
+                    <input id="notBefore" name="notBefore" type="date" value="@Model.NotBefore" aria-describedby="days-hint" class="@inputClass" data-testid="waitlist-not-before" />
+                </div>
+                <div class="space-y-1">
+                    <label for="notAfter" class="field-label">@T["Appointments.Waitlist.Add.NotAfter"]</label>
+                    <input id="notAfter" name="notAfter" type="date" value="@Model.NotAfter" aria-describedby="days-hint" class="@inputClass" data-testid="waitlist-not-after" />
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="space-y-1">
+            <label for="note" class="field-label">@T["Appointments.Waitlist.Add.Note"]</label>
+            <input id="note" name="note" type="text" maxlength="@WaitlistEntry.NoteMaxLength" value="@Model.Note" autocomplete="off" aria-describedby="note-hint" class="@inputClass" data-testid="waitlist-note" />
+            <p id="note-hint" class="text-sm text-stone-500">@T["Appointments.Waitlist.Add.NoteHint"]</p>
+        </div>
+
+        <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+            <a href="/admin/clients/@form.ClientId" class="btn btn-compact btn-secondary">@T["Clients.Create.Cancel"]</a>
+            <button type="submit" class="btn btn-compact btn-primary" data-testid="waitlist-submit">@T["Appointments.Waitlist.Add.Submit"]</button>
+        </div>
+    </form>
+</section>

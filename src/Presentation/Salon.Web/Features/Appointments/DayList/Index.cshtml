@@ -43,6 +43,7 @@
         </div>
         <div class="flex flex-wrap items-center gap-2">
             <a href="@(DayListController.ListPath)/calendar?view=day&date=@board.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-testid="calendar" class="@navClass">@T["Appointments.Day.Calendar"]</a>
+            @await Component.InvokeAsync("WaitlistLink")
             <a href="@(DayListController.ListPath)/new?date=@board.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-testid="book" class="@buttonClass">@T["Appointments.Day.Book"]</a>
         </div>
     </header>

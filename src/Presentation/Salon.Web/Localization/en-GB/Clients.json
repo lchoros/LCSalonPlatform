@@ -168,5 +168,6 @@
   "Clients.Merge.Confirm.NoAppointments": "{0} has no appointments to move.",
   "Clients.Card.Book": "Book a visit",
   "Clients.Purchases.Title": "Products bought",
-  "Clients.Purchases.Line": "{0} × {1}"
+  "Clients.Purchases.Line": "{0} × {1}",
+  "Clients.Card.Waitlist": "Add to the waitlist"
 }

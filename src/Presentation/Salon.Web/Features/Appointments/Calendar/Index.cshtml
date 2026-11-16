@@ -71,6 +71,7 @@
                 <a href="@CalendarController.Path(CalendarView.Week, board.Day, board.SelectedStaffId)" data-testid="view-week" aria-current="@(isWeek ? "page" : null)" class="inline-flex min-h-11 items-center px-4 py-2 text-sm font-medium @(isWeek ? "bg-stone-900 text-white" : "hover:bg-stone-100") rounded-r-lg">@T["Appointments.Calendar.Week"]</a>
             </nav>
             <a href="@(CalendarController.DayListPath)?date=@isoDay" data-testid="day-list" class="@navClass">@T["Appointments.Calendar.DayList"]</a>
+            @await Component.InvokeAsync("WaitlistLink")
             <a href="@(CalendarController.DayListPath)/new?date=@isoDay@(board.SelectedStaffId is { } bookStaff ? $"&staffId={bookStaff}" : string.Empty)" data-testid="book" class="@buttonClass">@T["Appointments.Calendar.Book"]</a>
         </div>
     </header>

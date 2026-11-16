@@ -33,6 +33,7 @@
 | Placeholder | Znacznik | `{{Name}}` in a message's wording, replaced when the message is sent; each message offers its own list |
 | SMS segment | Część SMS-a | One billed text: 160 characters in the basic alphabet, 70 once a letter such as "ą" is used |
 | Visit without an outcome | Wizyta bez wyniku | A visit of an earlier day that is still booked, confirmed or arrived: nobody recorded whether the client came (ADR 0034) |
+| Waitlist | Lista oczekujących | `WaitlistEntry` — a client who wants a visit the diary has no room for yet: service, person and days if they matter, a remark. Worked oldest first; closed by a booking or by hand, never deleted (ADR 0041) |
 | No-show rate | Odsetek nieobecności | No-shows over visits that had an outcome (completed plus no-shows) |
 | Patch test | Test uczuleniowy | Allergy test before colour/lash/brow tint |
 | Consultation form | Formularz konsultacyjny | Signed client questionnaire |

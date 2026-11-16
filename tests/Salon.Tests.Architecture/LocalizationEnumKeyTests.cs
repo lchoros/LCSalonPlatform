@@ -3,6 +3,7 @@ using Salon.Core.Messaging;
 using Salon.Core.Payments;
 using Salon.Core.Products;
 using Salon.Core.Reports;
+using Salon.Services.Appointments;
 using Salon.Services.Localization;
 using Salon.Services.Payments;
 using Salon.Services.Products;
@@ -75,6 +76,21 @@ public partial class LocalizationResourceTests
         expected.AddRange(Enum.GetValues<StockOutcome>()
             .Where(outcome => outcome is not (StockOutcome.Recorded or StockOutcome.CountMatches or StockOutcome.ProductNotFound))
             .Select(outcome => $"Products.Stock.Refused.{outcome}"));
+
+        var known = Resources.Value[SupportedCultures.EnGb];
+
+        expected.Where(key => !known.ContainsKey(key)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Every_answer_of_the_waitlist_form_has_its_text()
+    {
+        // ADR 0041: a saved entry is confirmed by its outcome, a refused one explained; an unknown client is a 404.
+        var expected = Enum.GetValues<WaitlistAddOutcome>()
+            .Where(outcome => outcome != WaitlistAddOutcome.ClientUnknown)
+            .Select(outcome => outcome is WaitlistAddOutcome.Added or WaitlistAddOutcome.Updated
+                ? $"Appointments.Waitlist.{outcome}"
+                : $"Appointments.Waitlist.Refused.{outcome}");
 
         var known = Resources.Value[SupportedCultures.EnGb];
 

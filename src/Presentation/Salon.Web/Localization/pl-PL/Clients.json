@@ -168,5 +168,6 @@
   "Clients.Merge.Confirm.NoAppointments": "{0} nie ma wizyt do przeniesienia.",
   "Clients.Card.Book": "Zarezerwuj wizytę",
   "Clients.Purchases.Title": "Kupione produkty",
-  "Clients.Purchases.Line": "{0} × {1}"
+  "Clients.Purchases.Line": "{0} × {1}",
+  "Clients.Card.Waitlist": "Dodaj do listy oczekujących"
 }

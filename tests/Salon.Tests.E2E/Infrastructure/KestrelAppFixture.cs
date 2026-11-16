@@ -76,6 +76,8 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
     private static async Task ClearSalesAsync(SalonDbContext db)
     {
         await db.VisitProductLines.ExecuteDeleteAsync();
+        // Waiting clients point at the clients, services and staff that are about to go (ADR 0041).
+        await db.WaitlistEntries.ExecuteDeleteAsync();
         await db.StockMovements.Where(m => m.AppointmentId != null).ExecuteUpdateAsync(s => s.SetProperty(m => m.AppointmentId, (Guid?)null));
     }
 

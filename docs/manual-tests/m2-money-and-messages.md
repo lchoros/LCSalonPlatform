@@ -317,6 +317,19 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] Y5. Till: the day lists "Products returned" as money out; "cash expected" is lower by what you gave back.
 - [ ] Y6. A product that is on the bill but not paid has "Take off", not "Return this product".
 
+## Z. The waitlist (after PR #84 is merged too)
+- [ ] Z1. Appointments and Calendar have a "Waitlist" button. The list is empty and says how to add somebody.
+- [ ] Z2. Open a client's card, "Add to the waitlist": pick a service, leave the days empty, note "mornings only",
+      save. The list shows the client with their phone number, the service, "Anyone available" and the note.
+- [ ] Z3. The "Waitlist" button on Appointments now carries a 1.
+- [ ] Z4. Add the same client for the same service again with a first day: the message says the details were
+      updated and the place is kept; the list still has one row.
+- [ ] Z5. "Book" on the row opens the booking form with the client, the service and the day. Book a time. Within a
+      minute the client is gone from the waitlist.
+- [ ] Z6. Add another client and "Take off the list": they are gone at once.
+- [ ] Z7. Appointments, "Book", choose a client, a service and a day with no free times: "Put on the waitlist" is
+      offered under the message.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

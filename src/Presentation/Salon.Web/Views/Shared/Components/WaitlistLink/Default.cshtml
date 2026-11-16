@@ -1,0 +1,9 @@
+@model int
+@* The address belongs to the Waitlist slice; a shared view may only link to it (ADR 0041). *@
+<a href="/admin/appointments/waitlist" class="btn btn-compact btn-secondary gap-2" data-testid="waitlist-link" data-count="@Model">
+    <span>@T["Appointments.Waitlist.Link"]</span>
+    @if (Model > 0)
+    {
+        <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-amber-900" data-testid="waitlist-count">@Model<span class="sr-only"> @T["Appointments.Waitlist.Waiting"]</span></span>
+    }
+</a>

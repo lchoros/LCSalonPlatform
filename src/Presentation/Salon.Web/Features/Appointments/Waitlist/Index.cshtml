@@ -1,0 +1,86 @@
+@using System.Globalization
+@using Salon.Web.Features.Appointments.Waitlist
+@model WaitlistViewModel
+@{
+    ViewData["Title"] = T["Appointments.Waitlist.Title"];
+    var culture = CultureInfo.CurrentCulture;
+    var waiting = Model.Waiting;
+}
+<section class="space-y-6">
+    <a href="@WaitlistController.DayListPath" class="back-link" data-testid="back">&larr; @T["Appointments.Outcome.Back"]</a>
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+    <header class="space-y-1">
+        <h1 class="page-title">@T["Appointments.Waitlist.Title"]</h1>
+        <p class="max-w-prose text-stone-600">@T["Appointments.Waitlist.Lead"]</p>
+    </header>
+
+    @if (waiting.Total == 0)
+    {
+        <p class="empty-state" data-testid="empty-state">@T["Appointments.Waitlist.Empty"]</p>
+    }
+    else
+    {
+        <ol class="space-y-3" data-testid="waitlist" data-total="@waiting.Total">
+            @foreach (var item in waiting.Items)
+            {
+                <li class="panel space-y-3" data-testid="waiting">
+                    <div class="flex flex-wrap items-start justify-between gap-2">
+                        <div class="min-w-0 space-y-0.5">
+                            <p class="text-lg font-semibold leading-snug"><a href="/admin/clients/@item.ClientId" class="underline underline-offset-2" data-testid="waiting-client">@item.ClientName</a></p>
+                            @if (item.ClientPhone is { } phone)
+                            {
+                                <p class="text-sm"><a href="tel:@phone" class="inline-flex min-h-11 items-center font-medium underline underline-offset-2 tabular-nums" data-testid="waiting-phone">@phone</a></p>
+                            }
+                        </div>
+                        <p class="text-sm text-stone-600 tabular-nums" data-testid="waiting-since">@T.Format("Appointments.Waitlist.Since", item.WaitingSince.ToString("d", culture))</p>
+                    </div>
+                    <dl class="grid gap-x-4 gap-y-1 text-sm sm:grid-cols-2">
+                        <div class="flex gap-2">
+                            <dt class="text-stone-500">@T["Appointments.Waitlist.Wants"]</dt>
+                            <dd class="font-medium" data-testid="waiting-service">@item.ServiceName</dd>
+                        </div>
+                        <div class="flex gap-2">
+                            <dt class="text-stone-500">@T["Appointments.Waitlist.With"]</dt>
+                            <dd class="font-medium" data-testid="waiting-staff">@(item.StaffName ?? T["Appointments.Book.AnyStaff"])</dd>
+                        </div>
+                        <div class="flex gap-2 sm:col-span-2">
+                            <dt class="text-stone-500">@T["Appointments.Waitlist.When"]</dt>
+                            <dd class="font-medium tabular-nums" data-testid="waiting-days">
+                                @if (item.NotBefore is { } first && item.NotAfter is { } last)
+                                {
+                                    @T.Format("Appointments.Waitlist.Days.Between", first.ToString("d", culture), last.ToString("d", culture))
+                                }
+                                else if (item.NotBefore is { } from)
+                                {
+                                    @T.Format("Appointments.Waitlist.Days.From", from.ToString("d", culture))
+                                }
+                                else if (item.NotAfter is { } until)
+                                {
+                                    @T.Format("Appointments.Waitlist.Days.Until", until.ToString("d", culture))
+                                }
+                                else
+                                {
+                                    @T["Appointments.Waitlist.Days.Any"]
+                                }
+                            </dd>
+                        </div>
+                    </dl>
+                    @if (item.Note is { } note)
+                    {
+                        <p class="rounded-md bg-stone-50 p-2 text-sm" data-testid="waiting-note">@note</p>
+                    }
+                    <div class="flex flex-col gap-2 sm:flex-row">
+                        <a href="@WaitlistController.BookAddress(item)" class="btn btn-compact btn-primary" data-testid="waiting-book">@T["Appointments.Waitlist.Book"]<span class="sr-only">: @item.ClientName</span></a>
+                        <form method="post" action="@WaitlistController.RemovePath(item.Id, waiting.Page)" asp-antiforgery="true">
+                            <button type="submit" class="btn btn-compact btn-secondary w-full" data-testid="waiting-remove">@T["Appointments.Waitlist.Remove"]<span class="sr-only">: @item.ClientName</span></button>
+                        </form>
+                    </div>
+                </li>
+            }
+        </ol>
+        <partial name="_Pager" model="Model.Pager" />
+    }
+</section>
