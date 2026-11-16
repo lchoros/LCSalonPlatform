@@ -370,6 +370,14 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] AD6. The product you already had kept its price and its stock.
 - [ ] AD7. Upload the same file again: nothing new to import, and no button to confirm.
 
+## AE. The report against the period before (after PR #90 is merged too)
+- [ ] AE1. Reports, "This month", in a salon with payments this month: under the four tiles there is "Against the
+      period before" with the days compared, e.g. the 1st to today against the 1st to the same day last month.
+- [ ] AE2. The table has total taken, completed visits and no-shows, each with now, before and the change in words.
+- [ ] AE3. With nothing in the month before, the change reads "Nothing before", not a percentage.
+- [ ] AE4. "Last month" compares the whole month with the whole month before it.
+- [ ] AE5. Dates wholly in the future: the table is not shown.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

@@ -197,7 +197,9 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   till), visits by outcome, fees, completed visits not paid (linked to their checkout), top services, and per person
   revenue and utilisation from the rota less time off. Owner and Manager only. "Reports" in the nav. When a
   product was sold or returned in the period: products sold, given back, units, share of takings and best sellers
-  (`RetailReport`, ADR 0044).
+  (`RetailReport`, ADR 0044). Under the headline tiles, the days that have happened set against the same
+  days one period earlier: total taken, completed visits, no-shows, the change in words (`ReportComparison`,
+  `ReportRules.Compare`, ADR 0046).
 - `Booking/Reschedule` — `/book/change/{token}` (ADR 0021): the client's own link moves the visit through
   `IBookingService.MoveAsync`; inside the policy's notice period it offers no times (ADR 0022), while
   `Booking/CancelBooking` still cancels and states the late fee first. The details page states the policy before the

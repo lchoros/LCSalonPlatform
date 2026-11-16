@@ -64,6 +64,7 @@ internal sealed class ReportService(
             await TopServicesAsync(completed, In, cancellationToken).ConfigureAwait(false),
             await StaffAsync(visits, period, In, cancellationToken).ConfigureAwait(false),
             await RetailAsync(lines, takings.Total, start, end, In, cancellationToken).ConfigureAwait(false),
+            await ComparisonAsync(period, today, zone, lines, visits, In, cancellationToken).ConfigureAwait(false),
             unpaid,
             unpaidCount,
             In(unpaidTotal));
@@ -219,6 +220,60 @@ internal sealed class ReportService(
             ReportRules.Share(sold - returned, takings.Amount),
             products.Take(SalonReport.MaxTopProducts).ToArray(),
             products.Length);
+    }
+
+    /// <summary>
+    /// The period against the same days one period earlier (ADR 0046). The days so far come from the rows the report
+    /// already holds; the days before cost two small queries. Both sides are added up with the rules the report
+    /// itself uses, so a figure here is the figure that period's own report shows.
+    /// </summary>
+    private async Task<ReportComparison?> ComparisonAsync(
+        ReportPeriod period,
+        LocalDate today,
+        DateTimeZone zone,
+        List<LedgerRow> lines,
+        List<VisitRow> visits,
+        Func<decimal, Money> money,
+        CancellationToken cancellationToken)
+    {
+        if (ReportRules.Compare(period, today) is not { } compared)
+        {
+            return null;
+        }
+
+        var soFarEnd = zone.AtStartOfDay(compared.SoFar.To.PlusDays(1)).ToInstant();
+        var beforeStart = zone.AtStartOfDay(compared.Before.From).ToInstant();
+        var beforeEnd = zone.AtStartOfDay(compared.Before.To.PlusDays(1)).ToInstant();
+
+        var linesBefore = await db.ClientAccountEntries.AsNoTracking()
+            .Where(e => e.At >= beforeStart && e.At < beforeEnd)
+            .Select(e => new LedgerRow(e.Kind, e.Method, e.Amount, e.At))
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+        var statusesBefore = await db.Appointments.AsNoTracking()
+            .Where(a => a.Start >= beforeStart && a.Start < beforeEnd)
+            .Select(a => a.Status)
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        var takingsNow = Takings(lines.Where(l => l.At < soFarEnd).ToList(), zone, money).Total;
+        var takingsBefore = Takings(linesBefore, zone, money).Total;
+        var statusesNow = visits.Where(v => v.Start < soFarEnd).Select(v => v.Status).ToArray();
+        var completedNow = statusesNow.Count(s => s == AppointmentStatus.Completed);
+        var completedBefore = statusesBefore.Count(s => s == AppointmentStatus.Completed);
+        var noShowsNow = statusesNow.Count(s => s == AppointmentStatus.NoShow);
+        var noShowsBefore = statusesBefore.Count(s => s == AppointmentStatus.NoShow);
+
+        return new ReportComparison(
+            compared.SoFar,
+            compared.Before,
+            takingsNow,
+            takingsBefore,
+            ReportRules.Change(takingsNow.Amount, takingsBefore.Amount),
+            completedNow,
+            completedBefore,
+            ReportRules.Change(completedNow, completedBefore),
+            noShowsNow,
+            noShowsBefore,
+            ReportRules.Change(noShowsNow, noShowsBefore));
     }
 
     private async Task<IReadOnlyList<StaffLine>> StaffAsync(List<VisitRow> visits, ReportPeriod period, Func<decimal, Money> money, CancellationToken cancellationToken)

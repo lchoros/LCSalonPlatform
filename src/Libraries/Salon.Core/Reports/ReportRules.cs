@@ -24,6 +24,9 @@ public readonly record struct ReportPeriod(LocalDate From, LocalDate To)
 /// </summary>
 public readonly record struct ResolvedPeriod(ReportPeriod Period, ReportPreset? Preset, bool Refused);
 
+/// <summary>The days of a period that have happened and the days they are compared with (ADR 0046).</summary>
+public readonly record struct ComparedPeriods(ReportPeriod SoFar, ReportPeriod Before);
+
 /// <summary>
 /// How a report picks its days and turns counts into rates (ADR 0026). Pure. A week starts on Monday in both of the
 /// product's markets. A rate without a base is unknown (null), never zero, so an empty week does not read as a bad one.
@@ -76,6 +79,38 @@ public static class ReportRules
     /// </summary>
     public static decimal? Share(decimal part, decimal whole)
         => whole <= 0m ? null : decimal.Round(Math.Clamp(100m * part / whole, 0m, 100m), 1, MidpointRounding.AwayFromZero);
+
+    /// <summary>
+    /// The days a period is compared with (ADR 0046): the same days one period earlier, and only as far as today, so
+    /// a week or a month that is not over is compared like for like. A whole calendar month goes back one month,
+    /// whatever the two lengths; anything else goes back by its own number of days, which keeps the weekdays in
+    /// line. Null for a period that has not begun.
+    /// </summary>
+    public static ComparedPeriods? Compare(ReportPeriod period, LocalDate today)
+    {
+        if (period.From > today)
+        {
+            return null;
+        }
+
+        var soFar = new ReportPeriod(period.From, LocalDate.Min(period.To, today));
+        var endOfMonth = period.From.PlusMonths(1).PlusDays(-1);
+        if (period.From.Day == 1 && period.To == endOfMonth)
+        {
+            // The whole month against the whole month before; a part of it against the same days, as far as that month has them.
+            var lastDayBefore = soFar.To == period.To ? period.From.PlusDays(-1) : soFar.To.PlusMonths(-1);
+            return new ComparedPeriods(soFar, new ReportPeriod(period.From.PlusMonths(-1), lastDayBefore));
+        }
+
+        return new ComparedPeriods(soFar, new ReportPeriod(period.From.PlusDays(-period.Days), soFar.To.PlusDays(-period.Days)));
+    }
+
+    /// <summary>
+    /// How much more or less <paramref name="now"/> is than <paramref name="before"/>, as a percentage with one
+    /// decimal. Null when there was nothing before: a rise from nothing has no percentage.
+    /// </summary>
+    public static decimal? Change(decimal now, decimal before)
+        => before <= 0m ? null : decimal.Round(100m * (now - before) / before, 1, MidpointRounding.AwayFromZero);
 
     /// <summary><paramref name="part"/> as a percentage of <paramref name="whole"/> with one decimal; null without a base.</summary>
     public static decimal? Rate(int part, int whole)

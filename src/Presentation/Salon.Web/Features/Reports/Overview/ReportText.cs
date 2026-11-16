@@ -13,4 +13,21 @@ public static class ReportText
         ArgumentNullException.ThrowIfNull(culture);
         return rate is { } value ? localizer.Format("Reports.Percent", value.ToString("0.#", culture)) : localizer["Reports.NotKnown"];
     }
+
+    /// <summary>
+    /// A change against the period before in words (ADR 0046), so it reads without colour or an arrow: "Up 35%",
+    /// "Down 12.5%", "No change", or "Nothing before" when there is nothing to be more or less than.
+    /// </summary>
+    public static string Change(ILocalizationService localizer, decimal? change, CultureInfo culture)
+    {
+        ArgumentNullException.ThrowIfNull(localizer);
+        ArgumentNullException.ThrowIfNull(culture);
+        return change switch
+        {
+            null => localizer["Reports.Compare.NothingBefore"],
+            0m => localizer["Reports.Compare.NoChange"],
+            > 0m => localizer.Format("Reports.Compare.Up", change.Value.ToString("0.#", culture)),
+            _ => localizer.Format("Reports.Compare.Down", (-change.Value).ToString("0.#", culture)),
+        };
+    }
 }

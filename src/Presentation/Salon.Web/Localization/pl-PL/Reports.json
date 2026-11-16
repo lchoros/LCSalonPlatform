@@ -72,5 +72,16 @@
   "Reports.Retail.ShareHint": "Produkty po zwrotach jako część całego utargu w okresie.",
   "Reports.Retail.Best": "Najlepiej sprzedawane",
   "Reports.Retail.LineUnits": "Sprzedano: {0}",
-  "Reports.Retail.More": "Lista pokazuje {0} z {1} sprzedanych produktów."
+  "Reports.Retail.More": "Lista pokazuje {0} z {1} sprzedanych produktów.",
+  "Reports.Compare.Title": "Na tle poprzedniego okresu",
+  "Reports.Compare.Days": "Od {0} do {1}, na tle okresu od {2} do {3}.",
+  "Reports.Compare.What": "Wskaźnik",
+  "Reports.Compare.Now": "Teraz",
+  "Reports.Compare.Before": "Poprzednio",
+  "Reports.Compare.Change": "Zmiana",
+  "Reports.Compare.Up": "Wzrost o {0}%",
+  "Reports.Compare.Down": "Spadek o {0}%",
+  "Reports.Compare.NoChange": "Bez zmian",
+  "Reports.Compare.NothingBefore": "Brak wcześniej",
+  "Reports.Compare.Hint": "Te same dni jeden okres wcześniej, liczone tylko do dziś, więc niezakończony tydzień lub miesiąc porównuje się z takim samym odcinkiem."
 }
