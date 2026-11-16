@@ -48,13 +48,14 @@ internal sealed class ReportService(
         var completed = visits.Where(v => v.Status == AppointmentStatus.Completed).ToArray();
 
         var (unpaid, unpaidCount, unpaidTotal) = await UnpaidAsync(completed, start, end, zone, In, cancellationToken).ConfigureAwait(false);
+        var takings = Takings(lines, zone, In);
 
         return new SalonReport(
             period,
             resolved.Preset,
             resolved.Refused,
             today,
-            Takings(lines, zone, In),
+            takings,
             Visits(visits, completed, In),
             new FeesReport(
                 In(lines.Where(l => ClientAccountRules.IsFee(l.Kind)).Sum(l => l.Amount)),
@@ -62,6 +63,7 @@ internal sealed class ReportService(
                 In(lines.Where(l => l.Kind == ClientAccountEntryKind.FeePayment).Sum(l => l.Amount))),
             await TopServicesAsync(completed, In, cancellationToken).ConfigureAwait(false),
             await StaffAsync(visits, period, In, cancellationToken).ConfigureAwait(false),
+            await RetailAsync(lines, takings.Total, start, end, In, cancellationToken).ConfigureAwait(false),
             unpaid,
             unpaidCount,
             In(unpaidTotal));
@@ -164,6 +166,59 @@ internal sealed class ReportService(
             .Where(s => ids.Contains(s.Id))
             .ToDictionaryAsync(s => s.Id, s => s.Name, cancellationToken).ConfigureAwait(false);
         return top.Select(s => new ServiceLine(names.TryGetValue(s.ServiceId, out var name) ? name : string.Empty, s.Visits, money(s.Value))).ToArray();
+    }
+
+    /// <summary>
+    /// Products over the counter (ADR 0044). The money is the period's product lines of the ledger, so it is the same
+    /// money the takings show. The units come from the bill lines those sales paid for: a paid bill line points at its
+    /// sale, and the sale's amount is the sum of its lines, so product by product adds up to what was sold.
+    /// </summary>
+    private async Task<RetailReport> RetailAsync(
+        List<LedgerRow> lines,
+        Money takings,
+        Instant start,
+        Instant end,
+        Func<decimal, Money> money,
+        CancellationToken cancellationToken)
+    {
+        var sold = lines.Where(l => l.Kind == ClientAccountEntryKind.ProductSale).Sum(l => l.Amount);
+        var returned = lines.Where(l => l.Kind == ClientAccountEntryKind.ProductReturn).Sum(l => l.Amount);
+        if (sold == 0m)
+        {
+            // Nothing was sold; a return of something sold earlier is still money that went out. No share of the takings
+            // is given: what went out is not a part of what came in.
+            return new RetailReport(money(0m), money(returned), money(-returned), 0, 0, null, [], 0);
+        }
+
+        var rows = await (
+            from line in db.VisitProductLines.AsNoTracking()
+            join sale in db.ClientAccountEntries.AsNoTracking() on line.PaymentEntryId equals sale.Id
+            where sale.At >= start && sale.At < end
+            select new { line.ProductId, line.ProductName, line.Quantity, line.UnitPrice, line.AppointmentId, line.AddedAt })
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+        var ids = rows.Select(r => r.ProductId).Distinct().ToArray();
+        var names = await db.Products.AsNoTracking()
+            .Where(p => ids.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id, p => p.Name, cancellationToken).ConfigureAwait(false);
+
+        var products = rows
+            .GroupBy(r => r.ProductId)
+            .Select(g => new ProductSalesLine(
+                names.TryGetValue(g.Key, out var name) ? name : g.OrderByDescending(r => r.AddedAt).First().ProductName,
+                g.Sum(r => r.Quantity),
+                money(g.Sum(r => ProductSaleRules.LineTotal(r.Quantity, r.UnitPrice)))))
+            .OrderByDescending(p => p.Value.Amount).ThenByDescending(p => p.Units).ThenBy(p => p.Name, StringComparer.Ordinal)
+            .ToArray();
+
+        return new RetailReport(
+            money(sold),
+            money(returned),
+            money(sold - returned),
+            rows.Sum(r => r.Quantity),
+            rows.Select(r => r.AppointmentId).Distinct().Count(),
+            ReportRules.Share(sold - returned, takings.Amount),
+            products.Take(SalonReport.MaxTopProducts).ToArray(),
+            products.Length);
     }
 
     private async Task<IReadOnlyList<StaffLine>> StaffAsync(List<VisitRow> visits, ReportPeriod period, Func<decimal, Money> money, CancellationToken cancellationToken)

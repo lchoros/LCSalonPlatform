@@ -217,6 +217,58 @@
         }
     </section>
 
+    @if (Model.Retail.HasAny)
+    {
+        var retail = Model.Retail;
+        <section class="@cardClass" data-testid="retail">
+            <h2 class="text-lg font-semibold">@T["Reports.Retail.Title"]</h2>
+            <p class="text-sm text-stone-600">@T["Reports.Retail.Hint"]</p>
+            <dl class="@listClass">
+                <dt>@T["Reports.Retail.Sold"]</dt>
+                <dd class="text-right tabular-nums" data-testid="retail-sold">@retail.Sold.ToDisplayString(culture)</dd>
+                @if (retail.HasReturns)
+                {
+                    <dt>@T["Reports.Retail.Returned"]</dt>
+                    <dd class="text-right tabular-nums text-red-800" data-testid="retail-returned">@retail.ReturnedOut.ToDisplayString(culture)</dd>
+                }
+                <dt class="font-semibold">@T["Reports.Retail.Net"]</dt>
+                <dd class="text-right font-bold tabular-nums" data-testid="retail-net">@retail.Net.ToDisplayString(culture)</dd>
+                <dt class="border-t border-stone-200 pt-2">@T["Reports.Retail.Units"]</dt>
+                <dd class="border-t border-stone-200 pt-2 text-right tabular-nums" data-testid="retail-units">@retail.Units</dd>
+                <dt>@T["Reports.Retail.Bills"]</dt>
+                <dd class="text-right tabular-nums" data-testid="retail-bills">@retail.Bills</dd>
+                @if (retail.ShareOfTakings is { } share)
+                {
+                    <dt>
+                        <span class="block font-semibold">@T["Reports.Retail.Share"]</span>
+                        <span class="block text-sm text-stone-600">@T["Reports.Retail.ShareHint"]</span>
+                    </dt>
+                    <dd class="text-right font-bold tabular-nums" data-testid="retail-share">@ReportText.Percent(T, share, culture)</dd>
+                }
+            </dl>
+            @if (retail.TopProducts.Count > 0)
+            {
+                <h3 class="@subheadClass">@T["Reports.Retail.Best"]</h3>
+                <ol class="list-card">
+                    @foreach (var product in retail.TopProducts)
+                    {
+                        <li class="flex items-center justify-between gap-4 p-3" data-testid="top-product">
+                            <span class="flex min-w-0 flex-col gap-0.5">
+                                <span class="font-medium">@product.Name</span>
+                                <span class="text-sm text-stone-600">@T.Format("Reports.Retail.LineUnits", product.Units)</span>
+                            </span>
+                            <span class="tabular-nums font-medium">@product.Value.ToDisplayString(culture)</span>
+                        </li>
+                    }
+                </ol>
+                @if (retail.HasMoreProducts)
+                {
+                    <p class="text-sm text-stone-600" data-testid="retail-more">@T.Format("Reports.Retail.More", retail.TopProducts.Count, retail.ProductCount)</p>
+                }
+            }
+        </section>
+    }
+
     <section class="@cardClass" data-testid="staff">
         <h2 class="text-lg font-semibold">@T["Reports.Staff.Title"]</h2>
         <p class="text-sm text-stone-600">@T["Reports.Staff.Hint"]</p>

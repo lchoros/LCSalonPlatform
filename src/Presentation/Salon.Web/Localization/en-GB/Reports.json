@@ -60,5 +60,17 @@
   "Reports.Export.Column.Amount": "Amount",
   "Reports.Export.Column.Currency": "Currency",
   "Reports.Export.Column.RecordedBy": "Recorded by",
-  "Reports.Export.Column.Reference": "Reference"
+  "Reports.Export.Column.Reference": "Reference",
+  "Reports.Retail.Title": "Products sold",
+  "Reports.Retail.Hint": "Products on the bills paid in this period. A product counts on the day it was paid for.",
+  "Reports.Retail.Sold": "Sold",
+  "Reports.Retail.Returned": "Given back for returns",
+  "Reports.Retail.Net": "Products after returns",
+  "Reports.Retail.Units": "Units sold",
+  "Reports.Retail.Bills": "Visits with a product on the bill",
+  "Reports.Retail.Share": "Share of takings",
+  "Reports.Retail.ShareHint": "Products after returns as a part of everything taken in the period.",
+  "Reports.Retail.Best": "Best sellers",
+  "Reports.Retail.LineUnits": "{0} sold",
+  "Reports.Retail.More": "The {0} best sellers of {1} products are listed."
 }
