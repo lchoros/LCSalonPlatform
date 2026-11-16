@@ -1358,6 +1358,11 @@ namespace Salon.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("CalendarFeedToken")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("calendar_feed_token");
+
                     b.Property<string>("Colour")
                         .IsRequired()
                         .HasMaxLength(7)
@@ -1406,6 +1411,11 @@ namespace Salon.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_staff_members");
+
+                    b.HasIndex("CalendarFeedToken")
+                        .IsUnique()
+                        .HasDatabaseName("ix_staff_members_calendar_feed_token")
+                        .HasFilter("calendar_feed_token IS NOT NULL");
 
                     b.HasIndex("TenantId")
                         .HasDatabaseName("ix_staff_members_tenant_id");

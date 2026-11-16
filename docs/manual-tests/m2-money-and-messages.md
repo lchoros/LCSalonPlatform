@@ -287,6 +287,17 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
       sale +1" and then "Sold −1"; the shelf is 0, not below.
 - [ ] V9. Reports, this week: "What it was for" names "Products sold".
 
+## W. A calendar address for staff (after PR #81 is merged too)
+- [ ] W1. Staff: each person has a "Calendar" button. The page says the address is switched off and what a visit
+      will show: the service, the client's first name and initial, the salon's address.
+- [ ] W2. "Switch the address on": a private address appears, ending in `.ics`.
+- [ ] W3. Open the address in a private browser window (not signed in): a file downloads or shows text starting
+      `BEGIN:VCALENDAR`, with a `SUMMARY` line per visit such as "Cut & blow-dry · Sophie S.". No surname, no phone.
+- [ ] W4. Paste the address into Google Calendar on a computer ("Other calendars", "From URL"). The visits show
+      after Google has read it; that can take a while.
+- [ ] W5. "Make a new address": the old address now answers "not found", the new one works.
+- [ ] W6. "Switch the address off": the address answers "not found".
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

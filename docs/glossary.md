@@ -38,3 +38,4 @@
 | Cash-up | Raport kasowy / Zamknięcie dnia | End-of-day takings check |
 | Gift voucher | Bon podarunkowy | Prepaid voucher |
 | Rota | Grafik | Staff working schedule |
+| Calendar address | Adres kalendarza | A staff member's private address (`/calendar/{token}.ics`) that a calendar app subscribes to; shows their visits one way, the client by first name and initial (ADR 0038) |

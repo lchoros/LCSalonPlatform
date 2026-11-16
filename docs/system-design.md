@@ -88,6 +88,11 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `/admin/staff/new`, `/admin/staff/{id}/edit`, `/admin/staff/{id}/hours`, `/admin/staff/{id}/time-off`, all behind
   `Staff.Manage` (ADR 0010, 0015); `CreateStaff` publishes `StaffMemberCreated`, the hours form replaces a person's
   whole weekly rota in one transaction, time off becomes busy intervals for the availability engine.
+- `Staff/ManageCalendarFeed` — `/admin/staff/{id}/calendar-feed` (ADR 0038, `Staff.Manage`): switches a person's
+  private calendar address on, replaces it or switches it off (`StaffMember.CalendarFeedToken`).
+  `Staff/CalendarFeedFile` — `GET /calendar/{token}.ics`, tenant only and without a sign-in: the person's live and
+  past visits (30 days back, a year ahead) written by the pure `CalendarFeedWriter` (RFC 5545), the client as first
+  name and initial only, `Cache-Control: private`.
 - `Clients/SearchClients`, `Clients/CreateClient`, `Clients/EditClient`, `Clients/ClientCard` — `/admin/clients`,
   `/admin/clients/new`, `/admin/clients/{id}/edit`, `/admin/clients/{id}`, behind `Clients.View` (ADR 0011); the card
   and the edit form are the only read paths that decrypt health notes.

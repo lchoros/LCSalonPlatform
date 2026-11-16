@@ -1,0 +1,59 @@
+@using Salon.Web.Features.Staff.ManageCalendarFeed
+@model ManageCalendarFeedViewModel
+@{
+    var state = Model.State;
+    ViewData["Title"] = T["Staff.CalendarFeed.Title"];
+    var pagePath = ManageCalendarFeedController.PagePath(state.StaffMemberId);
+}
+<section class="mx-auto max-w-lg space-y-6">
+    <a href="@ManageCalendarFeedController.StaffPath" class="back-link" data-testid="back">&larr; @T["Staff.TimeOff.Back"]</a>
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+    <header class="space-y-1">
+        <h1 class="page-title">@T["Staff.CalendarFeed.Title"]</h1>
+        <p class="text-lg text-stone-600" data-testid="staff-name">@state.DisplayName</p>
+        <p class="text-stone-600">@T["Staff.CalendarFeed.Lead"]</p>
+    </header>
+
+    @if (Model.Address is { } address)
+    {
+        <section class="panel accent-3 space-y-3" data-testid="feed-on">
+            <h2 class="text-lg font-semibold">@T["Staff.CalendarFeed.On.Title"]</h2>
+            <div class="space-y-1">
+                <label for="feed-address" class="field-label">@T["Staff.CalendarFeed.Address"]</label>
+                <input id="feed-address" type="text" readonly value="@address" aria-describedby="feed-address-hint" class="field field-compact font-mono text-sm" data-testid="feed-address" />
+                <p id="feed-address-hint" class="text-sm text-stone-500">@T["Staff.CalendarFeed.AddressHint"]</p>
+            </div>
+            <ol class="list-decimal space-y-1 pl-5 text-sm text-stone-700" data-testid="feed-steps">
+                <li>@T["Staff.CalendarFeed.Step.Google"]</li>
+                <li>@T["Staff.CalendarFeed.Step.Apple"]</li>
+                <li>@T["Staff.CalendarFeed.Step.Wait"]</li>
+            </ol>
+        </section>
+
+        <section class="panel space-y-3" data-testid="feed-secret">
+            <h2 class="text-lg font-semibold">@T["Staff.CalendarFeed.Secret.Title"]</h2>
+            <p class="text-sm text-stone-700">@T["Staff.CalendarFeed.Secret.Text"]</p>
+            <div class="flex flex-col gap-3 sm:flex-row">
+                <form method="post" action="@(pagePath)/new-address" asp-antiforgery="true">
+                    <button type="submit" class="btn btn-compact btn-secondary w-full" data-testid="feed-new-address">@T["Staff.CalendarFeed.NewAddress"]</button>
+                </form>
+                <form method="post" action="@(pagePath)/off" asp-antiforgery="true">
+                    <button type="submit" class="btn btn-compact btn-danger w-full" data-testid="feed-off">@T["Staff.CalendarFeed.Off"]</button>
+                </form>
+            </div>
+        </section>
+    }
+    else
+    {
+        <section class="panel space-y-3" data-testid="feed-off-state">
+            <h2 class="text-lg font-semibold">@T["Staff.CalendarFeed.OffState.Title"]</h2>
+            <p class="text-sm text-stone-700">@T["Staff.CalendarFeed.Shows"]</p>
+            <form method="post" action="@(pagePath)/new-address" asp-antiforgery="true">
+                <button type="submit" class="btn btn-compact btn-primary w-full sm:w-auto" data-testid="feed-on-button">@T["Staff.CalendarFeed.SwitchOn"]</button>
+            </form>
+        </section>
+    }
+</section>
