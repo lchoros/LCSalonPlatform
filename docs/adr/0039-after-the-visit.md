@@ -15,7 +15,7 @@ the booking form, find the client again and pick the service again. And once a p
 - **The day is the same weekday**, so many weeks after the visit. For a visit of long ago it moves on by whole
   weeks until it is ahead of today.
 - **The weeks are a setting** (`RebookSettings`, three numbers, 0 leaves one out), read through `ISettingService`.
-  There is no settings page for them yet; the defaults suit a salon that cuts and colours.
+  The defaults suit a salon that cuts and colours; the salon changes them on a settings page (see the amendment).
 - **Shown only to people who may book** (`Bookings.Manage`) and only when the visit is completed.
 - **The client card has "Book a visit"**, which opens the booking form for that client.
 - **The client card lists "Products bought"**: the latest twenty paid product lines, newest first, each linking to
@@ -23,7 +23,7 @@ the booking form, find the client again and pick the service again. And once a p
   not paid is not shown.
 
 ## Not decided here
-- A settings page for the weeks. A reminder to clients who did not rebook. Booking the next visit automatically.
+- A reminder to clients who did not rebook. Booking the next visit automatically.
 
 ## Consequences
 - No migration. `VisitBill` carries the service and the staff member's ids. `IClientAccountService` gains
@@ -32,3 +32,12 @@ the booking form, find the client again and pick the service again. And once a p
 
 ## Rollback
 Revert the PR. Nothing is stored by it.
+
+## Amendment (2026-11-16): the salon sets the weeks itself
+`/admin/settings/next-visit`, behind `Settings.Manage`, shows the three numbers and saves them (`RebookSettings`).
+- **Three zeros are allowed** and switch the offer off; the page says so. A salon that never rebooks at the desk
+  should not have to look at three buttons.
+- **The page shows what the desk will see** with the values in the form, through `RebookRules.Choices`, the same
+  rule the checkout uses: shortest first, a number typed twice once, zeros left out.
+- **Letters in a field get the page's own words** ("Enter a number of weeks."), not MVC's sentence that names the
+  property.

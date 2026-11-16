@@ -338,6 +338,15 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] AA4. Add up the "Amount" column: it equals "Total taken" on the report for the same period.
 - [ ] AA5. A period without any money has no download button.
 
+## AB. The weeks for the next visit (after PR #87 is merged too)
+- [ ] AB1. Settings has a "Next visit" tab. It shows 4, 6 and 8, and under them "In 4 weeks", "In 6 weeks",
+      "In 8 weeks".
+- [ ] AB2. Type 60 in the third field and save: "Weeks must be between 0 and 52." under that field; nothing saved.
+- [ ] AB3. Set 5, 0 and 10 and save: the page confirms and shows "In 5 weeks" and "In 10 weeks".
+- [ ] AB4. Take a payment for a visit: the paid bill offers the next visit in 5 and in 10 weeks, nothing else.
+- [ ] AB5. Set all three to 0 and save: the page says no next visit is offered, and a paid bill has no such step.
+      Set them back to 4, 6 and 8.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

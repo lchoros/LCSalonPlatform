@@ -160,6 +160,9 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
 - `Settings/CancellationPolicy` — `/admin/settings/cancellation-policy` behind `Settings.Manage` (ADR 0022): notice
   period in hours and the late-cancellation and no-show fee as a percentage of the booked price
   (`CancellationPolicySettings`; all zero by default, which is "no policy"). Both settings pages share `_SettingsNav`.
+- `Settings/NextVisit` — `/admin/settings/next-visit` behind `Settings.Manage` (ADR 0039 amendment): the three
+  numbers of weeks the checkout offers for the next visit (`RebookSettings`), 0 leaves one out, three zeros switch
+  the offer off; the page shows what the desk will see through `RebookRules.Choices`.
 - `Payments/VisitFee` — `/admin/payments/fees/{appointmentId}` behind `Payments.Record` + `Clients.View` (ADR 0022): the
   fee the policy allows for a missed or late-cancelled visit (pure `CancellationPolicy` in Core), a form to add it
   (amount can be lowered), "client paid" (through `IPaymentProvider`, Manual: record only) and "waive" (reason
