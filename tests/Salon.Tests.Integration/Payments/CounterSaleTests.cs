@@ -233,6 +233,59 @@ public class CounterSaleTests(SalonWebApplicationFactory factory) : IAsyncLifeti
         (report.Takings.Total.Amount, report.Retail.CounterSales).ShouldBe((0m, 0));
     }
 
+    [Fact]
+    public async Task The_same_form_sent_twice_is_one_sale()
+    {
+        using var desk = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Receptionist);
+        var quoted = await GetAsync(desk, $"{Path}?rows[0].Product={_shampoo}&rows[0].Quantity=2");
+        var sale = System.Text.RegularExpressions.Regex.Match(quoted, "name=\"sale\" value=\"(?<id>[0-9a-f-]{36})\"").Groups["id"].Value;
+        sale.ShouldNotBeEmpty("the form carries the id its sale will have");
+        KeyValuePair<string, string>[] Fields() =>
+        [
+            new("__RequestVerificationToken", IdentityTestClient.AntiForgeryToken(quoted)),
+            new("sale", sale),
+            new("rows[0].Product", _shampoo.ToString()),
+            new("rows[0].Quantity", "2"),
+            new("method", "Cash"),
+        ];
+
+        // A second click, or the browser sending the post again.
+        (await desk.PostAsync(new Uri(Path, UriKind.Relative), new FormUrlEncodedContent(Fields()))).StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        (await desk.PostAsync(new Uri(Path, UriKind.Relative), new FormUrlEncodedContent(Fields()))).StatusCode.ShouldBe(HttpStatusCode.Redirect);
+
+        (await GetAsync(desk, Path)).ShouldContain("Sold for £25.00 (Cash).", Case.Sensitive, "the second answer is the sale that was recorded, not a second sale");
+        await InScopeAsync(_studio.Id, async db =>
+        {
+            var entry = await db.ClientAccountEntries.AsNoTracking().SingleAsync();
+            entry.Id.ShouldBe(Guid.Parse(sale));
+            (await db.CounterSaleLines.AsNoTracking().SingleAsync()).Quantity.ShouldBe(2);
+            (await db.Products.AsNoTracking().SingleAsync(p => p.Id == _shampoo)).StockOnHand.ShouldBe(6, "two left the shelf, not four");
+        });
+
+        // A fresh form has a fresh id: the next sale is a sale.
+        var next = await GetAsync(desk, $"{Path}?rows[0].Product={_shampoo}&rows[0].Quantity=1");
+        next.ShouldNotContain($"value=\"{sale}\"");
+    }
+
+    [Fact]
+    public async Task An_id_that_belongs_to_another_line_of_money_is_not_a_sale_that_was_recorded()
+    {
+        var client = await VisitSeed.ClientAsync(factory, _studio.Id, "Olivia", "Brown", "+447700900123");
+        var other = Guid.Empty;
+        await InScopeAsync(_studio.Id, async db =>
+        {
+            var deposit = new ClientAccountEntry { ClientId = client, Kind = ClientAccountEntryKind.FeePayment, Amount = 5m, Currency = "GBP", Method = PaymentMethod.Cash, At = SystemClock.Instance.GetCurrentInstant() };
+            db.ClientAccountEntries.Add(deposit);
+            await db.SaveChangesAsync();
+            other = deposit.Id;
+        });
+
+        var refused = await Should.ThrowAsync<CounterSaleException>(() => SalesAsync(_studio.Id, s => s.SellAsync([(_shampoo, 1)], PaymentMethod.Cash, null, other)));
+
+        refused.Refusal.ShouldBe(CounterSaleRefusal.AlreadyBeingRecorded);
+        await InScopeAsync(_studio.Id, async db => (await db.CounterSaleLines.AsNoTracking().AnyAsync()).ShouldBeFalse());
+    }
+
     private async Task<CounterSaleRefusal> RefusalAsync(IReadOnlyList<(Guid, int)> lines)
         => (await Should.ThrowAsync<CounterSaleException>(() => SalesAsync(_studio.Id, s => s.SellAsync(lines, PaymentMethod.Cash, null)))).Refusal;
 

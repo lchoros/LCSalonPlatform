@@ -34,7 +34,8 @@ public sealed record CounterSaleForm(
 }
 
 /// <summary>Records a counter sale (ADR 0053). A command: runs in the pipeline's transaction, so the money, the lines and the stock commit together.</summary>
-public sealed record RecordCounterSaleCommand(IReadOnlyList<CounterSaleRow> Rows, PaymentMethod Method, Guid? ByUserId) : ICommand<CounterSaleReceipt>;
+/// <param name="SaleId">The id the form was given when the total was shown; the same form sent twice is one sale.</param>
+public sealed record RecordCounterSaleCommand(IReadOnlyList<CounterSaleRow> Rows, PaymentMethod Method, Guid? ByUserId, Guid? SaleId = null) : ICommand<CounterSaleReceipt>;
 
 public sealed class CounterSaleFormHandler(ICounterSaleService sales) : IRequestHandler<CounterSaleFormQuery, CounterSaleForm>
 {
@@ -69,7 +70,7 @@ public sealed class RecordCounterSaleHandler(ICounterSaleService sales) : IReque
     public Task<CounterSaleReceipt> HandleAsync(RecordCounterSaleCommand request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
-        return sales.SellAsync(CounterSaleRows.Lines(request.Rows), request.Method, request.ByUserId, cancellationToken);
+        return sales.SellAsync(CounterSaleRows.Lines(request.Rows), request.Method, request.ByUserId, request.SaleId, cancellationToken);
     }
 }
 

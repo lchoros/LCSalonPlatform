@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NodaTime;
+using Npgsql;
 using Salon.Core.Domain;
 using Salon.Core.Payments;
 using Salon.Core.Products;
@@ -41,6 +42,9 @@ public enum CounterSaleRefusal
 
     /// <summary>The payment plugin did not record the money.</summary>
     PaymentNotRecorded,
+
+    /// <summary>The same form is being recorded by another request at this moment (a double click, two tills).</summary>
+    AlreadyBeingRecorded,
 }
 
 public sealed class CounterSaleException : Exception
@@ -86,8 +90,10 @@ public interface ICounterSaleService
     /// Records the sale: the money through the payment plugin, one account line, a line per product with its price and
     /// cost of the day, and every unit off its shelf. All of it or none of it: the caller's transaction decides.
     /// Throws <see cref="CounterSaleException"/> with the reason when nothing was recorded.
+    /// <paramref name="saleId"/> is the form's own id for the sale: sending the same form again records nothing more
+    /// and answers with the sale that was recorded the first time, so a double click cannot sell twice.
     /// </summary>
-    Task<CounterSaleReceipt> SellAsync(IReadOnlyList<(Guid ProductId, int Quantity)> lines, PaymentMethod method, Guid? byUserId, CancellationToken cancellationToken = default);
+    Task<CounterSaleReceipt> SellAsync(IReadOnlyList<(Guid ProductId, int Quantity)> lines, PaymentMethod method, Guid? byUserId, Guid? saleId = null, CancellationToken cancellationToken = default);
 }
 
 internal sealed class CounterSaleService(
@@ -111,9 +117,15 @@ internal sealed class CounterSaleService(
     public async Task<CounterSaleQuote> QuoteAsync(IReadOnlyList<(Guid ProductId, int Quantity)> lines, CancellationToken cancellationToken = default)
         => (await PriceAsync(lines, cancellationToken).ConfigureAwait(false)).Quote;
 
-    public async Task<CounterSaleReceipt> SellAsync(IReadOnlyList<(Guid ProductId, int Quantity)> lines, PaymentMethod method, Guid? byUserId, CancellationToken cancellationToken = default)
+    public async Task<CounterSaleReceipt> SellAsync(IReadOnlyList<(Guid ProductId, int Quantity)> lines, PaymentMethod method, Guid? byUserId, Guid? saleId = null, CancellationToken cancellationToken = default)
     {
         var tenantId = tenantContext.TenantId ?? throw new TenantViolationException("A counter sale belongs to a salon, but no tenant is set in the current scope.");
+        if (saleId is { } sent && await RecordedAsync(sent, cancellationToken).ConfigureAwait(false) is { } recorded)
+        {
+            // The same form again (a second click, a reload of the post): nothing more is sold.
+            return recorded;
+        }
+
         var (quote, products) = await PriceAsync(lines, cancellationToken).ConfigureAwait(false);
 
         // Phase 1: the plugin only records that the salon took the money itself (ADR 0024). No visit, so no appointment.
@@ -138,6 +150,12 @@ internal sealed class CounterSaleService(
             ByUserId = byUserId,
             At = clock.GetCurrentInstant(),
         };
+        if (saleId is { } chosen)
+        {
+            // The form's id is the line's id, so the database itself refuses the same sale twice.
+            sale.Id = chosen;
+        }
+
         db.ClientAccountEntries.Add(sale);
         foreach (var line in quote.Lines)
         {
@@ -155,7 +173,15 @@ internal sealed class CounterSaleService(
             });
         }
 
-        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            // Another request with the same form got there first; the caller's transaction takes this one back.
+            throw new CounterSaleException(CounterSaleRefusal.AlreadyBeingRecorded);
+        }
 
         foreach (var line in quote.Lines)
         {
@@ -169,6 +195,25 @@ internal sealed class CounterSaleService(
 
         logger.LogInformation("Counter sale {EntryId}: {Units} units for {Amount} {Currency} by {Method}, recorded by user {UserId} through {Provider}", sale.Id, quote.Units, quote.Total.Amount, quote.Total.Currency, method, byUserId, payments.SystemName);
         return new CounterSaleReceipt(sale.Id, quote.Total, quote.Units, method);
+    }
+
+    /// <summary>The sale already recorded under this id, if there is one in this salon; null otherwise.</summary>
+    private async Task<CounterSaleReceipt?> RecordedAsync(Guid saleId, CancellationToken cancellationToken)
+    {
+        var entry = await db.ClientAccountEntries.AsNoTracking().FirstOrDefaultAsync(e => e.Id == saleId, cancellationToken).ConfigureAwait(false);
+        if (entry is null)
+        {
+            return null;
+        }
+
+        if (entry is not { Kind: ClientAccountEntryKind.ProductSale, ClientId: null, AppointmentId: null, Method: { } method })
+        {
+            // The id belongs to some other line of money: not a form of ours.
+            throw new CounterSaleException(CounterSaleRefusal.AlreadyBeingRecorded);
+        }
+
+        var units = await db.CounterSaleLines.AsNoTracking().Where(l => l.PaymentEntryId == saleId).SumAsync(l => l.Quantity, cancellationToken).ConfigureAwait(false);
+        return new CounterSaleReceipt(entry.Id, entry.Money, units, method);
     }
 
     private async Task<(CounterSaleQuote Quote, Dictionary<Guid, Product> Products)> PriceAsync(IReadOnlyList<(Guid ProductId, int Quantity)> lines, CancellationToken cancellationToken)

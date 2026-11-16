@@ -183,5 +183,6 @@
   "Payments.CounterSale.Refused.PaymentNotRecorded": "The payment could not be recorded. Nothing was sold.",
   "Payments.CounterSale.ToTill": "To the till of today",
   "Payments.CounterSale.Link": "Sell at the counter",
-  "Payments.CounterSale.NoClient": "Counter sale"
+  "Payments.CounterSale.NoClient": "Counter sale",
+  "Payments.CounterSale.Refused.AlreadyBeingRecorded": "This sale is already being recorded. Look at the till before taking it again."
 }

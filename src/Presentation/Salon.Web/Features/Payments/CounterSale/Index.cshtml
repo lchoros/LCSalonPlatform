@@ -61,6 +61,7 @@
         {
             <form method="post" action="@CounterSaleController.Path" asp-antiforgery="true" class="space-y-4 panel" data-testid="sale-quote">
                 <h2 class="text-lg font-semibold">@T["Payments.CounterSale.ToPay"]</h2>
+                <input type="hidden" name="sale" value="@Model.SaleId" />
                 <ul class="list-card">
                     @for (var i = 0; i < quote.Lines.Count; i++)
                     {

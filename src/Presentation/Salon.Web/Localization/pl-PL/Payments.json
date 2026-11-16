@@ -183,5 +183,6 @@
   "Payments.CounterSale.Refused.PaymentNotRecorded": "Nie udało się zapisać płatności. Nic nie sprzedano.",
   "Payments.CounterSale.ToTill": "Do dzisiejszej kasy",
   "Payments.CounterSale.Link": "Sprzedaż przy ladzie",
-  "Payments.CounterSale.NoClient": "Sprzedaż przy ladzie"
+  "Payments.CounterSale.NoClient": "Sprzedaż przy ladzie",
+  "Payments.CounterSale.Refused.AlreadyBeingRecorded": "Ta sprzedaż jest już zapisywana. Sprawdź kasę, zanim przyjmiesz ją ponownie."
 }

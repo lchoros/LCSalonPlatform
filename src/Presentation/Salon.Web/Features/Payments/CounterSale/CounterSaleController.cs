@@ -37,11 +37,11 @@ public sealed class CounterSaleController(IDispatcher dispatcher, ILocalizationS
 
     [HttpPost("")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Record([FromForm] List<CounterSaleRow>? rows, PaymentMethod? method, CancellationToken cancellationToken)
+    public async Task<IActionResult> Record([FromForm] List<CounterSaleRow>? rows, PaymentMethod? method, Guid? sale, CancellationToken cancellationToken)
     {
         try
         {
-            var receipt = await dispatcher.SendAsync(new RecordCounterSaleCommand(rows ?? [], method ?? PaymentMethod.Cash, CurrentUserId()), cancellationToken);
+            var receipt = await dispatcher.SendAsync(new RecordCounterSaleCommand(rows ?? [], method ?? PaymentMethod.Cash, CurrentUserId(), sale), cancellationToken);
             SetFlash(localizer.Format(
                 "Payments.CounterSale.Recorded",
                 receipt.Total.ToDisplayString(CultureInfo.CurrentCulture),
@@ -66,4 +66,11 @@ public sealed class CounterSaleController(IDispatcher dispatcher, ILocalizationS
 
 /// <param name="Problem">Why the chosen rows cannot be sold, or why the last sale was not recorded; already localized.</param>
 /// <param name="Flash">Confirmation left by the previous request (post-redirect-get), if any.</param>
-public sealed record CounterSaleViewModel(CounterSaleForm Form, string? Problem, string? Flash);
+public sealed record CounterSaleViewModel(CounterSaleForm Form, string? Problem, string? Flash)
+{
+    /// <summary>
+    /// The id this form's sale will have (ADR 0053). Sent back with the post, so the same form recorded twice, by a
+    /// second click or a reload, is one sale.
+    /// </summary>
+    public Guid SaleId { get; } = Guid.CreateVersion7();
+}

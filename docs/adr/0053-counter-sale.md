@@ -24,6 +24,9 @@ always had an appointment, and the stock service sold "on the bill of" an appoin
   it exists and never changes. The visit's bill lines are left alone.
 - **`PaymentRequest.AppointmentId` and the appointment of `IStockService.SellAsync` become optional.** A gateway
   plugin at M3 must accept a payment that belongs to no visit. The Manual plugin only logs the id.
+- **The same form sent twice is one sale.** The form carries the id its sale will have; that id is the id of the
+  line of money, so a second click or a reload answers with the sale already recorded, and two requests at the same
+  moment cannot both be written. A gateway plugin at M3 must use the same id as its idempotency key.
 - **One service owns it**, `ICounterSaleService`: the money through the payment plugin, the line, the product rows
   and every unit off its shelf, all in the caller's transaction or not at all.
 - **The page** `admin/payments/sale` (`Payments.Record`: owner, manager, receptionist) works without a script: choose
