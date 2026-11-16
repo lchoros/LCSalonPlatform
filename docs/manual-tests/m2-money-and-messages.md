@@ -357,6 +357,19 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
       after returns" is lower by that amount. "Units sold" is unchanged: what was sold stays sold.
 - [ ] AC5. "Share of takings" is products after returns divided by "Total taken".
 
+## AD. Importing products from a file (after PR #89 is merged too)
+- [ ] AD1. Products has "Import from a file" beside "Add a product". The page shows what a file looks like.
+- [ ] AD2. In a spreadsheet make five rows under the headings `Name,Brand,Code,Price,Stock,Low stock at`: three good
+      ones, one with the name of a product you already have, one with "twelve" as its price. Save as CSV.
+- [ ] AD3. Upload it. The preview says 3 new, 1 already exists, 1 cannot be imported, with the reason under each
+      row that is left out. Open Products in another tab: nothing was added yet.
+- [ ] AD4. "Import 3 new products". The result says 3 products added and how many units were counted onto the
+      shelves.
+- [ ] AD5. The three products are on the list with their prices and units. A product's history has one line:
+      "Imported from <your file>".
+- [ ] AD6. The product you already had kept its price and its stock.
+- [ ] AD7. Upload the same file again: nothing new to import, and no button to confirm.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

@@ -1,0 +1,43 @@
+@using Salon.Core.Import
+@using Salon.Web.Features.Products.ImportProducts
+@model UploadProductsViewModel
+@{
+    ViewData["Title"] = T["Products.Import.Title"];
+}
+<section class="mx-auto max-w-lg space-y-6">
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-warn">@flash</p>
+    }
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Products.Import.Title"]</h1>
+        <p class="text-stone-600">@T["Products.Import.Intro"]</p>
+    </header>
+
+    <form method="post" asp-action="Upload" enctype="multipart/form-data" class="space-y-5" data-testid="import-upload-form">
+        @if (Model.Error is { } error)
+        {
+            <p role="alert" data-testid="import-error" class="notice notice-error">@error</p>
+        }
+
+        <div class="space-y-1">
+            <label for="File" class="field-label">@T["Products.Import.File"]</label>
+            <input id="File" name="File" type="file" accept=".csv,.txt,text/csv,text/plain" aria-describedby="file-hint"
+                   class="block w-full min-h-11 rounded-md border border-stone-300 bg-white px-3 py-2 text-base shadow-sm file:mr-3 file:rounded file:border-0 file:bg-stone-900 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900" />
+            <p id="file-hint" class="text-sm text-stone-600">@T.Format("Products.Import.FileHint", ProductImportLimits.MaxRows, ImportProductsController.MaxMegabytes)</p>
+        </div>
+
+        <div class="space-y-2 rounded-md bg-stone-50 p-3 text-sm text-stone-700" data-testid="import-columns">
+            <p class="font-medium">@T["Products.Import.Columns.Title"]</p>
+            <p>@T["Products.Import.Columns.Lead"]</p>
+            <p class="overflow-x-auto whitespace-nowrap rounded border border-stone-300 bg-white px-2 py-1 font-mono text-xs">@T["Products.Import.Columns.Example"]</p>
+        </div>
+
+        <p class="notice notice-warn">@T["Products.Import.NotChanged"]</p>
+
+        <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+            <a href="@ImportProductsController.ListPath" class="btn btn-compact btn-secondary">@T["Products.Import.Cancel"]</a>
+            <button type="submit" class="btn btn-compact btn-primary" data-testid="import-upload">@T["Products.Import.Upload"]</button>
+        </div>
+    </form>
+</section>

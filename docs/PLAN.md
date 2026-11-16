@@ -51,6 +51,7 @@ Gate: the pilot salon pays; then 3 paying salons before scaling up.
 - [x] Money lines as a spreadsheet file (ADR 0042): `Reports/ExportMoney` at `admin/reports/money.csv`, one row per line that moved money, in the reader's language, separator and decimal sign; `Csv` (Core) guards typed text against formulas; `IReportService.GetMoneyLinesAsync`. Not built: files for visits, clients and stock
 - [x] Thin views (ADR 0043, Tier 0): no `@functions` in any view; `ClockFormatter`, `Badges`, `ModelState.ErrorsFor`, `Request.Current` and small text classes next to the views; an architecture test keeps it so
 - [x] Products in the reports (ADR 0044): a "Products sold" section with sold, given back, products after returns, units, visits with a product, share of takings and the best sellers by value (`RetailReport`, `ReportRules.Share`); the money is the ledger's, the units are the paid bill lines'. Not built: returned units per product, a file of product sales, retail per staff member
+- [x] Product list from a file (ADR 0045): `Products/ImportProducts` at `admin/products/import`, upload, preview and confirm like the client import; columns by their headings in English or Polish, numbers in either notation (`ImportNumbers`), a product the salon has is never changed, the opening count is a line of the stock history; `IProductImportProvider` in `Salon.Plugin.Import`, `IProductImportService`, `TokenStore<T>`. Not built: updating prices from a file, cost prices
 - [ ] Pilot salon onboarding, daily fix list
 
 ## v1.1 Grow

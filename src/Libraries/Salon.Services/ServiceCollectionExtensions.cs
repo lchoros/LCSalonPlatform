@@ -66,6 +66,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<ILocationService, LocationService>();
         services.AddScoped<IStockService, StockService>();
+        services.AddScoped<Products.Import.IProductImportService, Products.Import.ProductImportService>();
         services.AddScoped<DemoSeeder>();
 
         services.AddOptions<EmailOptions>().BindConfiguration(EmailOptions.SectionName);
