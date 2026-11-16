@@ -47,6 +47,7 @@ Gate: the pilot salon pays; then 3 paying salons before scaling up.
 - [x] Calendar address for staff (ADR 0038, Tier 2): `Staff/ManageCalendarFeed` and `Staff/CalendarFeedFile`, a private iCalendar address per person for Google, Apple or Outlook; first name and initial only. Not built: two-way sync, time off in the feed
 - [x] After the visit (ADR 0039): the completed visit's checkout offers the next visit in one tap (`RebookSettings`: 4, 6 and 8 weeks; `RebookRules`), the booking form opens filled in; the client card has "Book a visit" and "Products bought" (`IClientAccountService.GetPurchasesAsync`). Not built: a settings page for the weeks
 - [x] Returning a product (ADR 0040, Tier 2): a paid bill line can be returned in part or in full; `ProductReturn` on the ledger at the rung-up price, `ReturnedQuantity` on the line, `Returned` on the shelf only when it can be sold again; `IPaymentProvider.RecordRefundAsync`. Not built: reasons, time limits, exchange in one step
+- [x] Waitlist kept by the desk (ADR 0041): `WaitlistEntry`, `IWaitlistService`, `Appointments/Waitlist` and `Appointments/AddToWaitlist` under `admin/appointments/waitlist`; added from the client card or a full day, oldest first, closed by a booking through the `AppointmentBooked` event or by hand; a link with the count on the day list and the calendar. Not built: a public "tell me" form (owner's decision), automatic messages
 - [ ] Pilot salon onboarding, daily fix list
 
 ## v1.1 Grow

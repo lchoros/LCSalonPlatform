@@ -125,6 +125,11 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `POST .../products/{lineId}/return` (ADR 0040) gives the money back for units of a paid line: a `ProductReturn`
   account line that points at the sale, `ReturnedQuantity` on the bill line and, when the unit can be sold again,
   `IStockService.ReturnAsync` (`Returned`). The payment plugin records it through `RecordRefundAsync`.
+- `Appointments/Waitlist`, `Appointments/AddToWaitlist` — `/admin/appointments/waitlist?page=` and `.../waitlist/new?clientId=`
+  (ADR 0041): clients waiting for a visit, oldest first, with "Book" (the booking form filled in) and
+  `POST {id}/remove`. `IWaitlistService` (Services) lists, counts, adds (one waiting entry per client and service)
+  and closes; `WaitlistBookedConsumer` closes a wish when `AppointmentBooked` arrives through the outbox. The view
+  component `WaitlistLink` puts the count on the day list and the calendar. Same permissions as the day list.
 - `Appointments/Calendar` — `/admin/appointments/calendar?view=day|week&date=&staff=` (ADR 0016): a CSS-grid timetable
   computed by the pure `CalendarLayout` in Services, an appointment card at `calendar/{id}` with the day list's status
   buttons and a move form posting to `calendar/{id}/move` (`IBookingService.MoveAsync`, re-checked through the engine,
