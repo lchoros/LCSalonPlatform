@@ -93,6 +93,10 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `/admin/staff/new`, `/admin/staff/{id}/edit`, `/admin/staff/{id}/hours`, `/admin/staff/{id}/time-off`, all behind
   `Staff.Manage` (ADR 0010, 0015); `CreateStaff` publishes `StaffMemberCreated`, the hours form replaces a person's
   whole weekly rota in one transaction, time off becomes busy intervals for the availability engine.
+- `Staff/Commission` — `/admin/staff/commission` behind `Settings.Manage` (owner only, ADR 0059): a services and a
+  products percent per active person, both optional. `IReportService` uses today's rates: `StaffLine.Retail` (the
+  products on the bills of the person's visits paid in the period, units kept), `Commission` (`CommissionRules`, to
+  the penny) and `AfterCommission`.
 - `Staff/ManageCalendarFeed` — `/admin/staff/{id}/calendar-feed` (ADR 0038, `Staff.Manage`): switches a person's
   private calendar address on, replaces it or switches it off (`StaffMember.CalendarFeedToken`).
   `Staff/CalendarFeedFile` — `GET /calendar/{token}.ics`, tenant only and without a sign-in: the person's live and
