@@ -498,6 +498,22 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
       checkout afterwards. A voucher that was used has no such button.
 - [ ] AP8. A wrong code at the checkout: "There is no voucher with this code."
 
+## AQ. Consultation forms (after the branch `agent/m3-37-consultation-forms` is merged too; it has a migration)
+- [ ] AQ1. Open a client's card. The amber health section has "Consultation forms" and "No consultation form yet."
+- [ ] AQ2. "New consultation form": six questions with Yes and No. Answer five, tick the box, type the client's
+      name and save: "Answer every question with Yes or No." What you typed is still there.
+- [ ] AQ3. Answer the last one, with one Yes among them, write what the client said, give a patch test date of
+      two days ago and save. The form's page marks the Yes, shows what was said, the patch test date, "Confirmed
+      by" with the name, and the sentence the client agreed to.
+- [ ] AQ4. Back on the card: the form is listed by its day and what it was for, nothing of what was said. "Last
+      patch test" is the date from the form.
+- [ ] AQ5. Take a second form with an older patch test date: the date on the card does not go back.
+- [ ] AQ6. A patch test date of tomorrow is refused. Without the tick or without the name the form is refused.
+- [ ] AQ7. Sign in as a staff login (not owner, manager or receptionist) and open the form's address: access is
+      denied, as for the client card.
+- [ ] AQ8. Merge a duplicate card that has a form into the kept card: the form is now on the kept card.
+- [ ] AQ9. Settings, "Your data", the client file: it has no column for consultation answers.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

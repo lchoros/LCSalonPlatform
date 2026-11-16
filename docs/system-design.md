@@ -169,6 +169,12 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   owner only (ADR 0051): every client card with contact details, notes, consent and visit counts, merged pointers
   left out. Health notes are never read. Each download is logged with who and how many rows. The client import
   reads the file back.
+- `Clients/Consultations` — `/admin/clients/{clientId}/consultations/new` and `.../consultations/{id}` behind
+  `Clients.View` (ADR 0058): the consultation form before a colour and one kept record. `IConsultationService`
+  keeps the answers, the details, the patch test day and the name the client typed as one document encrypted with
+  `IFieldEncryptor` (`consultation_records.answers_protected`); only it opens them, and only for the record's own
+  page. The card (`Clients/ClientCard`) lists a form by day and purpose. The pages are `no-store`; the log has ids
+  only. A patch test on a form moves `Client.LastPatchTestOn` forward; `IClientService.MergeAsync` moves the forms.
 - `Clients/ImportClients` — `/admin/clients/import` behind `Clients.Manage` and `Features:ClientImport` (ADR 0019):
   upload a Booksy or Versum CSV, preview (new / duplicate / invalid), confirm. Parsing lives in the plugin
   `Salon.Plugin.Import`; the preview is kept server-side under a random token bound to the salon.
