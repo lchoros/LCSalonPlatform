@@ -135,7 +135,29 @@ internal sealed class BookingService(
         => TransitionAsync(appointmentId, AppointmentStatus.Arrived, byUserId, null, (a, at) => new AppointmentArrived(a.Id, a.TenantId, at), cancellationToken);
 
     public Task<Appointment> CompleteAsync(Guid appointmentId, Guid? byUserId = null, CancellationToken cancellationToken = default)
-        => TransitionAsync(appointmentId, AppointmentStatus.Completed, byUserId, null, (a, at) => new AppointmentCompleted(a.Id, a.TenantId, at), cancellationToken);
+        => TransitionAsync(
+            appointmentId,
+            AppointmentStatus.Completed,
+            byUserId,
+            null,
+            (a, at) => new AppointmentCompleted(a.Id, a.TenantId, at),
+            cancellationToken,
+            KeepCommissionRatesAsync);
+
+    /// <summary>
+    /// The person's commission rates of today go with the visit, so a later raise does not rewrite this month
+    /// (ADR 0059). Set before the event is published, whose save writes the visit.
+    /// </summary>
+    private async Task KeepCommissionRatesAsync(Appointment appointment, CancellationToken cancellationToken)
+    {
+        var rates = await db.StaffMembers.AsNoTracking()
+            .Where(s => s.Id == appointment.StaffMemberId)
+            .Select(s => new { s.ServiceCommissionPercent, s.ProductCommissionPercent })
+            .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        appointment.CommissionRatesKept = true;
+        appointment.ServiceCommissionPercent = rates?.ServiceCommissionPercent;
+        appointment.ProductCommissionPercent = rates?.ProductCommissionPercent;
+    }
 
     public Task<Appointment> MarkNoShowAsync(Guid appointmentId, Guid? byUserId = null, CancellationToken cancellationToken = default)
         => TransitionAsync(appointmentId, AppointmentStatus.NoShow, byUserId, null, (a, at) => new AppointmentNoShow(a.Id, a.TenantId, at), cancellationToken);
@@ -236,7 +258,8 @@ internal sealed class BookingService(
         Guid? byUserId,
         string? reason,
         Func<Appointment, Instant, IEvent> eventFor,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Func<Appointment, CancellationToken, Task>? alsoChange = null)
     {
         var appointment = await db.Appointments.FirstOrDefaultAsync(a => a.Id == appointmentId, cancellationToken).ConfigureAwait(false)
             ?? throw new AppointmentNotFoundException(appointmentId);
@@ -245,6 +268,11 @@ internal sealed class BookingService(
         // Throws InvalidAppointmentTransitionException before anything is tracked as changed.
         var change = AppointmentStateMachine.Transition(appointment, to, now, byUserId, reason);
         db.AppointmentStatusChanges.Add(change);
+        if (alsoChange is not null)
+        {
+            await alsoChange(appointment, cancellationToken).ConfigureAwait(false);
+        }
+
         await publisher.PublishAsync(eventFor(appointment, now), cancellationToken).ConfigureAwait(false);
         return appointment;
     }

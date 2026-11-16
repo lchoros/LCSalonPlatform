@@ -43,7 +43,11 @@ internal sealed class ReportService(
         var visits = await db.Appointments.AsNoTracking()
             .Where(a => a.Start >= start && a.Start < end)
             .OrderBy(a => a.Start).ThenBy(a => a.Id)
-            .Select(a => new VisitRow(a.Id, a.Status, a.Source, a.StaffMemberId, a.ServiceId, a.ClientId, a.PriceAmount, a.DurationMinutes, a.Start))
+            .Select(a => new VisitRow(a.Id, a.Status, a.Source, a.StaffMemberId, a.ServiceId, a.ClientId, a.PriceAmount, a.DurationMinutes, a.Start)
+            {
+                CommissionRatesKept = a.CommissionRatesKept,
+                ServiceRate = a.ServiceCommissionPercent,
+            })
             .ToListAsync(cancellationToken).ConfigureAwait(false);
         var completed = visits.Where(v => v.Status == AppointmentStatus.Completed).ToArray();
 
@@ -358,11 +362,9 @@ internal sealed class ReportService(
             join sale in db.ClientAccountEntries.AsNoTracking() on line.PaymentEntryId equals sale.Id
             join visit in db.Appointments.AsNoTracking() on line.AppointmentId equals visit.Id
             where sale.At >= start && sale.At < end
-            select new { visit.StaffMemberId, Kept = line.Quantity - line.ReturnedQuantity, line.UnitPrice })
+            select new { visit.StaffMemberId, Kept = line.Quantity - line.ReturnedQuantity, line.UnitPrice, visit.CommissionRatesKept, visit.ProductCommissionPercent })
             .ToListAsync(cancellationToken).ConfigureAwait(false);
-        var retail = sold
-            .GroupBy(s => s.StaffMemberId)
-            .ToDictionary(g => g.Key, g => g.Sum(s => ProductSaleRules.LineTotal(Math.Max(0, s.Kept), s.UnitPrice)));
+        var retail = sold.ToLookup(s => s.StaffMemberId);
         var hours = await db.WorkingHours.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false);
         var timeOff = await db.StaffTimeOff.AsNoTracking()
             .Where(t => t.FromDate <= period.To && t.ToDate >= period.From)
@@ -377,24 +379,50 @@ internal sealed class ReportService(
             var working = person.Works
                 ? WorkingMinutes(period, hours.Where(h => h.StaffMemberId == person.Id).ToArray(), timeOff.Where(t => t.StaffMemberId == person.Id).ToArray())
                 : 0;
-            var products = retail.GetValueOrDefault(person.Id);
+            var lines = retail[person.Id]
+                .Select(s => (Amount: ProductSaleRules.LineTotal(Math.Max(0, s.Kept), s.UnitPrice), Rate: CommissionRules.RateFor(s.CommissionRatesKept, s.ProductCommissionPercent, person.ProductCommissionPercent)))
+                .ToArray();
+            var products = lines.Sum(l => l.Amount);
             if (working == 0 && booked == 0 && done.Length == 0 && products == 0m)
             {
                 continue;
             }
 
-            var value = done.Sum(v => v.Price);
-            var commission = CommissionRules.Total(value, person.ServiceCommissionPercent, products, person.ProductCommissionPercent);
-            result.Add(new StaffLine(person.DisplayName, done.Length, money(value), booked, working, ReportRules.Utilisation(booked, working))
+            // Each visit earns at the rates kept on it when it was completed (ADR 0059).
+            var work = done
+                .Select(v => (Amount: v.Price, Rate: CommissionRules.RateFor(v.CommissionRatesKept, v.ServiceRate, person.ServiceCommissionPercent)))
+                .ToArray();
+            var fromWork = CommissionRules.Earned(work);
+            var fromProducts = CommissionRules.Earned(lines);
+            var onCommission = fromWork is not null || fromProducts is not null || person.ServiceCommissionPercent is not null || person.ProductCommissionPercent is not null;
+            var (serviceRate, servicesVaried) = RateShown(work.Select(w => w.Rate), person.ServiceCommissionPercent);
+            var (productRate, productsVaried) = RateShown(lines.Select(l => l.Rate), person.ProductCommissionPercent);
+            result.Add(new StaffLine(person.DisplayName, done.Length, money(work.Sum(w => w.Amount)), booked, working, ReportRules.Utilisation(booked, working))
             {
                 Retail = products > 0m ? money(products) : null,
-                ServiceRate = person.ServiceCommissionPercent,
-                ProductRate = person.ProductCommissionPercent,
-                Commission = commission is { } earned ? money(earned) : null,
+                ServiceRate = serviceRate,
+                ProductRate = productRate,
+                RatesVaried = servicesVaried || productsVaried,
+                Commission = onCommission ? money((fromWork ?? 0m) + (fromProducts ?? 0m)) : null,
             });
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// The rate to name beside the commission (ADR 0059): the one rate the period's visits earned at, today's when
+    /// none did, or "varied" when the rate changed during the period.
+    /// </summary>
+    private static (decimal? Rate, bool Varied) RateShown(IEnumerable<decimal?> used, decimal? today)
+    {
+        var rates = used.Where(r => r is not null).Distinct().ToArray();
+        return rates.Length switch
+        {
+            0 => (today, false),
+            1 => (rates[0], false),
+            _ => (null, true),
+        };
     }
 
     /// <summary>The rota applied to every day of the period, less the absences that touch it.</summary>
@@ -492,5 +520,10 @@ internal sealed class ReportService(
 
     private sealed record LedgerRow(ClientAccountEntryKind Kind, PaymentMethod? Method, decimal Amount, Instant At);
 
-    private sealed record VisitRow(Guid Id, AppointmentStatus Status, AppointmentSource Source, Guid StaffMemberId, Guid ServiceId, Guid ClientId, decimal Price, int Minutes, Instant Start);
+    private sealed record VisitRow(Guid Id, AppointmentStatus Status, AppointmentSource Source, Guid StaffMemberId, Guid ServiceId, Guid ClientId, decimal Price, int Minutes, Instant Start)
+    {
+        public bool CommissionRatesKept { get; init; }
+
+        public decimal? ServiceRate { get; init; }
+    }
 }

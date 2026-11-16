@@ -23,4 +23,29 @@ public static class CommissionRules
         => serviceRate is null && productRate is null
             ? null
             : (Earned(services, serviceRate) ?? 0m) + (Earned(products, productRate) ?? 0m);
+
+    /// <summary>
+    /// What a set of amounts earns, each at its own rate, rounded once at the end so a hundred small visits do not
+    /// lose or gain a penny each. Amounts without a rate earn nothing; null when none has a rate.
+    /// </summary>
+    public static decimal? Earned(IEnumerable<(decimal Amount, decimal? Rate)> items)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        decimal? sum = null;
+        foreach (var (amount, rate) in items)
+        {
+            if (rate is { } percent)
+            {
+                sum = (sum ?? 0m) + (amount * percent / 100m);
+            }
+        }
+
+        return sum is { } total ? decimal.Round(total, 2, MidpointRounding.AwayFromZero) : null;
+    }
+
+    /// <summary>
+    /// The rate a visit earns at (ADR 0059): the one kept on it when it was completed, even "none"; today's rate for a
+    /// visit completed before rates were kept, or not completed yet.
+    /// </summary>
+    public static decimal? RateFor(bool kept, decimal? keptRate, decimal? todaysRate) => kept ? keptRate : todaysRate;
 }

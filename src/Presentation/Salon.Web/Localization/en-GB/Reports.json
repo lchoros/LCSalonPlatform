@@ -107,5 +107,7 @@
   "Reports.Staff.Commission": "Commission ({0})",
   "Reports.Staff.ServiceRate": "{0}% services",
   "Reports.Staff.ProductRate": "{0}% products",
-  "Reports.Staff.AfterCommission": "Left after commission"
+  "Reports.Staff.AfterCommission": "Left after commission",
+  "Reports.Staff.RatesChanged": "the rate changed in this period",
+  "Reports.Staff.CommissionPlain": "Commission"
 }

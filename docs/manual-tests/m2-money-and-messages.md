@@ -523,7 +523,11 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
       shows "Products sold on their visits", "Commission (40% services, 10% products)" and "Left after commission".
       Check one figure by hand: 40% of the visits plus 10% of the products.
 - [ ] AR4. Give one product back on that bill: the products and the commission go down by it.
-- [ ] AR5. Empty both boxes and save: the line shows no commission again.
+- [ ] AR5. Raise the services rate to 50 and save: the visit already completed still earns 40%. Complete another
+      visit for that person: the line now says "the rate changed in this period", and the commission is 40% of the
+      first visit plus 50% of the second.
+- [ ] AR6. Empty both boxes and save: the commission of the visits already done stays; visits done from now on earn
+      none.
 
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the

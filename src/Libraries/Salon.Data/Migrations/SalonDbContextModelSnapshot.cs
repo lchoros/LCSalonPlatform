@@ -45,6 +45,10 @@ namespace Salon.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("client_id");
 
+                    b.Property<bool>("CommissionRatesKept")
+                        .HasColumnType("boolean")
+                        .HasColumnName("commission_rates_kept");
+
                     b.Property<Instant>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -84,10 +88,20 @@ namespace Salon.Data.Migrations
                         .HasColumnType("numeric(10,2)")
                         .HasColumnName("price_amount");
 
+                    b.Property<decimal?>("ProductCommissionPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("product_commission_percent");
+
                     b.Property<string>("PublicToken")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")
                         .HasColumnName("public_token");
+
+                    b.Property<decimal?>("ServiceCommissionPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("service_commission_percent");
 
                     b.Property<Guid>("ServiceId")
                         .HasColumnType("uuid")

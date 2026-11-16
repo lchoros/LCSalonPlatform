@@ -25,6 +25,11 @@ public static class ReportText
         ArgumentNullException.ThrowIfNull(localizer);
         ArgumentNullException.ThrowIfNull(person);
         ArgumentNullException.ThrowIfNull(culture);
+        if (person.RatesVaried)
+        {
+            return localizer.Format("Reports.Staff.Commission", localizer["Reports.Staff.RatesChanged"]);
+        }
+
         var rates = new List<string>(2);
         if (person.ServiceRate is { } services)
         {
@@ -36,7 +41,9 @@ public static class ReportText
             rates.Add(localizer.Format("Reports.Staff.ProductRate", products.ToString("0.##", culture)));
         }
 
-        return localizer.Format("Reports.Staff.Commission", string.Join(", ", rates));
+        return rates.Count == 0
+            ? localizer["Reports.Staff.CommissionPlain"]
+            : localizer.Format("Reports.Staff.Commission", string.Join(", ", rates));
     }
 
     /// <summary>

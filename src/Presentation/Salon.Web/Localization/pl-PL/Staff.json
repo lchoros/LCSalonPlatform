@@ -111,7 +111,7 @@
   "Staff.Commission.None": "Brak aktywnych pracowników.",
   "Staff.Commission.Services": "Od usług",
   "Staff.Commission.Products": "Od produktów",
-  "Staff.Commission.Hint": "Raport oblicza prowizję za dowolny okres według stawek ustawionych tutaj dzisiaj. Tylko właściciel może je zmienić.",
+  "Staff.Commission.Hint": "Wizyta zachowuje stawki z dnia, w którym została zakończona, więc zmiana stawki dotyczy wizyt od teraz. Tylko właściciel może je zmienić.",
   "Staff.Commission.Submit": "Zapisz stawki",
   "Staff.Commission.SeeReport": "Zobacz w raporcie",
   "Staff.Commission.Saved": "Stawki zostały zapisane.",

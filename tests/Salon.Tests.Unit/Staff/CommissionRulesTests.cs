@@ -54,6 +54,28 @@ public class CommissionRulesTests
         CommissionRules.Total(0m, 40m, 0m, null).ShouldBe(0m, "a person paid by commission who earned none earned zero");
     }
 
+    [Fact]
+    public void Visits_at_different_rates_are_added_up_and_rounded_once()
+    {
+        CommissionRules.Earned([(20m, 40m), (20m, 50m)]).ShouldBe(18m);
+        CommissionRules.Earned([(0.05m, 10m), (0.05m, 10m), (0.05m, 10m)]).ShouldBe(0.02m, "three half pennies are one and a half pennies, not three");
+        CommissionRules.Earned([(20m, 40m), (30m, null)]).ShouldBe(8m, "a visit without a rate earns nothing");
+        CommissionRules.Earned([(20m, null)]).ShouldBeNull();
+        CommissionRules.Earned([]).ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(true, "40", "50", "40")]
+    [InlineData(true, null, "50", null)]
+    [InlineData(false, null, "50", "50")]
+    [InlineData(false, null, null, null)]
+    public void A_visit_earns_at_the_rate_kept_on_it_or_today_if_none_was_kept(bool kept, string? keptRate, string? today, string? expected)
+    {
+        static decimal? D(string? s) => s is null ? null : decimal.Parse(s, System.Globalization.CultureInfo.InvariantCulture);
+
+        CommissionRules.RateFor(kept, D(keptRate), D(today)).ShouldBe(D(expected));
+    }
+
     [Property]
     public void Commission_is_never_more_than_what_it_is_earned_on_nor_below_zero(PositiveInt pennies, byte percent)
     {

@@ -111,7 +111,7 @@
   "Staff.Commission.None": "No active staff members.",
   "Staff.Commission.Services": "On services",
   "Staff.Commission.Products": "On products",
-  "Staff.Commission.Hint": "The report works out the commission for any period with the rates set here today. Only the owner can change them.",
+  "Staff.Commission.Hint": "A visit keeps the rates of the day it is completed, so changing a rate here changes the visits done from now on. Only the owner can change them.",
   "Staff.Commission.Submit": "Save the rates",
   "Staff.Commission.SeeReport": "See it in the report",
   "Staff.Commission.Saved": "The rates are saved.",

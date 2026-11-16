@@ -91,6 +91,53 @@ public class StaffCommissionTests(SalonWebApplicationFactory factory) : IAsyncLi
     }
 
     [Fact]
+    public async Task A_visit_keeps_the_rate_of_the_day_it_was_completed_and_a_raise_does_not_rewrite_it()
+    {
+        await RatesAsync(_staffId, 40m, null);
+        var first = await VisitSeed.AppointmentAsync(factory, _studio.Id, _clientId, _staffId, _serviceId, Now - Duration.FromMinutes(90), AppointmentStatus.Arrived);
+        await CompleteAsync(first);
+
+        // The owner gives a raise: the visit already done stays at 40%.
+        await RatesAsync(_staffId, 50m, null);
+        var afterRaise = (await ReportAsync()).Staff.Single(s => s.Visits > 0);
+        (afterRaise.ServiceRate, afterRaise.RatesVaried).ShouldBe((40m, false));
+        afterRaise.Commission.ShouldNotBeNull().Amount.ShouldBe(8m);
+
+        // A visit done after the raise earns 50%; the period now has two rates.
+        var second = await VisitSeed.AppointmentAsync(factory, _studio.Id, _clientId, _staffId, _serviceId, Now - Duration.FromMinutes(45), AppointmentStatus.Arrived);
+        await CompleteAsync(second);
+        var both = (await ReportAsync()).Staff.Single(s => s.Visits > 0);
+        (both.ServiceRate, both.RatesVaried).ShouldBe((null, true));
+        both.Commission.ShouldNotBeNull().Amount.ShouldBe(18m);
+
+        using var owner = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Owner);
+        (await GetAsync(owner, "/admin/reports")).ShouldContain("Commission (the rate changed in this period)");
+
+        // Taking someone off commission does not take away what their past visits earned.
+        await RatesAsync(_staffId, null, null);
+        (await ReportAsync()).Staff.Single(s => s.Visits > 0).Commission.ShouldNotBeNull().Amount.ShouldBe(18m);
+    }
+
+    [Fact]
+    public async Task A_visit_completed_while_the_person_had_no_rate_earns_nothing_after_they_get_one()
+    {
+        var visit = await VisitSeed.AppointmentAsync(factory, _studio.Id, _clientId, _staffId, _serviceId, Now - Duration.FromMinutes(90), AppointmentStatus.Arrived);
+        await CompleteAsync(visit);
+        await RatesAsync(_staffId, 40m, null);
+
+        var line = (await ReportAsync()).Staff.Single(s => s.Visits > 0);
+
+        line.Commission.ShouldNotBeNull().Amount.ShouldBe(0m, "the person is on commission now, and that visit was done before");
+        line.ServiceRate.ShouldBe(40m, "no visit of the period earned at a rate, so today's is named");
+    }
+
+    private async Task CompleteAsync(Guid appointmentId)
+    {
+        await using var scope = factory.CreateTenantScope(_studio.Id);
+        await scope.ServiceProvider.GetRequiredService<Salon.Services.Appointments.IBookingService>().CompleteAsync(appointmentId);
+    }
+
+    [Fact]
     public async Task A_person_with_a_rate_and_no_work_earned_nothing_and_is_not_listed_without_hours()
     {
         await RatesAsync(_staffId, 40m, 10m);

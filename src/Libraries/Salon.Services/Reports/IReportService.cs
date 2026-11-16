@@ -199,13 +199,19 @@ public sealed record StaffLine(string Name, int Visits, Money Value, int BookedM
     /// </summary>
     public Money? Retail { get; init; }
 
-    /// <summary>Today's service commission rate, percent; null when the person has none (ADR 0059).</summary>
+    /// <summary>
+    /// The services rate the period's visits earned at, percent (ADR 0059): the rate kept on each visit when it was
+    /// completed, today's for older visits. Null when the person has none, or when it changed during the period.
+    /// </summary>
     public decimal? ServiceRate { get; init; }
 
-    /// <summary>Today's product commission rate, percent; null when the person has none.</summary>
+    /// <summary>The products rate, the same way as <see cref="ServiceRate"/>.</summary>
     public decimal? ProductRate { get; init; }
 
-    /// <summary>What the rates earn on <see cref="Value"/> and <see cref="Retail"/>; null when the person has no rate.</summary>
+    /// <summary>A rate changed during the period, so no single rate is named.</summary>
+    public bool RatesVaried { get; init; }
+
+    /// <summary>What the rates earned on <see cref="Value"/> and <see cref="Retail"/>; null when the person has no rate.</summary>
     public Money? Commission { get; init; }
 
     public bool HasRetail => Retail is { Amount: > 0m };
