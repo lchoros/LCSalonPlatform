@@ -1,4 +1,5 @@
 @using System.Globalization
+@using Salon.Web.Features.Clients.ClientCard
 @using NodaTime.Text
 @using Salon.Core.Appointments
 @using Salon.Core.Domain
@@ -6,20 +7,13 @@
 @model ClientVisit
 @{
     var culture = CultureInfo.CurrentCulture;
-    var dayPath = "/admin/appointments?date=" + LocalDatePattern.Iso.Format(Model.Start.Date);
+    var dayPath = ClientCardController.DayPath(Model.Start.Date);
     // The status labels are the day list's Appointments.Status.* keys, one per enum member.
     var statusKey = "Appointments.Status." + Model.Status;
     // A missed or cancelled visit may carry a fee (ADR 0022); its page says whether the policy allows one.
     var feeLink = ViewData["FeesInUse"] is true
         && Model.Status is AppointmentStatus.NoShow or AppointmentStatus.CancelledByClient or AppointmentStatus.CancelledBySalon;
-    var badgeClass = Model.Status switch
-    {
-        AppointmentStatus.Completed => "bg-green-100 text-green-900",
-        AppointmentStatus.NoShow => "bg-red-100 text-red-900",
-        AppointmentStatus.CancelledByClient or AppointmentStatus.CancelledBySalon => "bg-stone-200 text-stone-700",
-        AppointmentStatus.Confirmed or AppointmentStatus.Arrived => "bg-blue-100 text-blue-900",
-        _ => "bg-stone-100 text-stone-700",
-    };
+    var badgeClass = Badges.AppointmentInHistory(Model.Status);
 }
 <li data-testid="visit" data-status="@Model.Status">
     <a href="@dayPath" class="flex min-h-11 flex-col gap-1 p-3 hover:bg-stone-50 sm:flex-row sm:items-center sm:justify-between">

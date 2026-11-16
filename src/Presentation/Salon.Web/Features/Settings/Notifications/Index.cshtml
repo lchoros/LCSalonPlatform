@@ -7,10 +7,6 @@
     const string buttonClass = "btn btn-compact btn-primary w-full sm:w-auto";
     var form = Model.Form;
 }
-@functions {
-    IReadOnlyList<string> Errors(string key)
-        => ViewData.ModelState.TryGetValue(key, out var entry) ? entry.Errors.Select(e => e.ErrorMessage).ToList() : [];
-}
 <section class="mx-auto max-w-xl space-y-6">
     <partial name="_SettingsNav" model="@("notifications")" />
     <header class="space-y-2">
@@ -52,7 +48,7 @@
                 ("SecondReminderHours", "Settings.Notifications.Second", form.SecondReminderHours),
             })
             {
-                var errors = Errors(name);
+                var errors = ViewData.ModelState.ErrorsFor(name);
                 var errorId = name + "-error";
                 var hintId = name + "-hint";
                 <div class="space-y-1">
@@ -75,7 +71,7 @@
                     ("QuietTo", "Settings.Notifications.QuietTo", form.QuietTo),
                 })
                 {
-                    var errors = Errors(name);
+                    var errors = ViewData.ModelState.ErrorsFor(name);
                     var errorId = name + "-error";
                     <div class="space-y-1">
                         <label for="@name" class="field-label">@T[labelKey]</label>

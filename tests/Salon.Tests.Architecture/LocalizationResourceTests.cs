@@ -237,6 +237,36 @@ public partial class LocalizationResourceTests
         offenders.ShouldBeEmpty($"'{literal}' is hard-coded in: {string.Join(", ", offenders)}");
     }
 
+    [Fact]
+    public void No_view_carries_its_own_helper_functions()
+    {
+        // ADR 0043: a view says what to show. Calculations go to the model, addresses to the controller or the view
+        // model, formatting to Salon.Services.Formatting, class choices to Salon.Web.Framework.Ui.
+        var offenders = HostViews()
+            .Where(f => File.ReadAllText(f).Contains("@functions", StringComparison.Ordinal))
+            .Select(f => Path.GetRelativePath(HostRoot(), f))
+            .Order(StringComparer.Ordinal)
+            .ToList();
+
+        offenders.ShouldBeEmpty("views with an @functions block: " + string.Join(", ", offenders));
+    }
+
+    [Theory]
+    [InlineData("LocalDatePattern.Iso.Format(")]
+    [InlineData("InstantPattern.ExtendedIso.Format(")]
+    [InlineData(".ToString(\"t\", ")]
+    [InlineData("ViewData.ModelState.TryGetValue(")]
+    public void Views_use_the_shared_formatters_instead_of_their_own(string pattern)
+    {
+        var offenders = HostViews()
+            .Where(f => File.ReadAllText(f).Contains(pattern, StringComparison.Ordinal))
+            .Select(f => Path.GetRelativePath(HostRoot(), f))
+            .Order(StringComparer.Ordinal)
+            .ToList();
+
+        offenders.ShouldBeEmpty($"'{pattern}' is written out in: {string.Join(", ", offenders)}");
+    }
+
     /// <summary>Every Razor file in the host project (Views/, Features/, Areas/), skipping build output.</summary>
     private static List<string> HostViews()
     {

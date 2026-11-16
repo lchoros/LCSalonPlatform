@@ -6,26 +6,23 @@
 @{
     var day = Model.Day;
     var culture = CultureInfo.CurrentCulture;
-    var iso = LocalDatePattern.Iso.Format(day.Day);
+    var iso = day.Day.ToIso();
     ViewData["Title"] = T["Payments.CashUp.Title"];
     const string inputClass = "field field-compact";
     const string primaryClass = "btn btn-compact btn-primary w-full sm:w-auto";
     const string navClass = "btn btn-compact btn-secondary min-w-11 px-3";
     const string cardClass = "space-y-3 panel";
 }
-@functions {
-    static string DayPath(NodaTime.LocalDate day) => CashUpController.Path + "?date=" + LocalDatePattern.Iso.Format(day);
-}
 <section class="mx-auto max-w-2xl space-y-6">
     <header class="space-y-3">
         <h1 class="page-title">@T["Payments.CashUp.Title"]</h1>
         <p class="text-stone-600">@T["Payments.CashUp.Lead"]</p>
         <div class="flex items-center gap-2">
-            <a href="@DayPath(day.Day.PlusDays(-1))" data-testid="prev-day" class="@navClass" aria-label="@T["Appointments.Day.Previous"]">&larr;</a>
+            <a href="@CashUpController.DayPath(day.Day.PlusDays(-1))" data-testid="prev-day" class="@navClass" aria-label="@T["Appointments.Day.Previous"]">&larr;</a>
             <time datetime="@iso" data-testid="day" class="min-w-0 flex-1 text-center text-base font-medium sm:text-lg">@day.Day.ToDayHeading(culture)</time>
             @if (day.Day < day.Today)
             {
-                <a href="@DayPath(day.Day.PlusDays(1))" data-testid="next-day" class="@navClass" aria-label="@T["Appointments.Day.Next"]">&rarr;</a>
+                <a href="@CashUpController.DayPath(day.Day.PlusDays(1))" data-testid="next-day" class="@navClass" aria-label="@T["Appointments.Day.Next"]">&rarr;</a>
                 <a href="@CashUpController.Path" data-testid="today" class="@navClass">@T["Appointments.Day.Today"]</a>
             }
         </div>
@@ -124,7 +121,7 @@
                 {
                     <li class="flex flex-col gap-1 p-3 sm:flex-row sm:items-center sm:justify-between" data-testid="movement" data-kind="@movement.Kind">
                         <span class="flex flex-col gap-0.5">
-                            <span class="font-medium"><span class="tabular-nums">@movement.At.TimeOfDay.ToString("t", culture)</span> · @movement.ClientName</span>
+                            <span class="font-medium"><span class="tabular-nums">@movement.At.TimeOfDay.ToShortTime(culture)</span> · @movement.ClientName</span>
                             <span class="text-sm text-stone-600">@T[$"Payments.Kind.{movement.Kind}"] · @T[$"Payments.Method.{movement.Method}"]@(movement.ByName is { } by ? " · " + by : string.Empty)</span>
                         </span>
                         <span class="tabular-nums font-medium @(movement.Amount.Amount < 0m ? "text-red-800" : string.Empty)" data-testid="movement-amount">@movement.Amount.ToDisplayString(culture)</span>

@@ -9,6 +9,7 @@ using Salon.Core.Identity;
 using Salon.Services.Appointments;
 using Salon.Services.Localization;
 using Salon.Web.Framework.Controllers;
+using Salon.Web.Framework.Lists;
 using Salon.Web.Framework.Mvc;
 
 namespace Salon.Web.Features.Appointments.BookForClient;
@@ -29,6 +30,18 @@ public sealed class BookForClientController(IDispatcher dispatcher, ILocalizatio
 {
     public const string FormPath = "/admin/appointments/new";
     private const string ListPath = "/admin/appointments";
+
+    /// <summary>The form with a different client (or none) and the same service, person and day (ADR 0043: addresses are built here, not in the view).</summary>
+    public static string FormAddress(BookForClientForm form, Guid? clientId)
+    {
+        ArgumentNullException.ThrowIfNull(form);
+        return ListUrl.Build(
+            FormPath,
+            ("date", LocalDatePattern.Iso.Format(form.Day)),
+            ("clientId", clientId?.ToString()),
+            ("serviceId", form.ServiceId?.ToString()),
+            ("staffId", form.StaffMemberId?.ToString()));
+    }
 
     [HttpGet("new")]
     public async Task<IActionResult> New(string? q, Guid? clientId, Guid? serviceId, Guid? staffId, string? date, CancellationToken cancellationToken)

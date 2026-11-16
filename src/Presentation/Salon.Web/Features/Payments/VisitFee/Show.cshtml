@@ -12,21 +12,13 @@
     var fee = visit.Fee;
     var culture = CultureInfo.CurrentCulture;
     var zone = visit.Start.Zone;
-    var dayPath = "/admin/appointments?date=" + LocalDatePattern.Iso.Format(visit.Start.Date);
-    var feePath = VisitFeeController.BasePath + "/" + visit.AppointmentId;
+    var dayPath = VisitFeeController.DayPath(visit.Start.Date);
+    var feePath = VisitFeeController.FeePath(visit.AppointmentId);
     ViewData["Title"] = T["Payments.Fee.Title"];
     const string inputClass = "field field-compact";
     const string primaryClass = "btn btn-compact btn-primary w-full sm:w-auto";
     const string secondaryClass = "btn btn-compact btn-secondary w-full sm:w-auto";
     const string cardClass = "space-y-3 panel";
-}
-@functions {
-    static string StatusClass(FeeStatus status) => status switch
-    {
-        FeeStatus.Paid => "bg-green-100 text-green-900",
-        FeeStatus.Waived => "bg-stone-200 text-stone-800",
-        _ => "bg-amber-100 text-amber-900",
-    };
 }
 <section class="mx-auto max-w-lg space-y-6">
     <a href="@dayPath" data-testid="back" class="back-link">&larr; @T["Payments.Fee.Back"]</a>
@@ -99,20 +91,20 @@
         <section class="@cardClass" data-testid="fee" data-status="@fee.Status" data-kind="@fee.Kind">
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="text-lg font-semibold">@T[$"Payments.Fee.Kind.{fee.Kind}"]</h2>
-                <span class="rounded px-1.5 py-0.5 text-xs font-medium @StatusClass(fee.Status)" data-testid="fee-status">@T[$"Payments.Fee.Status.{fee.Status}"]</span>
+                <span class="rounded px-1.5 py-0.5 text-xs font-medium @Badges.Fee(fee.Status)" data-testid="fee-status">@T[$"Payments.Fee.Status.{fee.Status}"]</span>
             </div>
             <p class="text-2xl font-bold tabular-nums" data-testid="fee-amount-charged">@fee.Amount.ToDisplayString(culture)</p>
 
             <h3 class="text-sm font-medium text-stone-600">@T["Payments.Fee.History"]</h3>
             <ol class="space-y-2 text-sm" data-testid="fee-history">
                 <li data-testid="fee-history-added">
-                    <time datetime="@InstantPattern.ExtendedIso.Format(fee.At)" class="tabular-nums text-stone-600">@fee.At.ToShortDateTime(zone, culture)</time>
+                    <time datetime="@fee.At.ToIso()" class="tabular-nums text-stone-600">@fee.At.ToShortDateTime(zone, culture)</time>
                     <span class="block">@T.Format("Payments.Fee.History.Added", fee.ByName ?? T["Payments.Fee.History.Unknown"])</span>
                 </li>
                 @if (fee.Settlement is { } settled)
                 {
                     <li data-testid="fee-history-settled">
-                        <time datetime="@InstantPattern.ExtendedIso.Format(settled.At)" class="tabular-nums text-stone-600">@settled.At.ToShortDateTime(zone, culture)</time>
+                        <time datetime="@settled.At.ToIso()" class="tabular-nums text-stone-600">@settled.At.ToShortDateTime(zone, culture)</time>
                         @if (settled.Kind == ClientAccountEntryKind.FeePayment)
                         {
                             <span class="block">@T.Format("Payments.Fee.History.Paid", T[$"Payments.Method.{settled.Method}"], settled.ByName ?? T["Payments.Fee.History.Unknown"])</span>

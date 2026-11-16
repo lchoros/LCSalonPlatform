@@ -8,11 +8,6 @@
     var visits = Model.Visits;
     ViewData["Title"] = T["Appointments.Outcome.Title"];
 }
-@functions {
-    static string Time(LocalTime time) => time.ToString("t", CultureInfo.CurrentCulture);
-
-    static string ButtonClass(VisitOutcome outcome) => outcome == VisitOutcome.Came ? "btn btn-compact btn-primary" : "btn btn-compact btn-secondary";
-}
 <section class="space-y-6">
     @if (Model.Flash is { } flash)
     {
@@ -37,7 +32,7 @@
                     <div class="min-w-0 space-y-1">
                         <p class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                             <time datetime="@visit.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" class="font-semibold" data-testid="visit-day">@visit.Day.ToString("D", culture)</time>
-                            <span class="tabular-nums text-stone-700" data-testid="visit-time">@Time(visit.Start)–@Time(visit.End)</span>
+                            <span class="tabular-nums text-stone-700" data-testid="visit-time">@visit.Start.ToShortTime(culture)–@visit.End.ToShortTime(culture)</span>
                             <span class="rounded bg-stone-100 px-1.5 py-0.5 text-xs font-medium text-stone-700" data-testid="status-badge">@T[$"Appointments.Status.{visit.Status}"]</span>
                         </p>
                         <p class="text-base" data-testid="visit-client">@visit.ClientName</p>
@@ -54,7 +49,7 @@
                         {
                             var segment = VisitOutcomeSegments.Segment(choice);
                             <form method="post" action="@WithoutOutcomeController.RecordPath(visit.Id, choice, visits.Page)" asp-antiforgery="true" data-testid="outcome-@segment">
-                                <button type="submit" class="@ButtonClass(choice)">@T[$"Appointments.Outcome.Choice.{choice}"]<span class="sr-only">: @visit.ClientName, @visit.Day.ToString("d", culture)</span></button>
+                                <button type="submit" class="@Badges.OutcomeButton(choice)">@T[$"Appointments.Outcome.Choice.{choice}"]<span class="sr-only">: @visit.ClientName, @visit.Day.ToString("d", culture)</span></button>
                             </form>
                         }
                         <a href="@(WithoutOutcomeController.CardPath)/@visit.Id" class="back-link px-2" data-testid="open-visit">@T["Appointments.Outcome.Open"]<span class="sr-only">: @visit.ClientName, @visit.Day.ToString("d", culture)</span></a>

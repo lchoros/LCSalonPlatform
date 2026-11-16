@@ -11,19 +11,8 @@
     const string linkClass = "btn btn-compact btn-secondary";
     var stepSeconds = WorkingHoursRules.StepMinutes * 60;
     var datePattern = LocalDatePattern.Create("d", CultureInfo.CurrentCulture);
-    var formErrors = Errors(AddTimeOffValidator.OverlapKey);
+    var formErrors = ViewData.ModelState.ErrorsFor(AddTimeOffValidator.OverlapKey);
     var timeOff = Model.Page;
-}
-@functions {
-    IReadOnlyList<string> Errors(string key)
-        => ViewData.ModelState.TryGetValue(key, out var entry) ? entry.Errors.Select(e => e.ErrorMessage).ToList() : [];
-
-    static string Time(LocalTime time) => time.ToString("HH:mm", CultureInfo.InvariantCulture);
-
-    string Dates(StaffTimeOff entry, LocalDatePattern pattern)
-        => entry.FromDate == entry.ToDate ? pattern.Format(entry.FromDate) : $"{pattern.Format(entry.FromDate)}–{pattern.Format(entry.ToDate)}";
-
-    string Times(StaffTimeOff entry) => entry.Range is { } range ? $"{Time(range.Start)}–{Time(range.End)}" : T["Staff.TimeOff.WholeDay"];
 }
 <section class="mx-auto max-w-2xl space-y-6" data-testid="time-off-page">
     @if (Model.Flash is { } flash)
@@ -45,7 +34,7 @@
         <div class="grid grid-cols-2 gap-3">
             @foreach (var (name, labelKey, value) in new[] { ("FromDate", "Staff.TimeOff.From", Model.Form.FromDate), ("ToDate", "Staff.TimeOff.To", Model.Form.ToDate) })
             {
-                var errors = Errors(name);
+                var errors = ViewData.ModelState.ErrorsFor(name);
                 var errorId = $"{name}-error";
                 <div class="space-y-1">
                     <label for="@name" class="field-label">@T[labelKey]</label>
@@ -61,7 +50,7 @@
             <div class="grid grid-cols-2 gap-3">
                 @foreach (var (name, labelKey, value) in new[] { ("Start", "Staff.TimeOff.Start", Model.Form.Start), ("End", "Staff.TimeOff.End", Model.Form.End) })
                 {
-                    var errors = Errors(name);
+                    var errors = ViewData.ModelState.ErrorsFor(name);
                     var errorId = $"{name}-error";
                     <div class="space-y-1">
                         <label for="@name" class="field-label">@T[labelKey]</label>
@@ -73,7 +62,7 @@
             </div>
         </fieldset>
         @{
-            var reasonErrors = Errors("Reason");
+            var reasonErrors = ViewData.ModelState.ErrorsFor("Reason");
         }
         <div class="space-y-1">
             <label for="Reason" class="field-label">@T["Staff.TimeOff.Reason"]</label>
@@ -99,8 +88,8 @@
                 {
                     <li class="flex flex-col gap-3 panel sm:flex-row sm:items-center sm:justify-between" data-testid="time-off-entry" data-whole-day="@entry.IsWholeDay.ToString().ToLowerInvariant()">
                         <div class="min-w-0 space-y-1">
-                            <p class="font-semibold tabular-nums" data-testid="entry-dates">@Dates(entry, datePattern)</p>
-                            <p class="text-sm text-stone-600 tabular-nums" data-testid="entry-time">@Times(entry)</p>
+                            <p class="font-semibold tabular-nums" data-testid="entry-dates">@TimeOffText.Dates(entry, datePattern)</p>
+                            <p class="text-sm text-stone-600 tabular-nums" data-testid="entry-time">@TimeOffText.Times(T, entry)</p>
                             @if (entry.Reason is { } reason)
                             {
                                 <p class="text-sm text-stone-600" data-testid="entry-reason">@reason</p>
@@ -108,7 +97,7 @@
                         </div>
                         <form method="post" asp-action="Delete" asp-route-id="@timeOff.StaffMemberId" asp-route-entryId="@entry.Id">
                             <button type="submit" class="@linkClass w-full sm:w-auto" data-testid="delete-entry">
-                                @T["Staff.TimeOff.Delete"]<span class="sr-only">: @Dates(entry, datePattern)</span>
+                                @T["Staff.TimeOff.Delete"]<span class="sr-only">: @TimeOffText.Dates(entry, datePattern)</span>
                             </button>
                         </form>
                     </li>
@@ -125,7 +114,7 @@
                 @foreach (var entry in timeOff.Past)
                 {
                     <li class="space-y-1 px-4 py-3 text-stone-600" data-testid="past-entry">
-                        <p class="tabular-nums" data-testid="entry-dates">@Dates(entry, datePattern) <span class="text-sm">· @Times(entry)</span></p>
+                        <p class="tabular-nums" data-testid="entry-dates">@TimeOffText.Dates(entry, datePattern) <span class="text-sm">· @TimeOffText.Times(T, entry)</span></p>
                         @if (entry.Reason is { } reason)
                         {
                             <p class="text-sm" data-testid="entry-reason">@reason</p>

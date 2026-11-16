@@ -10,14 +10,6 @@
     var staffQuery = r.SelectedStaffId is { } sid ? $"&staff={sid}" : string.Empty;
     var hasAnySlot = r.Days.Any(d => d.HasSlots);
 }
-@functions {
-    static string Iso(LocalDate date) => LocalDatePattern.Iso.Format(date);
-
-    static string Iso(Instant instant) => InstantPattern.ExtendedIso.Format(instant);
-
-    // Days without free times stay tappable but muted (.is-dim keeps AA contrast on white).
-    static string State(bool on, bool hasSlots) => on ? "is-on" : hasSlots ? "is-off" : "is-dim";
-}
 <section class="mx-auto max-w-2xl space-y-6">
     <header class="space-y-3">
         <p class="text-sm font-medium text-stone-600" data-testid="step">@T.Format("Booking.Public.Step", 2, 3)</p>
@@ -40,11 +32,11 @@
     @if (r.Staff.Count > 1)
     {
         <nav aria-label="@T["Booking.Public.With"]" data-testid="staff-picker" class="scroll-row">
-            <a href="/book/@r.ServiceId?date=@Iso(r.SelectedDate)" class="pill @State(r.SelectedStaffId is null, true)" aria-current="@(r.SelectedStaffId is null ? "true" : null)" data-testid="staff-any">@T["Booking.Public.Anyone"]</a>
+            <a href="/book/@r.ServiceId?date=@r.SelectedDate.ToIso()" class="pill @Badges.DayTile(r.SelectedStaffId is null, true)" aria-current="@(r.SelectedStaffId is null ? "true" : null)" data-testid="staff-any">@T["Booking.Public.Anyone"]</a>
             @foreach (var person in r.Staff)
             {
                 var on = person.Id == r.SelectedStaffId;
-                <a href="/book/@r.ServiceId?date=@Iso(r.SelectedDate)&staff=@person.Id" class="pill @State(on, true)" aria-current="@(on ? "true" : null)" data-testid="staff-option">@person.DisplayName</a>
+                <a href="/book/@r.ServiceId?date=@r.SelectedDate.ToIso()&staff=@person.Id" class="pill @Badges.DayTile(on, true)" aria-current="@(on ? "true" : null)" data-testid="staff-option">@person.DisplayName</a>
             }
         </nav>
     }
@@ -53,7 +45,7 @@
         @foreach (var day in r.Days)
         {
             var on = day.Date == r.SelectedDate;
-            <a href="/book/@r.ServiceId?date=@Iso(day.Date)@staffQuery" class="tile @State(on, day.HasSlots)" aria-current="@(on ? "date" : null)" data-testid="day" data-has-slots="@day.HasSlots.ToString().ToLowerInvariant()">
+            <a href="/book/@r.ServiceId?date=@day.Date.ToIso()@staffQuery" class="tile @Badges.DayTile(on, day.HasSlots)" aria-current="@(on ? "date" : null)" data-testid="day" data-has-slots="@day.HasSlots.ToString().ToLowerInvariant()">
                 <span class="text-[0.6875rem] font-semibold uppercase">@day.Date.ToString("ddd", culture)</span>
                 <span class="text-lg font-bold tabular-nums">@day.Date.Day</span>
                 <span class="text-[0.6875rem]">@day.Date.ToString("MMM", culture)</span>
@@ -75,7 +67,7 @@
                 @foreach (var slot in r.Slots)
                 {
                     <li>
-                        <a href="/book/@r.ServiceId/details?start=@Uri.EscapeDataString(Iso(slot.Start))@staffQuery" data-testid="slot" class="slot">@slot.LocalStart.ToString("HH:mm", culture)</a>
+                        <a href="/book/@r.ServiceId/details?start=@Uri.EscapeDataString(slot.Start.ToIso())@staffQuery" data-testid="slot" class="slot">@slot.LocalStart.ToString("HH:mm", culture)</a>
                     </li>
                 }
             </ul>

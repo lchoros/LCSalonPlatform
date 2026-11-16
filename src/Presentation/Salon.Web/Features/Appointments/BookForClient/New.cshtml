@@ -5,25 +5,11 @@
 @model BookForClientViewModel
 @{
     var form = Model.Form;
-    var day = LocalDatePattern.Iso.Format(form.Day);
+    var day = form.Day.ToIso();
     ViewData["Title"] = T["Appointments.Book.Title"];
     const string inputClass = "field field-compact";
     const string secondaryClass = "btn btn-compact btn-secondary";
     const string cardClass = "space-y-3 panel";
-}
-@functions {
-    static string Time(LocalTime time) => time.ToString("t", CultureInfo.CurrentCulture);
-
-    /// <summary>The page with a different client (or none) and the same service, staff and day.</summary>
-    string Link(Guid? clientId)
-    {
-        var form = Model.Form;
-        var parts = new List<string> { $"date={LocalDatePattern.Iso.Format(form.Day)}" };
-        if (clientId is { } client) { parts.Add($"clientId={client}"); }
-        if (form.ServiceId is { } service) { parts.Add($"serviceId={service}"); }
-        if (form.StaffMemberId is { } staff) { parts.Add($"staffId={staff}"); }
-        return $"{BookForClientController.FormPath}?{string.Join("&", parts)}";
-    }
 }
 <section class="mx-auto max-w-lg space-y-6">
     <a href="/admin/appointments?date=@day" class="back-link">&larr; @T["Appointments.Book.Back"]</a>
@@ -49,7 +35,7 @@
                         <span class="text-sm text-stone-600">· @phone</span>
                     }
                 </p>
-                <a href="@Link(null)" data-testid="change-client" class="@secondaryClass text-sm">@T["Appointments.Book.ChangeClient"]</a>
+                <a href="@BookForClientController.FormAddress(Model.Form, null)" data-testid="change-client" class="@secondaryClass text-sm">@T["Appointments.Book.ChangeClient"]</a>
             </div>
         }
         else
@@ -85,7 +71,7 @@
                         @foreach (var match in form.ClientMatches)
                         {
                             <li>
-                                <a href="@Link(match.Id)" data-testid="client-match" class="flex min-h-11 flex-col gap-0.5 px-3 py-2 hover:bg-stone-50 sm:flex-row sm:items-center sm:justify-between">
+                                <a href="@BookForClientController.FormAddress(Model.Form, match.Id)" data-testid="client-match" class="flex min-h-11 flex-col gap-0.5 px-3 py-2 hover:bg-stone-50 sm:flex-row sm:items-center sm:justify-between">
                                     <span class="font-medium">@match.FullName</span>
                                     <span class="text-sm text-stone-600">@(match.Phone ?? "—")</span>
                                 </a>
@@ -176,11 +162,11 @@
                             <input type="hidden" name="ClientId" value="@(form.Client?.Id)" />
                             <input type="hidden" name="ServiceId" value="@form.ServiceId" />
                             <input type="hidden" name="StaffMemberId" value="@slot.StaffMemberId" />
-                            <input type="hidden" name="Start" value="@InstantPattern.ExtendedIso.Format(slot.Start)" />
+                            <input type="hidden" name="Start" value="@slot.Start.ToIso()" />
                             <input type="hidden" name="Date" value="@day" />
                             <input type="hidden" name="AnyStaff" value="@(form.StaffMemberId is null ? "true" : "false")" />
                             <button type="submit" data-testid="slot" class="flex min-h-11 w-full flex-col items-center justify-center rounded-md border border-stone-300 px-2 py-2 text-base font-semibold tabular-nums hover:bg-stone-100">
-                                @Time(slot.LocalStart)
+                                @slot.LocalStart.ToShortTime(CultureInfo.CurrentCulture)
                                 @if (form.StaffMemberId is null)
                                 {
                                     <span class="block truncate text-xs font-normal text-stone-600">@slot.StaffName</span>

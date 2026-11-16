@@ -11,14 +11,6 @@
     var staffValue = o.SelectedStaffId is { } sid ? sid.ToString() : RescheduleQuery.AnyStaff;
     var hasAnySlot = o.Days.Any(d => d.HasSlots);
 }
-@functions {
-    static string Iso(LocalDate date) => LocalDatePattern.Iso.Format(date);
-
-    static string Iso(Instant instant) => InstantPattern.ExtendedIso.Format(instant);
-
-    // Days without free times stay tappable but muted (.is-dim keeps AA contrast on white).
-    static string State(bool on, bool hasSlots) => on ? "is-on" : hasSlots ? "is-off" : "is-dim";
-}
 <section class="mx-auto max-w-2xl space-y-6">
     <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Booking.Public.Change.Title"]</h1>
 
@@ -50,11 +42,11 @@
             @if (o.Staff.Count > 1)
             {
                 <nav aria-label="@T["Booking.Public.With"]" data-testid="staff-picker" class="scroll-row">
-                    <a href="/book/change/@token?date=@Iso(o.SelectedDate)&staff=@RescheduleQuery.AnyStaff" class="pill @State(o.SelectedStaffId is null, true)" aria-current="@(o.SelectedStaffId is null ? "true" : null)" data-testid="staff-any">@T["Booking.Public.Anyone"]</a>
+                    <a href="/book/change/@token?date=@o.SelectedDate.ToIso()&staff=@RescheduleQuery.AnyStaff" class="pill @Badges.DayTile(o.SelectedStaffId is null, true)" aria-current="@(o.SelectedStaffId is null ? "true" : null)" data-testid="staff-any">@T["Booking.Public.Anyone"]</a>
                     @foreach (var person in o.Staff)
                     {
                         var on = person.Id == o.SelectedStaffId;
-                        <a href="/book/change/@token?date=@Iso(o.SelectedDate)&staff=@person.Id" class="pill @State(on, true)" aria-current="@(on ? "true" : null)" data-testid="staff-option">@person.DisplayName</a>
+                        <a href="/book/change/@token?date=@o.SelectedDate.ToIso()&staff=@person.Id" class="pill @Badges.DayTile(on, true)" aria-current="@(on ? "true" : null)" data-testid="staff-option">@person.DisplayName</a>
                     }
                 </nav>
             }
@@ -63,7 +55,7 @@
                 @foreach (var day in o.Days)
                 {
                     var on = day.Date == o.SelectedDate;
-                    <a href="/book/change/@token?date=@Iso(day.Date)&staff=@staffValue" class="tile @State(on, day.HasSlots)" aria-current="@(on ? "date" : null)" data-testid="day" data-has-slots="@day.HasSlots.ToString().ToLowerInvariant()">
+                    <a href="/book/change/@token?date=@day.Date.ToIso()&staff=@staffValue" class="tile @Badges.DayTile(on, day.HasSlots)" aria-current="@(on ? "date" : null)" data-testid="day" data-has-slots="@day.HasSlots.ToString().ToLowerInvariant()">
                         <span class="text-xs font-medium uppercase">@day.Date.ToString("ddd", culture)</span>
                         <span class="text-xl font-bold tabular-nums">@day.Date.Day</span>
                         <span class="text-xs">@day.Date.ToString("MMM", culture)</span>
@@ -88,7 +80,7 @@
                             @foreach (var slot in o.Slots)
                             {
                                 <li>
-                                    <button type="submit" name="Start" value="@Iso(slot.Start)" data-testid="slot" class="slot w-full">@slot.LocalStart.ToString("HH:mm", culture)</button>
+                                    <button type="submit" name="Start" value="@slot.Start.ToIso()" data-testid="slot" class="slot w-full">@slot.LocalStart.ToString("HH:mm", culture)</button>
                                 </li>
                             }
                         </ul>

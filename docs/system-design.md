@@ -33,7 +33,9 @@ slice, on a tenant-owned entity without `ITenantEntity`, and on any type outside
    FluentValidation (all validators for the request, failures aggregated) → tenant guard (a request needs a tenant
    unless it implements `IPlatformRequest`) → transaction (commands only, `IUnitOfWork` over the scoped DbContext).
 5. Razor view next to the controller (`FeatureViewLocationExpander`), text through `@T["Key"]`, Tailwind classes,
-   no inline scripts. Polish characters ship as UTF-8 (encoder widened to Latin Extended).
+   no inline scripts. Polish characters ship as UTF-8 (encoder widened to Latin Extended). A view says what to show and
+   holds no code of its own (ADR 0043): numbers come from the model, addresses from the controller, times and dates
+   from `Salon.Services.Formatting`, status colours from `Salon.Web.Framework.Ui.Badges`.
 
 ## 3. Tenant isolation (ADR 0002)
 - Every tenant-owned entity implements `ITenantEntity`; `SalonDbContext` applies a named global filter on

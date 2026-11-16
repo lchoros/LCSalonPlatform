@@ -4,7 +4,7 @@
     ViewData["Title"] = T["Clients.Edit.Title"];
     const string inputClass = "field field-compact";
     var consentWording = ViewData[EditClientController.ConsentWordingKey] as string ?? string.Empty;
-    var cardPath = $"/admin/clients/{Model.Id}";
+    var cardPath = EditClientController.CardPath(Model.Id);
 }
 <section class="mx-auto max-w-lg space-y-6">
     <a href="@cardPath" class="back-link">&larr; @T["Clients.Card.Back"]</a>
