@@ -115,7 +115,7 @@
         @if (bill.Payment is { } payment)
         {
             <p class="text-sm text-stone-600" data-testid="bill-payment">
-                <time datetime="@InstantPattern.ExtendedIso.Format(payment.At)" class="tabular-nums">@payment.At.ToShortDateTime(zone, culture)</time>
+                <time datetime="@payment.At.ToIso()" class="tabular-nums">@payment.At.ToShortDateTime(zone, culture)</time>
                 · @T.Format("Payments.Checkout.RecordedBy", payment.ByName ?? T["Payments.Fee.History.Unknown"])
                 <span class="block break-all" data-testid="bill-reference">@T.Format("Payments.Fee.History.Reference", payment.ProviderReference ?? "—")</span>
             </p>

@@ -11,16 +11,6 @@
     const string navClass = "btn btn-compact btn-secondary min-w-11 px-3";
     const string actionClass = "btn btn-compact btn-secondary px-3";
 }
-@functions {
-    static string Time(LocalTime time) => time.ToString("t", CultureInfo.CurrentCulture);
-
-    static string BadgeClass(AppointmentStatus status) => status switch
-    {
-        AppointmentStatus.Confirmed => "bg-blue-100 text-blue-900",
-        AppointmentStatus.Arrived => "bg-green-100 text-green-900",
-        _ => "bg-stone-100 text-stone-700",
-    };
-}
 <section class="space-y-6">
     @if (Model.Flash is { } flash)
     {
@@ -73,8 +63,8 @@
                             {
                                 <li class="space-y-2 rounded-lg border border-stone-200 bg-stone-50 p-3" data-testid="appointment" data-status="@appointment.Status">
                                     <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                                        <span class="font-semibold tabular-nums" data-testid="appointment-time">@Time(appointment.Start)–@Time(appointment.End)</span>
-                                        <span class="rounded px-1.5 py-0.5 text-xs font-medium @BadgeClass(appointment.Status)" data-testid="status-badge">@T[$"Appointments.Status.{appointment.Status}"]</span>
+                                        <span class="font-semibold tabular-nums" data-testid="appointment-time">@appointment.Start.ToShortTime(culture)–@appointment.End.ToShortTime(culture)</span>
+                                        <span class="rounded px-1.5 py-0.5 text-xs font-medium @Badges.AppointmentInList(appointment.Status)" data-testid="status-badge">@T[$"Appointments.Status.{appointment.Status}"]</span>
                                     </div>
                                     <p class="text-base" data-testid="appointment-client">@appointment.ClientName</p>
                                     <p class="text-sm text-stone-600" data-testid="appointment-service">@appointment.ServiceName</p>

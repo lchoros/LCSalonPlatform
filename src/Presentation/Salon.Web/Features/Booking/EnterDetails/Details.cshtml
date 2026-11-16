@@ -7,9 +7,6 @@
     var local = s.Start.InZone(s.Zone).LocalDateTime;
     ViewData["Title"] = T["Booking.Public.YourDetails"];
 }
-@functions {
-    string Invalid(string field) => ViewData.ModelState[field]?.Errors.Count > 0 ? "input-validation-error" : string.Empty;
-}
 <section class="mx-auto max-w-lg space-y-6">
     <header class="space-y-3">
         <p class="text-sm font-medium text-stone-600" data-testid="step">@T.Format("Booking.Public.Step", 3, 3)</p>
@@ -90,19 +87,19 @@
         <div class="grid gap-5 sm:grid-cols-2">
             <div class="space-y-1.5">
                 <label for="FirstName" class="field-label">@T["Booking.Public.FirstName"]</label>
-                <input id="FirstName" name="FirstName" value="@Model.Form.FirstName" type="text" maxlength="100" autocomplete="given-name" autocapitalize="words" aria-describedby="first-name-error" class="field @Invalid("FirstName")" />
+                <input id="FirstName" name="FirstName" value="@Model.Form.FirstName" type="text" maxlength="100" autocomplete="given-name" autocapitalize="words" aria-describedby="first-name-error" class="field @ViewData.ModelState.InvalidClass("FirstName")" />
                 @Html.ValidationMessage("FirstName", null, new { id = "first-name-error", @class = "field-error" })
             </div>
             <div class="space-y-1.5">
                 <label for="LastName" class="field-label">@T["Booking.Public.LastName"]</label>
-                <input id="LastName" name="LastName" value="@Model.Form.LastName" type="text" maxlength="100" autocomplete="family-name" autocapitalize="words" aria-describedby="last-name-error" class="field @Invalid("LastName")" />
+                <input id="LastName" name="LastName" value="@Model.Form.LastName" type="text" maxlength="100" autocomplete="family-name" autocapitalize="words" aria-describedby="last-name-error" class="field @ViewData.ModelState.InvalidClass("LastName")" />
                 @Html.ValidationMessage("LastName", null, new { id = "last-name-error", @class = "field-error" })
             </div>
         </div>
 
         <div class="space-y-1.5">
             <label for="Phone" class="field-label">@T["Booking.Public.Phone"]</label>
-            <input id="Phone" name="Phone" value="@Model.Form.Phone" type="tel" inputmode="tel" maxlength="30" autocomplete="tel" aria-describedby="phone-hint phone-error" class="field tabular-nums @Invalid("Phone")" />
+            <input id="Phone" name="Phone" value="@Model.Form.Phone" type="tel" inputmode="tel" maxlength="30" autocomplete="tel" aria-describedby="phone-hint phone-error" class="field tabular-nums @ViewData.ModelState.InvalidClass("Phone")" />
             @if (s.RequireSmsVerification)
             {
                 <p id="phone-hint" class="field-hint">@T["Booking.Public.PhoneHint"]</p>
@@ -112,7 +109,7 @@
 
         <div class="space-y-1.5">
             <label for="Email" class="field-label">@T["Booking.Public.Email"]</label>
-            <input id="Email" name="Email" value="@Model.Form.Email" type="email" inputmode="email" maxlength="254" autocomplete="email" autocapitalize="none" spellcheck="false" aria-describedby="email-error" class="field @Invalid("Email")" />
+            <input id="Email" name="Email" value="@Model.Form.Email" type="email" inputmode="email" maxlength="254" autocomplete="email" autocapitalize="none" spellcheck="false" aria-describedby="email-error" class="field @ViewData.ModelState.InvalidClass("Email")" />
             @Html.ValidationMessage("Email", null, new { id = "email-error", @class = "field-error" })
         </div>
 

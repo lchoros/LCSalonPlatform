@@ -32,6 +32,9 @@ public sealed class EditClientController(
     /// <summary>ViewData key of the consent wording shown next to the checkbox (and recorded when newly ticked).</summary>
     public const string ConsentWordingKey = "ConsentWording";
 
+    /// <summary>The client's card, for the way back; the ClientCard slice owns the route (ADR 0043: addresses are built here, not in the view).</summary>
+    public static string CardPath(Guid clientId) => $"/admin/clients/{clientId}";
+
     [HttpGet("{id:guid}/edit")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {

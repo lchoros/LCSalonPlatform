@@ -15,11 +15,6 @@
     const string listClass = "grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 text-base";
     const string subheadClass = "pt-2 text-sm font-semibold text-stone-700";
 }
-@functions {
-    string Percent(decimal? rate) => rate is { } value ? T.Format("Reports.Percent", value.ToString("0.#", CultureInfo.CurrentCulture)) : T["Reports.NotKnown"];
-
-    static string Hours(int minutes) => (minutes / 60m).ToString("0.#", CultureInfo.CurrentCulture);
-}
 <section class="space-y-6">
     <header class="max-w-2xl space-y-3">
         <h1 class="page-title">@T["Reports.Title"]</h1>
@@ -37,11 +32,11 @@
             <form method="get" action="@ReportsController.Path" class="mt-3 grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end" data-testid="period-form">
                 <div class="space-y-1">
                     <label for="from" class="field-label">@T["Reports.Period.From"]</label>
-                    <input id="from" name="from" type="date" value="@LocalDatePattern.Iso.Format(period.From)" required class="@inputClass" data-testid="period-from" />
+                    <input id="from" name="from" type="date" value="@period.From.ToIso()" required class="@inputClass" data-testid="period-from" />
                 </div>
                 <div class="space-y-1">
                     <label for="to" class="field-label">@T["Reports.Period.To"]</label>
-                    <input id="to" name="to" type="date" value="@LocalDatePattern.Iso.Format(period.To)" required class="@inputClass" data-testid="period-to" />
+                    <input id="to" name="to" type="date" value="@period.To.ToIso()" required class="@inputClass" data-testid="period-to" />
                 </div>
                 <button type="submit" class="@primaryClass" data-testid="period-show">@T["Reports.Period.Show"]</button>
             </form>
@@ -50,7 +45,7 @@
         {
             <p role="alert" data-testid="error" class="notice notice-error">@T.Format("Reports.Period.Refused", ReportRules.MaxDays)</p>
         }
-        <p class="text-base font-medium sm:text-lg" data-testid="period" data-from="@LocalDatePattern.Iso.Format(period.From)" data-to="@LocalDatePattern.Iso.Format(period.To)">@T.Format("Reports.Period.Range", period.From.ToString("D", culture), period.To.ToString("D", culture))</p>
+        <p class="text-base font-medium sm:text-lg" data-testid="period" data-from="@period.From.ToIso()" data-to="@period.To.ToIso()">@T.Format("Reports.Period.Range", period.From.ToString("D", culture), period.To.ToString("D", culture))</p>
     </header>
 
     @* The four numbers an owner looks for first, each in a tile of its own; the detail follows underneath. *@
@@ -65,7 +60,7 @@
         </div>
         <div class="@statClass accent-4">
             <dt class="stat-label">@T["Reports.Visits.NoShowRate"]</dt>
-            <dd class="stat-value" data-testid="headline-no-show-rate">@Percent(Model.Visits.NoShowRate)</dd>
+            <dd class="stat-value" data-testid="headline-no-show-rate">@ReportText.Percent(T, Model.Visits.NoShowRate, culture)</dd>
         </div>
         <div class="@statClass accent-1">
             <dt class="stat-label">@T["Reports.Unpaid.Title"]</dt>
@@ -115,7 +110,7 @@
                 <ul class="mt-2 list-card">
                     @foreach (var day in Model.Takings.ByDay)
                     {
-                        var iso = LocalDatePattern.Iso.Format(day.Day);
+                        var iso = day.Day.ToIso();
                         <li class="flex items-center justify-between gap-4 px-3" data-testid="takings-day" data-day="@iso">
                             <a href="@(ReportsController.TillPath + "?date=" + iso)" class="inline-flex min-h-11 items-center font-medium underline underline-offset-2">@day.Day.ToDayHeading(culture)</a>
                             <span class="tabular-nums @(day.Amount.Amount < 0m ? "text-red-800" : string.Empty)">@day.Amount.ToDisplayString(culture)</span>
@@ -147,7 +142,7 @@
                 <span class="block font-semibold">@T["Reports.Visits.NoShowRate"]</span>
                 <span class="block text-sm text-stone-600">@T["Reports.Visits.NoShowRateHint"]</span>
             </dt>
-            <dd class="border-t border-stone-200 pt-2 text-right font-bold tabular-nums" data-testid="no-show-rate">@Percent(Model.Visits.NoShowRate)</dd>
+            <dd class="border-t border-stone-200 pt-2 text-right font-bold tabular-nums" data-testid="no-show-rate">@ReportText.Percent(T, Model.Visits.NoShowRate, culture)</dd>
             <dt class="font-semibold">@T["Reports.Visits.CompletedValue"]</dt>
             <dd class="text-right font-bold tabular-nums" data-testid="completed-value">@Model.Visits.CompletedValue.ToDisplayString(culture)</dd>
         </dl>
@@ -183,7 +178,7 @@
                     <li class="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between" data-testid="unpaid-visit">
                         <span class="flex flex-col gap-0.5">
                             <span class="font-medium">@visit.ClientName</span>
-                            <span class="text-sm text-stone-600">@visit.Start.Date.ToString("d", culture) @visit.Start.TimeOfDay.ToString("t", culture) · @visit.ServiceName</span>
+                            <span class="text-sm text-stone-600">@visit.Start.Date.ToString("d", culture) @visit.Start.TimeOfDay.ToShortTime(culture) · @visit.ServiceName</span>
                         </span>
                         <span class="flex items-center justify-between gap-3">
                             <span class="tabular-nums font-medium" data-testid="unpaid-amount">@visit.Outstanding.ToDisplayString(culture)</span>
@@ -246,14 +241,14 @@
                         {
                             <div class="flex items-center justify-between gap-4 text-sm">
                                 <span>@T["Reports.Staff.Utilisation"]</span>
-                                <span class="font-semibold tabular-nums" data-testid="utilisation">@Percent(used)</span>
+                                <span class="font-semibold tabular-nums" data-testid="utilisation">@ReportText.Percent(T, used, culture)</span>
                             </div>
-                            <meter class="block h-3 w-full" min="0" max="100" value="@Math.Min(100m, used).ToString(CultureInfo.InvariantCulture)" aria-label="@T["Reports.Staff.Utilisation"]: @person.Name">@Percent(used)</meter>
-                            <p class="text-sm text-stone-600" data-testid="staff-hours">@T.Format("Reports.Staff.Booked", Hours(person.BookedMinutes), Hours(person.WorkingMinutes))</p>
+                            <meter class="block h-3 w-full" min="0" max="100" value="@Math.Min(100m, used).ToString(CultureInfo.InvariantCulture)" aria-label="@T["Reports.Staff.Utilisation"]: @person.Name">@ReportText.Percent(T, used, culture)</meter>
+                            <p class="text-sm text-stone-600" data-testid="staff-hours">@T.Format("Reports.Staff.Booked", ClockFormatter.MinutesAsHours(person.BookedMinutes, culture), ClockFormatter.MinutesAsHours(person.WorkingMinutes, culture))</p>
                         }
                         else
                         {
-                            <p class="text-sm text-stone-600" data-testid="staff-hours">@T.Format("Reports.Staff.NoHours", Hours(person.BookedMinutes))</p>
+                            <p class="text-sm text-stone-600" data-testid="staff-hours">@T.Format("Reports.Staff.NoHours", ClockFormatter.MinutesAsHours(person.BookedMinutes, culture))</p>
                         }
                     </li>
                 }

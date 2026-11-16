@@ -23,6 +23,9 @@ namespace Salon.Web.Features.Clients.ClientCard;
 [Route("admin/clients")]
 public sealed class ClientCardController(IDispatcher dispatcher, ITenantContext tenantContext, ITenantLookup tenantLookup) : SalonControllerBase
 {
+    /// <summary>The day list of a day a visit was on; the Appointments module owns the route (ADR 0043: addresses are built here, not in the view).</summary>
+    public static string DayPath(LocalDate day) => "/admin/appointments?date=" + NodaTime.Text.LocalDatePattern.Iso.Format(day);
+
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Card(Guid id, CancellationToken cancellationToken)
     {

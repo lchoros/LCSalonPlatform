@@ -6,9 +6,6 @@
     const string labelClass = "text-xs uppercase tracking-wide text-stone-500";
     var cards = new[] { (Card: Model.Source, History: Model.SourceHistory, Kept: false), (Card: Model.Target, History: Model.TargetHistory, Kept: true) };
 }
-@functions {
-    static string Dash(string? value) => string.IsNullOrEmpty(value) ? "—" : value;
-}
 <section class="mx-auto max-w-3xl space-y-6" data-testid="merge-confirm">
     <a href="/admin/clients/@Model.Source.Id/merge" class="back-link">&larr; @T["Clients.Merge.Title"]</a>
     <h1 class="page-title">@T["Clients.Merge.Confirm.Title"]</h1>
@@ -22,11 +19,11 @@
                 <dl class="space-y-2 text-sm">
                     <div>
                         <dt class="@labelClass">@T["Clients.Card.Phone"]</dt>
-                        <dd>@Dash(card.Phone)</dd>
+                        <dd>@card.Phone.OrDash()</dd>
                     </div>
                     <div>
                         <dt class="@labelClass">@T["Clients.Card.Email"]</dt>
-                        <dd class="break-all">@Dash(card.Email)</dd>
+                        <dd class="break-all">@card.Email.OrDash()</dd>
                     </div>
                     <div>
                         <dt class="@labelClass">@T["Clients.History.Title"]</dt>

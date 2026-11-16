@@ -8,15 +8,6 @@
     const string buttonClass = "btn btn-compact btn-primary";
     const string linkClass = "btn btn-compact btn-secondary";
 }
-@functions {
-    string DayShort(IsoDayOfWeek day) => T[$"Common.DayShort.{day}"];
-
-    string Days(WorkingHoursGroup group) => group.From == group.To ? DayShort(group.From) : $"{DayShort(group.From)}–{DayShort(group.To)}";
-
-    static string Time(LocalTime time) => time.ToString("HH:mm", CultureInfo.InvariantCulture);
-
-    static string Ranges(WorkingHoursGroup group) => string.Join(", ", group.Ranges.Select(r => $"{Time(r.Start)}–{Time(r.End)}"));
-}
 <section class="space-y-6">
     @if (Model.Flash is { } flash)
     {
@@ -68,7 +59,7 @@
                         {
                             @foreach (var group in person.Hours)
                             {
-                                <span class="block tabular-nums">@Days(group) @Ranges(group)</span>
+                                <span class="block tabular-nums">@WorkingHoursText.Days(T, group) @WorkingHoursText.Ranges(group)</span>
                             }
                         }
                     </div>

@@ -7,24 +7,12 @@
 @{
     var card = Model.Card;
     var culture = CultureInfo.CurrentCulture;
-    var moveDay = LocalDatePattern.Iso.Format(card.MoveDate);
+    var moveDay = card.MoveDate.ToIso();
     ViewData["Title"] = T["Appointments.Calendar.Card.Title"];
     const string inputClass = "field field-compact";
     const string secondaryClass = "btn btn-compact btn-secondary";
     const string actionClass = "btn btn-compact btn-secondary px-3";
     const string cardClass = "space-y-3 panel";
-}
-@functions {
-    static string Time(LocalTime time) => time.ToString("t", CultureInfo.CurrentCulture);
-
-    static string BadgeClass(AppointmentStatus status) => status switch
-    {
-        AppointmentStatus.Confirmed => "bg-blue-100 text-blue-900",
-        AppointmentStatus.Arrived => "bg-green-100 text-green-900",
-        AppointmentStatus.Completed => "bg-stone-200 text-stone-800",
-        AppointmentStatus.NoShow or AppointmentStatus.CancelledByClient or AppointmentStatus.CancelledBySalon => "bg-red-100 text-red-900",
-        _ => "bg-stone-100 text-stone-700",
-    };
 }
 <section class="mx-auto max-w-lg space-y-6">
     <a href="@CalendarController.Path(CalendarView.Day, card.Day, card.StaffMemberId)" data-testid="back" class="back-link">&larr; @T["Appointments.Calendar.Back"]</a>
@@ -41,11 +29,11 @@
     <section class="@cardClass border-l-4" style="border-left-color: @card.Colour" data-testid="appointment-card" data-status="@card.Status">
         <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="text-lg font-semibold" data-testid="card-client">@card.ClientName</h2>
-            <span class="rounded px-1.5 py-0.5 text-xs font-medium @BadgeClass(card.Status)" data-testid="status-badge">@T[$"Appointments.Status.{card.Status}"]</span>
+            <span class="rounded px-1.5 py-0.5 text-xs font-medium @Badges.Appointment(card.Status)" data-testid="status-badge">@T[$"Appointments.Status.{card.Status}"]</span>
         </div>
         <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-base">
             <dt class="text-sm text-stone-600">@T["Appointments.Calendar.Card.When"]</dt>
-            <dd data-testid="card-when"><time datetime="@LocalDatePattern.Iso.Format(card.Day)">@card.Day.ToDayHeading(culture)</time>, <span class="tabular-nums">@Time(card.Start)–@Time(card.End)</span></dd>
+            <dd data-testid="card-when"><time datetime="@card.Day.ToIso()">@card.Day.ToDayHeading(culture)</time>, <span class="tabular-nums">@card.Start.ToShortTime(culture)–@card.End.ToShortTime(culture)</span></dd>
             <dt class="text-sm text-stone-600">@T["Appointments.Calendar.Card.Service"]</dt>
             <dd data-testid="card-service">@card.ServiceName</dd>
             <dt class="text-sm text-stone-600">@T["Appointments.Calendar.Card.Staff"]</dt>
@@ -141,9 +129,9 @@
                         <li>
                             <form method="post" action="@(CalendarController.CalendarPath)/@card.Id/move" asp-antiforgery="true">
                                 <input type="hidden" name="staffMemberId" value="@card.MoveStaffId" />
-                                <input type="hidden" name="start" value="@InstantPattern.ExtendedIso.Format(slot.Start)" />
+                                <input type="hidden" name="start" value="@slot.Start.ToIso()" />
                                 <input type="hidden" name="date" value="@moveDay" />
-                                <button type="submit" data-testid="move-slot" class="flex min-h-11 w-full items-center justify-center rounded-md border border-stone-300 px-2 py-2 text-base font-semibold tabular-nums hover:bg-stone-100">@Time(slot.LocalStart)</button>
+                                <button type="submit" data-testid="move-slot" class="flex min-h-11 w-full items-center justify-center rounded-md border border-stone-300 px-2 py-2 text-base font-semibold tabular-nums hover:bg-stone-100">@slot.LocalStart.ToShortTime(culture)</button>
                             </form>
                         </li>
                     }

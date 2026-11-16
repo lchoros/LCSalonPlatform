@@ -6,12 +6,8 @@
     const string inputClass = "field field-compact";
     const string buttonClass = "btn btn-compact btn-primary";
     const string linkClass = "btn btn-compact btn-secondary";
-    var addErrors = Errors(ManageCategoriesController.AddErrorKey);
-    var renameErrors = Errors(ManageCategoriesController.RenameErrorKey);
-}
-@functions {
-    IReadOnlyList<string> Errors(string key)
-        => ViewData.ModelState.TryGetValue(key, out var entry) ? entry.Errors.Select(e => e.ErrorMessage).ToList() : [];
+    var addErrors = ViewData.ModelState.ErrorsFor(ManageCategoriesController.AddErrorKey);
+    var renameErrors = ViewData.ModelState.ErrorsFor(ManageCategoriesController.RenameErrorKey);
 }
 <section class="mx-auto max-w-2xl space-y-6">
     @if (Model.Flash is { } flash)

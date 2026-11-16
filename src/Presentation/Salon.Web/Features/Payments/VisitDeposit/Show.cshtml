@@ -9,8 +9,8 @@
     var deposit = visit.Deposit;
     var culture = CultureInfo.CurrentCulture;
     var zone = visit.Start.Zone;
-    var cardPath = "/admin/appointments/calendar/" + visit.AppointmentId;
-    var depositPath = VisitDepositController.BasePath + "/" + visit.AppointmentId;
+    var cardPath = VisitDepositController.CardPath(visit.AppointmentId);
+    var depositPath = VisitDepositController.DepositPath(visit.AppointmentId);
     ViewData["Title"] = T["Payments.Deposit.Title"];
     const string inputClass = "field field-compact";
     const string primaryClass = "btn btn-compact btn-primary w-full sm:w-auto";
@@ -89,14 +89,14 @@
             <h3 class="text-sm font-medium text-stone-600">@T["Payments.Fee.History"]</h3>
             <ol class="space-y-2 text-sm" data-testid="deposit-history">
                 <li data-testid="deposit-history-received">
-                    <time datetime="@InstantPattern.ExtendedIso.Format(deposit.At)" class="tabular-nums text-stone-600">@deposit.At.ToShortDateTime(zone, culture)</time>
+                    <time datetime="@deposit.At.ToIso()" class="tabular-nums text-stone-600">@deposit.At.ToShortDateTime(zone, culture)</time>
                     <span class="block">@T.Format("Payments.Deposit.History.Received", T[$"Payments.Method.{deposit.Method}"], deposit.ByName ?? T["Payments.Fee.History.Unknown"])</span>
                     <span class="block break-all text-stone-600" data-testid="deposit-reference">@T.Format("Payments.Fee.History.Reference", deposit.ProviderReference ?? "—")</span>
                 </li>
                 @if (deposit.Return is { } returned)
                 {
                     <li data-testid="deposit-history-returned">
-                        <time datetime="@InstantPattern.ExtendedIso.Format(returned.At)" class="tabular-nums text-stone-600">@returned.At.ToShortDateTime(zone, culture)</time>
+                        <time datetime="@returned.At.ToIso()" class="tabular-nums text-stone-600">@returned.At.ToShortDateTime(zone, culture)</time>
                         <span class="block">@T.Format("Payments.Deposit.History.Returned", T[$"Payments.Method.{returned.Method}"], returned.ByName ?? T["Payments.Fee.History.Unknown"])</span>
                         <span class="block break-all text-stone-600" data-testid="deposit-return-reference">@T.Format("Payments.Fee.History.Reference", returned.ProviderReference ?? "—")</span>
                     </li>

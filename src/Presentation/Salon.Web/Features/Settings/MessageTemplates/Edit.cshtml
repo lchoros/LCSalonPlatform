@@ -12,12 +12,8 @@
     const string primaryClass = "btn btn-compact btn-primary w-full sm:w-auto";
     const string secondaryClass = "btn btn-compact btn-secondary w-full sm:w-auto";
     const string cardClass = "space-y-3 panel";
-    var subjectErrors = Errors("Subject");
-    var bodyErrors = Errors("Body");
-}
-@functions {
-    IReadOnlyList<string> Errors(string key)
-        => ViewData.ModelState.TryGetValue(key, out var entry) ? entry.Errors.Select(e => e.ErrorMessage).ToList() : [];
+    var subjectErrors = ViewData.ModelState.ErrorsFor("Subject");
+    var bodyErrors = ViewData.ModelState.ErrorsFor("Body");
 }
 <section class="mx-auto max-w-xl space-y-6">
     <partial name="_SettingsNav" model="@("messages")" />

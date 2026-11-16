@@ -6,43 +6,6 @@
 @{
     ViewData["Title"] = T["Clients.Import.Preview.Title"];
 }
-@functions {
-    string StatusText(ImportRowStatus status) => status switch
-    {
-        ImportRowStatus.New => T["Clients.Import.Status.New"],
-        ImportRowStatus.Duplicate => T["Clients.Import.Status.Duplicate"],
-        _ => T["Clients.Import.Status.Invalid"],
-    };
-
-    string StatusClass(ImportRowStatus status) => status switch
-    {
-        ImportRowStatus.New => "bg-green-100 text-green-900",
-        ImportRowStatus.Duplicate => "bg-stone-200 text-stone-800",
-        _ => "bg-red-100 text-red-900",
-    };
-
-    string ProblemText(ImportProblem problem) => problem switch
-    {
-        ImportProblem.WrongColumnCount => T["Clients.Import.Problem.WrongColumnCount"],
-        ImportProblem.MissingFirstName => T["Clients.Import.Problem.MissingFirstName"],
-        ImportProblem.MissingLastName => T["Clients.Import.Problem.MissingLastName"],
-        ImportProblem.NameTooLong => T.Format("Clients.Import.Problem.NameTooLong", Client.NameMaxLength),
-        ImportProblem.InvalidPhone => T["Clients.Import.Problem.InvalidPhone"],
-        ImportProblem.InvalidEmail => T["Clients.Import.Problem.InvalidEmail"],
-        ImportProblem.DuplicatePhone => T["Clients.Import.Problem.DuplicatePhone"],
-        ImportProblem.DuplicateEmail => T["Clients.Import.Problem.DuplicateEmail"],
-        ImportProblem.DuplicateName => T["Clients.Import.Problem.DuplicateName"],
-        ImportProblem.DuplicateInFile => T["Clients.Import.Problem.DuplicateInFile"],
-        _ => problem.ToString(),
-    };
-
-    static string Contact(ClassifiedImportRow row)
-    {
-        var parts = new[] { row.NormalisedPhone ?? row.Row.Phone, row.NormalisedEmail ?? row.Row.Email }.Where(p => !string.IsNullOrEmpty(p));
-        var text = string.Join(" · ", parts);
-        return text.Length == 0 ? "—" : text;
-    }
-}
 <section class="space-y-6" data-testid="import-preview">
     <header class="space-y-2">
         <h1 class="page-title">@T["Clients.Import.Preview.Title"]</h1>
@@ -71,18 +34,18 @@
                 <div class="min-w-0 space-y-1">
                     <p class="text-xs text-stone-500">@T["Clients.Import.Preview.Row"] @row.Row.SourceRow</p>
                     <p class="font-semibold break-words">@row.Row.FirstName @row.Row.LastName</p>
-                    <p class="text-sm text-stone-600 break-words">@Contact(row)</p>
+                    <p class="text-sm text-stone-600 break-words">@ImportText.Contact(row)</p>
                     @if (row.Problems.Count > 0)
                     {
                         <ul class="space-y-0.5 text-sm text-red-700">
                             @foreach (var problem in row.Problems)
                             {
-                                <li>@ProblemText(problem)</li>
+                                <li>@ImportText.Problem(T, problem)</li>
                             }
                         </ul>
                     }
                 </div>
-                <span class="inline-flex w-fit shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold @StatusClass(row.Status)">@StatusText(row.Status)</span>
+                <span class="inline-flex w-fit shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold @Badges.ImportRow(row.Status)">@ImportText.Status(T, row.Status)</span>
             </li>
         }
     </ul>

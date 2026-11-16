@@ -28,6 +28,12 @@ public sealed class VisitDepositController(IDispatcher dispatcher, ILocalization
 {
     public const string BasePath = "/admin/payments/deposits";
 
+    /// <summary>The visit's card, for the way back; the calendar slice owns the route (ADR 0043: addresses are built here, not in the view).</summary>
+    public static string CardPath(Guid appointmentId) => "/admin/appointments/calendar/" + appointmentId;
+
+    /// <summary>The deposit page of a visit and the base of its forms.</summary>
+    public static string DepositPath(Guid appointmentId) => BasePath + "/" + appointmentId;
+
     [HttpGet("")]
     public async Task<IActionResult> Show(Guid appointmentId, CancellationToken cancellationToken)
     {

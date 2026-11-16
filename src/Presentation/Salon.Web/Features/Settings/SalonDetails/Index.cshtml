@@ -7,10 +7,6 @@
     const string buttonClass = "btn btn-compact btn-primary w-full sm:w-auto";
     var form = Model.Form;
 }
-@functions {
-    IReadOnlyList<string> Errors(string key)
-        => ViewData.ModelState.TryGetValue(key, out var entry) ? entry.Errors.Select(e => e.ErrorMessage).ToList() : [];
-}
 <section class="mx-auto max-w-xl space-y-6">
     <partial name="_SettingsNav" model="@("salon-details")" />
     <header class="space-y-2">
@@ -35,7 +31,7 @@
             ("Name", "Settings.SalonDetails.Name", "Settings.SalonDetails.NameHint", form.Name, Location.NameMaxLength, "text", "organization", false),
         })
         {
-            var errors = Errors(name);
+            var errors = ViewData.ModelState.ErrorsFor(name);
             var errorId = name + "-error";
             var hintId = name + "-hint";
             <div class="space-y-1">

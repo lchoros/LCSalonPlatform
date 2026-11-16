@@ -15,15 +15,7 @@
         ? (await TenantLookup.FindByIdAsync(tenantId))?.Name
         : null;
     // The calendar lives under the appointments address, so the list is the current area only when the calendar is not.
-    var onCalendar = In("/admin/appointments/calendar") is not null;
-}
-@functions {
-    // The admin menu marks the area the page belongs to (ADR 0033): the address is the area's or lies under it. The value is "true", not "page": the link names the area, which is often not the page itself.
-    string? In(string area)
-    {
-        var path = Context.Request.Path.Value ?? string.Empty;
-        return path.Equals(area, StringComparison.OrdinalIgnoreCase) || path.StartsWith(area + "/", StringComparison.OrdinalIgnoreCase) ? "true" : null;
-    }
+    var onCalendar = Context.Request.Current("/admin/appointments/calendar") is not null;
 }
 <html lang="@lang" class="h-full bg-stone-50">
 <head>
@@ -53,41 +45,41 @@
                 <nav aria-label="@T["Layout.Nav.Admin"]" data-testid="admin-nav" class="-mx-3 flex w-full flex-wrap gap-1 text-sm sm:order-none sm:mx-0 sm:w-auto">
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.CatalogManage))
                     {
-                        <a href="/admin/services" data-testid="nav-services" aria-current="@In("/admin/services")" class="nav-link">@T["Layout.Nav.Services"]</a>
+                        <a href="/admin/services" data-testid="nav-services" aria-current="@Context.Request.Current("/admin/services")" class="nav-link">@T["Layout.Nav.Services"]</a>
                     }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView))
                     {
-                        <a href="/admin/clients" data-testid="nav-clients" aria-current="@In("/admin/clients")" class="nav-link">@T["Layout.Nav.Clients"]</a>
+                        <a href="/admin/clients" data-testid="nav-clients" aria-current="@Context.Request.Current("/admin/clients")" class="nav-link">@T["Layout.Nav.Clients"]</a>
                     }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.BookingsManage) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView))
                     {
-                        <a href="/admin/appointments" data-testid="nav-appointments" aria-current="@(onCalendar ? null : In("/admin/appointments"))" class="nav-link">@T["Layout.Nav.Appointments"]</a>
-                        <a href="/admin/appointments/calendar" data-testid="nav-calendar" aria-current="@In("/admin/appointments/calendar")" class="nav-link">@T["Layout.Nav.Calendar"]</a>
+                        <a href="/admin/appointments" data-testid="nav-appointments" aria-current="@(onCalendar ? null : Context.Request.Current("/admin/appointments"))" class="nav-link">@T["Layout.Nav.Appointments"]</a>
+                        <a href="/admin/appointments/calendar" data-testid="nav-calendar" aria-current="@Context.Request.Current("/admin/appointments/calendar")" class="nav-link">@T["Layout.Nav.Calendar"]</a>
                     }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.PaymentsRecord) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView))
                     {
-                        <a href="/admin/payments/cash-up" data-testid="nav-cash-up" aria-current="@In("/admin/payments/cash-up")" class="nav-link">@T["Layout.Nav.CashUp"]</a>
+                        <a href="/admin/payments/cash-up" data-testid="nav-cash-up" aria-current="@Context.Request.Current("/admin/payments/cash-up")" class="nav-link">@T["Layout.Nav.CashUp"]</a>
                     }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.BookingsManage))
                     {
-                        <a href="/admin/products" data-testid="nav-products" aria-current="@In("/admin/products")" class="nav-link">@T["Layout.Nav.Products"]</a>
+                        <a href="/admin/products" data-testid="nav-products" aria-current="@Context.Request.Current("/admin/products")" class="nav-link">@T["Layout.Nav.Products"]</a>
                     }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.ReportsView) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView))
                     {
-                        <a href="/admin/reports" data-testid="nav-reports" aria-current="@In("/admin/reports")" class="nav-link">@T["Layout.Nav.Reports"]</a>
+                        <a href="/admin/reports" data-testid="nav-reports" aria-current="@Context.Request.Current("/admin/reports")" class="nav-link">@T["Layout.Nav.Reports"]</a>
                     }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.StaffManage))
                     {
-                        <a href="/admin/staff" data-testid="nav-staff" aria-current="@In("/admin/staff")" class="nav-link">@T["Layout.Nav.Staff"]</a>
+                        <a href="/admin/staff" data-testid="nav-staff" aria-current="@Context.Request.Current("/admin/staff")" class="nav-link">@T["Layout.Nav.Staff"]</a>
                     }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.SettingsManage))
                     {
-                        <a href="/admin/settings/notifications" data-testid="nav-settings" aria-current="@In("/admin/settings")" class="nav-link">@T["Layout.Nav.Settings"]</a>
+                        <a href="/admin/settings/notifications" data-testid="nav-settings" aria-current="@Context.Request.Current("/admin/settings")" class="nav-link">@T["Layout.Nav.Settings"]</a>
                     }
                     else if (User.HasClaim(UserClaimTypes.Permission, Permissions.TemplatesManage))
                     {
                         @* A manager may edit the messages to clients but none of the other settings (ADR 0030). *@
-                        <a href="/admin/settings/messages" data-testid="nav-settings" aria-current="@In("/admin/settings")" class="nav-link">@T["Layout.Nav.Settings"]</a>
+                        <a href="/admin/settings/messages" data-testid="nav-settings" aria-current="@Context.Request.Current("/admin/settings")" class="nav-link">@T["Layout.Nav.Settings"]</a>
                     }
                 </nav>
             }

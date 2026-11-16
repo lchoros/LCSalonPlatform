@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using NodaTime;
+using NodaTime.Text;
 using Salon.Core.Cqrs;
 using Salon.Core.Identity;
 using Salon.Core.Payments;
@@ -26,6 +28,12 @@ namespace Salon.Web.Features.Payments.VisitFee;
 public sealed class VisitFeeController(IDispatcher dispatcher, ILocalizationService localizer) : SalonControllerBase
 {
     public const string BasePath = "/admin/payments/fees";
+
+    /// <summary>The day list of a day, for the way back; the Appointments module owns the route (ADR 0043: addresses are built here, not in the view).</summary>
+    public static string DayPath(LocalDate day) => "/admin/appointments?date=" + LocalDatePattern.Iso.Format(day);
+
+    /// <summary>The fee page of a visit and the base of its forms.</summary>
+    public static string FeePath(Guid appointmentId) => BasePath + "/" + appointmentId;
 
     [HttpGet("")]
     public async Task<IActionResult> Show(Guid appointmentId, CancellationToken cancellationToken)
