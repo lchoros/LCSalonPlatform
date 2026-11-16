@@ -389,6 +389,15 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] AF6. Upload the downloaded stock file under "Import from a file": every row is "already exists" and nothing
       changes.
 
+## AG. Takings each day as bars (after the branch `agent/m3-25-report-chart` is merged too)
+- [ ] AG1. Reports, "This month", in a salon with payments this month: the Takings section has "Takings each day",
+      one bar per day of the month. Days without money have no bar but keep their place.
+- [ ] AG2. Under the picture: the first and last day, and "Best day: ..., £...". The tallest bar is that day.
+- [ ] AG3. Point at a bar with a mouse: it says its day and amount.
+- [ ] AG4. Return a deposit on a day without other money: that day's bar hangs red under the line.
+- [ ] AG5. "Other dates" with one day, or with more than 62 days: no chart, the figures are still there.
+- [ ] AG6. On a phone the picture is as wide as the card and the page does not scroll sideways.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

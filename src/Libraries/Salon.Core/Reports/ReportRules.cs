@@ -36,6 +36,9 @@ public static class ReportRules
     /// <summary>A whole year including a leap day; longer spans are asked for in two reports.</summary>
     public const int MaxDays = 366;
 
+    /// <summary>The longest period drawn day by day (ADR 0048): two months of bars still fit a phone.</summary>
+    public const int MaxChartDays = 62;
+
     public const ReportPreset DefaultPreset = ReportPreset.ThisMonth;
 
     public static ReportPeriod Preset(ReportPreset preset, LocalDate today)
@@ -79,6 +82,13 @@ public static class ReportRules
     /// </summary>
     public static decimal? Share(decimal part, decimal whole)
         => whole <= 0m ? null : decimal.Round(Math.Clamp(100m * part / whole, 0m, 100m), 1, MidpointRounding.AwayFromZero);
+
+    /// <summary>
+    /// The days a period is drawn as a chart of (ADR 0048): every day of it, in order, with or without money. None
+    /// for a single day, which is one number, and none for more than <see cref="MaxChartDays"/>.
+    /// </summary>
+    public static IReadOnlyList<LocalDate> ChartDays(ReportPeriod period)
+        => period.Days is < 2 or > MaxChartDays ? [] : [.. Enumerable.Range(0, period.Days).Select(period.From.PlusDays)];
 
     /// <summary>
     /// The days a period is compared with (ADR 0046): the same days one period earlier, and only as far as today, so

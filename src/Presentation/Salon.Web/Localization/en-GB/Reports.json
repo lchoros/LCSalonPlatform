@@ -91,5 +91,9 @@
   "Reports.Export.Column.BookedBy": "Booked",
   "Reports.Export.Column.Price": "Price",
   "Reports.Export.BookedBy.Online": "Online",
-  "Reports.Export.BookedBy.Admin": "At the salon"
+  "Reports.Export.BookedBy.Admin": "At the salon",
+  "Reports.Chart.Title": "Takings each day",
+  "Reports.Chart.Best": "Best day: {0}, {1}.",
+  "Reports.Chart.NoBest": "No day of this period ended above zero.",
+  "Reports.Chart.Bar": "{0}: {1}"
 }
