@@ -128,6 +128,22 @@
                 <span class="text-sm text-stone-700">@T["Reports.Takings.Total"]</span>
                 <span class="text-xl font-bold tabular-nums" data-testid="takings-total">@Model.Takings.Total.ToDisplayString(culture)</span>
             </p>
+            @if (TakingsCharts.For(Model.Takings, T, culture) is { } chart)
+            {
+                @* The same days as bars (ADR 0048): plain SVG shapes, no script. The list under "Day by day" below has the figures. *@
+                <figure class="space-y-1" data-testid="takings-chart">
+                    <figcaption class="@subheadClass">@T["Reports.Chart.Title"]</figcaption>
+                    <svg viewBox="@chart.ViewBox" preserveAspectRatio="none" role="img" aria-label="@chart.Summary" class="h-40 w-full">
+                        @foreach (var bar in chart.Bars)
+                        {
+                            <rect x="@bar.X" y="@bar.Y" width="@bar.Width" height="@bar.Height" class="@(bar.Below ? "fill-red-700" : "fill-stone-800")" data-testid="chart-bar" data-day="@bar.Day"><title>@bar.Title</title></rect>
+                        }
+                        <line x1="0" x2="@chart.Width" y1="@chart.Baseline" y2="@chart.Baseline" class="stroke-stone-400" stroke-width="1" vector-effect="non-scaling-stroke" />
+                    </svg>
+                    <p class="flex justify-between text-xs text-stone-600"><span data-testid="chart-first">@chart.First</span><span data-testid="chart-last">@chart.Last</span></p>
+                    <p class="text-sm text-stone-600" data-testid="chart-best">@chart.Summary</p>
+                </figure>
+            }
             <h3 class="@subheadClass">@T["Reports.Takings.ByMethod"]</h3>
             <dl class="@listClass">
                 @foreach (var total in Model.Takings.ByMethod)

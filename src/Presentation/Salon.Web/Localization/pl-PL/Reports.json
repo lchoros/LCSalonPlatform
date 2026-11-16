@@ -91,5 +91,9 @@
   "Reports.Export.Column.BookedBy": "Rezerwacja",
   "Reports.Export.Column.Price": "Cena",
   "Reports.Export.BookedBy.Online": "Online",
-  "Reports.Export.BookedBy.Admin": "W salonie"
+  "Reports.Export.BookedBy.Admin": "W salonie",
+  "Reports.Chart.Title": "Utarg w kolejnych dniach",
+  "Reports.Chart.Best": "Najlepszy dzień: {0}, {1}.",
+  "Reports.Chart.NoBest": "Żaden dzień tego okresu nie zakończył się na plusie.",
+  "Reports.Chart.Bar": "{0}: {1}"
 }

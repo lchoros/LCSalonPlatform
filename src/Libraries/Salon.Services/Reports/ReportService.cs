@@ -49,6 +49,7 @@ internal sealed class ReportService(
 
         var (unpaid, unpaidCount, unpaidTotal) = await UnpaidAsync(completed, start, end, zone, In, cancellationToken).ConfigureAwait(false);
         var takings = Takings(lines, zone, In);
+        takings = takings with { Daily = Daily(takings.ByDay, period, In) };
 
         return new SalonReport(
             period,
@@ -173,6 +174,18 @@ internal sealed class ReportService(
             .Select(g => new DayTakings(g.Key, money(g.Sum(l => TillRules.Direction(l.Kind) * l.Amount))))
             .ToArray();
         return new TakingsReport(money(byMethod.Sum(t => t.Amount.Amount)), byMethod, byKind, byDay);
+    }
+
+    /// <summary>The takings of every day of a charted period (ADR 0048); nothing to draw while no day has money.</summary>
+    private static DayTakings[] Daily(IReadOnlyList<DayTakings> byDay, ReportPeriod period, Func<decimal, Money> money)
+    {
+        if (byDay.Count == 0)
+        {
+            return [];
+        }
+
+        var amounts = byDay.ToDictionary(d => d.Day, d => d.Amount);
+        return [.. ReportRules.ChartDays(period).Select(day => new DayTakings(day, amounts.TryGetValue(day, out var amount) ? amount : money(0m)))];
     }
 
     private static VisitsReport Visits(List<VisitRow> visits, VisitRow[] completed, Func<decimal, Money> money)

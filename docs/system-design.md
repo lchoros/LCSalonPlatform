@@ -205,7 +205,9 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   product was sold or returned in the period: products sold, given back, units, share of takings and best sellers
   (`RetailReport`, ADR 0044). Under the headline tiles, the days that have happened set against the same
   days one period earlier: total taken, completed visits, no-shows, the change in words (`ReportComparison`,
-  `ReportRules.Compare`, ADR 0046).
+  `ReportRules.Compare`, ADR 0046). In the takings, each day of the period as a bar (ADR 0048): plain SVG shapes
+  laid out by the pure `BarChart` (Core) and written by `TakingsCharts` beside the view; no script, no chart
+  library. Periods of 2 to 62 days (`ReportRules.ChartDays`).
 - `Booking/Reschedule` — `/book/change/{token}` (ADR 0021): the client's own link moves the visit through
   `IBookingService.MoveAsync`; inside the policy's notice period it offers no times (ADR 0022), while
   `Booking/CancelBooking` still cancels and states the late fee first. The details page states the policy before the

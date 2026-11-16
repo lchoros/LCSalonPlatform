@@ -67,7 +67,14 @@ public sealed record SalonReport(
 /// <param name="ByMethod">Net per method, methods nobody used left out.</param>
 /// <param name="ByKind">Net per kind of line; a deposit returned is negative.</param>
 /// <param name="ByDay">Net per day, days without money left out.</param>
-public sealed record TakingsReport(Money Total, IReadOnlyList<MethodTotal> ByMethod, IReadOnlyList<KindTotal> ByKind, IReadOnlyList<DayTakings> ByDay);
+public sealed record TakingsReport(Money Total, IReadOnlyList<MethodTotal> ByMethod, IReadOnlyList<KindTotal> ByKind, IReadOnlyList<DayTakings> ByDay)
+{
+    /// <summary>
+    /// Every day of the period in order, a day without money as zero, for the chart (ADR 0048). Empty when the period
+    /// has no money or is not drawn day by day (<see cref="ReportRules.ChartDays"/>).
+    /// </summary>
+    public IReadOnlyList<DayTakings> Daily { get; init; } = [];
+}
 
 public sealed record KindTotal(ClientAccountEntryKind Kind, Money Amount);
 
