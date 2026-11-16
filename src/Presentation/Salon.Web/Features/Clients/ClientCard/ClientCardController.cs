@@ -36,7 +36,7 @@ public sealed class ClientCardController(IDispatcher dispatcher, ITenantContext 
         var tenant = await tenantLookup.FindByIdAsync(tenantContext.TenantId!.Value, cancellationToken);
         var zone = (tenant is null ? null : DateTimeZoneProviders.Tzdb.GetZoneOrNull(tenant.TimeZoneId)) ?? DateTimeZone.Utc;
 
-        return View(new ClientCardViewModel(details.Card, details.History, details.MergedIntoName, zone, TakeFlash(), details.Account, details.FeesInUse));
+        return View(new ClientCardViewModel(details.Card, details.History, details.MergedIntoName, zone, TakeFlash(), details.Account, details.FeesInUse, details.Purchases));
     }
 }
 
@@ -47,4 +47,5 @@ public sealed class ClientCardController(IDispatcher dispatcher, ITenantContext 
 /// <param name="Flash">Confirmation left by the previous request (post-redirect-get), if any.</param>
 /// <param name="Account">Fees on the client's account (ADR 0022).</param>
 /// <param name="FeesInUse">Whether missed and cancelled visits link to their fee page.</param>
-public sealed record ClientCardViewModel(Card Card, ClientHistory History, string? MergedIntoName, DateTimeZone Zone, string? Flash, ClientAccount Account, bool FeesInUse);
+/// <param name="Purchases">Products the client bought, newest first (ADR 0039).</param>
+public sealed record ClientCardViewModel(Card Card, ClientHistory History, string? MergedIntoName, DateTimeZone Zone, string? Flash, ClientAccount Account, bool FeesInUse, IReadOnlyList<PurchaseLine> Purchases);

@@ -165,5 +165,8 @@
   "Clients.Import.Preview.Confirm.Many": "Importuj {0} nowych klientów",
   "Clients.Merge.Confirm.Appointments.One": "Wizyta klienta {1} i jej historia przechodzą do karty {2}.",
   "Clients.Merge.Confirm.Appointments.Many": "Wszystkie wizyty ({0}) klienta {1} i ich historia przechodzą do karty {2}.",
-  "Clients.Merge.Confirm.NoAppointments": "{0} nie ma wizyt do przeniesienia."
+  "Clients.Merge.Confirm.NoAppointments": "{0} nie ma wizyt do przeniesienia.",
+  "Clients.Card.Book": "Zarezerwuj wizytę",
+  "Clients.Purchases.Title": "Kupione produkty",
+  "Clients.Purchases.Line": "{0} × {1}"
 }

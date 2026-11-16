@@ -145,5 +145,9 @@
   "Payments.Fee.Refused.ProductNotForSale": "This product cannot be sold: it has no price or the salon no longer uses it.",
   "Payments.Fee.Refused.QuantityOutOfRange": "Enter how many, from 1 to 99. One product on a bill holds at most 99.",
   "Payments.Fee.Refused.ProductLinePaid": "This product is already paid for and stays on the bill.",
-  "Payments.Fee.Refused.StockNotRecorded": "The shelf of a product on this bill kept changing. Nothing was recorded; please try again."
+  "Payments.Fee.Refused.StockNotRecorded": "The shelf of a product on this bill kept changing. Nothing was recorded; please try again.",
+  "Payments.Checkout.Rebook.Title": "Book the next visit",
+  "Payments.Checkout.Rebook.Lead": "{0} with {1} again. Pick how far ahead, then choose the time.",
+  "Payments.Checkout.Rebook.Weeks.One": "In {0} week",
+  "Payments.Checkout.Rebook.Weeks.Many": "In {0} weeks"
 }

@@ -184,4 +184,24 @@
             <a href="/admin/payments/cash-up?date=@LocalDatePattern.Iso.Format((bill.Payment?.At ?? bill.Start.ToInstant()).InZone(zone).Date)" class="@secondaryClass" data-testid="open-cash-up">@T["Payments.Checkout.OpenCashUp"]</a>
         </section>
     }
+
+    @if (Model.Rebook.Count > 0)
+    {
+        @* The next visit (ADR 0039): same service, same person, one tap to the booking form on the right day. *@
+        <section class="@cardClass" data-testid="rebook-step">
+            <h2 class="text-lg font-semibold">@T["Payments.Checkout.Rebook.Title"]</h2>
+            <p class="text-sm text-stone-600">@T.Format("Payments.Checkout.Rebook.Lead", bill.ServiceName, bill.StaffName)</p>
+            <ul class="grid gap-2 sm:grid-cols-3">
+                @foreach (var choice in Model.Rebook)
+                {
+                    <li>
+                        <a href="@choice.Url" class="btn btn-compact btn-secondary flex w-full flex-col py-2 leading-tight" data-testid="rebook-choice" data-weeks="@choice.Weeks">
+                            <span>@T.Plural("Payments.Checkout.Rebook.Weeks", choice.Weeks)</span>
+                            <span class="text-xs font-normal text-stone-600">@choice.Day.ToString("ddd d MMM", culture)</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
 </section>

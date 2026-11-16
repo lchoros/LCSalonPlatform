@@ -87,6 +87,12 @@ public interface IClientAccountService
 
     /// <summary>What the client owes, every fee and every deposit on their account, newest first. Empty for a client without any or an unknown id.</summary>
     Task<ClientAccount> GetAccountAsync(Guid clientId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// The products the client bought and paid for (ADR 0037, ADR 0039), newest first, at most
+    /// <see cref="PurchaseLine.MaxShown"/>. Empty for a client without any or an unknown id.
+    /// </summary>
+    Task<IReadOnlyList<PurchaseLine>> GetPurchasesAsync(Guid clientId, CancellationToken cancellationToken = default);
 }
 
 /// <param name="Start">In the salon's zone.</param>
@@ -195,6 +201,12 @@ public sealed record VisitBill(
 
     /// <summary>The visit and the products together, before any fee from an earlier visit.</summary>
     public Money ToPay => Price with { Amount = Outstanding.Amount + ProductsOutstanding.Amount };
+
+    /// <summary>The service of the visit, for booking the next one like it (ADR 0039).</summary>
+    public Guid ServiceId { get; init; }
+
+    /// <summary>Who the visit was with, for booking the next one with the same person.</summary>
+    public Guid StaffMemberId { get; init; }
 }
 
 /// <summary>A product on a visit's bill (ADR 0037), with the name and the price it had when it was rung up.</summary>
@@ -262,6 +274,14 @@ public sealed record FeeSettlement(
 public sealed record ClientAccount(Money? Owed, IReadOnlyList<FeeLine> Fees, IReadOnlyList<DepositLine> Deposits)
 {
     public static ClientAccount Empty { get; } = new(null, [], []);
+}
+
+/// <summary>A product the client paid for on the bill of a visit: one row of "Products bought" on their card.</summary>
+/// <param name="PaidAt">In the salon's zone.</param>
+public sealed record PurchaseLine(Guid AppointmentId, string ProductName, int Quantity, Money Total, ZonedDateTime PaidAt, PaymentMethod? Method)
+{
+    /// <summary>The card shows the latest purchases, not a ledger; the till and the reports have the rest.</summary>
+    public const int MaxShown = 20;
 }
 
 public enum ClientAccountRefusal

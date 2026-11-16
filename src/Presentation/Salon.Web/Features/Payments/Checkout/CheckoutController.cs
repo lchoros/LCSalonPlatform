@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Salon.Core.Appointments;
 using Salon.Core.Cqrs;
 using Salon.Core.Identity;
 using Salon.Core.Payments;
@@ -32,7 +33,7 @@ public sealed class CheckoutController(IDispatcher dispatcher, ILocalizationServ
         var bill = await dispatcher.SendAsync(new CheckoutQuery(appointmentId), cancellationToken);
 
         // A refused change to the products on the bill comes back here with its reason (the BillProducts slice).
-        return bill is null ? NotFound() : View(new CheckoutViewModel(bill, TakeFlash(), TakeProblem(), await SellableAsync(bill, cancellationToken)));
+        return bill is null ? NotFound() : View(await ViewModelAsync(bill, TakeFlash(), TakeProblem(), cancellationToken));
     }
 
     [HttpPost("")]
@@ -69,7 +70,20 @@ public sealed class CheckoutController(IDispatcher dispatcher, ILocalizationServ
         }
 
         var bill = await dispatcher.SendAsync(new CheckoutQuery(appointmentId), cancellationToken);
-        return bill is null ? NotFound() : View("Show", new CheckoutViewModel(bill, null, error, await SellableAsync(bill, cancellationToken)));
+        return bill is null ? NotFound() : View("Show", await ViewModelAsync(bill, null, error, cancellationToken));
+    }
+
+    /// <summary>The booking form for a client; the BookForClient slice owns the route.</summary>
+    public const string BookPath = "/admin/appointments/new";
+
+    private async Task<CheckoutViewModel> ViewModelAsync(VisitBill bill, string? flash, string? error, CancellationToken cancellationToken)
+    {
+        // The next visit is offered once this one is done, to people who may book (ADR 0039).
+        var mayBook = User.HasClaim(UserClaimTypes.Permission, Permissions.BookingsManage);
+        IReadOnlyList<RebookChoice> rebook = bill.Status == AppointmentStatus.Completed && mayBook
+            ? await dispatcher.SendAsync(new RebookChoicesQuery(bill.ClientId, bill.ServiceId, bill.StaffMemberId, bill.Start.Date, bill.Start.Zone), cancellationToken)
+            : [];
+        return new CheckoutViewModel(bill, flash, error, await SellableAsync(bill, cancellationToken), rebook);
     }
 
     /// <summary>Where the product forms post; the BillProducts slice owns the routes.</summary>
@@ -86,4 +100,5 @@ public sealed class CheckoutController(IDispatcher dispatcher, ILocalizationServ
 
 /// <param name="Error">A refused request, already localized.</param>
 /// <param name="Sellable">The products the desk can ring up; empty when the bill cannot be paid or the salon sells none.</param>
-public sealed record CheckoutViewModel(VisitBill Bill, string? Flash, string? Error, IReadOnlyList<SellableProduct> Sellable);
+/// <param name="Rebook">One-tap choices for the client's next visit; empty until this one is completed.</param>
+public sealed record CheckoutViewModel(VisitBill Bill, string? Flash, string? Error, IReadOnlyList<SellableProduct> Sellable, IReadOnlyList<RebookChoice> Rebook);

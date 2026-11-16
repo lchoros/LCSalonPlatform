@@ -33,6 +33,6 @@ public sealed class ClientCardHandler(IClientService clients, IClientAccountServ
         var account = await accounts.GetAccountAsync(request.ClientId, cancellationToken);
         var policy = await settings.LoadAsync<CancellationPolicySettings>(cancellationToken);
         var feesInUse = account.Fees.Count > 0 || policy.NoShowFeePercent > 0m || policy.LateCancellationFeePercent > 0m;
-        return new ClientCardDetails(card, history, mergedIntoName, account, feesInUse);
+        return new ClientCardDetails(card, history, mergedIntoName, account, feesInUse, await accounts.GetPurchasesAsync(request.ClientId, cancellationToken));
     }
 }

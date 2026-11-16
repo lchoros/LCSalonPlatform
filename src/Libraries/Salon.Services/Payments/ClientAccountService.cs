@@ -255,7 +255,11 @@ internal sealed class ClientAccountService(
             Held(deposits)?.Amount,
             visitPayments.Count > 0 ? visitPayments[0] : null,
             account.Fees.Where(f => f.Status == FeeStatus.Owed).ToArray(),
-            products);
+            products)
+        {
+            ServiceId = visit.ServiceId,
+            StaffMemberId = visit.StaffMemberId,
+        };
     }
 
     public async Task<VisitBill> AddProductAsync(Guid appointmentId, Guid productId, int quantity, Guid? byUserId, CancellationToken cancellationToken = default)
@@ -444,6 +448,25 @@ internal sealed class ClientAccountService(
         return new ClientAccount(owed > 0m ? fees[0].Amount with { Amount = owed } : null, fees, deposits);
     }
 
+    public async Task<IReadOnlyList<PurchaseLine>> GetPurchasesAsync(Guid clientId, CancellationToken cancellationToken = default)
+    {
+        var zone = await ZoneAsync(cancellationToken).ConfigureAwait(false);
+
+        // A paid bill line points at the account line that settled it; that line names the client, the time and the method.
+        var rows = await (
+            from line in db.VisitProductLines.AsNoTracking()
+            join sale in db.ClientAccountEntries.AsNoTracking() on line.PaymentEntryId equals sale.Id
+            where sale.ClientId == clientId
+            orderby sale.At descending, line.AddedAt descending
+            select new { line.AppointmentId, line.ProductName, line.Quantity, line.UnitPrice, line.Currency, sale.At, sale.Method })
+            .Take(PurchaseLine.MaxShown)
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        return rows
+            .Select(r => new PurchaseLine(r.AppointmentId, r.ProductName, r.Quantity, new Money(ProductSaleRules.LineTotal(r.Quantity, r.UnitPrice), r.Currency), r.At.InZone(zone), r.Method))
+            .ToArray();
+    }
+
     /// <summary>Above zero, to the penny, and no more than <paramref name="max"/>.</summary>
     private static bool IsAmount(decimal value, decimal max) => value > 0m && value <= max && decimal.Round(value, 2) == value;
 
@@ -538,7 +561,9 @@ internal sealed class ClientAccountService(
             appointment.Status,
             appointment.CancelledAt,
             new Money(appointment.PriceAmount, appointment.Currency),
-            appointment.DepositAmount);
+            appointment.DepositAmount,
+            appointment.ServiceId,
+            appointment.StaffMemberId);
     }
 
     /// <summary>
@@ -642,5 +667,7 @@ internal sealed class ClientAccountService(
         AppointmentStatus Status,
         Instant? CancelledAt,
         Money Price,
-        decimal DepositAmount);
+        decimal DepositAmount,
+        Guid ServiceId,
+        Guid StaffMemberId);
 }

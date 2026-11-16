@@ -40,6 +40,10 @@
         </h1>
         <p class="text-sm text-stone-500">@T.Format("Clients.Card.Since", card.CreatedAt.InZone(Model.Zone).Date.ToString("d", culture))</p>
     </header>
+    @if (card.IsActive && User.HasClaim(UserClaimTypes.Permission, Permissions.BookingsManage))
+    {
+        <a href="/admin/appointments/new?clientId=@card.Id" data-testid="book-visit" class="btn btn-compact btn-primary w-full sm:w-auto">@T["Clients.Card.Book"]</a>
+    }
 
     <section class="space-y-3 panel">
         <h2 class="text-lg font-semibold">@T["Clients.Card.Contact"]</h2>
@@ -117,6 +121,28 @@
                     }
                 </ul>
             }
+        </section>
+    }
+
+    @if (Model.Purchases.Count > 0)
+    {
+        @* Products the client paid for on their bills (ADR 0037, ADR 0039), newest first; the visit's checkout has the rest. *@
+        <section class="space-y-3 panel" data-testid="client-purchases">
+            <h2 class="text-lg font-semibold">@T["Clients.Purchases.Title"]</h2>
+            <ul class="list-card" data-testid="purchase-list">
+                @foreach (var purchase in Model.Purchases)
+                {
+                    <li data-testid="purchase-row">
+                        <a href="/admin/payments/checkout/@purchase.AppointmentId" class="flex min-h-11 items-center justify-between gap-3 p-3 hover:bg-stone-50" data-testid="purchase-link">
+                            <span class="flex min-w-0 flex-col gap-0.5">
+                                <span class="font-medium" data-testid="purchase-name">@T.Format("Clients.Purchases.Line", purchase.ProductName, purchase.Quantity)</span>
+                                <span class="text-sm text-stone-600 tabular-nums">@purchase.PaidAt.Date.ToString("d", culture)</span>
+                            </span>
+                            <span class="tabular-nums" data-testid="purchase-total">@purchase.Total.ToDisplayString(culture)</span>
+                        </a>
+                    </li>
+                }
+            </ul>
         </section>
     }
 
