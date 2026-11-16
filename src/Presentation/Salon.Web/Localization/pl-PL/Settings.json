@@ -108,5 +108,20 @@
   "Settings.Messages.Validation.SubjectRequired": "Wpisz temat.",
   "Settings.Messages.Validation.TooLong": "Użyj najwyżej {0} znaków.",
   "Settings.Messages.Validation.NotAllowed": "W tej wiadomości nie można użyć {0}. Można użyć: {1}.",
-  "Settings.Messages.Validation.Required": "Zostaw {0} w treści. Bez tego wiadomość nic klientowi nie da."
+  "Settings.Messages.Validation.Required": "Zostaw {0} w treści. Bez tego wiadomość nic klientowi nie da.",
+  "Settings.Nav.NextVisit": "Następna wizyta",
+  "Settings.NextVisit.Title": "Następna wizyta",
+  "Settings.NextVisit.Lead": "Po przyjęciu płatności recepcja widzi do trzech propozycji terminu następnej wizyty. Ustaw, za ile tygodni ma być każda z nich.",
+  "Settings.NextVisit.First": "Pierwsza propozycja (tygodnie)",
+  "Settings.NextVisit.Second": "Druga propozycja (tygodnie)",
+  "Settings.NextVisit.Third": "Trzecia propozycja (tygodnie)",
+  "Settings.NextVisit.Hint": "0 pomija propozycję. Najwięcej {0} tygodni. Ta sama liczba dwa razy pojawi się raz.",
+  "Settings.NextVisit.OfferedTitle": "Co recepcja widzi po płatności",
+  "Settings.NextVisit.Choice.One": "Za {0} tydz.",
+  "Settings.NextVisit.Choice.Many": "Za {0} tyg.",
+  "Settings.NextVisit.NothingOffered": "Po płatności nie ma propozycji następnej wizyty. Ustaw co najmniej jedną liczbę większą od 0.",
+  "Settings.NextVisit.Submit": "Zapisz",
+  "Settings.NextVisit.Saved": "Propozycje następnej wizyty zostały zapisane.",
+  "Settings.NextVisit.Validation.Required": "Podaj liczbę tygodni.",
+  "Settings.NextVisit.Validation.Range": "Liczba tygodni musi być od 0 do {0}."
 }

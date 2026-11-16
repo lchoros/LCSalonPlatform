@@ -108,5 +108,20 @@
   "Settings.Messages.Validation.SubjectRequired": "Write the subject.",
   "Settings.Messages.Validation.TooLong": "Use at most {0} characters.",
   "Settings.Messages.Validation.NotAllowed": "This message cannot use {0}. It can use: {1}.",
-  "Settings.Messages.Validation.Required": "Keep {0} in the message. Without it the message is of no use to the client."
+  "Settings.Messages.Validation.Required": "Keep {0} in the message. Without it the message is of no use to the client.",
+  "Settings.Nav.NextVisit": "Next visit",
+  "Settings.NextVisit.Title": "Next visit",
+  "Settings.NextVisit.Lead": "When a client pays, the desk is offered up to three one-tap choices for booking the next visit. Set how many weeks ahead each one is.",
+  "Settings.NextVisit.First": "First choice (weeks)",
+  "Settings.NextVisit.Second": "Second choice (weeks)",
+  "Settings.NextVisit.Third": "Third choice (weeks)",
+  "Settings.NextVisit.Hint": "0 leaves a choice out. The longest is {0} weeks. The same number twice is offered once.",
+  "Settings.NextVisit.OfferedTitle": "What the desk sees after a payment",
+  "Settings.NextVisit.Choice.One": "In {0} week",
+  "Settings.NextVisit.Choice.Many": "In {0} weeks",
+  "Settings.NextVisit.NothingOffered": "No next visit is offered after a payment. Set at least one choice above 0 to offer one.",
+  "Settings.NextVisit.Submit": "Save",
+  "Settings.NextVisit.Saved": "The choices for the next visit have been saved.",
+  "Settings.NextVisit.Validation.Required": "Enter a number of weeks.",
+  "Settings.NextVisit.Validation.Range": "Weeks must be between 0 and {0}."
 }
