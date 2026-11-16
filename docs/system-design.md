@@ -155,6 +155,8 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `Products/ProductCard` (`ProductRules.Margin`) and as the worth of the shelves by `Products/ListProducts`
   (`ProductRules.Shelf`), read by the import and written by the stock file. The controllers take costs off the page
   for anybody without `Catalog.Manage`.
+  When a bill is paid, the cost of the day is kept on each product line (`VisitProductLine.UnitCost`, ADR 0052), and
+  the reports show the profit on products from it (`ProductSaleRules.Profit`).
 - `Settings/DailySummary` — `/admin/settings/daily-summary` behind `Settings.Manage` (ADR 0050): a switch and a time
   on the salon's clock (`DailySummarySettings`), with what today's email would say. `IDailySummaryService` writes
   the day's numbers from `IReportService` (no client named) and sends them to the active owner logins;

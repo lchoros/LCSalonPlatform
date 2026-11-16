@@ -430,6 +430,14 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] AJ6. With `Features:ClientImport` on, upload the downloaded client file under Clients, "Import": every row is
       "already exists".
 
+## AK. Profit on products (after the branch `agent/m3-29-product-profit` is merged too; it has a migration)
+- [ ] AK1. Give a product for sale a cost (Products, Edit, "What it costs you"). Sell two on a visit's bill and pay.
+- [ ] AK2. Reports, this month: "Products sold" has "Profit on products" with an amount and a share, and the
+      product in the best sellers says "Profit: £...". It is twice the price less the cost.
+- [ ] AK3. Change the product's cost. The profit of the sale already made does not move.
+- [ ] AK4. Sell a product that has no cost: the report says how many units were sold with no cost on record.
+- [ ] AK5. Return one of the two units: the profit halves.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.
