@@ -169,5 +169,19 @@
   "Clients.Card.Book": "Book a visit",
   "Clients.Purchases.Title": "Products bought",
   "Clients.Purchases.Line": "{0} × {1}",
-  "Clients.Card.Waitlist": "Add to the waitlist"
+  "Clients.Card.Waitlist": "Add to the waitlist",
+  "Clients.Export.Column.FirstName": "First name",
+  "Clients.Export.Column.LastName": "Last name",
+  "Clients.Export.Column.Phone": "Phone",
+  "Clients.Export.Column.Email": "Email",
+  "Clients.Export.Column.Notes": "Notes",
+  "Clients.Export.Column.MarketingConsent": "Marketing consent",
+  "Clients.Export.Column.ConsentOn": "Consent given on",
+  "Clients.Export.Column.Since": "Client since",
+  "Clients.Export.Column.CompletedVisits": "Completed visits",
+  "Clients.Export.Column.LastVisit": "Last visit",
+  "Clients.Export.Column.NextVisit": "Next visit",
+  "Clients.Export.Column.Active": "Active",
+  "Clients.Export.Yes": "Yes",
+  "Clients.Export.No": "No"
 }

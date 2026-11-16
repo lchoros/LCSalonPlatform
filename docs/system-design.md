@@ -160,6 +160,13 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   the day's numbers from `IReportService` (no client named) and sends them to the active owner logins;
   `DailySummaryTask` runs every five minutes, and a row in `daily_summary_deliveries`, unique per salon and day,
   is claimed before anything is sent.
+- `Settings/YourData` — `/admin/settings/your-data` behind `Settings.Manage` (ADR 0051): the promise "the salon owns
+  its data" as a page. Counts of clients, visits, money lines and products, and a link to every file: the client
+  list, the visits and the money of each year, the stock list. The files belong to their own slices.
+- `Clients/ExportClients` — `GET /admin/clients/export.csv` behind `Settings.Manage` and `Clients.Manage`, so the
+  owner only (ADR 0051): every client card with contact details, notes, consent and visit counts, merged pointers
+  left out. Health notes are never read. Each download is logged with who and how many rows. The client import
+  reads the file back.
 - `Clients/ImportClients` — `/admin/clients/import` behind `Clients.Manage` and `Features:ClientImport` (ADR 0019):
   upload a Booksy or Versum CSV, preview (new / duplicate / invalid), confirm. Parsing lives in the plugin
   `Salon.Plugin.Import`; the preview is kept server-side under a random token bound to the salon.

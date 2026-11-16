@@ -107,7 +107,15 @@ public abstract class ClientCsvParserBase : IClientImportParser
     }
 
     private static string Field(IReadOnlyList<string> fields, int index)
-        => index >= 0 && index < fields.Count ? fields[index].Trim() : string.Empty;
+        => index >= 0 && index < fields.Count ? Unguard(fields[index].Trim()) : string.Empty;
+
+    /// <summary>
+    /// A file written for a spreadsheet puts an apostrophe in front of text that would run as a formula, such as a
+    /// phone number that starts with a plus (ADR 0042). Reading such a file back, the apostrophe is not part of the
+    /// text. Only that one case: an apostrophe before anything else stays.
+    /// </summary>
+    private static string Unguard(string cell)
+        => cell.Length > 1 && cell[0] == '\'' && "=+-@".Contains(cell[1], StringComparison.Ordinal) ? cell[1..] : cell;
 
     private static string? NullIfEmpty(string value) => value.Length == 0 ? null : value;
 
