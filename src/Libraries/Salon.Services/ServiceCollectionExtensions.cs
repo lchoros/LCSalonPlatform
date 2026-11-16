@@ -49,6 +49,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAvailabilityService, AvailabilityService>();
         services.AddScoped<IBookingService, BookingService>();
         services.AddScoped<IVisitOutcomeService, VisitOutcomeService>();
+        services.AddScoped<IWaitlistService, WaitlistService>();
         // Needs IClientService (registered by the host next to the field encryptor) and IPublicUrlBuilder (Web.Framework) at resolve time.
         services.AddScoped<IPublicBookingService, PublicBookingService>();
         services.AddOptions<DemoOptions>().BindConfiguration(DemoOptions.SectionName);

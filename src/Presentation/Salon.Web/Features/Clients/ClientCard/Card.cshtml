@@ -43,6 +43,7 @@
     @if (card.IsActive && User.HasClaim(UserClaimTypes.Permission, Permissions.BookingsManage))
     {
         <a href="/admin/appointments/new?clientId=@card.Id" data-testid="book-visit" class="btn btn-compact btn-primary w-full sm:w-auto">@T["Clients.Card.Book"]</a>
+        <a href="/admin/appointments/waitlist/new?clientId=@card.Id" data-testid="add-to-waitlist" class="btn btn-compact btn-secondary w-full sm:w-auto">@T["Clients.Card.Waitlist"]</a>
     }
 
     <section class="space-y-3 panel">

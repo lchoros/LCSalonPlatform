@@ -190,6 +190,101 @@ namespace Salon.Data.Migrations
                     b.ToTable("appointment_status_changes", "salon");
                 });
 
+            modelBuilder.Entity("Salon.Core.Appointments.WaitlistEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AppointmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("appointment_id");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("client_id");
+
+                    b.Property<Instant?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<Guid?>("ClosedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("closed_by_user_id");
+
+                    b.Property<Instant>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_user_id");
+
+                    b.Property<LocalDate?>("NotAfter")
+                        .HasColumnType("date")
+                        .HasColumnName("not_after");
+
+                    b.Property<LocalDate?>("NotBefore")
+                        .HasColumnType("date")
+                        .HasColumnName("not_before");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("note");
+
+                    b.Property<int?>("Outcome")
+                        .HasColumnType("integer")
+                        .HasColumnName("outcome");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_id");
+
+                    b.Property<Guid?>("StaffMemberId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("staff_member_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_waitlist_entries");
+
+                    b.HasIndex("AppointmentId")
+                        .HasDatabaseName("ix_waitlist_entries_appointment_id");
+
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("ix_waitlist_entries_client_id");
+
+                    b.HasIndex("ServiceId")
+                        .HasDatabaseName("ix_waitlist_entries_service_id");
+
+                    b.HasIndex("StaffMemberId")
+                        .HasDatabaseName("ix_waitlist_entries_staff_member_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_waitlist_entries_tenant_id");
+
+                    b.HasIndex("TenantId", "CreatedAt")
+                        .HasDatabaseName("ix_waitlist_entries_waiting")
+                        .HasFilter("closed_at IS NULL");
+
+                    b.HasIndex("TenantId", "ClientId", "ServiceId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_waitlist_entries_one_wait_per_client_and_service")
+                        .HasFilter("closed_at IS NULL");
+
+                    b.ToTable("waitlist_entries", "salon", t =>
+                        {
+                            t.HasCheckConstraint("ck_waitlist_entries_closed_with_outcome", "(closed_at IS NULL) = (outcome IS NULL)");
+
+                            t.HasCheckConstraint("ck_waitlist_entries_days_in_order", "not_before IS NULL OR not_after IS NULL OR not_after >= not_before");
+                        });
+                });
+
             modelBuilder.Entity("Salon.Core.Booking.PhoneVerification", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1635,6 +1730,42 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_appointment_status_changes_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Appointments.WaitlistEntry", b =>
+                {
+                    b.HasOne("Salon.Core.Appointments.Appointment", null)
+                        .WithMany()
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_waitlist_entries_appointments_appointment_id");
+
+                    b.HasOne("Salon.Core.Clients.Client", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_waitlist_entries_clients_client_id");
+
+                    b.HasOne("Salon.Core.Catalog.Service", null)
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_waitlist_entries_services_service_id");
+
+                    b.HasOne("Salon.Core.Staff.StaffMember", null)
+                        .WithMany()
+                        .HasForeignKey("StaffMemberId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_waitlist_entries_staff_members_staff_member_id");
+
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_waitlist_entries_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Booking.PhoneVerification", b =>

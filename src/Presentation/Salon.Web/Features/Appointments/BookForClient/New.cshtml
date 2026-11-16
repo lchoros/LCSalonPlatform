@@ -160,6 +160,11 @@
         else if (form.Slots.Count == 0)
         {
             <p class="text-sm text-stone-600" data-testid="no-slots">@T["Appointments.Book.NoSlots"]</p>
+            @if (form.Client is { } waitingClient && form.ServiceId is { } wantedService)
+            {
+                @* Nothing free: the wish goes on the waitlist instead of being lost (ADR 0041). The Waitlist form owns the address. *@
+                <a href="/admin/appointments/waitlist/new?clientId=@waitingClient.Id&serviceId=@wantedService@(form.StaffMemberId is { } wantedStaff ? $"&staffId={wantedStaff}" : string.Empty)" class="btn btn-compact btn-secondary" data-testid="no-slots-waitlist">@T["Appointments.Book.Waitlist"]</a>
+            }
         }
         else
         {
