@@ -68,6 +68,15 @@ public static class ReportRules
         return new ResolvedPeriod(Preset(chosen, today), chosen, from is not null || to is not null);
     }
 
+    /// <summary>
+    /// <paramref name="part"/> of <paramref name="whole"/> as a percentage with one decimal, for money (ADR 0044). Null
+    /// when the whole is not above zero: nothing was taken, or more went out than came in. Kept between 0 and 100: a
+    /// part that is below zero is no share, and a whole made smaller by money that went out cannot make the part more
+    /// than all of it.
+    /// </summary>
+    public static decimal? Share(decimal part, decimal whole)
+        => whole <= 0m ? null : decimal.Round(Math.Clamp(100m * part / whole, 0m, 100m), 1, MidpointRounding.AwayFromZero);
+
     /// <summary><paramref name="part"/> as a percentage of <paramref name="whole"/> with one decimal; null without a base.</summary>
     public static decimal? Rate(int part, int whole)
         => whole <= 0 ? null : decimal.Round(100m * Math.Max(0, part) / whole, 1, MidpointRounding.AwayFromZero);

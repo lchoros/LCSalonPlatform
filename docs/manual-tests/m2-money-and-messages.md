@@ -347,6 +347,16 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] AB5. Set all three to 0 and save: the page says no next visit is offered, and a paid bill has no such step.
       Set them back to 4, 6 and 8.
 
+## AC. Products in the reports (after PR #88 is merged too)
+- [ ] AC1. Reports for a period in which no product was sold: there is no "Products sold" section.
+- [ ] AC2. Sell two of one product and one of another on a visit's bill and take the payment. Reports, "This month":
+      "Products sold" shows what was sold, 3 units, 1 visit with a product, and both products under "Best sellers",
+      the one that brought in more first.
+- [ ] AC3. "Sold" equals "Products sold" under "What it was for" in the takings.
+- [ ] AC4. Return one unit from the paid bill. The section now has "Given back for returns" in red, and "Products
+      after returns" is lower by that amount. "Units sold" is unchanged: what was sold stays sold.
+- [ ] AC5. "Share of takings" is products after returns divided by "Total taken".
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

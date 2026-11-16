@@ -60,5 +60,17 @@
   "Reports.Export.Column.Amount": "Kwota",
   "Reports.Export.Column.Currency": "Waluta",
   "Reports.Export.Column.RecordedBy": "Zapisał(a)",
-  "Reports.Export.Column.Reference": "Numer"
+  "Reports.Export.Column.Reference": "Numer",
+  "Reports.Retail.Title": "Sprzedane produkty",
+  "Reports.Retail.Hint": "Produkty z rachunków zapłaconych w tym okresie. Produkt liczy się w dniu zapłaty.",
+  "Reports.Retail.Sold": "Sprzedano",
+  "Reports.Retail.Returned": "Oddano za zwroty",
+  "Reports.Retail.Net": "Produkty po zwrotach",
+  "Reports.Retail.Units": "Sprzedane sztuki",
+  "Reports.Retail.Bills": "Wizyty z produktem na rachunku",
+  "Reports.Retail.Share": "Udział w utargu",
+  "Reports.Retail.ShareHint": "Produkty po zwrotach jako część całego utargu w okresie.",
+  "Reports.Retail.Best": "Najlepiej sprzedawane",
+  "Reports.Retail.LineUnits": "Sprzedano: {0}",
+  "Reports.Retail.More": "Lista pokazuje {0} z {1} sprzedanych produktów."
 }

@@ -29,6 +29,7 @@ public interface IReportService
 /// <param name="Preset">The one-tap period this is, if any.</param>
 /// <param name="RangeRefused">Dates were asked for that cannot be used; the report shows the default period instead.</param>
 /// <param name="Today">The salon's current local day.</param>
+/// <param name="Retail">Products sold over the counter (ADR 0044).</param>
 /// <param name="Unpaid">Completed visits of the period nobody took payment for, oldest first, at most <see cref="MaxUnpaidListed"/>.</param>
 /// <param name="UnpaidCount">How many there are in all.</param>
 public sealed record SalonReport(
@@ -41,11 +42,13 @@ public sealed record SalonReport(
     FeesReport Fees,
     IReadOnlyList<ServiceLine> TopServices,
     IReadOnlyList<StaffLine> Staff,
+    RetailReport Retail,
     IReadOnlyList<UnpaidVisit> Unpaid,
     int UnpaidCount,
     Money UnpaidTotal)
 {
     public const int MaxTopServices = 10;
+    public const int MaxTopProducts = 10;
     public const int MaxUnpaidListed = 50;
 }
 
@@ -75,6 +78,44 @@ public sealed record VisitsReport(
     decimal? NoShowRate,
     Money CompletedValue);
 
+
+/// <summary>
+/// What the salon sold over the counter in the period (ADR 0044). Money counts on the day it was recorded, like the
+/// takings, and the units are those of the bills paid in the period, so the products add up to the money.
+/// </summary>
+/// <param name="Sold">The product lines of the bills paid in the period.</param>
+/// <param name="Returned">Money given back in the period for products brought back, whenever they were sold.</param>
+/// <param name="Net"><paramref name="Sold"/> less <paramref name="Returned"/>.</param>
+/// <param name="Units">Units on the bills paid in the period.</param>
+/// <param name="Bills">Visits whose bill, paid in the period, had a product on it.</param>
+/// <param name="ShareOfTakings"><paramref name="Net"/> as a percentage of everything taken; null while nothing was taken.</param>
+/// <param name="TopProducts">By value, at most <see cref="SalonReport.MaxTopProducts"/>.</param>
+/// <param name="ProductCount">How many different products were sold in all.</param>
+public sealed record RetailReport(
+    Money Sold,
+    Money Returned,
+    Money Net,
+    int Units,
+    int Bills,
+    decimal? ShareOfTakings,
+    IReadOnlyList<ProductSalesLine> TopProducts,
+    int ProductCount)
+{
+    /// <summary>Whether the period has anything to say about products: a sale or a return.</summary>
+    public bool HasAny => Sold.Amount > 0m || Returned.Amount > 0m;
+
+    public bool HasReturns => Returned.Amount > 0m;
+
+    /// <summary><see cref="Returned"/> as money that went out: below zero, as the takings show it.</summary>
+    public Money ReturnedOut => Returned with { Amount = -Returned.Amount };
+
+    /// <summary>More products were sold than <see cref="TopProducts"/> names.</summary>
+    public bool HasMoreProducts => ProductCount > TopProducts.Count;
+}
+
+/// <param name="Name">The product's name today; the name on the bill for one that is gone.</param>
+/// <param name="Value">What the units were rung up at.</param>
+public sealed record ProductSalesLine(string Name, int Units, Money Value);
 /// <summary>Fees by what happened to them in the period: added to an account, let go, or paid.</summary>
 public sealed record FeesReport(Money Added, Money Waived, Money Paid);
 

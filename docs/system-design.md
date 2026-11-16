@@ -190,7 +190,9 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   only: `IReportService` reads the period's ledger lines and visits and adds them up with `TillRules` and the pure
   `ReportRules` in Core (periods, rates, working minutes). Takings per method, kind and day (each day links to its
   till), visits by outcome, fees, completed visits not paid (linked to their checkout), top services, and per person
-  revenue and utilisation from the rota less time off. Owner and Manager only. "Reports" in the nav.
+  revenue and utilisation from the rota less time off. Owner and Manager only. "Reports" in the nav. When a
+  product was sold or returned in the period: products sold, given back, units, share of takings and best sellers
+  (`RetailReport`, ADR 0044).
 - `Booking/Reschedule` — `/book/change/{token}` (ADR 0021): the client's own link moves the visit through
   `IBookingService.MoveAsync`; inside the policy's notice period it offers no times (ADR 0022), while
   `Booking/CancelBooking` still cancels and states the late fee first. The details page states the policy before the

@@ -121,6 +121,25 @@ public class ReportRulesTests
         ReportRules.Rate(part, whole).ShouldBe((decimal)expected);
     }
 
+    [Theory]
+    [InlineData(59, 99, 59.6)]
+    [InlineData(46.5, 86.5, 53.8)]
+    [InlineData(0, 40, 0.0)]
+    [InlineData(40, 40, 100.0)]
+    public void A_share_is_a_part_of_the_whole_as_a_percentage_with_one_decimal(double part, double whole, double expected)
+    {
+        ReportRules.Share((decimal)part, (decimal)whole).ShouldBe((decimal)expected);
+    }
+
+    [Fact]
+    public void A_share_is_unknown_without_a_whole_and_never_leaves_nought_to_a_hundred()
+    {
+        ReportRules.Share(10m, 0m).ShouldBeNull("nothing was taken, so there is nothing to be a part of");
+        ReportRules.Share(10m, -5m).ShouldBeNull("more went out than came in");
+        ReportRules.Share(-10m, 40m).ShouldBe(0m, "more came back than was sold");
+        ReportRules.Share(50m, 10m).ShouldBe(100m, "money that went out for something else made the whole smaller than the part");
+    }
+
     [Fact]
     public void A_rate_without_a_base_is_unknown_not_zero()
     {
