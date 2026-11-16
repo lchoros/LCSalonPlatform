@@ -208,6 +208,11 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
 - `Payments/CashUp` — `/admin/payments/cash-up?date=` behind the same permissions (ADR 0024): `ICashUpService` adds up
   the day's ledger lines that carry a method (in the salon's zone), per method, with the cash the drawer should hold;
   the day is closed once with the cash counted (`CashUp`), and money recorded later is flagged. "Till" in the nav.
+- `Payments/CounterSale` — `/admin/payments/sale` behind `Payments.Record` (ADR 0053): a product sold to somebody who
+  walks in, without a visit. Choose products, see the total (GET), record (POST). `ICounterSaleService` records one
+  `ProductSale` line with no client and no visit, a `CounterSaleLine` per product with the price and cost of the
+  day, and takes the units off the shelves, in one transaction. A check constraint lets only that kind of ledger
+  line lack a client. The till, the reports and the files count it like any product sale.
 - `Reports/ExportMoney` — `GET /admin/reports/money.csv?from=&to=` (ADR 0042), same permissions as the report: every
   line of the period that moved money (`IReportService.GetMoneyLinesAsync`, the till's own rule) as a CSV written by
   the pure `Csv` (Core) in the reader's language, list separator and decimal sign, UTF-8 with a byte order mark;

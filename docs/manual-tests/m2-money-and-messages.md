@@ -438,6 +438,16 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] AK4. Sell a product that has no cost: the report says how many units were sold with no cost on record.
 - [ ] AK5. Return one of the two units: the profit halves.
 
+## AL. A sale at the counter (after the branch `agent/m3-30-counter-sale` is merged too; it has a migration)
+- [ ] AL1. Products has "Sell at the counter"; so has the till. As the receptionist you get in; as staff you do not.
+- [ ] AL2. Choose a product and 2, "Show the total": the lines and the total are shown. Nothing is recorded yet:
+      the till of today has no new line.
+- [ ] AL3. Choose how it was paid, "Record the sale": "Sold for £... (Cash)." The form is empty again and the shelf
+      in the list of products is two lower.
+- [ ] AL4. The till of today has the money as "Counter sale", in the total of its method.
+- [ ] AL5. Reports, this month: "Products sold" counts the units and has "Sales at the counter, without a visit".
+- [ ] AL6. A quantity of 500, or no product at all: the page says why and nothing is recorded.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

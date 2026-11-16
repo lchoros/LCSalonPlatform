@@ -300,6 +300,11 @@
                 <dd class="border-t border-stone-200 pt-2 text-right tabular-nums" data-testid="retail-units">@retail.Units</dd>
                 <dt>@T["Reports.Retail.Bills"]</dt>
                 <dd class="text-right tabular-nums" data-testid="retail-bills">@retail.Bills</dd>
+                @if (retail.HasCounterSales)
+                {
+                    <dt>@T["Reports.Retail.CounterSales"]</dt>
+                    <dd class="text-right tabular-nums" data-testid="retail-counter-sales">@retail.CounterSales</dd>
+                }
                 @if (retail.ShareOfTakings is { } share)
                 {
                     <dt>

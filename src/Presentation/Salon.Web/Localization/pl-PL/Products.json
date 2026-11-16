@@ -163,5 +163,6 @@
   "Products.List.Worth.WithoutCost.Many": "Produkty na półkach bez kosztu: {0}. Nie są liczone według kosztu.",
   "Products.Import.Problem.InvalidCost": "Koszt nie jest kwotą, taką jak 6,50.",
   "Products.Import.Preview.Cost": "koszt {0}",
-  "Products.Export.Column.Cost": "Koszt"
+  "Products.Export.Column.Cost": "Koszt",
+  "Products.List.Sell": "Sprzedaż przy ladzie"
 }

@@ -74,4 +74,7 @@ public sealed record ListProductsViewModel(ProductListPage Page, FilterTilesMode
 {
     /// <summary>The stock list as a file (ADR 0047): for the people who keep the list, once there is a product to list.</summary>
     public bool CanDownload => CanManage && Page.Total > 0;
+
+    /// <summary>Whoever takes payments may sell a product at the counter without a visit (ADR 0053).</summary>
+    public bool CanSell { get; init; }
 }

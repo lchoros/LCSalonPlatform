@@ -33,6 +33,9 @@ public sealed class ListProductsController(IDispatcher dispatcher, ILocalization
     /// <summary>The product list with today's counts as a CSV file (ADR 0047); the ExportProducts slice owns the route.</summary>
     public const string StockFilePath = "/admin/products/stock.csv";
 
+    /// <summary>A sale at the counter without a visit (ADR 0053); the CounterSale slice owns the route.</summary>
+    public const string SellPath = "/admin/payments/sale";
+
     [HttpGet("")]
     public async Task<IActionResult> Index(string? show, string? q, int? page, CancellationToken cancellationToken)
     {
@@ -60,7 +63,10 @@ public sealed class ListProductsController(IDispatcher dispatcher, ILocalization
             new SearchBoxModel(Path, list.Search, localizer["Products.List.Search"], [(ShowParameter, ProductFilterSegments.Segment(list.Show))], ListAddress(list.Show, null)),
             PagerModel.For(list.Products, number => ListAddress(list.Show, list.Search, number)),
             canManage,
-            TakeFlash()));
+            TakeFlash())
+        {
+            CanSell = User.HasClaim(UserClaimTypes.Permission, Permissions.PaymentsRecord),
+        });
     }
 
     /// <summary>A product's own page; the ProductCard slice owns the route.</summary>

@@ -90,7 +90,7 @@ internal sealed class CashUpService(
             .Select(e => new { e.Kind, Method = e.Method!.Value, e.Amount, e.At, e.ClientId, e.AppointmentId, e.ByUserId })
             .ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        var clientIds = rows.Select(r => r.ClientId).Distinct().ToArray();
+        var clientIds = rows.Where(r => r.ClientId is not null).Select(r => r.ClientId!.Value).Distinct().ToArray();
         var clients = await db.Clients.AsNoTracking()
             .Where(c => clientIds.Contains(c.Id))
             .ToDictionaryAsync(c => c.Id, c => c.FirstName + " " + c.LastName, cancellationToken).ConfigureAwait(false);
@@ -112,7 +112,7 @@ internal sealed class CashUpService(
                 r.Kind,
                 r.Method,
                 In(TillRules.Direction(r.Kind) * r.Amount),
-                clients.TryGetValue(r.ClientId, out var client) ? client : string.Empty,
+                r.ClientId is { } clientId && clients.TryGetValue(clientId, out var client) ? client : string.Empty,
                 r.AppointmentId,
                 Name(r.ByUserId)))
             .ToArray();

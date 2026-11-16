@@ -35,7 +35,7 @@ public enum PaymentMethod
 
 public sealed record PaymentRequest(
     Guid TenantId,
-    Guid AppointmentId,
+    Guid? AppointmentId,
     Money Amount,
     PaymentMethod Method,
     string? Note = null);

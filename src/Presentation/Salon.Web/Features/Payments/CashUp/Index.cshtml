@@ -16,6 +16,7 @@
 <section class="mx-auto max-w-2xl space-y-6">
     <header class="space-y-3">
         <h1 class="page-title">@T["Payments.CashUp.Title"]</h1>
+        <p><a href="@CashUpController.CounterSalePath" class="btn btn-compact btn-secondary" data-testid="counter-sale">@T["Payments.CounterSale.Link"]</a></p>
         <p class="text-stone-600">@T["Payments.CashUp.Lead"]</p>
         <div class="flex items-center gap-2">
             <a href="@CashUpController.DayPath(day.Day.PlusDays(-1))" data-testid="prev-day" class="@navClass" aria-label="@T["Appointments.Day.Previous"]">&larr;</a>
@@ -121,7 +122,7 @@
                 {
                     <li class="flex flex-col gap-1 p-3 sm:flex-row sm:items-center sm:justify-between" data-testid="movement" data-kind="@movement.Kind">
                         <span class="flex flex-col gap-0.5">
-                            <span class="font-medium"><span class="tabular-nums">@movement.At.TimeOfDay.ToShortTime(culture)</span> · @movement.ClientName</span>
+                            <span class="font-medium"><span class="tabular-nums">@movement.At.TimeOfDay.ToShortTime(culture)</span> · @(movement.ClientName.Length > 0 ? movement.ClientName : T["Payments.CounterSale.NoClient"])</span>
                             <span class="text-sm text-stone-600">@T[$"Payments.Kind.{movement.Kind}"] · @T[$"Payments.Method.{movement.Method}"]@(movement.ByName is { } by ? " · " + by : string.Empty)</span>
                         </span>
                         <span class="tabular-nums font-medium @(movement.Amount.Amount < 0m ? "text-red-800" : string.Empty)" data-testid="movement-amount">@movement.Amount.ToDisplayString(culture)</span>

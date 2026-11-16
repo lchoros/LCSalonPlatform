@@ -163,5 +163,6 @@
   "Products.List.Worth.WithoutCost.Many": "{0} products on the shelves have no cost yet and are not counted at cost.",
   "Products.Import.Problem.InvalidCost": "The cost is not an amount of money such as 6.50.",
   "Products.Import.Preview.Cost": "costs {0}",
-  "Products.Export.Column.Cost": "Cost"
+  "Products.Export.Column.Cost": "Cost",
+  "Products.List.Sell": "Sell at the counter"
 }

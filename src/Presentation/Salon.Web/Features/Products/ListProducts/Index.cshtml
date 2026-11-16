@@ -15,6 +15,10 @@
             <h1 class="page-title">@T["Products.List.Title"]</h1>
             <p class="text-stone-600">@T["Products.List.Subtitle"]</p>
         </div>
+        @if (Model.CanSell)
+        {
+            <a href="@ListProductsController.SellPath" data-testid="sell-at-counter" class="btn btn-compact btn-secondary">@T["Products.List.Sell"]</a>
+        }
         @if (Model.CanManage)
         {
             <div class="flex flex-col gap-2 sm:flex-row">

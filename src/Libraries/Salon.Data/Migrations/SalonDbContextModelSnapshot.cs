@@ -1131,7 +1131,7 @@ namespace Salon.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("by_user_id");
 
-                    b.Property<Guid>("ClientId")
+                    b.Property<Guid?>("ClientId")
                         .HasColumnType("uuid")
                         .HasColumnName("client_id");
 
@@ -1221,6 +1221,77 @@ namespace Salon.Data.Migrations
                     b.ToTable("client_account_entries", "salon", t =>
                         {
                             t.HasCheckConstraint("ck_client_account_entries_amount_positive", "amount > 0");
+
+                            t.HasCheckConstraint("ck_client_account_entries_client_unless_counter_sale", "client_id IS NOT NULL OR (kind = 8 AND appointment_id IS NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("Salon.Core.Payments.CounterSaleLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<Guid>("PaymentEntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("payment_entry_id");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("product_name");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<decimal?>("UnitCost")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("unit_cost");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("unit_price");
+
+                    b.HasKey("Id")
+                        .HasName("pk_counter_sale_lines");
+
+                    b.HasIndex("PaymentEntryId")
+                        .HasDatabaseName("ix_counter_sale_lines_payment_entry_id");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_counter_sale_lines_product_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_counter_sale_lines_tenant_id");
+
+                    b.HasIndex("TenantId", "PaymentEntryId", "ProductId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_counter_sale_lines_tenant_id_payment_entry_id_product_id");
+
+                    b.ToTable("counter_sale_lines", "salon", t =>
+                        {
+                            t.HasCheckConstraint("ck_counter_sale_lines_quantity_positive", "quantity > 0");
+
+                            t.HasCheckConstraint("ck_counter_sale_lines_unit_price_not_negative", "unit_price >= 0");
                         });
                 });
 
@@ -1976,7 +2047,6 @@ namespace Salon.Data.Migrations
                         .WithMany()
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_client_account_entries_clients_client_id");
 
                     b.HasOne("Salon.Core.Payments.ClientAccountEntry", null)
@@ -1991,6 +2061,30 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_client_account_entries_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Payments.CounterSaleLine", b =>
+                {
+                    b.HasOne("Salon.Core.Payments.ClientAccountEntry", null)
+                        .WithMany()
+                        .HasForeignKey("PaymentEntryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_counter_sale_lines_client_account_entries_payment_entry_id");
+
+                    b.HasOne("Salon.Core.Products.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_counter_sale_lines_products_product_id");
+
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_counter_sale_lines_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Payments.VisitProductLine", b =>
