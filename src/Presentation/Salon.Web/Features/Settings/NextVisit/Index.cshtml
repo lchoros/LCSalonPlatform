@@ -1,0 +1,56 @@
+@using Salon.Core.Settings
+@using Salon.Web.Features.Settings.NextVisit
+@model NextVisitViewModel
+@{
+    ViewData["Title"] = T["Settings.NextVisit.Title"];
+    const string inputClass = "field field-compact tabular-nums aria-[invalid=true]:border-red-600";
+    const string buttonClass = "btn btn-compact btn-primary w-full sm:w-auto";
+}
+<section class="mx-auto max-w-xl space-y-6">
+    <partial name="_SettingsNav" model="@("next-visit")" />
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Settings.NextVisit.Title"]</h1>
+        <p class="text-stone-600">@T["Settings.NextVisit.Lead"]</p>
+    </header>
+
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+
+    <form method="post" asp-action="Index" class="space-y-6 panel" novalidate data-testid="next-visit-form">
+        <div class="grid gap-4 sm:grid-cols-3">
+            @foreach (var (name, labelKey, value) in Model.Fields)
+            {
+                var errors = ViewData.ModelState.ErrorsFor(name);
+                var errorId = name + "-error";
+                <div class="space-y-1">
+                    <label for="@name" class="field-label">@T[labelKey]</label>
+                    <input id="@name" name="@name" type="number" inputmode="numeric" min="0" max="@RebookSettings.MaxWeeks" step="1" value="@value" required
+                           aria-describedby="weeks-hint @errorId" aria-invalid="@(errors.Count > 0 ? "true" : "false")" class="@inputClass" data-testid="@name" />
+                    <p id="@errorId" class="text-sm text-red-700" data-testid="@errorId">@string.Join(" ", errors)</p>
+                </div>
+            }
+        </div>
+        <p id="weeks-hint" class="text-sm text-stone-600">@T.Format("Settings.NextVisit.Hint", RebookSettings.MaxWeeks)</p>
+
+        <div class="space-y-2 rounded-md bg-stone-50 p-3 text-sm text-stone-700" data-testid="offered">
+            <p class="font-medium">@T["Settings.NextVisit.OfferedTitle"]</p>
+            @if (Model.Offered.Count > 0)
+            {
+                <ul class="flex flex-wrap gap-2">
+                    @foreach (var weeks in Model.Offered)
+                    {
+                        <li class="rounded-md border border-stone-300 bg-white px-3 py-1" data-testid="offered-choice">@T.Plural("Settings.NextVisit.Choice", weeks)</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p data-testid="nothing-offered">@T["Settings.NextVisit.NothingOffered"]</p>
+            }
+        </div>
+
+        <button type="submit" class="@buttonClass" data-testid="save-next-visit">@T["Settings.NextVisit.Submit"]</button>
+    </form>
+</section>
