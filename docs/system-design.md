@@ -143,6 +143,11 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
 - `Clients/MergeClients` — `/admin/clients/{id}/merge` behind `Clients.View` + `Clients.Merge` (ADR 0017): pick the card
   to keep, confirm, appointments move in one transaction and the duplicate stays as an inactive tombstone. The card
   (`Clients/ClientCard`) shows visit history.
+- `Products/ImportProducts` — `/admin/products/import` behind `Catalog.Manage` (ADR 0045): upload a CSV file, check
+  a preview kept under a server-side token (`TokenStore<T>`), confirm. `IProductImportProvider` (in
+  `Salon.Plugin.Import`) finds the columns by their headings and reads the numbers (`ImportNumbers`);
+  `IProductImportService` classifies each row as new, already there or invalid with the product form's rules and adds
+  the new ones with their opening count as a line of the stock history. A product the salon has is never changed.
 - `Clients/ImportClients` — `/admin/clients/import` behind `Clients.Manage` and `Features:ClientImport` (ADR 0019):
   upload a Booksy or Versum CSV, preview (new / duplicate / invalid), confirm. Parsing lives in the plugin
   `Salon.Plugin.Import`; the preview is kept server-side under a random token bound to the salon.
