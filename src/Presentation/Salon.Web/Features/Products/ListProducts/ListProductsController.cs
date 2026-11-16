@@ -27,6 +27,9 @@ public sealed class ListProductsController(IDispatcher dispatcher, ILocalization
     /// <summary>The form that adds a product; the SaveProduct slice owns the route.</summary>
     public const string NewPath = "/admin/products/new";
 
+    /// <summary>The import of a product list from a file; the ImportProducts slice owns the route.</summary>
+    public const string ImportPath = "/admin/products/import";
+
     [HttpGet("")]
     public async Task<IActionResult> Index(string? show, string? q, int? page, CancellationToken cancellationToken)
     {

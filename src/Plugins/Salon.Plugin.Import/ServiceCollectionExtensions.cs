@@ -17,4 +17,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPlugin>(sp => sp.GetRequiredService<CsvClientImportProvider>());
         return services;
     }
+
+    /// <summary>Registers the CSV product list reader (ADR 0045). Not a plugin of its own: it is the same CSV reading, another kind of row.</summary>
+    public static IServiceCollection AddCsvProductImport(this IServiceCollection services)
+    {
+        services.AddSingleton<IProductImportProvider, CsvProductImportProvider>();
+        return services;
+    }
 }

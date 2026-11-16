@@ -17,7 +17,10 @@
         </div>
         @if (Model.CanManage)
         {
-            <a href="@ListProductsController.NewPath" data-testid="add-product" class="btn btn-compact btn-primary">@T["Products.List.Add"]</a>
+            <div class="flex flex-col gap-2 sm:flex-row">
+                <a href="@ListProductsController.ImportPath" data-testid="import-products" class="btn btn-compact btn-secondary">@T["Products.List.Import"]</a>
+                <a href="@ListProductsController.NewPath" data-testid="add-product" class="btn btn-compact btn-primary">@T["Products.List.Add"]</a>
+            </div>
         }
     </header>
     @if (Model.Page.Total == 0)
