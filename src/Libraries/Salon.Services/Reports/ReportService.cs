@@ -67,6 +67,55 @@ internal sealed class ReportService(
             In(unpaidTotal));
     }
 
+    public async Task<MoneyJournal> GetMoneyLinesAsync(ReportPreset? preset, LocalDate? fromDay, LocalDate? toDay, CancellationToken cancellationToken = default)
+    {
+        var tenantId = tenantContext.TenantId ?? throw new TenantViolationException("Reports belong to a salon, but no tenant is set in the current scope.");
+        var tenant = await tenantLookup.FindByIdAsync(tenantId, cancellationToken).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Tenant {tenantId} does not exist.");
+        var zone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(tenant.TimeZoneId) ?? DateTimeZone.Utc;
+        var today = clock.GetCurrentInstant().InZone(zone).Date;
+        var period = ReportRules.Resolve(preset, fromDay, toDay, today).Period;
+        var start = zone.AtStartOfDay(period.From).ToInstant();
+        var end = zone.AtStartOfDay(period.To.PlusDays(1)).ToInstant();
+
+        // Only lines with a method moved money, exactly as on the till and in the takings (ADR 0024).
+        var rows = await db.ClientAccountEntries.AsNoTracking()
+            .Where(e => e.Method != null && e.At >= start && e.At < end)
+            .OrderBy(e => e.At).ThenBy(e => e.Id)
+            .Select(e => new { e.Kind, Method = e.Method!.Value, e.Amount, e.Currency, e.At, e.ClientId, e.AppointmentId, e.ByUserId, e.ProviderReference })
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+        rows = rows.Where(r => TillRules.Direction(r.Kind) != 0).ToList();
+
+        var clientIds = rows.Select(r => r.ClientId).Distinct().ToArray();
+        var clients = await db.Clients.AsNoTracking()
+            .Where(c => clientIds.Contains(c.Id))
+            .ToDictionaryAsync(c => c.Id, c => c.FirstName + " " + c.LastName, cancellationToken).ConfigureAwait(false);
+        var appointmentIds = rows.Where(r => r.AppointmentId is not null).Select(r => r.AppointmentId!.Value).Distinct().ToArray();
+        var services = await (
+            from a in db.Appointments.AsNoTracking()
+            join s in db.Services.AsNoTracking() on a.ServiceId equals s.Id
+            where appointmentIds.Contains(a.Id)
+            select new { a.Id, s.Name })
+            .ToDictionaryAsync(x => x.Id, x => x.Name, cancellationToken).ConfigureAwait(false);
+        var userIds = rows.Where(r => r.ByUserId is not null).Select(r => r.ByUserId!.Value).Distinct().ToArray();
+        var users = await db.Users.AsNoTracking()
+            .Where(u => userIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u.DisplayName, cancellationToken).ConfigureAwait(false);
+
+        var lines = rows
+            .Select(r => new MoneyLine(
+                r.At.InZone(zone),
+                r.Kind,
+                r.Method,
+                new Money(TillRules.Direction(r.Kind) * r.Amount, r.Currency),
+                clients.GetValueOrDefault(r.ClientId) ?? string.Empty,
+                r.AppointmentId is { } visitId ? services.GetValueOrDefault(visitId) : null,
+                r.ByUserId is { } userId ? users.GetValueOrDefault(userId) : null,
+                r.ProviderReference))
+            .ToArray();
+        return new MoneyJournal(period, lines);
+    }
+
     private static TakingsReport Takings(List<LedgerRow> lines, DateTimeZone zone, Func<decimal, Money> money)
     {
         // Only lines with a method moved money, exactly as on the till (ADR 0024).

@@ -17,6 +17,13 @@ public interface IReportService
     /// The report for two dates, a preset, or this month when neither is usable (<see cref="ReportRules.Resolve"/>).
     /// </summary>
     Task<SalonReport> GetAsync(ReportPreset? preset, LocalDate? fromDay, LocalDate? toDay, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Every line of the period that moved money (ADR 0042), oldest first, for a spreadsheet: when, who, what for, how
+    /// and how much, money out as a negative amount. The same lines the takings above are added up from, so the file
+    /// and the report never disagree. The period is resolved like <see cref="GetAsync"/> does.
+    /// </summary>
+    Task<MoneyJournal> GetMoneyLinesAsync(ReportPreset? preset, LocalDate? fromDay, LocalDate? toDay, CancellationToken cancellationToken = default);
 }
 
 /// <param name="Preset">The one-tap period this is, if any.</param>
@@ -83,3 +90,21 @@ public sealed record StaffLine(string Name, int Visits, Money Value, int BookedM
 /// <param name="Start">In the salon's zone.</param>
 /// <param name="Outstanding">The booked price less the deposit the salon holds.</param>
 public sealed record UnpaidVisit(Guid AppointmentId, ZonedDateTime Start, string ClientName, string ServiceName, Money Outstanding);
+
+/// <summary>The money lines of a period (ADR 0042).</summary>
+public sealed record MoneyJournal(ReportPeriod Period, IReadOnlyList<MoneyLine> Lines);
+
+/// <summary>One line that moved money, as an accountant reads it.</summary>
+/// <param name="At">In the salon's zone.</param>
+/// <param name="Amount">Signed: money in is above zero, money out below.</param>
+/// <param name="ServiceName">The service of the visit the line is about; null when it has none.</param>
+/// <param name="RecordedBy">Display name of the login that recorded it; null when it is gone or unknown.</param>
+public sealed record MoneyLine(
+    ZonedDateTime At,
+    ClientAccountEntryKind Kind,
+    PaymentMethod Method,
+    Money Amount,
+    string ClientName,
+    string? ServiceName,
+    string? RecordedBy,
+    string? Reference);
