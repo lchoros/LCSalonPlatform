@@ -330,6 +330,14 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] Z7. Appointments, "Book", choose a client, a service and a day with no free times: "Put on the waitlist" is
       offered under the message.
 
+## AA. The money lines as a file (after PR #85 is merged too)
+- [ ] AA1. Reports, a period with payments: beside "Takings" there is "Download for a spreadsheet".
+- [ ] AA2. Tap it: a file named `money-<first day>-to-<last day>.csv` downloads.
+- [ ] AA3. Open it in Excel or Google Sheets: one row per payment with date, time, client, what it was for, the
+      service, how it was paid, the amount and who recorded it. A deposit or a product returned is a negative amount.
+- [ ] AA4. Add up the "Amount" column: it equals "Total taken" on the report for the same period.
+- [ ] AA5. A period without any money has no download button.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.
