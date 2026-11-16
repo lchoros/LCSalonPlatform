@@ -252,7 +252,7 @@ internal sealed class ReportService(
             from line in db.CounterSaleLines.AsNoTracking()
             join sale in db.ClientAccountEntries.AsNoTracking() on line.PaymentEntryId equals sale.Id
             where sale.At >= start && sale.At < end
-            select new SoldRow(line.ProductId, line.ProductName, line.Quantity, line.UnitPrice, line.UnitCost, 0, null, line.PaymentEntryId, sale.At))
+            select new SoldRow(line.ProductId, line.ProductName, line.Quantity, line.UnitPrice, line.UnitCost, line.ReturnedQuantity, null, line.PaymentEntryId, sale.At))
             .ToListAsync(cancellationToken).ConfigureAwait(false);
         var rows = onBills.Concat(atCounter).ToList();
         var ids = rows.Select(r => r.ProductId).Distinct().ToArray();

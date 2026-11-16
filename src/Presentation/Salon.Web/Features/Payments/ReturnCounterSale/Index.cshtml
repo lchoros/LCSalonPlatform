@@ -1,0 +1,111 @@
+@using System.Globalization
+@using Salon.Core.Payments
+@using Salon.Web.Features.Payments.ReturnCounterSale
+@model ReturnCounterSaleViewModel
+@{
+    ViewData["Title"] = T["Payments.CounterSale.Returns.Title"];
+    var culture = CultureInfo.CurrentCulture;
+    var day = Model.Day;
+    var iso = day.Day.ToIso();
+    const string inputClass = "field field-compact";
+    const string navClass = "btn btn-compact btn-secondary";
+}
+<section class="mx-auto max-w-xl space-y-6">
+    <header class="space-y-3">
+        <h1 class="page-title">@T["Payments.CounterSale.Returns.Title"]</h1>
+        <p class="text-stone-600">@T["Payments.CounterSale.Returns.Lead"]</p>
+        <nav class="flex flex-wrap items-center gap-2" aria-label="@T["Payments.CounterSale.Returns.DayNav"]">
+            <a href="@ReturnCounterSaleController.DayPath(day.Day.PlusDays(-1))" data-testid="prev-day" class="@navClass" aria-label="@T["Appointments.Day.Previous"]">&larr;</a>
+            <span class="font-semibold" data-testid="sales-day" data-day="@iso">@day.Day.ToDayHeading(culture)</span>
+            @if (!Model.IsToday)
+            {
+                <a href="@ReturnCounterSaleController.DayPath(day.Day.PlusDays(1))" data-testid="next-day" class="@navClass" aria-label="@T["Appointments.Day.Next"]">&rarr;</a>
+                <a href="@ReturnCounterSaleController.Path" data-testid="today" class="@navClass">@T["Appointments.Day.Today"]</a>
+            }
+        </nav>
+    </header>
+
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+    @if (Model.Problem is { } problem)
+    {
+        <p role="alert" data-testid="return-problem" class="notice notice-error">@problem</p>
+    }
+
+    @if (!Model.HasSales)
+    {
+        <p class="empty-state" data-testid="no-sales">@T["Payments.CounterSale.Returns.None"]</p>
+    }
+    else
+    {
+        <ul class="space-y-4" data-testid="sales">
+            @foreach (var sale in day.Sales)
+            {
+                <li class="space-y-3 panel" data-testid="sale" data-sale="@sale.Id">
+                    <div class="flex flex-wrap items-baseline justify-between gap-2">
+                        <p class="font-semibold"><span class="tabular-nums">@sale.At.TimeOfDay.ToShortTime(culture)</span> · @T[$"Payments.Method.{sale.Method}"]</p>
+                        <p class="text-lg font-bold tabular-nums" data-testid="sale-total">@sale.Total.ToDisplayString(culture)</p>
+                    </div>
+                    @if (sale.ByName is { } by)
+                    {
+                        <p class="text-sm text-stone-600">@T.Format("Payments.CounterSale.Returns.TakenBy", by)</p>
+                    }
+                    @if (sale.HasReturns)
+                    {
+                        <p class="text-sm font-medium text-red-800" data-testid="sale-returned">@T.Format("Payments.CounterSale.Returns.GivenBack", sale.Returned.ToDisplayString(culture))</p>
+                    }
+                    <ul class="list-card">
+                        @foreach (var line in sale.Lines)
+                        {
+                            var returnId = "return-" + line.Id;
+                            <li class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 p-3" data-testid="sale-line">
+                                <span class="min-w-0">
+                                    <span class="block font-medium">@line.Name</span>
+                                    <span class="block text-sm text-stone-600">@T.Format("Payments.CounterSale.LineUnits", line.Quantity, line.UnitPrice.ToDisplayString(culture))</span>
+                                    @if (line.HasReturns)
+                                    {
+                                        <span class="block text-sm text-stone-600" data-testid="line-returned">@T.Format("Payments.Checkout.Products.ReturnedCount", line.ReturnedQuantity)</span>
+                                    }
+                                </span>
+                                @if (line.CanReturn)
+                                {
+                                    <details class="basis-full" data-testid="return-product">
+                                        <summary class="inline-flex min-h-11 cursor-pointer items-center text-sm font-medium underline underline-offset-2" data-testid="return-open">@T["Payments.Checkout.Products.Return.Open"]<span class="sr-only">: @line.Name</span></summary>
+                                        <form method="post" action="@ReturnCounterSaleController.ReturnPath(sale.Id, line.Id)" asp-antiforgery="true" class="mt-2 space-y-3 rounded-md bg-stone-50 p-3" data-testid="return-form">
+                                            <input type="hidden" name="date" value="@iso" />
+                                            <div class="grid gap-3 sm:grid-cols-2">
+                                                <div class="space-y-1">
+                                                    <label for="@(returnId)-quantity" class="field-label">@T["Payments.Checkout.Products.Return.Quantity"]</label>
+                                                    <input id="@(returnId)-quantity" name="quantity" type="number" inputmode="numeric" min="1" max="@line.Kept" step="1" value="1" required class="@inputClass" data-testid="return-quantity" />
+                                                </div>
+                                                <div class="space-y-1">
+                                                    <label for="@(returnId)-method" class="field-label">@T["Payments.Checkout.Products.Return.Method"]</label>
+                                                    <select id="@(returnId)-method" name="method" class="@inputClass" data-testid="return-method">
+                                                        @foreach (var method in Enum.GetValues<PaymentMethod>())
+                                                        {
+                                                            <option value="@method" selected="@(method == sale.Method)">@T[$"Payments.Method.{method}"]</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <label class="flex min-h-11 items-center gap-3">
+                                                <input id="@(returnId)-shelf" name="backOnShelf" type="checkbox" value="true" checked class="size-5 shrink-0 rounded border-stone-400" data-testid="return-back-on-shelf" />
+                                                <span class="text-sm">@T["Payments.Checkout.Products.Return.BackOnShelf"]</span>
+                                            </label>
+                                            <p class="text-sm text-stone-600">@T["Payments.Checkout.Products.Return.Hint"]</p>
+                                            <button type="submit" class="btn btn-compact btn-danger w-full sm:w-auto" data-testid="return-submit">@T["Payments.Checkout.Products.Return.Submit"]</button>
+                                        </form>
+                                    </details>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </li>
+            }
+        </ul>
+    }
+
+    <p><a href="@ReturnCounterSaleController.NewSalePath" class="back-link" data-testid="to-sale">@T["Payments.CounterSale.Link"]</a></p>
+</section>

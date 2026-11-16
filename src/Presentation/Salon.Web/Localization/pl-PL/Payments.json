@@ -184,5 +184,16 @@
   "Payments.CounterSale.ToTill": "Do dzisiejszej kasy",
   "Payments.CounterSale.Link": "Sprzedaż przy ladzie",
   "Payments.CounterSale.NoClient": "Sprzedaż przy ladzie",
-  "Payments.CounterSale.Refused.AlreadyBeingRecorded": "Ta sprzedaż jest już zapisywana. Sprawdź kasę, zanim przyjmiesz ją ponownie."
+  "Payments.CounterSale.Refused.AlreadyBeingRecorded": "Ta sprzedaż jest już zapisywana. Sprawdź kasę, zanim przyjmiesz ją ponownie.",
+  "Payments.CounterSale.Returns.Title": "Sprzedaże przy ladzie",
+  "Payments.CounterSale.Returns.Lead": "Co sprzedano bez wizyty, dzień po dniu. Gdy ktoś zwraca produkt, znajdź tu sprzedaż i zapisz zwrócone pieniądze.",
+  "Payments.CounterSale.Returns.DayNav": "Dzień",
+  "Payments.CounterSale.Returns.None": "Tego dnia nic nie sprzedano przy ladzie.",
+  "Payments.CounterSale.Returns.TakenBy": "Przyjął(-ęła): {0}",
+  "Payments.CounterSale.Returns.GivenBack": "Zwrócono: {0}",
+  "Payments.CounterSale.Returns.Recorded": "Zwrot został zapisany: oddano {0}.",
+  "Payments.CounterSale.Returns.Link": "Sprzedaże przy ladzie i zwroty",
+  "Payments.CounterSale.Refused.SaleNotFound": "Nie znaleziono tej sprzedaży.",
+  "Payments.CounterSale.Refused.ReturnMoreThanKept": "Kupujący nie ma już tylu sztuk tego produktu. Sprawdź, ile wróciło.",
+  "Payments.CounterSale.Refused.StockNotRecorded": "Nie udało się odłożyć produktu na półkę, więc nic nie zapisano. Spróbuj ponownie."
 }

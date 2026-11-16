@@ -13,6 +13,8 @@ internal sealed class CounterSaleLineConfiguration : IEntityTypeConfiguration<Co
         {
             t.HasCheckConstraint("ck_counter_sale_lines_quantity_positive", "quantity > 0");
             t.HasCheckConstraint("ck_counter_sale_lines_unit_price_not_negative", "unit_price >= 0");
+            // Nobody brings back more than they bought (ADR 0054).
+            t.HasCheckConstraint("ck_counter_sale_lines_returned_within_quantity", "returned_quantity >= 0 AND returned_quantity <= quantity");
         });
         builder.HasKey(l => l.Id);
         builder.Property(l => l.ProductName).HasMaxLength(ProductRules.NameMaxLength).IsRequired();
@@ -20,6 +22,7 @@ internal sealed class CounterSaleLineConfiguration : IEntityTypeConfiguration<Co
         builder.Property(l => l.UnitCost).HasPrecision(10, 2);
         builder.Property(l => l.Currency).HasMaxLength(CounterSaleLine.CurrencyLength).IsRequired();
         builder.Ignore(l => l.Total);
+        builder.Ignore(l => l.Kept);
         // A product is on a sale once (ADR 0053): the same product chosen twice is one line with more units.
         builder.HasIndex(l => new { l.TenantId, l.PaymentEntryId, l.ProductId }).IsUnique();
         // Restrict everywhere: a sale is money history and outlives a tidy-up of whatever it points at.

@@ -8,6 +8,7 @@ using Salon.Core.Products;
 using Salon.Core.Tenancy;
 using Salon.Data;
 using Salon.Services.Products;
+using Salon.Services.Tenancy;
 
 namespace Salon.Services.Payments;
 
@@ -45,6 +46,15 @@ public enum CounterSaleRefusal
 
     /// <summary>The same form is being recorded by another request at this moment (a double click, two tills).</summary>
     AlreadyBeingRecorded,
+
+    /// <summary>The salon has no such counter sale, or the sale has no such line.</summary>
+    SaleNotFound,
+
+    /// <summary>Not a quantity, or more than the buyer still has of that line.</summary>
+    ReturnMoreThanKept,
+
+    /// <summary>The units could not be put back on the shelf.</summary>
+    StockNotRecorded,
 }
 
 public sealed class CounterSaleException : Exception
@@ -94,11 +104,23 @@ public interface ICounterSaleService
     /// and answers with the sale that was recorded the first time, so a double click cannot sell twice.
     /// </summary>
     Task<CounterSaleReceipt> SellAsync(IReadOnlyList<(Guid ProductId, int Quantity)> lines, PaymentMethod method, Guid? byUserId, Guid? saleId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>The sales taken at the counter on <paramref name="day"/> in the salon's zone (today when null), newest first.</summary>
+    Task<CounterSaleDay> ListAsync(LocalDate? day, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gives the money back for units of one line of a counter sale (ADR 0054): at the price they were sold at, as one
+    /// <see cref="ClientAccountEntryKind.ProductReturn"/> line that points at the sale, and back on the shelf only when
+    /// they can be sold again. Two requests for the last unit cannot both succeed. Throws
+    /// <see cref="CounterSaleException"/> with the reason when nothing was recorded.
+    /// </summary>
+    Task<Money> ReturnAsync(Guid saleId, Guid lineId, int quantity, PaymentMethod method, bool backOnShelf, Guid? byUserId, CancellationToken cancellationToken = default);
 }
 
-internal sealed class CounterSaleService(
+internal sealed partial class CounterSaleService(
     SalonDbContext db,
     ITenantContext tenantContext,
+    ITenantLookup tenantLookup,
     IPaymentProvider payments,
     IStockService stock,
     IClock clock,

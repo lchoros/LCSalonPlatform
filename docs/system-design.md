@@ -213,6 +213,10 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `ProductSale` line with no client and no visit, a `CounterSaleLine` per product with the price and cost of the
   day, and takes the units off the shelves, in one transaction. A check constraint lets only that kind of ledger
   line lack a client. The till, the reports and the files count it like any product sale.
+- `Payments/ReturnCounterSale` — `/admin/payments/sales?date=` behind `Payments.Record` (ADR 0054): the counter
+  sales of a day, newest first, and `POST .../{saleId}/lines/{lineId}/return`, which gives the money back at the
+  price sold as a `ProductReturn` line with no client that points at the sale. `ICounterSaleService.ReturnAsync`
+  claims the units in one statement, so two tills cannot return the same unit.
 - `Reports/ExportMoney` — `GET /admin/reports/money.csv?from=&to=` (ADR 0042), same permissions as the report: every
   line of the period that moved money (`IReportService.GetMoneyLinesAsync`, the till's own rule) as a CSV written by
   the pure `Csv` (Core) in the reader's language, list separator and decimal sign, UTF-8 with a byte order mark;

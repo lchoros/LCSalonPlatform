@@ -30,7 +30,7 @@ public interface IStockService
     /// Puts <paramref name="quantity"/> units back on the shelf that a client returned from the bill of
     /// <paramref name="appointmentId"/> (ADR 0040). Tried again against a busy shelf, like a sale.
     /// </summary>
-    Task<StockResult> ReturnAsync(Guid productId, int quantity, Guid appointmentId, Guid? byUserId, CancellationToken cancellationToken = default);
+    Task<StockResult> ReturnAsync(Guid productId, int quantity, Guid? appointmentId, Guid? byUserId, CancellationToken cancellationToken = default);
 }
 
 public enum StockOutcome

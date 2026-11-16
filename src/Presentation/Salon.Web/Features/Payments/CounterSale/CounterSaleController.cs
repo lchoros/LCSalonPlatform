@@ -28,6 +28,9 @@ public sealed class CounterSaleController(IDispatcher dispatcher, ILocalizationS
     /// <summary>The till of today; the CashUp slice owns the route.</summary>
     public const string TillPath = "/admin/payments/cash-up";
 
+    /// <summary>The sales already taken at the counter, where a product is returned; the ReturnCounterSale slice owns the route.</summary>
+    public const string SalesPath = "/admin/payments/sales";
+
     [HttpGet("")]
     public async Task<IActionResult> Index([FromQuery] List<CounterSaleRow>? rows, CancellationToken cancellationToken)
     {

@@ -448,6 +448,16 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] AL5. Reports, this month: "Products sold" counts the units and has "Sales at the counter, without a visit".
 - [ ] AL6. A quantity of 500, or no product at all: the page says why and nothing is recorded.
 
+## AM. Giving the money back for a counter sale (after the branch `agent/m3-31-counter-sale-return` is merged too; it has a migration)
+- [ ] AM1. Sell two of a product at the counter. The page has "Sales taken at the counter, and returns".
+- [ ] AM2. That page lists today's counter sales, newest first: time, how it was paid, who took it, the lines.
+- [ ] AM3. "Return this product" on a line, 1, "Record the return": "The return has been recorded: £... given
+      back." The sale says "Given back: £..." and the line "Returned: 1".
+- [ ] AM4. The shelf is one higher again. With the box unticked it stays where it was.
+- [ ] AM5. The till of today has the money going out as "Counter sale", "Products returned".
+- [ ] AM6. Try to return more than is left: the page says why and nothing is recorded.
+- [ ] AM7. The arrow to yesterday shows yesterday's counter sales, or says there were none.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.
