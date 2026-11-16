@@ -1294,6 +1294,11 @@ namespace Salon.Data.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("code");
 
+                    b.Property<decimal?>("CostPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("cost_price");
+
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasMaxLength(3)

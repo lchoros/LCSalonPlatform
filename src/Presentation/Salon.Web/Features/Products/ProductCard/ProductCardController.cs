@@ -32,10 +32,17 @@ public sealed class ProductCardController(IDispatcher dispatcher) : SalonControl
             return NotFound();
         }
 
+        var canManage = User.HasClaim(UserClaimTypes.Permission, Permissions.CatalogManage);
+        if (!canManage)
+        {
+            // What a product costs is the owner's and the manager's to see (ADR 0049).
+            product = product with { Cost = null, Margin = null };
+        }
+
         return View(new ProductCardViewModel(
             product,
             PagerModel.For(product.History, number => PageAddress(id, number)),
-            User.HasClaim(UserClaimTypes.Permission, Permissions.CatalogManage),
+            canManage,
             TakeProblem(),
             TakeFlash()));
     }

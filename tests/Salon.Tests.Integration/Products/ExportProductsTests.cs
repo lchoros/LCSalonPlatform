@@ -27,7 +27,7 @@ public class ExportProductsTests(SalonWebApplicationFactory factory) : IAsyncLif
     private const string HostA = "studio-20.localhost";
     private const string HostB = "salon-pl.localhost";
     private const string HostC = "second-chair.localhost";
-    private const string Header = "Name,Brand,Code,Price,Currency,In stock,Low stock at,In use";
+    private const string Header = "Name,Brand,Code,Price,Cost,Currency,In stock,Low stock at,In use";
 
     private Tenant _studio = null!;
     private Tenant _polish = null!;
@@ -44,8 +44,8 @@ public class ExportProductsTests(SalonWebApplicationFactory factory) : IAsyncLif
     [Fact]
     public async Task The_manager_downloads_every_product_by_name_with_what_is_on_the_shelf()
     {
-        await ProductAsync(_studio.Id, "Shampoo 250 ml", "Salon Range", "SH-250", 1250.5m, 8, 2);
-        await ProductAsync(_studio.Id, "colour tube 60 ml", null, null, null, 12, null);
+        await ProductAsync(_studio.Id, "Shampoo 250 ml", "Salon Range", "SH-250", 1250.5m, 8, 2, cost: 1000.25m);
+        await ProductAsync(_studio.Id, "colour tube 60 ml", null, null, null, 12, null, cost: 4m);
         await ProductAsync(_studio.Id, "Hair oil 50 ml", null, "HO-50", 18m, 0, 1, active: false);
         using var manager = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Manager);
 
@@ -66,9 +66,9 @@ public class ExportProductsTests(SalonWebApplicationFactory factory) : IAsyncLif
         lines.ShouldBe(
         [
             Header,
-            "colour tube 60 ml,,,,GBP,12,,Yes",
-            "Hair oil 50 ml,,HO-50,18.00,GBP,0,1,No",
-            "Shampoo 250 ml,Salon Range,SH-250,1250.50,GBP,8,2,Yes",
+            "colour tube 60 ml,,,,4.00,GBP,12,,Yes",
+            "Hair oil 50 ml,,HO-50,18.00,,GBP,0,1,No",
+            "Shampoo 250 ml,Salon Range,SH-250,1250.50,1000.25,GBP,8,2,Yes",
             string.Empty,
         ]);
     }
@@ -76,7 +76,7 @@ public class ExportProductsTests(SalonWebApplicationFactory factory) : IAsyncLif
     [Fact]
     public async Task The_file_of_one_salon_is_read_by_the_import_of_another()
     {
-        await ProductAsync(_studio.Id, "Shampoo 250 ml", "Salon Range", "SH-250", 12.5m, 8, 2);
+        await ProductAsync(_studio.Id, "Shampoo 250 ml", "Salon Range", "SH-250", 12.5m, 8, 2, cost: 6m);
         await ProductAsync(_studio.Id, "Colour tube 60 ml", null, null, null, 12, null);
         using var owner = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Owner);
         var file = await (await owner.GetAsync(new Uri(Path, UriKind.Relative))).Content.ReadAsByteArrayAsync();
@@ -86,10 +86,10 @@ public class ExportProductsTests(SalonWebApplicationFactory factory) : IAsyncLif
         await ImportAsync(other, file);
 
         var products = await ProductsAsync(second.Id);
-        products.Select(p => (p.Name, p.Brand, p.Code, p.RetailPrice, p.StockOnHand, p.LowStockAt)).ShouldBe(
+        products.Select(p => (p.Name, p.Brand, p.Code, p.RetailPrice, p.CostPrice, p.StockOnHand, p.LowStockAt)).ShouldBe(
         [
-            ("Colour tube 60 ml", null, null, null, 12, null),
-            ("Shampoo 250 ml", "Salon Range", "SH-250", 12.5m, 8, 2),
+            ("Colour tube 60 ml", null, null, null, null, 12, null),
+            ("Shampoo 250 ml", "Salon Range", "SH-250", 12.5m, 6m, 8, 2),
         ]);
     }
 
@@ -97,7 +97,7 @@ public class ExportProductsTests(SalonWebApplicationFactory factory) : IAsyncLif
     public async Task A_Polish_salon_gets_its_own_headings_a_semicolon_and_a_decimal_comma_and_its_import_reads_them()
     {
         await ProductAsync(_studio.Id, "Shampoo 250 ml", null, null, 12.5m, 8, null);
-        await ProductAsync(_polish.Id, "Szampon 250 ml", "Seria salonowa", "SZ-250", 45.9m, 6, 2, currency: "PLN");
+        await ProductAsync(_polish.Id, "Szampon 250 ml", "Seria salonowa", "SZ-250", 45.9m, 6, 2, currency: "PLN", cost: 21.5m);
         using var owner = await factory.SignedInClientAsync(HostB, _polish.Id, Role.Owner);
 
         var bytes = await (await owner.GetAsync(new Uri(Path, UriKind.Relative))).Content.ReadAsByteArrayAsync();
@@ -105,8 +105,8 @@ public class ExportProductsTests(SalonWebApplicationFactory factory) : IAsyncLif
 
         lines.ShouldBe(
         [
-            "Nazwa;Marka;Kod;Cena;Waluta;Stan;Stan minimalny;W użyciu",
-            "Szampon 250 ml;Seria salonowa;SZ-250;45,90;PLN;6;2;Tak",
+            "Nazwa;Marka;Kod;Cena;Koszt;Waluta;Stan;Stan minimalny;W użyciu",
+            "Szampon 250 ml;Seria salonowa;SZ-250;45,90;21,50;PLN;6;2;Tak",
         ]);
 
         // The salon's own file read back: the product is known, so nothing is added and nothing changes.
@@ -126,7 +126,7 @@ public class ExportProductsTests(SalonWebApplicationFactory factory) : IAsyncLif
         var row = Encoding.UTF8.GetString(bytes, 3, bytes.Length - 3).Split("\r\n", StringSplitOptions.RemoveEmptyEntries)[1];
 
         // An apostrophe in front makes it text; the quotes keep the comma inside one cell.
-        row.ShouldBe("'=SUM(A1:A9),\"Wash, care\",,5.00,GBP,1,,Yes");
+        row.ShouldBe("'=SUM(A1:A9),\"Wash, care\",,5.00,,GBP,1,,Yes");
     }
 
     [Fact]
@@ -186,11 +186,11 @@ public class ExportProductsTests(SalonWebApplicationFactory factory) : IAsyncLif
         confirm.StatusCode.ShouldBe(HttpStatusCode.Redirect);
     }
 
-    private async Task ProductAsync(Guid tenantId, string name, string? brand, string? code, decimal? price, int onHand, int? lowAt, bool active = true, string currency = "GBP")
+    private async Task ProductAsync(Guid tenantId, string name, string? brand, string? code, decimal? price, int onHand, int? lowAt, bool active = true, string currency = "GBP", decimal? cost = null)
     {
         await using var scope = factory.CreateTenantScope(tenantId);
         var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
-        db.Products.Add(new Product { Name = name, Brand = brand, Code = code, RetailPrice = price, Currency = currency, StockOnHand = onHand, LowStockAt = lowAt, IsActive = active });
+        db.Products.Add(new Product { Name = name, Brand = brand, Code = code, RetailPrice = price, CostPrice = cost, Currency = currency, StockOnHand = onHand, LowStockAt = lowAt, IsActive = active });
         await db.SaveChangesAsync();
     }
 

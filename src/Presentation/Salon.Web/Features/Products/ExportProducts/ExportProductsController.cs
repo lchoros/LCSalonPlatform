@@ -25,7 +25,8 @@ public sealed record ExportProductsQuery : IQuery<StockList>;
 public sealed record StockList(LocalDate Day, IReadOnlyList<StockListLine> Lines);
 
 /// <param name="Price">What a client pays for one; null for a product the salon only uses itself.</param>
-public sealed record StockListLine(string Name, string? Brand, string? Code, decimal? Price, string Currency, int OnHand, int? LowStockAt, bool InUse);
+/// <param name="Cost">What the salon pays for one; null when nobody has said.</param>
+public sealed record StockListLine(string Name, string? Brand, string? Code, decimal? Price, decimal? Cost, string Currency, int OnHand, int? LowStockAt, bool InUse);
 
 /// <summary>Reads through the tenant filter only: a salon has tens or a few hundred products.</summary>
 public sealed class ExportProductsHandler(
@@ -48,7 +49,7 @@ public sealed class ExportProductsHandler(
         var lines = products
             .OrderBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase)
             .ThenBy(p => p.Id)
-            .Select(p => new StockListLine(p.Name, p.Brand, p.Code, p.RetailPrice, p.Currency, p.StockOnHand, p.LowStockAt, p.IsActive))
+            .Select(p => new StockListLine(p.Name, p.Brand, p.Code, p.RetailPrice, p.CostPrice, p.Currency, p.StockOnHand, p.LowStockAt, p.IsActive))
             .ToArray();
         return new StockList(clock.GetCurrentInstant().InZone(zone).Date, lines);
     }
@@ -65,7 +66,7 @@ public sealed class ExportProductsHandler(
 [Route("admin/products")]
 public sealed class ExportProductsController(IDispatcher dispatcher, ILocalizationService localizer) : SalonControllerBase
 {
-    private static readonly string[] Columns = ["Name", "Brand", "Code", "Price", "Currency", "InStock", "LowStockAt", "InUse"];
+    private static readonly string[] Columns = ["Name", "Brand", "Code", "Price", "Cost", "Currency", "InStock", "LowStockAt", "InUse"];
 
     [HttpGet("stock.csv")]
     public async Task<IActionResult> Stock(CancellationToken cancellationToken)
@@ -80,6 +81,7 @@ public sealed class ExportProductsController(IDispatcher dispatcher, ILocalizati
             CsvValue.Text(line.Code),
             // No thousands separator: a number, not a label. Empty for a product that is not for sale.
             CsvValue.Number(line.Price?.ToString("0.00", culture.NumberFormat) ?? string.Empty),
+            CsvValue.Number(line.Cost?.ToString("0.00", culture.NumberFormat) ?? string.Empty),
             CsvValue.Text(line.Currency),
             CsvValue.Number(line.OnHand.ToString(CultureInfo.InvariantCulture)),
             CsvValue.Number(line.LowStockAt?.ToString(CultureInfo.InvariantCulture) ?? string.Empty),

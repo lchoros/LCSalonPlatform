@@ -51,8 +51,8 @@ public class ExportFilesE2ETests(KestrelAppFixture app) : IClassFixture<KestrelA
         (await stock.TextContentAsync()).ShouldBe("Download the stock list");
         await CheckPageAsync(page, stock, styled, "products-export-mobile-390.png");
         var stockFile = await DownloadAsync(page, stock, "stock-");
-        stockFile.ShouldStartWith("Name,Brand,Code,Price,Currency,In stock,Low stock at,In use\r\n");
-        stockFile.ShouldContain($"{product},,,14.50,GBP,7,,Yes\r\n");
+        stockFile.ShouldStartWith("Name,Brand,Code,Price,Cost,Currency,In stock,Low stock at,In use\r\n");
+        stockFile.ShouldContain($"{product},,,14.50,,GBP,7,,Yes\r\n");
 
         // 2. The reports offer every visit of the period as a file.
         await page.GotoAsync($"{app.TenantUrl(Slug)}/admin/reports?period=this-month");

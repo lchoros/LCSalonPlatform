@@ -62,6 +62,7 @@ internal sealed class ProductImportService(
                 Brand = ProductRules.NormalizeOptional(row.Brand),
                 Code = ProductRules.NormalizeOptional(row.Code),
                 RetailPrice = row.Price,
+                CostPrice = row.Cost,
                 Currency = preview.Currency,
                 LowStockAt = row.LowStockAt,
             };

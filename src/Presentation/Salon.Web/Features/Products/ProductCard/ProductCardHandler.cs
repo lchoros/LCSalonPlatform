@@ -70,6 +70,10 @@ public sealed class ProductCardHandler(
             product.LowStockAt,
             product.IsActive && StockRules.IsLow(product.StockOnHand, product.LowStockAt),
             product.IsActive,
-            new Paged<StockLine>(history, number, ProductCard.PageSize, total));
+            new Paged<StockLine>(history, number, ProductCard.PageSize, total))
+        {
+            Cost = product.Cost,
+            Margin = ProductRules.Margin(product.RetailPrice, product.CostPrice),
+        };
     }
 }

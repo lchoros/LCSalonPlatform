@@ -31,6 +31,7 @@ internal static class ProductImportClassifier
             Check(!ProductRules.BrandFits(row.Brand), ProductImportProblem.BrandTooLong);
             Check(!ProductRules.CodeFits(row.Code), ProductImportProblem.CodeTooLong);
             Check(!ProductRules.IsPriceValid(row.Price), ProductImportProblem.InvalidPrice);
+            Check(!ProductRules.IsPriceValid(row.Cost), ProductImportProblem.InvalidCost);
             Check(row.Stock is { } stock && !StockRules.IsCountable(stock), ProductImportProblem.InvalidStock);
             Check(!ProductRules.IsLowStockAtValid(row.LowStockAt), ProductImportProblem.InvalidLowStockAt);
             if (problems.Count > 0)

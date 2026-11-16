@@ -47,7 +47,7 @@ public class ImportProductsE2ETests(KestrelAppFixture app) : IClassFixture<Kestr
         // 1. From the products page to the import; the page says what a file looks like.
         await page.GetByTestId("import-products").ClickAsync();
         await page.ReachAsync("**/admin/products/import");
-        (await page.GetByTestId("import-columns").TextContentAsync()).ShouldNotBeNull().ShouldContain("Name,Brand,Code,Price,Stock,Low stock at");
+        (await page.GetByTestId("import-columns").TextContentAsync()).ShouldNotBeNull().ShouldContain("Name,Brand,Code,Price,Cost,Stock,Low stock at");
         await CheckAndShootAsync(page, "products-import-upload-mobile-390.png");
 
         // 2. The file is checked: two new, one repeated, one with a price that is not a price. Nothing is added yet.

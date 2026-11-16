@@ -29,6 +29,12 @@ public sealed record ProductCard(
     Paged<StockLine> History)
 {
     public const int PageSize = 20;
+
+    /// <summary>What the salon pays for one (ADR 0049); null when nobody has said, and for people who may not see costs.</summary>
+    public Money? Cost { get; init; }
+
+    /// <summary>What the salon keeps of one sold unit; null while the price or the cost is unknown.</summary>
+    public ProductMargin? Margin { get; init; }
 }
 
 /// <param name="Quantity">Signed: above zero came in, below zero went out.</param>

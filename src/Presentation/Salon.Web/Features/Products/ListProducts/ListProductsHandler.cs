@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Salon.Core.Cqrs;
+using Salon.Core.Domain;
 using Salon.Core.Paging;
 using Salon.Core.Products;
 using Salon.Data;
@@ -38,7 +39,22 @@ public sealed class ListProductsHandler(SalonDbContext db) : IRequestHandler<Lis
             words.Count == 0 ? null : string.Join(' ', words),
             products.Count,
             products.Count(IsLow),
-            products.Count(p => !p.IsActive));
+            products.Count(p => !p.IsActive))
+        {
+            Worth = Worth(products),
+        };
+    }
+
+    private static ShelfWorth? Worth(List<Product> products)
+    {
+        if (products.Count == 0)
+        {
+            return null;
+        }
+
+        var value = ProductRules.Shelf(products);
+        var currency = products[0].Currency;
+        return new ShelfWorth(new Money(value.AtCost, currency), new Money(value.AtRetail, currency), value.WithoutCost);
     }
 
     /// <summary>A product nobody uses any more is not "low": there is nothing to reorder.</summary>

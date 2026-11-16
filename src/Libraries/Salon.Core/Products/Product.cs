@@ -28,6 +28,9 @@ public class Product : BaseEntity, ITenantEntity
     /// <summary>What a client pays for one; null for a product the salon only uses itself.</summary>
     public decimal? RetailPrice { get; set; }
 
+    /// <summary>What the salon pays its supplier for one (ADR 0049), in <see cref="Currency"/>; null when nobody has said.</summary>
+    public decimal? CostPrice { get; set; }
+
     /// <summary>ISO 4217 code of <see cref="RetailPrice"/>; the salon's currency.</summary>
     public required string Currency { get; set; }
 
@@ -40,4 +43,6 @@ public class Product : BaseEntity, ITenantEntity
     public bool IsActive { get; set; } = true;
 
     public Money? Price => RetailPrice is { } price ? new Money(price, Currency) : null;
+
+    public Money? Cost => CostPrice is { } cost ? new Money(cost, Currency) : null;
 }

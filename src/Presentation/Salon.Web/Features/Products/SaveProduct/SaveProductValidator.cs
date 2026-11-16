@@ -31,6 +31,10 @@ public sealed class SaveProductValidator : AbstractValidator<SaveProductCommand>
             .Must(ProductRules.IsPriceValid)
             .WithMessage(_ => localizer.Format("Products.Save.Validation.Price", ProductRules.MaxPrice));
 
+        RuleFor(c => c.CostPrice)
+            .Must(ProductRules.IsPriceValid)
+            .WithMessage(_ => localizer.Format("Products.Save.Validation.Cost", ProductRules.MaxPrice));
+
         RuleFor(c => c.LowStockAt)
             .Must(ProductRules.IsLowStockAtValid)
             .WithMessage(_ => localizer.Format("Products.Save.Validation.LowStockAt", ProductRules.MaxLowStockAt));

@@ -398,6 +398,16 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] AG5. "Other dates" with one day, or with more than 62 days: no chart, the figures are still there.
 - [ ] AG6. On a phone the picture is as wide as the card and the page does not scroll sideways.
 
+## AH. What a product costs (after the branch `agent/m3-26-cost-prices` is merged too; it has a migration)
+- [ ] AH1. As the owner, Products: "On the shelves" shows two sums and says how many products have no cost yet.
+- [ ] AH2. Open a product for sale, Edit, type "What it costs you" (less than the price), save. The product's page
+      says "Costs you £... You keep £... of each one sold (...%)."
+- [ ] AH3. Back on the list the sum "At what it cost you" went up by the cost times the units on that shelf.
+- [ ] AH4. Type a cost above the price: the page says each one is sold for less than it costs.
+- [ ] AH5. Sign in as the receptionist: the list has no "On the shelves" panel and the product's page no cost.
+- [ ] AH6. "Download the stock list" has a Cost column. Import a file with a Cost column: the preview shows
+      "costs £..." and the new products keep it.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.
