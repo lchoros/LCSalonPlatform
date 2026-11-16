@@ -155,6 +155,11 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `Products/ProductCard` (`ProductRules.Margin`) and as the worth of the shelves by `Products/ListProducts`
   (`ProductRules.Shelf`), read by the import and written by the stock file. The controllers take costs off the page
   for anybody without `Catalog.Manage`.
+- `Settings/DailySummary` — `/admin/settings/daily-summary` behind `Settings.Manage` (ADR 0050): a switch and a time
+  on the salon's clock (`DailySummarySettings`), with what today's email would say. `IDailySummaryService` writes
+  the day's numbers from `IReportService` (no client named) and sends them to the active owner logins;
+  `DailySummaryTask` runs every five minutes, and a row in `daily_summary_deliveries`, unique per salon and day,
+  is claimed before anything is sent.
 - `Clients/ImportClients` — `/admin/clients/import` behind `Clients.Manage` and `Features:ClientImport` (ADR 0019):
   upload a Booksy or Versum CSV, preview (new / duplicate / invalid), confirm. Parsing lives in the plugin
   `Salon.Plugin.Import`; the preview is kept server-side under a random token bound to the salon.

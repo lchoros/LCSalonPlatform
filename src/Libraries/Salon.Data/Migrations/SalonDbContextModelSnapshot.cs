@@ -1011,6 +1011,42 @@ namespace Salon.Data.Migrations
                     b.ToTable("appointment_reminders", "salon");
                 });
 
+            modelBuilder.Entity("Salon.Core.Notifications.DailySummaryDelivery", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<LocalDate>("Day")
+                        .HasColumnType("date")
+                        .HasColumnName("day");
+
+                    b.Property<int>("Recipients")
+                        .HasColumnType("integer")
+                        .HasColumnName("recipients");
+
+                    b.Property<Instant>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_daily_summary_deliveries");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_daily_summary_deliveries_tenant_id");
+
+                    b.HasIndex("TenantId", "Day")
+                        .IsUnique()
+                        .HasDatabaseName("ix_daily_summary_deliveries_tenant_id_day");
+
+                    b.ToTable("daily_summary_deliveries", "salon");
+                });
+
             modelBuilder.Entity("Salon.Core.Payments.CashUp", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1901,6 +1937,16 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_appointment_reminders_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Notifications.DailySummaryDelivery", b =>
+                {
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_daily_summary_deliveries_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Payments.CashUp", b =>

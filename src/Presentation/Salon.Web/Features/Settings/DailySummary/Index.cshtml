@@ -1,0 +1,52 @@
+@using Salon.Web.Features.Settings.DailySummary
+@model DailySummaryViewModel
+@{
+    ViewData["Title"] = T["Settings.DailySummary.Title"];
+    const string inputClass = "field field-compact tabular-nums sm:max-w-40 aria-[invalid=true]:border-red-600";
+    const string buttonClass = "btn btn-compact btn-primary w-full sm:w-auto";
+    var timeErrors = ViewData.ModelState.ErrorsFor(nameof(SaveDailySummaryCommand.SendAt));
+}
+<section class="mx-auto max-w-xl space-y-6">
+    <partial name="_SettingsNav" model="@("daily-summary")" />
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Settings.DailySummary.Title"]</h1>
+        <p class="text-stone-600">@T["Settings.DailySummary.Lead"]</p>
+    </header>
+
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+
+    <form method="post" asp-action="Index" class="space-y-6 panel" novalidate data-testid="daily-summary-form">
+        <label class="flex min-h-11 items-center gap-3">
+            <input id="Enabled" name="Enabled" type="checkbox" value="true" checked="@Model.Form.Enabled" data-testid="summary-enabled" class="size-5 shrink-0 rounded border-stone-400" />
+            <span class="font-medium">@T["Settings.DailySummary.Enabled"]</span>
+        </label>
+
+        <div class="space-y-1">
+            <label for="SendAt" class="field-label">@T["Settings.DailySummary.SendAt"]</label>
+            <input id="SendAt" name="SendAt" type="time" value="@Model.Form.SendAt" required aria-describedby="send-at-hint send-at-error"
+                   aria-invalid="@(timeErrors.Count > 0 ? "true" : "false")" class="@inputClass" data-testid="summary-send-at" />
+            <p id="send-at-hint" class="text-sm text-stone-600">@T["Settings.DailySummary.SendAtHint"]</p>
+            <p id="send-at-error" class="text-sm text-red-700" data-testid="send-at-error">@string.Join(" ", timeErrors)</p>
+        </div>
+
+        @if (Model.HasRecipients)
+        {
+            <p class="text-sm text-stone-700" data-testid="summary-recipients">@T.Plural("Settings.DailySummary.Recipients", Model.Preview.Recipients)</p>
+        }
+        else
+        {
+            <p class="notice notice-warn" data-testid="summary-no-recipients">@T["Settings.DailySummary.NoRecipients"]</p>
+        }
+
+        <button type="submit" class="@buttonClass" data-testid="save-daily-summary">@T["Settings.DailySummary.Submit"]</button>
+    </form>
+
+    <section class="space-y-2 panel" data-testid="summary-preview">
+        <h2 class="text-lg font-semibold">@T["Settings.DailySummary.PreviewTitle"]</h2>
+        <p class="font-medium" data-testid="summary-subject">@Model.Preview.Email.Subject</p>
+        <pre class="whitespace-pre-wrap break-words rounded-md bg-stone-50 p-3 font-sans text-sm text-stone-800" data-testid="summary-text">@Model.Preview.Email.Text</pre>
+    </section>
+</section>

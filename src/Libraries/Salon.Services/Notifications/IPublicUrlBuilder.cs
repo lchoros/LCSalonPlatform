@@ -16,4 +16,10 @@ public interface IPublicUrlBuilder
     /// changed or cancelled.
     /// </summary>
     string CancelBookingUrl(string tenantSlug, string publicToken);
+
+    /// <summary>
+    /// A page of the salon's own site by its path and query, e.g. the report of a day for the owner's summary email
+    /// (ADR 0050). The page still asks for a sign-in.
+    /// </summary>
+    string SalonUrl(string tenantSlug, string pathAndQuery);
 }

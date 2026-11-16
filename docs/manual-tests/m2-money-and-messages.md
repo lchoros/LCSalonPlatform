@@ -408,6 +408,17 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] AH6. "Download the stock list" has a Cost column. Import a file with a Cost column: the preview shows
       "costs £..." and the new products keep it.
 
+## AI. The daily summary by email (after the branch `agent/m3-27-daily-summary` is merged too; it has a migration)
+- [ ] AI1. Settings has a "Daily summary" tab. It is off, the time is 20:00, and the page shows what today's email
+      would say now: takings, visits, tomorrow's bookings, a link to the report. No client is named.
+- [ ] AI2. Tick "Send the daily summary", set the time to two minutes ago, save.
+- [ ] AI3. Within five minutes Mailpit (http://localhost:8025) has one email per owner login with the same numbers
+      as the page showed. The link opens the report of today after a sign-in.
+- [ ] AI4. Wait ten more minutes: no second email for today.
+- [ ] AI5. Clear the time and save: "Enter a time such as 20:00." and nothing is saved.
+- [ ] AI6. Sign in as a manager: Settings has no "Daily summary" tab.
+- [ ] AI7. Untick the box and save: nothing is sent the next day.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.
