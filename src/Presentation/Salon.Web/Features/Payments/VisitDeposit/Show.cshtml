@@ -17,9 +17,6 @@
     const string secondaryClass = "btn btn-compact btn-secondary w-full sm:w-auto";
     const string cardClass = "space-y-3 panel";
 }
-@functions {
-    string When(Instant at, DateTimeZone zone) => at.InZone(zone).LocalDateTime.ToString("g", CultureInfo.CurrentCulture);
-}
 <section class="mx-auto max-w-lg space-y-6">
     <a href="@cardPath" data-testid="back" class="back-link">&larr; @T["Payments.Deposit.Back"]</a>
     <h1 class="page-title">@T["Payments.Deposit.Title"]</h1>
@@ -92,14 +89,14 @@
             <h3 class="text-sm font-medium text-stone-600">@T["Payments.Fee.History"]</h3>
             <ol class="space-y-2 text-sm" data-testid="deposit-history">
                 <li data-testid="deposit-history-received">
-                    <time datetime="@InstantPattern.ExtendedIso.Format(deposit.At)" class="tabular-nums text-stone-600">@When(deposit.At, zone)</time>
+                    <time datetime="@InstantPattern.ExtendedIso.Format(deposit.At)" class="tabular-nums text-stone-600">@deposit.At.ToShortDateTime(zone, culture)</time>
                     <span class="block">@T.Format("Payments.Deposit.History.Received", T[$"Payments.Method.{deposit.Method}"], deposit.ByName ?? T["Payments.Fee.History.Unknown"])</span>
                     <span class="block break-all text-stone-600" data-testid="deposit-reference">@T.Format("Payments.Fee.History.Reference", deposit.ProviderReference ?? "—")</span>
                 </li>
                 @if (deposit.Return is { } returned)
                 {
                     <li data-testid="deposit-history-returned">
-                        <time datetime="@InstantPattern.ExtendedIso.Format(returned.At)" class="tabular-nums text-stone-600">@When(returned.At, zone)</time>
+                        <time datetime="@InstantPattern.ExtendedIso.Format(returned.At)" class="tabular-nums text-stone-600">@returned.At.ToShortDateTime(zone, culture)</time>
                         <span class="block">@T.Format("Payments.Deposit.History.Returned", T[$"Payments.Method.{returned.Method}"], returned.ByName ?? T["Payments.Fee.History.Unknown"])</span>
                         <span class="block break-all text-stone-600" data-testid="deposit-return-reference">@T.Format("Payments.Fee.History.Reference", returned.ProviderReference ?? "—")</span>
                     </li>

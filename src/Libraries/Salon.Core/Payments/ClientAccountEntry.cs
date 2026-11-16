@@ -82,4 +82,7 @@ public enum ClientAccountEntryKind
 
     /// <summary>The client paid for products on a visit's bill (ADR 0037): the lines of <see cref="VisitProductLine"/> this entry settles.</summary>
     ProductSale = 8,
+
+    /// <summary>The salon gave money back for products a client returned (ADR 0040); points at the sale it undoes in part or in full.</summary>
+    ProductReturn = 9,
 }

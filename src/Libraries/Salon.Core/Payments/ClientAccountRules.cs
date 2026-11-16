@@ -17,6 +17,6 @@ public static class ClientAccountRules
     /// <summary>Money taken for a visit that took place (ADR 0024): neither a debt nor held, simply the bill paid.</summary>
     public static bool IsVisitPayment(ClientAccountEntryKind kind) => kind is ClientAccountEntryKind.VisitPayment;
 
-    /// <summary>Money taken for products on a visit's bill (ADR 0037): retail, kept apart from what the visit itself cost.</summary>
-    public static bool IsProductSale(ClientAccountEntryKind kind) => kind is ClientAccountEntryKind.ProductSale;
+    /// <summary>Money taken for products on a visit's bill, or given back for ones returned (ADR 0037, ADR 0040): retail, kept apart from what the visit itself cost.</summary>
+    public static bool IsProductSale(ClientAccountEntryKind kind) => kind is ClientAccountEntryKind.ProductSale or ClientAccountEntryKind.ProductReturn;
 }

@@ -9,21 +9,14 @@
     var bill = Model.Bill;
     var culture = CultureInfo.CurrentCulture;
     var zone = bill.Start.Zone;
-    var dayPath = "/admin/appointments?date=" + LocalDatePattern.Iso.Format(bill.Start.Date);
-    var checkoutPath = CheckoutController.BasePath + "/" + bill.AppointmentId;
-    var feesTotal = bill.OpenFees.Sum(f => f.Amount.Amount);
-    var somethingToPay = bill.ToPay.Amount > 0m || bill.OpenFees.Count > 0;
     ViewData["Title"] = T["Payments.Checkout.Title"];
     const string inputClass = "field field-compact";
     const string primaryClass = "btn btn-compact btn-primary w-full sm:w-auto";
     const string secondaryClass = "btn btn-compact btn-secondary w-full sm:w-auto";
     const string cardClass = "space-y-3 panel";
 }
-@functions {
-    string When(Instant at, DateTimeZone zone) => at.InZone(zone).LocalDateTime.ToString("g", CultureInfo.CurrentCulture);
-}
 <section class="mx-auto max-w-lg space-y-6">
-    <a href="@dayPath" data-testid="back" class="back-link">&larr; @T["Payments.Fee.Back"]</a>
+    <a href="@Model.DayPath" data-testid="back" class="back-link">&larr; @T["Payments.Fee.Back"]</a>
     <h1 class="page-title">@T["Payments.Checkout.Title"]</h1>
 
     @if (Model.Flash is { } flash)
@@ -61,12 +54,16 @@
             <ul class="space-y-2 border-t border-stone-200 pt-2" data-testid="bill-products">
                 @foreach (var line in bill.Products)
                 {
-                    <li class="flex items-center justify-between gap-3" data-testid="bill-product" data-paid="@line.IsPaid.ToString().ToLowerInvariant()">
+                    <li class="flex flex-wrap items-center justify-between gap-3" data-testid="bill-product" data-paid="@line.IsPaid.ToString().ToLowerInvariant()">
                         <span class="min-w-0 flex-1">
                             <span class="block" data-testid="bill-product-name">@T.Format("Payments.Checkout.Products.Line", line.Name, line.Quantity)</span>
                             @if (line.IsPaid)
                             {
                                 <span class="block text-sm text-stone-600" data-testid="bill-product-paid">@T.Format("Payments.Checkout.PaidWith", line.PaidWith is { } paidWith ? T[$"Payments.Method.{paidWith}"] : "—")</span>
+                            }
+                            @if (line.Returned > 0)
+                            {
+                                <span class="block text-sm font-medium text-amber-900" data-testid="bill-product-returned">@T.Format("Payments.Checkout.Products.ReturnedCount", line.Returned)</span>
                             }
                         </span>
                         <span class="tabular-nums @(line.IsPaid ? "text-stone-500" : null)" data-testid="bill-product-total">@line.Total.ToDisplayString(culture)</span>
@@ -75,6 +72,37 @@
                             <form method="post" action="@CheckoutController.RemoveProductPath(bill.AppointmentId, line.LineId)" asp-antiforgery="true">
                                 <button type="submit" class="btn btn-compact btn-secondary px-3" data-testid="remove-product">@T["Payments.Checkout.Products.Remove"]<span class="sr-only">: @line.Name</span></button>
                             </form>
+                        }
+                        @if (line.IsPaid && line.Kept > 0)
+                        {
+                            @* A return (ADR 0040) sits behind a disclosure so it is never one stray tap away from the bill. *@
+                            var returnId = "return-" + line.LineId.ToString("N");
+                            <details class="basis-full" data-testid="return-product">
+                                <summary class="inline-flex min-h-11 cursor-pointer items-center text-sm font-medium underline underline-offset-2" data-testid="return-open">@T["Payments.Checkout.Products.Return.Open"]<span class="sr-only">: @line.Name</span></summary>
+                                <form method="post" action="@CheckoutController.ReturnProductPath(bill.AppointmentId, line.LineId)" asp-antiforgery="true" class="mt-2 space-y-3 rounded-md bg-stone-50 p-3" data-testid="return-form">
+                                    <div class="grid gap-3 sm:grid-cols-2">
+                                        <div class="space-y-1">
+                                            <label for="@(returnId)-quantity" class="field-label">@T["Payments.Checkout.Products.Return.Quantity"]</label>
+                                            <input id="@(returnId)-quantity" name="quantity" type="number" inputmode="numeric" min="1" max="@line.Kept" step="1" value="1" required class="@inputClass" data-testid="return-quantity" />
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label for="@(returnId)-method" class="field-label">@T["Payments.Checkout.Products.Return.Method"]</label>
+                                            <select id="@(returnId)-method" name="method" class="@inputClass" data-testid="return-method">
+                                                @foreach (var method in Enum.GetValues<PaymentMethod>())
+                                                {
+                                                    <option value="@method">@T[$"Payments.Method.{method}"]</option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <label for="@(returnId)-shelf" class="flex min-h-11 items-center gap-3">
+                                        <input id="@(returnId)-shelf" name="backOnShelf" type="checkbox" value="true" checked class="size-5 shrink-0 rounded border-stone-400" data-testid="return-back-on-shelf" />
+                                        <span class="text-sm">@T["Payments.Checkout.Products.Return.BackOnShelf"]</span>
+                                    </label>
+                                    <p class="text-sm text-stone-600">@T["Payments.Checkout.Products.Return.Hint"]</p>
+                                    <button type="submit" class="btn btn-compact btn-danger w-full sm:w-auto" data-testid="return-submit">@T["Payments.Checkout.Products.Return.Submit"]</button>
+                                </form>
+                            </details>
                         }
                     </li>
                 }
@@ -87,7 +115,7 @@
         @if (bill.Payment is { } payment)
         {
             <p class="text-sm text-stone-600" data-testid="bill-payment">
-                <time datetime="@InstantPattern.ExtendedIso.Format(payment.At)" class="tabular-nums">@When(payment.At, zone)</time>
+                <time datetime="@InstantPattern.ExtendedIso.Format(payment.At)" class="tabular-nums">@payment.At.ToShortDateTime(zone, culture)</time>
                 · @T.Format("Payments.Checkout.RecordedBy", payment.ByName ?? T["Payments.Fee.History.Unknown"])
                 <span class="block break-all" data-testid="bill-reference">@T.Format("Payments.Fee.History.Reference", payment.ProviderReference ?? "—")</span>
             </p>
@@ -135,11 +163,11 @@
             }
         </section>
     }
-    else if (somethingToPay)
+    else if (bill.HasSomethingToPay)
     {
         <section class="@cardClass" data-testid="pay-step">
             <h2 class="text-lg font-semibold">@T["Payments.Checkout.Pay.Title"]</h2>
-            <form method="post" action="@checkoutPath" asp-antiforgery="true" class="space-y-4" data-testid="pay-bill-form">
+            <form method="post" action="@Model.PayPath" asp-antiforgery="true" class="space-y-4" data-testid="pay-bill-form">
                 @if (bill.OpenFees.Count > 0)
                 {
                     <fieldset class="space-y-2" data-testid="open-fees">
@@ -160,7 +188,7 @@
                     </fieldset>
                     <p class="flex items-baseline justify-between gap-4 rounded-md bg-stone-50 p-3" data-testid="bill-total">
                         <span class="text-sm text-stone-700">@T["Payments.Checkout.TotalWithFees"]</span>
-                        <span class="text-xl font-bold tabular-nums">@((bill.ToPay with { Amount = bill.ToPay.Amount + feesTotal }).ToDisplayString(culture))</span>
+                        <span class="text-xl font-bold tabular-nums">@bill.ToPayWithFees.ToDisplayString(culture)</span>
                     </p>
                 }
                 <div class="space-y-1">
@@ -181,7 +209,7 @@
     {
         <section class="@cardClass" data-testid="bill-settled">
             <p class="font-medium">@T[bill.Payment is null ? "Payments.Checkout.CoveredByDeposit" : "Payments.Checkout.Settled"]</p>
-            <a href="/admin/payments/cash-up?date=@LocalDatePattern.Iso.Format((bill.Payment?.At ?? bill.Start.ToInstant()).InZone(zone).Date)" class="@secondaryClass" data-testid="open-cash-up">@T["Payments.Checkout.OpenCashUp"]</a>
+            <a href="@Model.TillPath" class="@secondaryClass" data-testid="open-cash-up">@T["Payments.Checkout.OpenCashUp"]</a>
         </section>
     }
 

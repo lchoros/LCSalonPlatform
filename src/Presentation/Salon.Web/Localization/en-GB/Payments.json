@@ -149,5 +149,16 @@
   "Payments.Checkout.Rebook.Title": "Book the next visit",
   "Payments.Checkout.Rebook.Lead": "{0} with {1} again. Pick how far ahead, then choose the time.",
   "Payments.Checkout.Rebook.Weeks.One": "In {0} week",
-  "Payments.Checkout.Rebook.Weeks.Many": "In {0} weeks"
+  "Payments.Checkout.Rebook.Weeks.Many": "In {0} weeks",
+  "Payments.Kind.ProductReturn": "Products returned",
+  "Payments.Checkout.Products.ReturnedCount": "Returned: {0}",
+  "Payments.Checkout.Products.Return.Open": "Return this product",
+  "Payments.Checkout.Products.Return.Quantity": "How many came back",
+  "Payments.Checkout.Products.Return.Method": "How the money goes back",
+  "Payments.Checkout.Products.Return.BackOnShelf": "It can be sold again: put it back on the shelf",
+  "Payments.Checkout.Products.Return.Hint": "Give the money back as usual, then record it here. Untick the box for a product that was opened or damaged.",
+  "Payments.Checkout.Products.Return.Submit": "Record the return",
+  "Payments.Checkout.Products.Returned": "The return has been recorded.",
+  "Payments.Fee.Refused.ProductLineNotPaid": "Only a product that was paid for can be returned. Take this one off the bill instead.",
+  "Payments.Fee.Refused.ReturnMoreThanKept": "The client does not have that many of this product left. Check how many came back."
 }

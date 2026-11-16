@@ -240,7 +240,8 @@ internal sealed class ClientAccountService(
                 l.Quantity,
                 new Money(l.UnitPrice, l.Currency),
                 l.PaymentEntryId is { } saleId && saleMethods.TryGetValue(saleId, out var paidWith) ? paidWith : null,
-                l.IsPaid))
+                l.IsPaid,
+                l.ReturnedQuantity))
             .ToArray();
 
         return new VisitBill(
@@ -342,6 +343,51 @@ internal sealed class ClientAccountService(
         db.VisitProductLines.Remove(line);
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         logger.LogInformation("Product line {LineId} taken off the bill of appointment {AppointmentId}", lineId, appointmentId);
+        return await GetBillAsync(appointmentId, cancellationToken).ConfigureAwait(false)
+            ?? throw new ClientAccountException(ClientAccountRefusal.NotFound);
+    }
+
+    public async Task<VisitBill> ReturnProductAsync(Guid appointmentId, Guid lineId, int quantity, PaymentMethod method, bool backOnShelf, Guid? byUserId, CancellationToken cancellationToken = default)
+    {
+        RequireKnown(method);
+        var tenantId = RequireTenant();
+        var line = await db.VisitProductLines.FirstOrDefaultAsync(l => l.Id == lineId && l.AppointmentId == appointmentId, cancellationToken).ConfigureAwait(false)
+            ?? throw new ClientAccountException(ClientAccountRefusal.NotFound);
+        if (line.PaymentEntryId is not { } saleId)
+        {
+            throw new ClientAccountException(ClientAccountRefusal.ProductLineNotPaid);
+        }
+
+        if (!ProductSaleRules.CanReturn(line.IsPaid, line.Quantity, line.ReturnedQuantity, quantity))
+        {
+            throw new ClientAccountException(ClientAccountRefusal.ReturnMoreThanKept);
+        }
+
+        // The money goes back for what the client paid: the price the line was rung up at, not today's price.
+        var sale = await db.ClientAccountEntries.AsNoTracking().FirstAsync(e => e.Id == saleId, cancellationToken).ConfigureAwait(false);
+        var back = new Money(ProductSaleRules.LineTotal(quantity, line.UnitPrice), line.Currency);
+        var result = await RecordAsync(payments.RecordRefundAsync(new PaymentRequest(tenantId, appointmentId, back, method), cancellationToken), appointmentId).ConfigureAwait(false);
+
+        var entry = Related(tenantId, sale.ClientId, appointmentId, ClientAccountEntryKind.ProductReturn, back, saleId, byUserId);
+        entry.Method = method;
+        entry.ProviderSystemName = payments.SystemName;
+        entry.ProviderReference = result.ProviderReference;
+        line.ReturnedQuantity += quantity;
+        await InsertAsync(entry, ClientAccountRefusal.ReturnMoreThanKept, cancellationToken).ConfigureAwait(false);
+
+        // A bottle that can be sold again goes back on its shelf; an opened or broken one does not come back at all.
+        if (backOnShelf)
+        {
+            var stocked = await stock.ReturnAsync(line.ProductId, quantity, appointmentId, byUserId, cancellationToken).ConfigureAwait(false);
+            if (!stocked.IsRecorded)
+            {
+                // The caller's transaction takes the money line back with it; nothing is half returned.
+                logger.LogWarning("Product {ProductId} returned on appointment {AppointmentId} could not go back on its shelf: {Outcome}", line.ProductId, appointmentId, stocked.Outcome);
+                throw new ClientAccountException(ClientAccountRefusal.StockNotRecorded);
+            }
+        }
+
+        logger.LogInformation("Product line {LineId} of appointment {AppointmentId}: {Quantity} returned, {Amount} {Currency} back by {Method}, on the shelf again: {BackOnShelf}, recorded by user {UserId}", lineId, appointmentId, quantity, back.Amount, back.Currency, method, backOnShelf, byUserId);
         return await GetBillAsync(appointmentId, cancellationToken).ConfigureAwait(false)
             ?? throw new ClientAccountException(ClientAccountRefusal.NotFound);
     }
@@ -456,9 +502,9 @@ internal sealed class ClientAccountService(
         var rows = await (
             from line in db.VisitProductLines.AsNoTracking()
             join sale in db.ClientAccountEntries.AsNoTracking() on line.PaymentEntryId equals sale.Id
-            where sale.ClientId == clientId
+            where sale.ClientId == clientId && line.Quantity > line.ReturnedQuantity
             orderby sale.At descending, line.AddedAt descending
-            select new { line.AppointmentId, line.ProductName, line.Quantity, line.UnitPrice, line.Currency, sale.At, sale.Method })
+            select new { line.AppointmentId, line.ProductName, Quantity = line.Quantity - line.ReturnedQuantity, line.UnitPrice, line.Currency, sale.At, sale.Method })
             .Take(PurchaseLine.MaxShown)
             .ToListAsync(cancellationToken).ConfigureAwait(false);
 

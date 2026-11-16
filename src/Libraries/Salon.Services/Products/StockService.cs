@@ -19,9 +19,9 @@ internal sealed class StockService(SalonDbContext db, IClock clock, ILogger<Stoc
 
     public async Task<StockResult> RecordAsync(Guid productId, StockMovementKind kind, int number, string? note, Guid? byUserId, CancellationToken cancellationToken = default)
     {
-        if (kind == StockMovementKind.Sold)
+        if (kind is StockMovementKind.Sold or StockMovementKind.Returned)
         {
-            throw new ArgumentException("A sale belongs to a bill; use SellAsync.", nameof(kind));
+            throw new ArgumentException("A sale and a return belong to a bill; use SellAsync or ReturnAsync.", nameof(kind));
         }
 
         var product = await db.Products.FirstOrDefaultAsync(p => p.Id == productId, cancellationToken).ConfigureAwait(false);
@@ -97,6 +97,37 @@ internal sealed class StockService(SalonDbContext db, IClock clock, ILogger<Stoc
                 }
 
                 return new StockResult(StockOutcome.Recorded, product.StockOnHand, -quantity);
+            }
+        }
+
+        return new StockResult(StockOutcome.ChangedMeanwhile, product.StockOnHand);
+    }
+
+    public async Task<StockResult> ReturnAsync(Guid productId, int quantity, Guid appointmentId, Guid? byUserId, CancellationToken cancellationToken = default)
+    {
+        var product = await db.Products.FirstOrDefaultAsync(p => p.Id == productId, cancellationToken).ConfigureAwait(false);
+        if (product is null)
+        {
+            return new StockResult(StockOutcome.ProductNotFound);
+        }
+
+        if (!ProductSaleRules.IsQuantity(quantity))
+        {
+            return new StockResult(StockOutcome.InvalidNumber, product.StockOnHand);
+        }
+
+        for (var attempt = 1; attempt <= SaleAttempts; attempt++)
+        {
+            var onHand = product.StockOnHand;
+            if (!StockRules.Fits(onHand, quantity))
+            {
+                return new StockResult(StockOutcome.TooMany, onHand);
+            }
+
+            var lines = new[] { Line(product, StockMovementKind.Returned, quantity, onHand + quantity, null, appointmentId, byUserId) };
+            if (await SaveAsync(product, lines, cancellationToken).ConfigureAwait(false))
+            {
+                return new StockResult(StockOutcome.Recorded, product.StockOnHand, quantity);
             }
         }
 

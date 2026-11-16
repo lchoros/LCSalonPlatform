@@ -29,6 +29,9 @@ public sealed class ManualPaymentProvider(ILogger<ManualPaymentProvider> logger)
     public Task<PaymentResult> RecordNoShowFeeAsync(PaymentRequest request, CancellationToken cancellationToken = default)
         => Record("no-show-fee", request);
 
+    public Task<PaymentResult> RecordRefundAsync(PaymentRequest request, CancellationToken cancellationToken = default)
+        => Record("refund", request);
+
     private Task<PaymentResult> Record(string kind, PaymentRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);

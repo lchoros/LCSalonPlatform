@@ -42,7 +42,16 @@ public class VisitProductLine : BaseEntity, ITenantEntity
     /// <summary>The account line that paid for it; null while it is unpaid.</summary>
     public Guid? PaymentEntryId { get; set; }
 
+    /// <summary>
+    /// Units of a paid line the client brought back and was given the money for (ADR 0040); never more than
+    /// <see cref="Quantity"/>. The one thing about a paid line that changes, and only upwards.
+    /// </summary>
+    public int ReturnedQuantity { get; set; }
+
     public bool IsPaid => PaymentEntryId is not null;
+
+    /// <summary>Units the client still has.</summary>
+    public int Kept => Quantity - ReturnedQuantity;
 
     public Money Total => new(ProductSaleRules.LineTotal(Quantity, UnitPrice), Currency);
 }
@@ -70,4 +79,10 @@ public static class ProductSaleRules
         ArgumentNullException.ThrowIfNull(lines);
         return lines.Where(l => !l.IsPaid).Sum(l => LineTotal(l.Quantity, l.UnitPrice));
     }
+
+    /// <summary>
+    /// A return (ADR 0040) is for a line that was paid, of at least one unit and no more than the client still has.
+    /// </summary>
+    public static bool CanReturn(bool isPaid, int quantity, int alreadyReturned, int units)
+        => isPaid && units > 0 && units <= quantity - alreadyReturned;
 }

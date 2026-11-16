@@ -25,7 +25,7 @@ public static class StockRules
     /// <summary>+1 for units that come in, -1 for units that go out. A count has no direction of its own.</summary>
     public static int Direction(StockMovementKind kind) => kind switch
     {
-        StockMovementKind.Received => 1,
+        StockMovementKind.Received or StockMovementKind.Returned => 1,
         StockMovementKind.UsedInSalon or StockMovementKind.WrittenOff or StockMovementKind.Sold => -1,
         _ => 0,
     };

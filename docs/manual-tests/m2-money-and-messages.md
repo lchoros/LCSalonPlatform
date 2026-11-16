@@ -308,6 +308,15 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] X5. After a product was sold to the client (section V), the card has "Products bought" with the product, how
       many, the date and the amount. Tapping a row opens that bill.
 
+## Y. Returning a product (after PR #83 is merged too)
+- [ ] Y1. Open the Checkout of a visit with a paid product (section V). Under the paid line: "Return this product".
+- [ ] Y2. Open it, leave 1, choose "Cash", leave "It can be sold again" ticked, "Record the return". The line says
+      "Returned: 1". Products shows one more on that shelf and "Returned by a client" in its history.
+- [ ] Y3. Return another with the box unticked: the money is recorded, the shelf does not change.
+- [ ] Y4. Try to return more than the client still has: nothing changes and the red line says so.
+- [ ] Y5. Till: the day lists "Products returned" as money out; "cash expected" is lower by what you gave back.
+- [ ] Y6. A product that is on the bill but not paid has "Take off", not "Return this product".
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.
