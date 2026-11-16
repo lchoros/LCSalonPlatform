@@ -60,7 +60,7 @@ internal sealed class StockService(SalonDbContext db, IClock clock, ILogger<Stoc
             : new StockResult(StockOutcome.ChangedMeanwhile, product.StockOnHand);
     }
 
-    public async Task<StockResult> SellAsync(Guid productId, int quantity, Guid appointmentId, Guid? byUserId, CancellationToken cancellationToken = default)
+    public async Task<StockResult> SellAsync(Guid productId, int quantity, Guid? appointmentId, Guid? byUserId, CancellationToken cancellationToken = default)
     {
         var product = await db.Products.FirstOrDefaultAsync(p => p.Id == productId, cancellationToken).ConfigureAwait(false);
         if (product is null)

@@ -24,7 +24,7 @@ public interface IStockService
     /// record was wrong, and a count line puts it right first. Both lines carry the visit. The slower of two
     /// simultaneous changes is tried again against the shelf as it then is.
     /// </summary>
-    Task<StockResult> SellAsync(Guid productId, int quantity, Guid appointmentId, Guid? byUserId, CancellationToken cancellationToken = default);
+    Task<StockResult> SellAsync(Guid productId, int quantity, Guid? appointmentId, Guid? byUserId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Puts <paramref name="quantity"/> units back on the shelf that a client returned from the bill of

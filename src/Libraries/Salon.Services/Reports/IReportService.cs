@@ -143,6 +143,11 @@ public sealed record RetailReport(
     public int UnitsWithoutCost { get; init; }
 
     public bool HasUnitsWithoutCost => UnitsWithoutCost > 0;
+
+    /// <summary>Sales made at the counter without a visit (ADR 0053); their units and money are in the figures above.</summary>
+    public int CounterSales { get; init; }
+
+    public bool HasCounterSales => CounterSales > 0;
 }
 
 /// <param name="Name">The product's name today; the name on the bill for one that is gone.</param>

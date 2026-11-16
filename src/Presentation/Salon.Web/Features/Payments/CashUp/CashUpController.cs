@@ -27,6 +27,9 @@ public sealed class CashUpController(IDispatcher dispatcher, ILocalizationServic
 {
     public const string Path = "/admin/payments/cash-up";
 
+    /// <summary>A sale at the counter without a visit; the CounterSale slice owns the route.</summary>
+    public const string CounterSalePath = "/admin/payments/sale";
+
     /// <summary>The till of one day (ADR 0043: addresses are built here, not in the view).</summary>
     public static string DayPath(LocalDate day) => Path + "?date=" + LocalDatePattern.Iso.Format(day);
 

@@ -535,7 +535,7 @@ internal sealed class ClientAccountService(
     private static DepositLine? Held(IReadOnlyList<DepositLine> deposits) => deposits.FirstOrDefault(d => d.IsHeld);
 
     /// <summary>A line that closes another one in full: a waiver or payment of a fee, the return of a deposit.</summary>
-    private static ClientAccountEntry Related(Guid tenantId, Guid clientId, Guid appointmentId, ClientAccountEntryKind kind, Money amount, Guid relatedEntryId, Guid? byUserId)
+    private static ClientAccountEntry Related(Guid tenantId, Guid? clientId, Guid appointmentId, ClientAccountEntryKind kind, Money amount, Guid relatedEntryId, Guid? byUserId)
         => new()
         {
             TenantId = tenantId,

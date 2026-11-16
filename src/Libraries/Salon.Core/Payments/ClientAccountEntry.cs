@@ -21,7 +21,11 @@ public class ClientAccountEntry : BaseEntity, ITenantEntity
 
     public Guid TenantId { get; set; }
 
-    public Guid ClientId { get; set; }
+    /// <summary>
+    /// Whose account the line is on. Null only for a sale at the counter to somebody who is not a client of the salon
+    /// (ADR 0053): money that came in and belongs to no card.
+    /// </summary>
+    public Guid? ClientId { get; set; }
 
     /// <summary>The visit the line is about; every fee and its settlement carry it.</summary>
     public Guid? AppointmentId { get; set; }

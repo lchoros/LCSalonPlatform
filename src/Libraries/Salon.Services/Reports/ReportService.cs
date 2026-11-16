@@ -90,7 +90,7 @@ internal sealed class ReportService(
             .ToListAsync(cancellationToken).ConfigureAwait(false);
         rows = rows.Where(r => TillRules.Direction(r.Kind) != 0).ToList();
 
-        var clientIds = rows.Select(r => r.ClientId).Distinct().ToArray();
+        var clientIds = rows.Where(r => r.ClientId is not null).Select(r => r.ClientId!.Value).Distinct().ToArray();
         var clients = await db.Clients.AsNoTracking()
             .Where(c => clientIds.Contains(c.Id))
             .ToDictionaryAsync(c => c.Id, c => c.FirstName + " " + c.LastName, cancellationToken).ConfigureAwait(false);
@@ -112,7 +112,7 @@ internal sealed class ReportService(
                 r.Kind,
                 r.Method,
                 new Money(TillRules.Direction(r.Kind) * r.Amount, r.Currency),
-                clients.GetValueOrDefault(r.ClientId) ?? string.Empty,
+                r.ClientId is { } clientId ? clients.GetValueOrDefault(clientId) ?? string.Empty : string.Empty,
                 r.AppointmentId is { } visitId ? services.GetValueOrDefault(visitId) : null,
                 r.ByUserId is { } userId ? users.GetValueOrDefault(userId) : null,
                 r.ProviderReference))
@@ -240,12 +240,21 @@ internal sealed class ReportService(
             return new RetailReport(money(0m), money(returned), money(-returned), 0, 0, null, [], 0);
         }
 
-        var rows = await (
+        var onBills = await (
             from line in db.VisitProductLines.AsNoTracking()
             join sale in db.ClientAccountEntries.AsNoTracking() on line.PaymentEntryId equals sale.Id
             where sale.At >= start && sale.At < end
-            select new { line.ProductId, line.ProductName, line.Quantity, line.UnitPrice, line.UnitCost, line.ReturnedQuantity, line.AppointmentId, line.AddedAt })
+            select new SoldRow(line.ProductId, line.ProductName, line.Quantity, line.UnitPrice, line.UnitCost, line.ReturnedQuantity, line.AppointmentId, null, line.AddedAt))
             .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        // Sold at the counter without a visit (ADR 0053): the same money kind, so the same units and the same profit.
+        var atCounter = await (
+            from line in db.CounterSaleLines.AsNoTracking()
+            join sale in db.ClientAccountEntries.AsNoTracking() on line.PaymentEntryId equals sale.Id
+            where sale.At >= start && sale.At < end
+            select new SoldRow(line.ProductId, line.ProductName, line.Quantity, line.UnitPrice, line.UnitCost, 0, null, line.PaymentEntryId, sale.At))
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+        var rows = onBills.Concat(atCounter).ToList();
         var ids = rows.Select(r => r.ProductId).Distinct().ToArray();
         var names = await db.Products.AsNoTracking()
             .Where(p => ids.Contains(p.Id))
@@ -269,11 +278,12 @@ internal sealed class ReportService(
             money(returned),
             money(sold - returned),
             rows.Sum(r => r.Quantity),
-            rows.Select(r => r.AppointmentId).Distinct().Count(),
+            onBills.Select(r => r.AppointmentId).Distinct().Count(),
             ReportRules.Share(sold - returned, takings.Amount),
             products.Take(SalonReport.MaxTopProducts).ToArray(),
             products.Length)
         {
+            CounterSales = atCounter.Select(r => r.CounterSaleId).Distinct().Count(),
             Profit = profit.Amount is { } amount ? money(amount) : null,
             ProfitShare = profit.Percent,
             UnitsWithoutCost = profit.UnitsWithoutCost,
@@ -452,6 +462,9 @@ internal sealed class ReportService(
             open.Count,
             open.Sum(o => o.Outstanding));
     }
+
+    /// <summary>One product line that was paid for in the period: on a visit's bill, or at the counter (ADR 0053).</summary>
+    private sealed record SoldRow(Guid ProductId, string ProductName, int Quantity, decimal UnitPrice, decimal? UnitCost, int ReturnedQuantity, Guid? AppointmentId, Guid? CounterSaleId, Instant AddedAt);
 
     private sealed record LedgerRow(ClientAccountEntryKind Kind, PaymentMethod? Method, decimal Amount, Instant At);
 

@@ -10,7 +10,13 @@ internal sealed class ClientAccountEntryConfiguration : IEntityTypeConfiguration
 {
     public void Configure(EntityTypeBuilder<ClientAccountEntry> builder)
     {
-        builder.ToTable("client_account_entries", t => t.HasCheckConstraint("ck_client_account_entries_amount_positive", "amount > 0"));
+        builder.ToTable("client_account_entries", t =>
+        {
+            t.HasCheckConstraint("ck_client_account_entries_amount_positive", "amount > 0");
+            // Every line is on a client's account except one kind: a product sold at the counter to somebody who is not
+            // a client, which has no visit either (ADR 0053). The database refuses any other line without a client.
+            t.HasCheckConstraint("ck_client_account_entries_client_unless_counter_sale", "client_id IS NOT NULL OR (kind = 8 AND appointment_id IS NULL)");
+        });
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Kind).HasConversion<int>();
         builder.Property(e => e.Method).HasConversion<int?>();

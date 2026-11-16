@@ -1,0 +1,100 @@
+@using System.Globalization
+@using Salon.Core.Payments
+@using Salon.Web.Features.Payments.CounterSale
+@model CounterSaleViewModel
+@{
+    ViewData["Title"] = T["Payments.CounterSale.Title"];
+    var culture = CultureInfo.CurrentCulture;
+    var form = Model.Form;
+    const string inputClass = "field field-compact";
+    const string primaryClass = "btn btn-compact btn-primary w-full sm:w-auto";
+    const string secondaryClass = "btn btn-compact btn-secondary w-full sm:w-auto";
+}
+<section class="mx-auto max-w-xl space-y-6">
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Payments.CounterSale.Title"]</h1>
+        <p class="text-stone-600">@T["Payments.CounterSale.Lead"]</p>
+    </header>
+
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+    @if (Model.Problem is { } problem)
+    {
+        <p role="alert" data-testid="sale-problem" class="notice notice-error">@problem</p>
+    }
+
+    @if (!form.HasProducts)
+    {
+        <p class="empty-state" data-testid="nothing-to-sell">@T["Payments.CounterSale.NothingToSell"]</p>
+    }
+    else
+    {
+        <form method="get" action="@CounterSaleController.Path" class="space-y-4 panel" data-testid="sale-form">
+            <h2 class="text-lg font-semibold">@T["Payments.CounterSale.Choose"]</h2>
+            @for (var i = 0; i < form.Rows.Count; i++)
+            {
+                var row = form.Rows[i];
+                var number = i + 1;
+                <div class="grid grid-cols-[1fr_5rem] items-end gap-3" data-testid="sale-row">
+                    <div class="space-y-1">
+                        <label for="product-@i" class="field-label">@T.Format("Payments.CounterSale.Product", number)</label>
+                        <select id="product-@i" name="rows[@i].Product" class="@inputClass" data-testid="sale-product">
+                            <option value="">@T["Payments.CounterSale.NoProduct"]</option>
+                            @foreach (var product in form.Products)
+                            {
+                                <option value="@product.Id" selected="@(row.Product == product.Id)">@T.Format("Payments.CounterSale.Option", product.Name, product.Price.ToDisplayString(culture), product.OnHand)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="quantity-@i" class="field-label">@T["Payments.CounterSale.Quantity"]</label>
+                        <input id="quantity-@i" name="rows[@i].Quantity" type="number" inputmode="numeric" min="1" max="@ProductSaleRules.MaxQuantity" step="1" value="@row.Quantity" class="@inputClass tabular-nums" data-testid="sale-quantity" />
+                    </div>
+                </div>
+            }
+            <button type="submit" class="@secondaryClass" data-testid="show-total">@T["Payments.CounterSale.ShowTotal"]</button>
+        </form>
+
+        @if (form.Quote is { } quote)
+        {
+            <form method="post" action="@CounterSaleController.Path" asp-antiforgery="true" class="space-y-4 panel" data-testid="sale-quote">
+                <h2 class="text-lg font-semibold">@T["Payments.CounterSale.ToPay"]</h2>
+                <input type="hidden" name="sale" value="@Model.SaleId" />
+                <ul class="list-card">
+                    @for (var i = 0; i < quote.Lines.Count; i++)
+                    {
+                        var line = quote.Lines[i];
+                        <li class="flex items-center justify-between gap-4 p-3" data-testid="quote-line">
+                            <span class="min-w-0">
+                                <span class="block font-medium">@line.Name</span>
+                                <span class="block text-sm text-stone-600">@T.Format("Payments.CounterSale.LineUnits", line.Quantity, line.UnitPrice.ToDisplayString(culture))</span>
+                            </span>
+                            <span class="tabular-nums font-medium">@line.Total.ToDisplayString(culture)</span>
+                            <input type="hidden" name="rows[@i].Product" value="@line.ProductId" />
+                            <input type="hidden" name="rows[@i].Quantity" value="@line.Quantity" />
+                        </li>
+                    }
+                </ul>
+                <p class="flex items-baseline justify-between gap-4 rounded-md bg-stone-50 p-3">
+                    <span class="text-sm text-stone-700">@T["Payments.CounterSale.Total"]</span>
+                    <span class="text-xl font-bold tabular-nums" data-testid="sale-total">@quote.Total.ToDisplayString(culture)</span>
+                </p>
+                <div class="space-y-1">
+                    <label for="method" class="field-label">@T["Payments.Fee.Pay.Method"]</label>
+                    <select id="method" name="method" class="@inputClass" data-testid="sale-method">
+                        @foreach (var method in Enum.GetValues<PaymentMethod>())
+                        {
+                            <option value="@method">@T[$"Payments.Method.{method}"]</option>
+                        }
+                    </select>
+                </div>
+                <p class="text-sm text-stone-600">@T["Payments.CounterSale.Hint"]</p>
+                <button type="submit" class="@primaryClass" data-testid="record-sale">@T["Payments.CounterSale.Record"]</button>
+            </form>
+        }
+    }
+
+    <p><a href="@CounterSaleController.TillPath" class="back-link" data-testid="to-till">@T["Payments.CounterSale.ToTill"]</a></p>
+</section>
