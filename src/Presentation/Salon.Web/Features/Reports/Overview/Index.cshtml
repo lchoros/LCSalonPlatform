@@ -68,6 +68,46 @@
         </div>
     </dl>
 
+    @if (Model.Comparison is { HasAny: true } compare)
+    {
+        @* The period against the same days one period earlier (ADR 0046). The change is in words, not colour or an arrow. *@
+        <section class="@cardClass" data-testid="comparison">
+            <h2 class="text-lg font-semibold">@T["Reports.Compare.Title"]</h2>
+            <p class="text-sm text-stone-600" data-testid="comparison-days" data-before-from="@compare.Before.From.ToIso()" data-before-to="@compare.Before.To.ToIso()">@T.Format("Reports.Compare.Days", compare.SoFar.From.ToString("d", culture), compare.SoFar.To.ToString("d", culture), compare.Before.From.ToString("d", culture), compare.Before.To.ToString("d", culture))</p>
+            <table class="w-full text-left text-base">
+                <thead>
+                    <tr class="text-sm text-stone-600">
+                        <th scope="col" class="py-1 pr-2 font-medium"><span class="sr-only">@T["Reports.Compare.What"]</span></th>
+                        <th scope="col" class="px-2 py-1 text-right font-medium">@T["Reports.Compare.Now"]</th>
+                        <th scope="col" class="px-2 py-1 text-right font-medium">@T["Reports.Compare.Before"]</th>
+                        <th scope="col" class="py-1 pl-2 text-right font-medium">@T["Reports.Compare.Change"]</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-stone-200">
+                    <tr>
+                        <th scope="row" class="py-2 pr-2 font-medium">@T["Reports.Takings.Total"]</th>
+                        <td class="px-2 py-2 text-right tabular-nums" data-testid="compare-takings-now">@compare.Takings.ToDisplayString(culture)</td>
+                        <td class="px-2 py-2 text-right tabular-nums" data-testid="compare-takings-before">@compare.TakingsBefore.ToDisplayString(culture)</td>
+                        <td class="py-2 pl-2 text-right font-semibold" data-testid="compare-takings-change">@ReportText.Change(T, compare.TakingsChange, culture)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="py-2 pr-2 font-medium">@T["Reports.Visits.Completed"]</th>
+                        <td class="px-2 py-2 text-right tabular-nums" data-testid="compare-completed-now">@compare.Completed</td>
+                        <td class="px-2 py-2 text-right tabular-nums" data-testid="compare-completed-before">@compare.CompletedBefore</td>
+                        <td class="py-2 pl-2 text-right font-semibold" data-testid="compare-completed-change">@ReportText.Change(T, compare.CompletedChange, culture)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="py-2 pr-2 font-medium">@T["Reports.Visits.NoShows"]</th>
+                        <td class="px-2 py-2 text-right tabular-nums" data-testid="compare-no-shows-now">@compare.NoShows</td>
+                        <td class="px-2 py-2 text-right tabular-nums" data-testid="compare-no-shows-before">@compare.NoShowsBefore</td>
+                        <td class="py-2 pl-2 text-right font-semibold" data-testid="compare-no-shows-change">@ReportText.Change(T, compare.NoShowsChange, culture)</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="text-sm text-stone-600">@T["Reports.Compare.Hint"]</p>
+        </section>
+    }
+
     <div class="grid items-start gap-6 lg:grid-cols-2">
     <section class="@cardClass" data-testid="takings">
         <div class="flex flex-wrap items-center justify-between gap-2">

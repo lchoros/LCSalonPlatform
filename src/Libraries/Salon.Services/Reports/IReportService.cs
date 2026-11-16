@@ -30,6 +30,7 @@ public interface IReportService
 /// <param name="RangeRefused">Dates were asked for that cannot be used; the report shows the default period instead.</param>
 /// <param name="Today">The salon's current local day.</param>
 /// <param name="Retail">Products sold over the counter (ADR 0044).</param>
+/// <param name="Comparison">The period against the one before (ADR 0046); null for a period that has not begun.</param>
 /// <param name="Unpaid">Completed visits of the period nobody took payment for, oldest first, at most <see cref="MaxUnpaidListed"/>.</param>
 /// <param name="UnpaidCount">How many there are in all.</param>
 public sealed record SalonReport(
@@ -43,6 +44,7 @@ public sealed record SalonReport(
     IReadOnlyList<ServiceLine> TopServices,
     IReadOnlyList<StaffLine> Staff,
     RetailReport Retail,
+    ReportComparison? Comparison,
     IReadOnlyList<UnpaidVisit> Unpaid,
     int UnpaidCount,
     Money UnpaidTotal)
@@ -116,6 +118,30 @@ public sealed record RetailReport(
 /// <param name="Name">The product's name today; the name on the bill for one that is gone.</param>
 /// <param name="Value">What the units were rung up at.</param>
 public sealed record ProductSalesLine(string Name, int Units, Money Value);
+
+/// <summary>
+/// The period set against the same days one period earlier (ADR 0046). Both sides count only days that have
+/// happened, so a week or month that is not over is compared like for like.
+/// </summary>
+/// <param name="SoFar">The days of the period up to today.</param>
+/// <param name="Before">The days they are set against.</param>
+/// <param name="TakingsChange">Percent more or less than before; null when nothing was taken before.</param>
+public sealed record ReportComparison(
+    ReportPeriod SoFar,
+    ReportPeriod Before,
+    Money Takings,
+    Money TakingsBefore,
+    decimal? TakingsChange,
+    int Completed,
+    int CompletedBefore,
+    decimal? CompletedChange,
+    int NoShows,
+    int NoShowsBefore,
+    decimal? NoShowsChange)
+{
+    /// <summary>Whether either side has anything in it; two empty periods are not worth a table.</summary>
+    public bool HasAny => Takings.Amount != 0m || TakingsBefore.Amount != 0m || Completed + CompletedBefore + NoShows + NoShowsBefore > 0;
+}
 /// <summary>Fees by what happened to them in the period: added to an account, let go, or paid.</summary>
 public sealed record FeesReport(Money Added, Money Waived, Money Paid);
 

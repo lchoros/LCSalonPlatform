@@ -341,6 +341,18 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         return (appointment.Id, client.Id, service.Price);
     }
 
+    /// <summary>
+    /// Says what became of a visit, written straight to the table: for a visit in the past whose outcome a test needs
+    /// as a given, not as something to click through.
+    /// </summary>
+    public async Task SetVisitStatusAsync(Guid tenantId, Guid appointmentId, AppointmentStatus status)
+    {
+        using var scope = _factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
+        var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+        await db.Appointments.Where(a => a.Id == appointmentId).ExecuteUpdateAsync(s => s.SetProperty(a => a.Status, status));
+    }
+
     /// <summary>The salon's earliest active appointment that has not started yet (the demo seed books a few over the coming days).</summary>
     public async Task<(Guid Id, Instant Start, Guid StaffMemberId)> FirstUpcomingAppointmentAsync(Guid tenantId)
     {

@@ -72,5 +72,16 @@
   "Reports.Retail.ShareHint": "Products after returns as a part of everything taken in the period.",
   "Reports.Retail.Best": "Best sellers",
   "Reports.Retail.LineUnits": "{0} sold",
-  "Reports.Retail.More": "The {0} best sellers of {1} products are listed."
+  "Reports.Retail.More": "The {0} best sellers of {1} products are listed.",
+  "Reports.Compare.Title": "Against the period before",
+  "Reports.Compare.Days": "{0} to {1}, set against {2} to {3}.",
+  "Reports.Compare.What": "Figure",
+  "Reports.Compare.Now": "Now",
+  "Reports.Compare.Before": "Before",
+  "Reports.Compare.Change": "Change",
+  "Reports.Compare.Up": "Up {0}%",
+  "Reports.Compare.Down": "Down {0}%",
+  "Reports.Compare.NoChange": "No change",
+  "Reports.Compare.NothingBefore": "Nothing before",
+  "Reports.Compare.Hint": "The same days one period earlier, counted only up to today, so a week or a month that is not over is compared like for like."
 }
