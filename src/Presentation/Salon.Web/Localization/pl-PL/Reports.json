@@ -49,5 +49,16 @@
   "Reports.Unpaid.None": "Wszystkie zakończone wizyty z tego okresu są opłacone.",
   "Reports.Unpaid.Summary": "Wizyty: {0}. Do zapłaty: {1}.",
   "Reports.Unpaid.More": "Lista pokazuje pierwsze {0}.",
-  "Reports.Unpaid.Checkout": "Rozlicz"
+  "Reports.Unpaid.Checkout": "Rozlicz",
+  "Reports.Export.Money": "Pobierz do arkusza",
+  "Reports.Export.Column.Date": "Data",
+  "Reports.Export.Column.Time": "Godzina",
+  "Reports.Export.Column.Client": "Klient",
+  "Reports.Export.Column.Kind": "Za co",
+  "Reports.Export.Column.Service": "Usługa",
+  "Reports.Export.Column.Method": "Forma płatności",
+  "Reports.Export.Column.Amount": "Kwota",
+  "Reports.Export.Column.Currency": "Waluta",
+  "Reports.Export.Column.RecordedBy": "Zapisał(a)",
+  "Reports.Export.Column.Reference": "Numer"
 }

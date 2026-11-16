@@ -49,5 +49,16 @@
   "Reports.Unpaid.None": "Every completed visit of this period is paid.",
   "Reports.Unpaid.Summary": "Visits: {0}. Left to pay: {1}.",
   "Reports.Unpaid.More": "The first {0} are listed.",
-  "Reports.Unpaid.Checkout": "Checkout"
+  "Reports.Unpaid.Checkout": "Checkout",
+  "Reports.Export.Money": "Download for a spreadsheet",
+  "Reports.Export.Column.Date": "Date",
+  "Reports.Export.Column.Time": "Time",
+  "Reports.Export.Column.Client": "Client",
+  "Reports.Export.Column.Kind": "What it was for",
+  "Reports.Export.Column.Service": "Service",
+  "Reports.Export.Column.Method": "How it was paid",
+  "Reports.Export.Column.Amount": "Amount",
+  "Reports.Export.Column.Currency": "Currency",
+  "Reports.Export.Column.RecordedBy": "Recorded by",
+  "Reports.Export.Column.Reference": "Reference"
 }

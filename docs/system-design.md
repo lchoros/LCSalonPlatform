@@ -177,6 +177,10 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
 - `Payments/CashUp` — `/admin/payments/cash-up?date=` behind the same permissions (ADR 0024): `ICashUpService` adds up
   the day's ledger lines that carry a method (in the salon's zone), per method, with the cash the drawer should hold;
   the day is closed once with the cash counted (`CashUp`), and money recorded later is flagged. "Till" in the nav.
+- `Reports/ExportMoney` — `GET /admin/reports/money.csv?from=&to=` (ADR 0042), same permissions as the report: every
+  line of the period that moved money (`IReportService.GetMoneyLinesAsync`, the till's own rule) as a CSV written by
+  the pure `Csv` (Core) in the reader's language, list separator and decimal sign, UTF-8 with a byte order mark;
+  typed text that starts like a formula is made plain. `Cache-Control: no-store`.
 - `Reports/Overview` — `/admin/reports?period=` or `?from=&to=` behind `Reports.View` + `Clients.View` (ADR 0026), read
   only: `IReportService` reads the period's ledger lines and visits and adds them up with `TillRules` and the pure
   `ReportRules` in Core (periods, rates, working minutes). Takings per method, kind and day (each day links to its

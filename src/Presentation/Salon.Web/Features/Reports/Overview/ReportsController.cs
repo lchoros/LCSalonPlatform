@@ -29,6 +29,10 @@ public sealed class ReportsController(IDispatcher dispatcher) : SalonControllerB
 
     public const string CheckoutPath = "/admin/payments/checkout/";
 
+    /// <summary>The period's money lines as a CSV file (ADR 0042); the ExportMoney slice owns the route.</summary>
+    public static string MoneyExportPath(ReportPeriod period)
+        => $"{Path}/money.csv?from={LocalDatePattern.Iso.Format(period.From)}&to={LocalDatePattern.Iso.Format(period.To)}";
+
     private static readonly Dictionary<string, ReportPreset> Presets = new(StringComparer.OrdinalIgnoreCase)
     {
         ["this-week"] = ReportPreset.ThisWeek,

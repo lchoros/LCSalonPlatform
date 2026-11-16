@@ -75,7 +75,14 @@
 
     <div class="grid items-start gap-6 lg:grid-cols-2">
     <section class="@cardClass" data-testid="takings">
-        <h2 class="text-lg font-semibold">@T["Reports.Takings.Title"]</h2>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-lg font-semibold">@T["Reports.Takings.Title"]</h2>
+            @if (Model.Takings.ByMethod.Count > 0)
+            {
+                @* The same lines as a file for a spreadsheet (ADR 0042); the ExportMoney slice owns the address. *@
+                <a href="@ReportsController.MoneyExportPath(period)" class="btn btn-compact btn-secondary" data-testid="export-money" download>@T["Reports.Export.Money"]</a>
+            }
+        </div>
         @if (Model.Takings.ByMethod.Count == 0)
         {
             <p class="text-sm text-stone-600" data-testid="no-takings">@T["Reports.Takings.None"]</p>
