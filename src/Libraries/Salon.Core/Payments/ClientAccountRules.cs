@@ -19,4 +19,8 @@ public static class ClientAccountRules
 
     /// <summary>Money taken for products on a visit's bill, or given back for ones returned (ADR 0037, ADR 0040): retail, kept apart from what the visit itself cost.</summary>
     public static bool IsProductSale(ClientAccountEntryKind kind) => kind is ClientAccountEntryKind.ProductSale or ClientAccountEntryKind.ProductReturn;
+
+    /// <summary>A gift voucher sold, used toward a visit, or given back (ADR 0057): money taken ahead of the visit it pays for.</summary>
+    public static bool IsVoucher(ClientAccountEntryKind kind)
+        => kind is ClientAccountEntryKind.VoucherSale or ClientAccountEntryKind.VoucherRedeemed or ClientAccountEntryKind.VoucherRefund;
 }

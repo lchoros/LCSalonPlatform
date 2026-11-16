@@ -97,6 +97,9 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     /// <summary>Products sold at the counter without a visit; each line points at the account line that is the sale (ADR 0053).</summary>
     public DbSet<CounterSaleLine> CounterSaleLines => Set<CounterSaleLine>();
 
+    /// <summary>Gift vouchers the salon sold; what is left on each is money it owes (ADR 0057).</summary>
+    public DbSet<GiftVoucher> GiftVouchers => Set<GiftVoucher>();
+
     /// <summary>Platform-level (no tenant filter, no RLS): the dispatcher reads every tenant's pending events (ADR 0007).</summary>
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 

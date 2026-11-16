@@ -418,7 +418,8 @@ internal sealed class ReportService(
 
         var paid = await db.ClientAccountEntries.AsNoTracking()
             .Where(e => e.AppointmentId != null
-                && (e.Kind == ClientAccountEntryKind.VisitPayment || e.Kind == ClientAccountEntryKind.DepositPaid || e.Kind == ClientAccountEntryKind.DepositReturned)
+                && (e.Kind == ClientAccountEntryKind.VisitPayment || e.Kind == ClientAccountEntryKind.DepositPaid || e.Kind == ClientAccountEntryKind.DepositReturned
+                    || e.Kind == ClientAccountEntryKind.VoucherRedeemed)
                 && db.Appointments.Any(a => a.Id == e.AppointmentId && a.Start >= start && a.Start < end && a.Status == AppointmentStatus.Completed))
             .Select(e => new { AppointmentId = e.AppointmentId!.Value, e.Kind, e.Amount })
             .ToListAsync(cancellationToken).ConfigureAwait(false);
@@ -433,8 +434,9 @@ internal sealed class ReportService(
                 continue;
             }
 
-            // A deposit is returned in full (ADR 0023), so what is held is what came in less what went back.
-            var held = own.Sum(m => m.Kind == ClientAccountEntryKind.DepositPaid ? m.Amount : -m.Amount);
+            // A deposit is returned in full (ADR 0023), so what is held is what came in less what went back. A gift
+            // voucher used toward the visit counts the same way (ADR 0057).
+            var held = own.Sum(m => m.Kind == ClientAccountEntryKind.DepositReturned ? -m.Amount : m.Amount);
             var outstanding = TillRules.Outstanding(visit.Price, held);
             if (outstanding > 0m)
             {

@@ -42,6 +42,11 @@
                 <dt>@T["Payments.Checkout.Deposit"]</dt>
                 <dd class="text-right tabular-nums" data-testid="bill-deposit">−@deposit.ToDisplayString(culture)</dd>
             }
+            @if (bill.VoucherApplied is { } voucher)
+            {
+                <dt>@T["Payments.Checkout.Voucher"]</dt>
+                <dd class="text-right tabular-nums" data-testid="bill-voucher">−@voucher.ToDisplayString(culture)</dd>
+            }
             @if (bill.Payment is { } paid)
             {
                 <dt>@T.Format("Payments.Checkout.PaidWith", T[$"Payments.Method.{paid.Method}"])</dt>
@@ -148,6 +153,22 @@
         </section>
     }
 
+    @if (Model.CanUseVoucher)
+    {
+        @* A gift voucher goes toward the visit before the rest is paid (ADR 0057); the RedeemVoucher slice owns the address. *@
+        <details class="panel" data-testid="voucher-step">
+            <summary class="inline-flex min-h-11 cursor-pointer items-center font-medium underline underline-offset-2" data-testid="voucher-open">@T["Payments.Checkout.Voucher.Open"]</summary>
+            <form method="post" action="@Model.VoucherPath" asp-antiforgery="true" class="mt-3 space-y-3" data-testid="voucher-form">
+                <div class="space-y-1">
+                    <label for="voucher-code" class="field-label">@T["Payments.Checkout.Voucher.Code"]</label>
+                    <input id="voucher-code" name="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20" required aria-describedby="voucher-hint" class="@inputClass tabular-nums uppercase tracking-wide" data-testid="voucher-code-input" />
+                    <p id="voucher-hint" class="text-sm text-stone-600">@T["Payments.Checkout.Voucher.Hint"]</p>
+                </div>
+                <button type="submit" class="@secondaryClass" data-testid="use-voucher">@T["Payments.Checkout.Voucher.Submit"]</button>
+            </form>
+        </details>
+    }
+
     @if (!bill.CanPay)
     {
         <section class="@cardClass" data-testid="not-payable">
@@ -208,7 +229,7 @@
     else
     {
         <section class="@cardClass" data-testid="bill-settled">
-            <p class="font-medium">@T[bill.Payment is null ? "Payments.Checkout.CoveredByDeposit" : "Payments.Checkout.Settled"]</p>
+            <p class="font-medium" data-testid="settled-reason">@T[Model.SettledKey]</p>
             <a href="@Model.TillPath" class="@secondaryClass" data-testid="open-cash-up">@T["Payments.Checkout.OpenCashUp"]</a>
         </section>
     }

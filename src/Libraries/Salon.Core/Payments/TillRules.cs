@@ -7,18 +7,21 @@ namespace Salon.Core.Payments;
 public static class TillRules
 {
     /// <summary>
-    /// What is left to pay for a visit: the booked price less the deposit the salon holds for it, never below zero.
+    /// What is left to pay for a visit: the booked price less what the salon already holds toward it (a deposit, a
+    /// gift voucher used on it, ADR 0057), never below zero.
     /// </summary>
     public static decimal Outstanding(decimal price, decimal depositHeld) => Math.Max(0m, price - Math.Max(0m, depositHeld));
 
     /// <summary>
-    /// +1 for money that came in (a deposit, a fee paid, a visit paid, products sold), -1 for money that went out (a
-    /// deposit returned, products returned), 0 for lines that moved no money (a fee added or waived).
+    /// +1 for money that came in (a deposit, a fee paid, a visit paid, products or a gift voucher sold), -1 for money
+    /// that went out (a deposit returned, products returned, a voucher given back), 0 for lines that moved no money (a
+    /// fee added or waived, a voucher used: its money came in when it was sold).
     /// </summary>
     public static int Direction(ClientAccountEntryKind kind) => kind switch
     {
-        ClientAccountEntryKind.DepositPaid or ClientAccountEntryKind.FeePayment or ClientAccountEntryKind.VisitPayment or ClientAccountEntryKind.ProductSale => 1,
-        ClientAccountEntryKind.DepositReturned or ClientAccountEntryKind.ProductReturn => -1,
+        ClientAccountEntryKind.DepositPaid or ClientAccountEntryKind.FeePayment or ClientAccountEntryKind.VisitPayment or ClientAccountEntryKind.ProductSale
+            or ClientAccountEntryKind.VoucherSale => 1,
+        ClientAccountEntryKind.DepositReturned or ClientAccountEntryKind.ProductReturn or ClientAccountEntryKind.VoucherRefund => -1,
         _ => 0,
     };
 

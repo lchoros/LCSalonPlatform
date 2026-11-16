@@ -223,6 +223,11 @@ internal sealed class ClientAccountService(
         var (_, deposits, visitPayments) = await LinesAsync(db.ClientAccountEntries.Where(e => e.AppointmentId == appointmentId), zone, cancellationToken).ConfigureAwait(false);
         var account = await GetAccountAsync(visit.ClientId, cancellationToken).ConfigureAwait(false);
 
+        // Gift vouchers used toward this visit (ADR 0057): no money moved, the visit has that much less to pay.
+        var vouchers = await db.ClientAccountEntries.AsNoTracking()
+            .Where(e => e.AppointmentId == appointmentId && e.Kind == ClientAccountEntryKind.VoucherRedeemed)
+            .SumAsync(e => e.Amount, cancellationToken).ConfigureAwait(false);
+
         // The products rung up on this bill, each with the method of the line that paid for it (ADR 0037).
         var productRows = await db.VisitProductLines.AsNoTracking()
             .Where(l => l.AppointmentId == appointmentId)
@@ -260,6 +265,7 @@ internal sealed class ClientAccountService(
         {
             ServiceId = visit.ServiceId,
             StaffMemberId = visit.StaffMemberId,
+            VoucherApplied = vouchers > 0m ? visit.Price with { Amount = vouchers } : null,
         };
     }
 
