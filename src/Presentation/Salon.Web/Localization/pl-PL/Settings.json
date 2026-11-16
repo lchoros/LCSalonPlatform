@@ -179,11 +179,15 @@
   "Settings.Waitlist.Enabled": "Pokazuj „dajcie znać, gdy zwolni się termin” na stronach rezerwacji",
   "Settings.Waitlist.Hint": "Propozycja jest widoczna pod terminami każdej usługi.",
   "Settings.Waitlist.Submit": "Zapisz",
-  "Settings.Waitlist.SavedOn": "Strony rezerwacji proponują teraz listę oczekujących.",
-  "Settings.Waitlist.SavedOff": "Strony rezerwacji nie proponują już listy oczekujących.",
   "Settings.Waitlist.Notes.Title": "Warto wiedzieć",
   "Settings.Waitlist.Notes.Checked": "Numer jest sprawdzany kodem SMS, zanim ktokolwiek trafi na listę, tak samo jak przy rezerwacji.",
   "Settings.Waitlist.Notes.Desk": "Nikt nie dostaje automatycznych wiadomości. Recepcja idzie po liście od góry i sama się kontaktuje.",
   "Settings.Waitlist.Notes.NoMarketplace": "To Twoi klienci. Nikt inny nie widzi tej listy ani nie proponuje im innego salonu.",
-  "Settings.Waitlist.ToList": "Otwórz listę oczekujących"
+  "Settings.Waitlist.ToList": "Otwórz listę oczekujących",
+  "Settings.Waitlist.TellWhenFreed": "Wyślij SMS pierwszej osobie z listy, gdy wizyta zostanie odwołana",
+  "Settings.Waitlist.TellWhenFreedHint": "Jeden SMS do osoby, która jako pierwsza prosiła o tę usługę, dzień i osobę, z linkiem do rezerwacji. Nie w nocy i nie częściej niż raz dziennie do tej samej osoby. Każdy SMS kosztuje tyle, ile Twoje SMS-y.",
+  "Settings.Waitlist.Notes.Texts": "SMS niczego nie rezerwuje: termin dostaje ten, kto zarezerwuje pierwszy, a recepcja nadal ma całą listę.",
+  "Settings.Messages.Name.Waitlist.TimeFreed": "Zwolnił się termin",
+  "Settings.Messages.When.Waitlist.TimeFreed": "Wysyłane do pierwszej osoby z listy oczekujących, gdy wizyta zostanie odwołana, jeśli włączono to w zakładce Lista oczekujących.",
+  "Settings.Waitlist.Saved": "Ustawienia listy oczekujących zostały zapisane."
 }

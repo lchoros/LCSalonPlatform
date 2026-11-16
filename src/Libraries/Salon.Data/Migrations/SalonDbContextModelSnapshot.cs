@@ -221,6 +221,10 @@ namespace Salon.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("created_by_user_id");
 
+                    b.Property<Instant?>("LastToldAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_told_at");
+
                     b.Property<LocalDate?>("NotAfter")
                         .HasColumnType("date")
                         .HasColumnName("not_after");

@@ -240,6 +240,10 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   and is put on the desk's waitlist (ADR 0041) by `IPublicWaitlistService`. `PhoneVerification.Purpose` keeps a
   waitlist code from making a booking and the other way round. Only while `BookingSettings.PublicWaitlist` is on;
   the owner's switch is `Settings/PublicWaitlist` at `/admin/settings/waitlist`.
+- Freed times (ADR 0056): `WaitlistTimeFreedConsumer` hears `AppointmentCancelled` and `IWaitlistOfferService` sends
+  one `Waitlist.TimeFreed` text with a booking link to the first client waiting for that service, day and person
+  (`WaitlistRules.Wants`, `CanBeTold`), when `BookingSettings.TellWaitlistWhenFreed` is on, outside quiet hours and
+  only if the time is on the booking page. Nothing is held; the desk's list shows who was texted.
 - `Booking/Reschedule` — `/book/change/{token}` (ADR 0021): the client's own link moves the visit through
   `IBookingService.MoveAsync`; inside the policy's notice period it offers no times (ADR 0022), while
   `Booking/CancelBooking` still cancels and states the late fee first. The details page states the policy before the

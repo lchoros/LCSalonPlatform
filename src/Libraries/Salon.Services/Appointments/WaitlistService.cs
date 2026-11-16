@@ -71,6 +71,7 @@ internal sealed class WaitlistService(
                     e.CreatedAt.InZone(zone).Date)
                 {
                     AskedOnline = e.CreatedByUserId is null,
+                    LastToldOn = e.LastToldAt is { } told ? told.InZone(zone).Date : null,
                 };
             })
             .ToArray();

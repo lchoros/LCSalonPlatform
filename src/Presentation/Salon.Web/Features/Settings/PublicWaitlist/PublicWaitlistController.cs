@@ -13,14 +13,17 @@ namespace Salon.Web.Features.Settings.PublicWaitlist;
 public sealed record GetPublicWaitlistQuery : IQuery<SavePublicWaitlistCommand>;
 
 /// <summary>The switch as posted. An unticked box is not posted, which is "off".</summary>
-public sealed record SavePublicWaitlistCommand(bool Enabled) : ICommand<bool>;
+/// <param name="Enabled">Offer the form on the booking pages.</param>
+/// <param name="TellWhenFreed">Text the first client waiting when a visit is cancelled (ADR 0056).</param>
+public sealed record SavePublicWaitlistCommand(bool Enabled, bool TellWhenFreed = false) : ICommand<bool>;
 
 public sealed class GetPublicWaitlistHandler(ISettingService settings) : IRequestHandler<GetPublicWaitlistQuery, SavePublicWaitlistCommand>
 {
     public async Task<SavePublicWaitlistCommand> HandleAsync(GetPublicWaitlistQuery request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
-        return new SavePublicWaitlistCommand((await settings.LoadAsync<BookingSettings>(cancellationToken)).PublicWaitlist);
+        var rules = await settings.LoadAsync<BookingSettings>(cancellationToken);
+        return new SavePublicWaitlistCommand(rules.PublicWaitlist, rules.TellWaitlistWhenFreed);
     }
 }
 
@@ -33,6 +36,7 @@ public sealed class SavePublicWaitlistHandler(ISettingService settings) : IReque
         // Load first: the booking rules this form does not show must keep their values.
         var current = await settings.LoadAsync<BookingSettings>(cancellationToken);
         current.PublicWaitlist = request.Enabled;
+        current.TellWaitlistWhenFreed = request.TellWhenFreed;
         await settings.SaveAsync(current, cancellationToken);
         return true;
     }
@@ -61,7 +65,7 @@ public sealed class PublicWaitlistController(IDispatcher dispatcher, ILocalizati
     {
         ArgumentNullException.ThrowIfNull(form);
         await dispatcher.SendAsync(form, cancellationToken);
-        SetFlash(localizer[form.Enabled ? "Settings.Waitlist.SavedOn" : "Settings.Waitlist.SavedOff"]);
+        SetFlash(localizer["Settings.Waitlist.Saved"]);
         return RedirectToAction(nameof(Index));
     }
 }

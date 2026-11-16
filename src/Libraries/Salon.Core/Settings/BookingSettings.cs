@@ -23,6 +23,12 @@ public sealed class BookingSettings : ISettings
     /// </summary>
     public bool PublicWaitlist { get; set; }
 
+    /// <summary>
+    /// Whether the first client waiting is sent a text when a visit is cancelled and its time can be booked again
+    /// (ADR 0056). Off until the owner switches it on: every text costs the salon money.
+    /// </summary>
+    public bool TellWaitlistWhenFreed { get; set; }
+
     /// <summary>0 means no deposit. Applied as a percentage of the service price.</summary>
     public decimal DefaultDepositPercent { get; set; }
 }

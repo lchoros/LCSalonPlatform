@@ -470,6 +470,17 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] AN7. A wrong code says how many tries are left; after five the page offers to start again.
 - [ ] AN8. Untick the box in Settings: the offer is gone and the form's address is "not found".
 
+## AO. A freed time is offered to the first person waiting (after the branch `agent/m3-34-waitlist-message` is merged too; it has a migration)
+- [ ] AO1. Settings, "Waitlist": tick "Text the first person waiting when a visit is cancelled" and save.
+- [ ] AO2. Put a client with a mobile number on the waitlist for a service. Book another client for that service a
+      few days ahead, then cancel that visit, during the day.
+- [ ] AO3. Within a minute the log and Mailpit have a text to the waiting client: the service, the time, and a link.
+      The link opens the booking page of that service on that day, with the time on it.
+- [ ] AO4. The waitlist shows "Texted about a freed time on ..." under that client.
+- [ ] AO5. Cancel a second visit the same day: that client gets no second text; the next person waiting does.
+- [ ] AO6. Settings, "Messages": "A time has come up" is there and its wording can be changed.
+- [ ] AO7. Untick the box: a cancellation sends nothing to the waitlist.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

@@ -44,7 +44,7 @@ public class MessageTemplatesE2ETests(KestrelAppFixture app) : IClassFixture<Kes
         await page.GetByTestId("settings-nav-messages").ClickAsync();
         await page.ReachAsync("**/admin/settings/messages");
         var styled = await StylesheetLoadedAsync(page);
-        (await page.GetByTestId("message").CountAsync()).ShouldBe(5);
+        (await page.GetByTestId("message").CountAsync()).ShouldBe(6, "four booking messages, the code and the waitlist message (ADR 0056)");
         await CheckPageAsync(page, styled, "edit-Booking.Confirmation-Sms", "messages-mobile-390.png");
         await page.GetByTestId("edit-Booking.Confirmation-Sms").ClickAsync();
         await page.ReachAsync("**/admin/settings/messages/Booking.Confirmation/sms");

@@ -44,7 +44,7 @@ public class MessageTemplatesPageTests(SalonWebApplicationFactory factory) : IAs
 
         html.ShouldContain("Messages to clients");
         html.ShouldContain("href=\"/admin/settings/messages\" data-testid=\"settings-nav-messages\" aria-current=\"page\"");
-        foreach (var name in new[] { "Booking confirmation", "Reminder", "Visit cancelled", "New time for a visit", "Verification code" })
+        foreach (var name in new[] { "Booking confirmation", "Reminder", "Visit cancelled", "New time for a visit", "Verification code", "A time has come up" })
         {
             html.ShouldContain($">{name}</h2>");
         }
@@ -53,7 +53,9 @@ public class MessageTemplatesPageTests(SalonWebApplicationFactory factory) : IAs
         html.ShouldContain($"href=\"{ConfirmationEmail}\" data-testid=\"edit-Booking.Confirmation-Email\"");
         html.ShouldContain($"href=\"{CodeSms}\" data-testid=\"edit-Booking.Code-Sms\"");
         html.ShouldNotContain("data-testid=\"edit-Booking.Code-Email\"", Case.Sensitive, "the code goes out by text only");
-        Count(html, ">Standard wording<").ShouldBe(9, "four messages on two channels and the code on one");
+        Count(html, ">Standard wording<").ShouldBe(10, "four messages on two channels, the code and the waitlist message on one");
+        html.ShouldContain("data-testid=\"edit-Waitlist.TimeFreed-Sms\"");
+        html.ShouldNotContain("data-testid=\"edit-Waitlist.TimeFreed-Email\"", Case.Sensitive, "the waitlist message goes out by text only");
         html.ShouldNotContain(">Your own wording<");
     }
 

@@ -23,5 +23,10 @@
     "Sms": "{{SalonName}}: your code is {{Code}}. It expires in 10 minutes.",
     "EmailSubject": "Your {{SalonName}} booking code",
     "EmailBody": "Your {{SalonName}} booking code is {{Code}}. It expires in 10 minutes."
+  },
+  "Waitlist.TimeFreed": {
+    "Sms": "{{SalonName}}: a time for {{ServiceName}} has come up on {{AppointmentStart}}. Book it before it goes: {{BookingUrl}}",
+    "EmailSubject": "A time has come up at {{SalonName}}",
+    "EmailBody": "Hi {{ClientFirstName}},\nA time for {{ServiceName}} at {{SalonName}} has come up on {{AppointmentStart}}.\nBook it here before it goes: {{BookingUrl}}"
   }
 }
