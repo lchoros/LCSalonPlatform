@@ -419,6 +419,17 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] AI6. Sign in as a manager: Settings has no "Daily summary" tab.
 - [ ] AI7. Untick the box and save: nothing is sent the next day.
 
+## AJ. Your data (after the branch `agent/m3-28-your-data` is merged too)
+- [ ] AJ1. As the owner, Settings has a "Your data" tab. It says the data belongs to the salon, how many clients,
+      visits and products there are, and has a row per year with "Visits" and "Money".
+- [ ] AJ2. "Download the client list": the file opens in Excel with a row per client: name, phone, email, notes,
+      marketing consent, client since, completed visits, last and next visit.
+- [ ] AJ3. A client with health notes on their card: the notes are not in the file.
+- [ ] AJ4. Sign in as a manager: Settings has no "Your data" tab, and `/admin/clients/export.csv` is refused.
+- [ ] AJ5. The "Visits" and "Money" buttons of a year download that year's files.
+- [ ] AJ6. With `Features:ClientImport` on, upload the downloaded client file under Clients, "Import": every row is
+      "already exists".
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

@@ -1,0 +1,55 @@
+@using Salon.Web.Features.Settings.YourData
+@model YourDataPage
+@{
+    ViewData["Title"] = T["Settings.YourData.Title"];
+    const string cardClass = "space-y-3 panel";
+    const string buttonClass = "btn btn-compact btn-secondary";
+}
+<section class="mx-auto max-w-xl space-y-6">
+    <partial name="_SettingsNav" model="@("your-data")" />
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Settings.YourData.Title"]</h1>
+        <p class="text-stone-600">@T["Settings.YourData.Lead"]</p>
+    </header>
+
+    <section class="@cardClass" data-testid="your-clients">
+        <h2 class="text-lg font-semibold">@T["Settings.YourData.Clients.Title"]</h2>
+        <p class="text-stone-700" data-testid="your-clients-count">@T.Plural("Settings.YourData.Clients.Count", Model.Clients)</p>
+        <p class="text-sm text-stone-600">@T["Settings.YourData.Clients.What"]</p>
+        <a href="@YourDataController.ClientsFilePath" class="@buttonClass" data-testid="download-clients" download>@T["Settings.YourData.Clients.Download"]</a>
+    </section>
+
+    <section class="@cardClass" data-testid="your-years">
+        <h2 class="text-lg font-semibold">@T["Settings.YourData.Years.Title"]</h2>
+        <p class="text-stone-700">@T.Format("Settings.YourData.Years.Count", Model.Visits, Model.MoneyLines)</p>
+        <p class="text-sm text-stone-600">@T["Settings.YourData.Years.What"]</p>
+        <ul class="list-card">
+            @foreach (var year in Model.Years)
+            {
+                <li class="flex flex-wrap items-center justify-between gap-2 px-3 py-2" data-testid="year" data-year="@year">
+                    <span class="font-semibold tabular-nums">@year</span>
+                    <span class="flex flex-wrap gap-2">
+                        <a href="@YourDataController.VisitsFilePath(year)" class="@buttonClass" data-testid="download-visits" aria-label="@T.Format("Settings.YourData.Years.VisitsOf", year)" download>@T["Settings.YourData.Years.Visits"]</a>
+                        <a href="@YourDataController.MoneyFilePath(year)" class="@buttonClass" data-testid="download-money" aria-label="@T.Format("Settings.YourData.Years.MoneyOf", year)" download>@T["Settings.YourData.Years.Money"]</a>
+                    </span>
+                </li>
+            }
+        </ul>
+    </section>
+
+    <section class="@cardClass" data-testid="your-products">
+        <h2 class="text-lg font-semibold">@T["Settings.YourData.Products.Title"]</h2>
+        <p class="text-stone-700" data-testid="your-products-count">@T.Plural("Settings.YourData.Products.Count", Model.Products)</p>
+        <p class="text-sm text-stone-600">@T["Settings.YourData.Products.What"]</p>
+        <a href="@YourDataController.StockFilePath" class="@buttonClass" data-testid="download-stock" download>@T["Settings.YourData.Products.Download"]</a>
+    </section>
+
+    <section class="space-y-2 rounded-md bg-stone-50 p-4 text-sm text-stone-700" data-testid="your-data-notes">
+        <h2 class="font-semibold">@T["Settings.YourData.Notes.Title"]</h2>
+        <ul class="list-disc space-y-1 pl-5">
+            <li>@T["Settings.YourData.Notes.Format"]</li>
+            <li>@T["Settings.YourData.Notes.Health"]</li>
+            <li>@T["Settings.YourData.Notes.Care"]</li>
+        </ul>
+    </section>
+</section>

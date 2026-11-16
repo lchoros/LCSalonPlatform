@@ -169,5 +169,19 @@
   "Clients.Card.Book": "Zarezerwuj wizytę",
   "Clients.Purchases.Title": "Kupione produkty",
   "Clients.Purchases.Line": "{0} × {1}",
-  "Clients.Card.Waitlist": "Dodaj do listy oczekujących"
+  "Clients.Card.Waitlist": "Dodaj do listy oczekujących",
+  "Clients.Export.Column.FirstName": "Imię",
+  "Clients.Export.Column.LastName": "Nazwisko",
+  "Clients.Export.Column.Phone": "Telefon",
+  "Clients.Export.Column.Email": "E-mail",
+  "Clients.Export.Column.Notes": "Notatki",
+  "Clients.Export.Column.MarketingConsent": "Zgoda marketingowa",
+  "Clients.Export.Column.ConsentOn": "Data zgody",
+  "Clients.Export.Column.Since": "Klient od",
+  "Clients.Export.Column.CompletedVisits": "Zakończone wizyty",
+  "Clients.Export.Column.LastVisit": "Ostatnia wizyta",
+  "Clients.Export.Column.NextVisit": "Następna wizyta",
+  "Clients.Export.Column.Active": "Aktywny",
+  "Clients.Export.Yes": "Tak",
+  "Clients.Export.No": "Nie"
 }
