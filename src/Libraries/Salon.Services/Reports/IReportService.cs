@@ -1,4 +1,5 @@
 using NodaTime;
+using Salon.Core.Appointments;
 using Salon.Core.Domain;
 using Salon.Core.Payments;
 using Salon.Core.Reports;
@@ -24,6 +25,14 @@ public interface IReportService
     /// and the report never disagree. The period is resolved like <see cref="GetAsync"/> does.
     /// </summary>
     Task<MoneyJournal> GetMoneyLinesAsync(ReportPreset? preset, LocalDate? fromDay, LocalDate? toDay, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Every visit that starts in the period (ADR 0047), oldest first, for a spreadsheet: when, who, what, with whom,
+    /// what became of it and the price booked. The same visits the report counts, cancelled ones and no-shows
+    /// included, so the file has as many rows as the report has visits. The period is resolved like
+    /// <see cref="GetAsync"/> does.
+    /// </summary>
+    Task<VisitJournal> GetVisitLinesAsync(ReportPreset? preset, LocalDate? fromDay, LocalDate? toDay, CancellationToken cancellationToken = default);
 }
 
 /// <param name="Preset">The one-tap period this is, if any.</param>
@@ -175,3 +184,19 @@ public sealed record MoneyLine(
     string? ServiceName,
     string? RecordedBy,
     string? Reference);
+
+/// <summary>The visits of a period (ADR 0047).</summary>
+public sealed record VisitJournal(ReportPeriod Period, IReadOnlyList<VisitLine> Lines);
+
+/// <summary>One visit as a row of a spreadsheet: whatever became of it, the status says.</summary>
+/// <param name="Start">In the salon's zone.</param>
+/// <param name="Price">The price booked, which is what the visit was worth, paid or not.</param>
+public sealed record VisitLine(
+    ZonedDateTime Start,
+    string ClientName,
+    string ServiceName,
+    string StaffName,
+    int Minutes,
+    AppointmentStatus Status,
+    AppointmentSource Source,
+    Money Price);

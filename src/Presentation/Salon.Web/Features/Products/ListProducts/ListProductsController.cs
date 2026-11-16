@@ -30,6 +30,9 @@ public sealed class ListProductsController(IDispatcher dispatcher, ILocalization
     /// <summary>The import of a product list from a file; the ImportProducts slice owns the route.</summary>
     public const string ImportPath = "/admin/products/import";
 
+    /// <summary>The product list with today's counts as a CSV file (ADR 0047); the ExportProducts slice owns the route.</summary>
+    public const string StockFilePath = "/admin/products/stock.csv";
+
     [HttpGet("")]
     public async Task<IActionResult> Index(string? show, string? q, int? page, CancellationToken cancellationToken)
     {

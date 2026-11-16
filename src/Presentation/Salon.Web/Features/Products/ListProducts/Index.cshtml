@@ -18,6 +18,10 @@
         @if (Model.CanManage)
         {
             <div class="flex flex-col gap-2 sm:flex-row">
+                @if (Model.CanDownload)
+                {
+                    <a href="@ListProductsController.StockFilePath" data-testid="export-stock" class="btn btn-compact btn-secondary" download>@T["Products.List.Export"]</a>
+                }
                 <a href="@ListProductsController.ImportPath" data-testid="import-products" class="btn btn-compact btn-secondary">@T["Products.List.Import"]</a>
                 <a href="@ListProductsController.NewPath" data-testid="add-product" class="btn btn-compact btn-primary">@T["Products.List.Add"]</a>
             </div>

@@ -148,6 +148,9 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `Salon.Plugin.Import`) finds the columns by their headings and reads the numbers (`ImportNumbers`);
   `IProductImportService` classifies each row as new, already there or invalid with the product form's rules and adds
   the new ones with their opening count as a line of the stock history. A product the salon has is never changed.
+- `Products/ExportProducts` — `GET /admin/products/stock.csv` behind `Catalog.Manage` (ADR 0047): every product with
+  what is on the shelf today as a CSV file, under the headings the import reads, so the file of one salon is the
+  product list of another. Written by `SalonControllerBase.CsvDownload` like the money file.
 - `Clients/ImportClients` — `/admin/clients/import` behind `Clients.Manage` and `Features:ClientImport` (ADR 0019):
   upload a Booksy or Versum CSV, preview (new / duplicate / invalid), confirm. Parsing lives in the plugin
   `Salon.Plugin.Import`; the preview is kept server-side under a random token bound to the salon.
@@ -191,6 +194,9 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   line of the period that moved money (`IReportService.GetMoneyLinesAsync`, the till's own rule) as a CSV written by
   the pure `Csv` (Core) in the reader's language, list separator and decimal sign, UTF-8 with a byte order mark;
   typed text that starts like a formula is made plain. `Cache-Control: no-store`.
+- `Reports/ExportVisits` — `GET /admin/reports/visits.csv?from=&to=` (ADR 0047), same permissions as the report: one
+  row per visit that starts in the period, whatever became of it (`IReportService.GetVisitLinesAsync`), written like
+  the money file. Client names, no phone numbers, no notes.
 - `Reports/Overview` — `/admin/reports?period=` or `?from=&to=` behind `Reports.View` + `Clients.View` (ADR 0026), read
   only: `IReportService` reads the period's ledger lines and visits and adds them up with `TillRules` and the pure
   `ReportRules` in Core (periods, rates, working minutes). Takings per method, kind and day (each day links to its
