@@ -177,6 +177,49 @@ public class PartPaymentTests(SalonWebApplicationFactory factory) : IAsyncLifeti
     }
 
     [Fact]
+    public async Task A_part_and_the_final_payment_at_the_same_moment_never_add_up_to_more_than_the_price()
+    {
+        // Ten visits; on each, one till records a £15 part while another pays the bill. Whichever goes first, the
+        // visit's money is its £20: the part and £5, or the whole bill and the part refused.
+        var visits = new List<Guid>();
+        for (var i = 0; i < 10; i++)
+        {
+            visits.Add(await VisitAsync(AppointmentStatus.Arrived));
+        }
+
+        await Task.WhenAll(visits.SelectMany(visit => new[]
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await AccountAsync(s => s.PayPartAsync(visit, 15m, PaymentMethod.Cash, null));
+                }
+                catch (ClientAccountException ex) when (ex.Refusal == ClientAccountRefusal.PartNotLessThanDue)
+                {
+                    // The bill was paid first: nothing is left to take a part of.
+                }
+            }),
+            Task.Run(async () =>
+            {
+                // In a transaction, as the request pipeline runs every command, so the lock holds to the end.
+                await using var scope = factory.CreateTenantScope(_studio.Id);
+                var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+                await using var transaction = await db.Database.BeginTransactionAsync();
+                await scope.ServiceProvider.GetRequiredService<IClientAccountService>().PayBillAsync(visit, PaymentMethod.CardAtSalonTerminal, [], null);
+                await transaction.CommitAsync();
+            }),
+        }));
+
+        var byVisit = (await EntriesAsync()).ToLookup(e => e.AppointmentId);
+        foreach (var visit in visits)
+        {
+            byVisit[visit].Sum(e => e.Amount).ShouldBe(20m, string.Join(", ", byVisit[visit].Select(e => $"{e.Kind} {e.Amount}")));
+            byVisit[visit].Count(e => e.Kind == ClientAccountEntryKind.VisitPayment).ShouldBe(1);
+        }
+    }
+
+    [Fact]
     public async Task A_completed_visit_with_a_part_paid_owes_what_is_left_and_products_are_paid_with_the_rest()
     {
         var shampoo = await ProductAsync("Shampoo 250 ml", 12.50m);
