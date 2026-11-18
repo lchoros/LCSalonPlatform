@@ -66,6 +66,15 @@ public class Client : BaseEntity, ITenantEntity
 
     public Instant? MergedAt { get; set; }
 
+    /// <summary>
+    /// Set when the client asked to be forgotten and the salon erased them (ADR 0062): the row stays, inactive, with
+    /// no name, contact detail, note or health data, so the visits and the money that point at it still add up.
+    /// </summary>
+    public Instant? ErasedAt { get; set; }
+
+    /// <summary>The login that erased the client.</summary>
+    public Guid? ErasedByUserId { get; set; }
+
     public Instant CreatedAt { get; set; }
 
     public Instant UpdatedAt { get; set; }

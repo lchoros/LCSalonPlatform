@@ -95,8 +95,9 @@ internal sealed class ClientService(
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(take);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(take, MaxSearchTake);
 
-        // A card merged into another (ADR 0017) is a pointer, not a client the desk should pick.
-        var clients = db.Clients.AsNoTracking().Where(c => c.MergedIntoClientId == null);
+        // A card merged into another (ADR 0017) is a pointer, not a client the desk should pick; neither is one the
+        // salon erased (ADR 0062).
+        var clients = db.Clients.AsNoTracking().Where(c => c.MergedIntoClientId == null && c.ErasedAt == null);
         var trimmed = query?.Trim() ?? string.Empty;
         if (trimmed.Length > 0)
         {
@@ -163,7 +164,10 @@ internal sealed class ClientService(
             client.UpdatedAt,
             client.MergedIntoClientId,
             client.MergedAt,
-            client.DepositPercent);
+            client.DepositPercent)
+        {
+            ErasedAt = client.ErasedAt,
+        };
     }
 
     public async Task UpdateHealthNotesAsync(Guid clientId, string? healthNotes, LocalDate? lastPatchTestOn, CancellationToken cancellationToken = default)
@@ -461,6 +465,6 @@ internal sealed class ClientService(
     }
 
     private async Task<Client> RequireAsync(Guid clientId, CancellationToken cancellationToken)
-        => await db.Clients.FirstOrDefaultAsync(c => c.Id == clientId, cancellationToken).ConfigureAwait(false)
+        => await db.Clients.FirstOrDefaultAsync(c => c.Id == clientId && c.ErasedAt == null, cancellationToken).ConfigureAwait(false)
            ?? throw new InvalidOperationException($"Client {clientId} does not exist in the current tenant.");
 }

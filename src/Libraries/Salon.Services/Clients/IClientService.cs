@@ -119,6 +119,12 @@ public sealed record ClientCard(
     /// <summary>True once the card was merged into another (ADR 0017); the card then only points at the target.</summary>
     public bool IsMerged => MergedIntoClientId is not null;
 
+    /// <summary>When the client was erased at their request (ADR 0062); null for a client the salon still knows.</summary>
+    public Instant? ErasedAt { get; init; }
+
+    /// <summary>True once the client was erased: the card has no name or details left and cannot be given any.</summary>
+    public bool IsErased => ErasedAt is not null;
+
     /// <summary>Never prints the health notes.</summary>
     public override string ToString() => $"{nameof(ClientCard)} {{ Id = {Id} }}";
 }
