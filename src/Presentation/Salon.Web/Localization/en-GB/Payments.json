@@ -184,5 +184,16 @@
   "Payments.CounterSale.ToTill": "To the till of today",
   "Payments.CounterSale.Link": "Sell at the counter",
   "Payments.CounterSale.NoClient": "Counter sale",
-  "Payments.CounterSale.Refused.AlreadyBeingRecorded": "This sale is already being recorded. Look at the till before taking it again."
+  "Payments.CounterSale.Refused.AlreadyBeingRecorded": "This sale is already being recorded. Look at the till before taking it again.",
+  "Payments.CounterSale.Returns.Title": "Sales at the counter",
+  "Payments.CounterSale.Returns.Lead": "What was sold without a visit, day by day. When somebody brings a product back, find the sale here and record the money you give back.",
+  "Payments.CounterSale.Returns.DayNav": "Day",
+  "Payments.CounterSale.Returns.None": "Nothing was sold at the counter on this day.",
+  "Payments.CounterSale.Returns.TakenBy": "Taken by {0}",
+  "Payments.CounterSale.Returns.GivenBack": "Given back: {0}",
+  "Payments.CounterSale.Returns.Recorded": "The return has been recorded: {0} given back.",
+  "Payments.CounterSale.Returns.Link": "Sales taken at the counter, and returns",
+  "Payments.CounterSale.Refused.SaleNotFound": "That sale could not be found.",
+  "Payments.CounterSale.Refused.ReturnMoreThanKept": "The buyer does not have that many of this product left. Check how many came back.",
+  "Payments.CounterSale.Refused.StockNotRecorded": "The product could not be put back on its shelf, so nothing was recorded. Try again."
 }

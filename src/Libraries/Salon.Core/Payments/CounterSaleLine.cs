@@ -35,6 +35,15 @@ public class CounterSaleLine : BaseEntity, ITenantEntity
     /// <summary>ISO 4217 code of <see cref="UnitPrice"/>.</summary>
     public required string Currency { get; set; }
 
+    /// <summary>
+    /// Units the buyer brought back and was given the money for (ADR 0054); never more than <see cref="Quantity"/>.
+    /// The one thing about a line that changes, and only upwards.
+    /// </summary>
+    public int ReturnedQuantity { get; set; }
+
+    /// <summary>Units the buyer still has.</summary>
+    public int Kept => Quantity - ReturnedQuantity;
+
     public Money Total => new(ProductSaleRules.LineTotal(Quantity, UnitPrice), Currency);
 }
 

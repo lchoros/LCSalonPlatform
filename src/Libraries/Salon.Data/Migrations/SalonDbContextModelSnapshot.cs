@@ -1222,7 +1222,7 @@ namespace Salon.Data.Migrations
                         {
                             t.HasCheckConstraint("ck_client_account_entries_amount_positive", "amount > 0");
 
-                            t.HasCheckConstraint("ck_client_account_entries_client_unless_counter_sale", "client_id IS NOT NULL OR (kind = 8 AND appointment_id IS NULL)");
+                            t.HasCheckConstraint("ck_client_account_entries_client_unless_counter_sale", "client_id IS NOT NULL OR (kind IN (8, 9) AND appointment_id IS NULL)");
                         });
                 });
 
@@ -1257,6 +1257,10 @@ namespace Salon.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("quantity");
 
+                    b.Property<int>("ReturnedQuantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("returned_quantity");
+
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
@@ -1290,6 +1294,8 @@ namespace Salon.Data.Migrations
                     b.ToTable("counter_sale_lines", "salon", t =>
                         {
                             t.HasCheckConstraint("ck_counter_sale_lines_quantity_positive", "quantity > 0");
+
+                            t.HasCheckConstraint("ck_counter_sale_lines_returned_within_quantity", "returned_quantity >= 0 AND returned_quantity <= quantity");
 
                             t.HasCheckConstraint("ck_counter_sale_lines_unit_price_not_negative", "unit_price >= 0");
                         });
