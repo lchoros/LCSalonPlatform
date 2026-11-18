@@ -113,4 +113,10 @@ public enum ClientAccountEntryKind
 
     /// <summary>The salon gave the money back for a gift voucher nobody had used (ADR 0057). No client; points at the sale.</summary>
     VoucherRefund = 12,
+
+    /// <summary>
+    /// A part of a visit's price paid one way before the rest is paid another (ADR 0061): money in, toward the visit,
+    /// less than what was left. The payment that settles the visit is still one <see cref="VisitPayment"/>.
+    /// </summary>
+    PartPayment = 13,
 }

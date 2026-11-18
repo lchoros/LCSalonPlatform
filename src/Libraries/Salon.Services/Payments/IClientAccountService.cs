@@ -71,6 +71,16 @@ public interface IClientAccountService
     Task<VisitBill> PayBillAsync(Guid appointmentId, PaymentChoice method, IReadOnlyCollection<Guid> feeAppointmentIds, Guid? byUserId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Records a part of the visit's price paid one way, before the rest is paid another (ADR 0061): "£20 in cash and
+    /// the rest by card". The amount is above zero and less than what is left to pay for the visit; the visit stays
+    /// open and <see cref="PayBillAsync"/> takes the rest. Any number of parts, each by its own method. The same form
+    /// sent twice (<paramref name="partId"/>) is one part. Two requests at once cannot take more than the visit
+    /// costs. Throws <see cref="ClientAccountException"/> when the visit is unknown, is not at the chair, is already
+    /// paid, the amount is not a part, the method is not one the salon takes, or the payment plugin refuses.
+    /// </summary>
+    Task<VisitBill> PayPartAsync(Guid appointmentId, decimal amount, PaymentChoice method, Guid? byUserId, Guid? partId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Puts a product on the visit's bill (ADR 0037), at the product's price of this moment. A product that already has
     /// an unpaid line on the bill gets its quantity raised instead of a second line. Nothing is paid and no stock moves
     /// until the bill is paid. Throws <see cref="ClientAccountException"/> when the visit is unknown or has not reached
@@ -215,7 +225,16 @@ public sealed record VisitBill(
     public bool CanPay => Status is AppointmentStatus.Arrived or AppointmentStatus.Completed;
 
     /// <summary>What is left to pay for the visit itself: nothing once it is paid, else the price less the deposit held.</summary>
-    public Money Outstanding => Price with { Amount = Payment is null ? TillRules.Outstanding(Price.Amount, (DepositHeld?.Amount ?? 0m) + (VoucherApplied?.Amount ?? 0m)) : 0m };
+    public Money Outstanding => Price with { Amount = Payment is null ? TillRules.Outstanding(Price.Amount, (DepositHeld?.Amount ?? 0m) + (VoucherApplied?.Amount ?? 0m) + (PartPaid?.Amount ?? 0m)) : 0m };
+
+    /// <summary>
+    /// The parts of the visit's price already paid another way (ADR 0061), oldest first. Each counts like a deposit
+    /// the salon holds: the visit has that much less left to pay.
+    /// </summary>
+    public IReadOnlyList<VisitPaymentLine> PartPayments { get; init; } = Array.Empty<VisitPaymentLine>();
+
+    /// <summary>The part payments added up; null when there is none.</summary>
+    public Money? PartPaid => PartPayments.Count > 0 ? Price with { Amount = PartPayments.Sum(p => p.Amount.Amount) } : null;
 
     /// <summary>What is left to pay for products: the lines nobody has paid for yet.</summary>
     public Money ProductsOutstanding => Price with { Amount = ProductSaleRules.Outstanding(Products.Select(p => (p.Quantity, p.UnitPrice.Amount, p.IsPaid))) };
@@ -276,6 +295,9 @@ public sealed record VisitPaymentLine(
 {
     /// <summary>The name of the salon's own method on the day of the payment (ADR 0060); null for a built-in one.</summary>
     public string? MethodName { get; init; }
+
+    /// <summary>True for a part paid before the rest (ADR 0061); false for the payment that settled the visit.</summary>
+    public bool IsPart { get; init; }
 }
 
 
@@ -406,6 +428,12 @@ public enum ClientAccountRefusal
 
     /// <summary>The method chosen is not one the salon takes: not known, or one of its own taken out of use (ADR 0060).</summary>
     MethodNotOffered = 21,
+
+    /// <summary>A part payment is above zero and less than what is left to pay for the visit (ADR 0061).</summary>
+    PartNotLessThanDue = 22,
+
+    /// <summary>The same form is being recorded by another request at this moment, or its id is another line's.</summary>
+    AlreadyBeingRecorded = 23,
 }
 
 /// <summary>A request the account refuses; <see cref="Refusal"/> says why, for the message the screen shows.</summary>

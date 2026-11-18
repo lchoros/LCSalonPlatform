@@ -267,5 +267,15 @@
   "Payments.Vouchers.Refused.NotRefundable": "The money can only be given back for a voucher nobody has used.",
   "Payments.Method.Other": "Other",
   "Payments.Fee.Refused.MethodNotOffered": "The salon does not take money that way any more. Choose another way of paying.",
-  "Payments.CounterSale.Refused.MethodNotOffered": "The salon does not take money that way any more. Choose another way of paying."
+  "Payments.CounterSale.Refused.MethodNotOffered": "The salon does not take money that way any more. Choose another way of paying.",
+  "Payments.Kind.PartPayment": "Visit paid in part",
+  "Payments.Checkout.Part.Open": "Pay part of it another way",
+  "Payments.Checkout.Part.Amount": "Amount of the part ({0})",
+  "Payments.Checkout.Part.Hint": "For example the cash, when the rest goes on a card. Less than the {0} left for the visit. Then pay the rest below.",
+  "Payments.Checkout.Part.Submit": "Record this part",
+  "Payments.Checkout.Part.Line": "Part paid: {0}",
+  "Payments.Checkout.Part.Recorded": "{0} is recorded. {1} is left to pay for the visit.",
+  "Payments.Checkout.Part.Refused.Incomplete": "Enter the amount of the part and choose how it was paid.",
+  "Payments.Fee.Refused.PartNotLessThanDue": "A part is more than nothing and less than what is left to pay for the visit. To pay all that is left, record the payment below.",
+  "Payments.Fee.Refused.AlreadyBeingRecorded": "This part is already being recorded. Look at the bill before trying again."
 }

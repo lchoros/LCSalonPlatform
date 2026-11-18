@@ -473,7 +473,7 @@ internal sealed class ReportService(
         var paid = await db.ClientAccountEntries.AsNoTracking()
             .Where(e => e.AppointmentId != null
                 && (e.Kind == ClientAccountEntryKind.VisitPayment || e.Kind == ClientAccountEntryKind.DepositPaid || e.Kind == ClientAccountEntryKind.DepositReturned
-                    || e.Kind == ClientAccountEntryKind.VoucherRedeemed)
+                    || e.Kind == ClientAccountEntryKind.VoucherRedeemed || e.Kind == ClientAccountEntryKind.PartPayment)
                 && db.Appointments.Any(a => a.Id == e.AppointmentId && a.Start >= start && a.Start < end && a.Status == AppointmentStatus.Completed))
             .Select(e => new { AppointmentId = e.AppointmentId!.Value, e.Kind, e.Amount })
             .ToListAsync(cancellationToken).ConfigureAwait(false);
@@ -489,7 +489,8 @@ internal sealed class ReportService(
             }
 
             // A deposit is returned in full (ADR 0023), so what is held is what came in less what went back. A gift
-            // voucher used toward the visit counts the same way (ADR 0057).
+            // voucher used toward the visit counts the same way (ADR 0057), and so does a part paid before the rest
+            // (ADR 0061): a completed visit with a part paid owes what is left, not its whole price.
             var held = own.Sum(m => m.Kind == ClientAccountEntryKind.DepositReturned ? -m.Amount : m.Amount);
             var outstanding = TillRules.Outstanding(visit.Price, held);
             if (outstanding > 0m)
