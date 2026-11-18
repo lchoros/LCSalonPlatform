@@ -65,7 +65,7 @@ public sealed class ExportClientsHandler(
         var now = clock.GetCurrentInstant();
 
         var clients = await db.Clients.AsNoTracking()
-            .Where(c => c.MergedIntoClientId == null)
+            .Where(c => c.MergedIntoClientId == null && c.ErasedAt == null)
             .Select(c => new { c.Id, c.FirstName, c.LastName, c.Phone, c.Email, c.Notes, c.MarketingConsent, c.MarketingConsentAt, c.CreatedAt, c.IsActive })
             .ToListAsync(cancellationToken);
         var active = AppointmentStateMachine.Active.ToArray();

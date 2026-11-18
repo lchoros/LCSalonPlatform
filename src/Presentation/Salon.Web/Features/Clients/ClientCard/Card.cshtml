@@ -11,7 +11,9 @@
     ViewData["Title"] = T["Clients.Card.Title"];
     // The visit rows (a partial) read this to decide whether a missed or cancelled visit links to its fee page.
     ViewData["FeesInUse"] = Model.FeesInUse;
-    var canMerge = !card.IsMerged && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsMerge);
+    var canMerge = Model.IsLive && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsMerge);
+    var canCopy = Model.IsLive && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsManage);
+    var canErase = canCopy && User.HasClaim(UserClaimTypes.Permission, Permissions.SettingsManage);
     const string labelClass = "text-sm text-stone-500";
     const string valueClass = "text-base";
     const string secondaryButtonClass = "btn btn-compact btn-secondary";
@@ -27,6 +29,11 @@
             <span>@T.Format("Clients.Card.MergedInto", Model.MergedIntoName ?? string.Empty)</span>
             <a href="/admin/clients/@card.MergedIntoClientId" data-testid="merged-into-link" class="inline-flex min-h-11 items-center font-medium underline">@T["Clients.Card.OpenMergedInto"]</a>
         </p>
+    }
+    @if (card.ErasedAt is { } erasedAt)
+    {
+        @* The client asked to be forgotten (ADR 0062): what is left is the record that visits took place and were paid. *@
+        <p role="status" data-testid="erased-banner" class="notice notice-warn">@T.Format("Clients.Card.Erased", erasedAt.InZone(Model.Zone).Date.ToString("d", culture))</p>
     }
     <a href="/admin/clients" class="back-link">&larr; @T["Clients.Card.Back"]</a>
     <header class="space-y-1">
@@ -268,6 +275,25 @@
         {
             <a href="/admin/clients/@card.Id/merge" data-testid="merge-link" class="@secondaryButtonClass">@T["Clients.Card.Merge"]</a>
         }
-        <a href="/admin/clients/@card.Id/edit" class="@secondaryButtonClass">@T["Clients.Card.Edit"]</a>
+        @if (!card.IsErased)
+        {
+            <a href="/admin/clients/@card.Id/edit" class="@secondaryButtonClass">@T["Clients.Card.Edit"]</a>
+        }
     </div>
+
+    @if (canCopy)
+    {
+        @* The client's rights over their data (ADR 0062): a copy of everything held, and being forgotten. *@
+        <section class="space-y-2 rounded-md bg-stone-50 p-4 text-sm text-stone-700" data-testid="data-rights">
+            <h2 class="font-semibold">@T["Clients.Card.DataRights.Title"]</h2>
+            <p>@T["Clients.Card.DataRights.Lead"]</p>
+            <p class="flex flex-wrap gap-x-6 gap-y-2">
+                <a href="@Model.DataCopyPath" class="inline-flex min-h-11 items-center font-medium underline underline-offset-2" data-testid="data-copy-link">@T["Clients.Card.DataRights.Copy"]</a>
+                @if (canErase)
+                {
+                    <a href="@Model.ErasePath" class="inline-flex min-h-11 items-center font-medium underline underline-offset-2" data-testid="erase-link">@T["Clients.Card.DataRights.Erase"]</a>
+                }
+            </p>
+        </section>
+    }
 </section>
