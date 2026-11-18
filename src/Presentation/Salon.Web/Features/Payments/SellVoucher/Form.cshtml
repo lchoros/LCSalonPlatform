@@ -1,0 +1,57 @@
+@using System.Globalization
+@using Salon.Core.Payments
+@using Salon.Web.Features.Payments.SellVoucher
+@model SellVoucherViewModel
+@{
+    ViewData["Title"] = T["Payments.Vouchers.Sell.Title"];
+    var culture = CultureInfo.CurrentCulture;
+    var form = Model.Form;
+    const string inputClass = "field field-compact";
+}
+<section class="mx-auto max-w-lg space-y-6">
+    <a href="@SellVoucherController.ListPath" class="back-link" data-testid="back">&larr; @T["Payments.Vouchers.Back"]</a>
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Payments.Vouchers.Sell.Title"]</h1>
+        <p class="text-stone-600">@T["Payments.Vouchers.Sell.Lead"]</p>
+    </header>
+
+    <form method="post" asp-action="Form" class="space-y-5 panel" novalidate data-testid="sell-voucher-form">
+        <div asp-validation-summary="ModelOnly" class="notice notice-error" role="alert" data-testid="sell-problem"></div>
+        <input type="hidden" name="SaleId" value="@Model.SaleId" />
+
+        <div class="space-y-1">
+            <label for="Amount" class="field-label">@T["Payments.Vouchers.Sell.Amount"]</label>
+            <input id="Amount" name="Amount" value="@form.Amount?.ToString("0.##", culture)" type="text" inputmode="decimal" aria-describedby="amount-hint amount-error" class="@inputClass tabular-nums sm:max-w-xs @ViewData.ModelState.InvalidClass("Amount")" data-testid="voucher-amount" />
+            <p id="amount-hint" class="text-sm text-stone-500">@T["Payments.Vouchers.Sell.AmountHint"]</p>
+            <p id="amount-error" class="text-sm text-red-700" data-testid="amount-error">@string.Join(" ", ViewData.ModelState.ErrorsFor("Amount"))</p>
+        </div>
+
+        <div class="space-y-1">
+            <label for="Method" class="field-label">@T["Payments.Fee.Pay.Method"]</label>
+            <select id="Method" name="Method" class="@inputClass sm:max-w-xs" aria-describedby="method-error" data-testid="voucher-method">
+                @foreach (var method in GiftVoucherRules.PaymentMethods)
+                {
+                    <option value="@method" selected="@(method == form.Method)">@T[$"Payments.Method.{method}"]</option>
+                }
+            </select>
+            <p id="method-error" class="text-sm text-red-700">@string.Join(" ", ViewData.ModelState.ErrorsFor("Method"))</p>
+        </div>
+
+        <div class="space-y-1">
+            <label for="ExpiresOn" class="field-label">@T["Payments.Vouchers.Sell.ExpiresOn"]</label>
+            <input id="ExpiresOn" name="ExpiresOn" value="@form.ExpiresOn" type="date" aria-describedby="expiry-hint expiry-error" class="@inputClass tabular-nums sm:max-w-xs @ViewData.ModelState.InvalidClass("ExpiresOn")" data-testid="voucher-expires" />
+            <p id="expiry-hint" class="text-sm text-stone-500">@T.Format("Payments.Vouchers.Sell.ExpiresOnHint", GiftVoucherRules.DefaultValidMonths)</p>
+            <p id="expiry-error" class="text-sm text-red-700" data-testid="expiry-error">@string.Join(" ", ViewData.ModelState.ErrorsFor("ExpiresOn"))</p>
+        </div>
+
+        <div class="space-y-1">
+            <label for="Note" class="field-label">@T["Payments.Vouchers.Sell.Note"]</label>
+            <input id="Note" name="Note" value="@form.Note" type="text" maxlength="@GiftVoucher.NoteMaxLength" aria-describedby="note-hint note-error" class="@inputClass @ViewData.ModelState.InvalidClass("Note")" data-testid="voucher-note-input" />
+            <p id="note-hint" class="text-sm text-stone-500">@T["Payments.Vouchers.Sell.NoteHint"]</p>
+            <p id="note-error" class="text-sm text-red-700">@string.Join(" ", ViewData.ModelState.ErrorsFor("Note"))</p>
+        </div>
+
+        <p class="text-sm text-stone-600">@T["Payments.CounterSale.Hint"]</p>
+        <button type="submit" class="btn btn-compact btn-primary w-full sm:w-auto" data-testid="sell-voucher-submit">@T["Payments.Vouchers.Sell.Submit"]</button>
+    </form>
+</section>

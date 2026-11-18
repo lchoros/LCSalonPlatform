@@ -203,7 +203,7 @@ public sealed record VisitBill(
     public bool CanPay => Status is AppointmentStatus.Arrived or AppointmentStatus.Completed;
 
     /// <summary>What is left to pay for the visit itself: nothing once it is paid, else the price less the deposit held.</summary>
-    public Money Outstanding => Price with { Amount = Payment is null ? TillRules.Outstanding(Price.Amount, DepositHeld?.Amount ?? 0m) : 0m };
+    public Money Outstanding => Price with { Amount = Payment is null ? TillRules.Outstanding(Price.Amount, (DepositHeld?.Amount ?? 0m) + (VoucherApplied?.Amount ?? 0m)) : 0m };
 
     /// <summary>What is left to pay for products: the lines nobody has paid for yet.</summary>
     public Money ProductsOutstanding => Price with { Amount = ProductSaleRules.Outstanding(Products.Select(p => (p.Quantity, p.UnitPrice.Amount, p.IsPaid))) };
@@ -219,6 +219,12 @@ public sealed record VisitBill(
 
     /// <summary>True while there is something a payment could settle: the visit, a product or an open fee.</summary>
     public bool HasSomethingToPay => ToPay.Amount > 0m || OpenFees.Count > 0;
+
+    /// <summary>
+    /// Gift vouchers used toward this visit (ADR 0057), added up; null when none. It counts like a deposit the salon
+    /// holds: the visit has that much less left to pay.
+    /// </summary>
+    public Money? VoucherApplied { get; init; }
 
     /// <summary>The service of the visit, for booking the next one like it (ADR 0039).</summary>
     public Guid ServiceId { get; init; }

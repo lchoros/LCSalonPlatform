@@ -13,10 +13,10 @@ internal sealed class ClientAccountEntryConfiguration : IEntityTypeConfiguration
         builder.ToTable("client_account_entries", t =>
         {
             t.HasCheckConstraint("ck_client_account_entries_amount_positive", "amount > 0");
-            // Every line is on a client's account except a product sold at the counter to somebody who is not a client
-            // (ADR 0053) and the money given back for it (ADR 0054); neither has a visit. The database refuses any
-            // other line without a client.
-            t.HasCheckConstraint("ck_client_account_entries_client_unless_counter_sale", "client_id IS NOT NULL OR (kind IN (8, 9) AND appointment_id IS NULL)");
+            // Every line is on a client's account except four kinds that have no client and no visit: a product sold at
+            // the counter (ADR 0053), the money given back for it (ADR 0054), a gift voucher sold and the money given
+            // back for one (ADR 0057). The database refuses any other line without a client.
+            t.HasCheckConstraint("ck_client_account_entries_client_unless_counter_sale", "client_id IS NOT NULL OR (kind IN (8, 9, 10, 12) AND appointment_id IS NULL)");
         });
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Kind).HasConversion<int>();
@@ -52,6 +52,11 @@ internal sealed class ClientAccountEntryConfiguration : IEntityTypeConfiguration
             .IsUnique()
             .HasFilter("kind = 7")
             .HasDatabaseName("ux_client_account_entries_one_visit_payment_per_appointment");
+        // A voucher is used once on a visit (ADR 0057): a second click or a second till cannot take its money twice.
+        builder.HasIndex(e => new { e.TenantId, e.AppointmentId, e.RelatedEntryId }, "OneUseOfAVoucherPerAppointment")
+            .IsUnique()
+            .HasFilter("kind = 11")
+            .HasDatabaseName("ux_client_account_entries_one_use_of_a_voucher_per_appointment");
         // The till reads a day's lines whoever the client is.
         builder.HasIndex(e => new { e.TenantId, e.At }, "ByDay").HasDatabaseName("ix_client_account_entries_tenant_id_at");
         // Restrict everywhere: money history outlives a tidy-up of whatever it points at.

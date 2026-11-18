@@ -112,6 +112,17 @@ public sealed record CheckoutViewModel(VisitBill Bill, string? Flash, string? Er
     /// <summary>Where the payment form posts: this bill.</summary>
     public string PayPath => CheckoutController.BasePath + "/" + Bill.AppointmentId;
 
+    /// <summary>Where a gift voucher's code posts (ADR 0057); the RedeemVoucher slice owns the route.</summary>
+    public string VoucherPath => CheckoutController.BasePath + "/" + Bill.AppointmentId + "/voucher";
+
+    /// <summary>A voucher can go toward the visit while the client is here and the visit has something left to pay.</summary>
+    public bool CanUseVoucher => Bill.CanPay && Bill.Outstanding.Amount > 0m;
+
+    /// <summary>Why nothing is left to pay: it was paid, a voucher covered it, or the deposit did.</summary>
+    public string SettledKey => Bill.Payment is not null ? "Payments.Checkout.Settled"
+        : Bill.VoucherApplied is not null ? "Payments.Checkout.CoveredByVoucher"
+        : "Payments.Checkout.CoveredByDeposit";
+
     /// <summary>The till of the day the visit was paid, or took place.</summary>
     public string TillPath => "/admin/payments/cash-up?date=" + LocalDatePattern.Iso.Format((Bill.Payment?.At ?? Bill.Start.ToInstant()).InZone(Bill.Start.Zone).Date);
 }

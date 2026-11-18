@@ -481,6 +481,23 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] AO6. Settings, "Messages": "A time has come up" is there and its wording can be changed.
 - [ ] AO7. Untick the box: a cancellation sends nothing to the waitlist.
 
+## AP. Gift vouchers (after the branch `agent/m3-35-gift-vouchers` is merged too; it has a migration)
+- [ ] AP1. The till has "Gift vouchers". The page says what is still to be used: £0.00 to begin with.
+- [ ] AP2. "Sell a gift voucher": 50, cash, a name under "Who is it for?". The next page shows the code, £50.00 and
+      "Use by" a year from today. The till of today has "Gift voucher sold" £50.00.
+- [ ] AP3. Mark a client as arrived for a visit that costs less than £50. At the checkout, "Use a gift voucher",
+      type the code (lower case and without the dash also works). The bill shows "Gift voucher −£...", nothing is
+      left to pay and the visit is completed. The message says what is left on the voucher.
+- [ ] AP4. The voucher's page lists that visit and the amount left. The list shows the smaller amount still to be
+      used.
+- [ ] AP5. Use the same voucher on a visit that costs more than what is left: the rest is paid by card or cash as
+      usual, for the difference only.
+- [ ] AP6. Reports, this month: the takings have the £50 once, on the day the voucher was sold. The visit the
+      voucher paid for is not under "Completed visits not paid".
+- [ ] AP7. Sell another voucher and, on its page, "Give the money back": it says so, and the code is refused at a
+      checkout afterwards. A voucher that was used has no such button.
+- [ ] AP8. A wrong code at the checkout: "There is no voucher with this code."
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

@@ -1,0 +1,62 @@
+@using System.Globalization
+@using Salon.Web.Features.Payments.Vouchers
+@model VouchersViewModel
+@{
+    ViewData["Title"] = T["Payments.Vouchers.Title"];
+    var culture = CultureInfo.CurrentCulture;
+    var list = Model.List;
+}
+<section class="space-y-6">
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+    <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div class="space-y-1">
+            <h1 class="page-title">@T["Payments.Vouchers.Title"]</h1>
+            <p class="text-stone-600">@T["Payments.Vouchers.Lead"]</p>
+        </div>
+        <a href="@VouchersController.SellPath" data-testid="sell-voucher" class="btn btn-compact btn-primary">@T["Payments.Vouchers.Sell"]</a>
+    </header>
+
+    <div class="panel stat accent-3" data-testid="vouchers-outstanding-panel">
+        <p class="stat-label">@T["Payments.Vouchers.Outstanding"]</p>
+        <p class="stat-value" data-testid="vouchers-outstanding">@list.Outstanding.ToDisplayString(culture)</p>
+        <p class="text-sm text-stone-600">@T["Payments.Vouchers.OutstandingHint"]</p>
+    </div>
+
+    <div class="space-y-3" data-testid="voucher-filters">
+        <partial name="_SearchBox" model="Model.Search" />
+        <partial name="_FilterTiles" model="Model.Filter" />
+    </div>
+
+    @if (!Model.HasAny)
+    {
+        <p data-testid="no-vouchers" class="empty-state">@T["Payments.Vouchers.None"]</p>
+    }
+    else
+    {
+        <ul class="grid gap-3 sm:grid-cols-2" data-testid="voucher-list">
+            @foreach (var voucher in list.Vouchers.Items)
+            {
+                <li class="panel @(voucher.CanBeUsed ? null : "opacity-60")" data-testid="voucher" data-status="@voucher.Status">
+                    <a href="@VouchersController.CardPath(voucher.Id)" class="flex min-h-11 items-start justify-between gap-3" data-testid="open-voucher">
+                        <span class="min-w-0 flex-1 space-y-1">
+                            <span class="block text-lg font-semibold tabular-nums tracking-wide" data-testid="voucher-code">@voucher.Code</span>
+                            <span class="block text-sm text-stone-600">@VoucherText.Status(T, voucher, culture)</span>
+                            @if (voucher.Note is { } note)
+                            {
+                                <span class="block text-sm text-stone-600" data-testid="voucher-note">@note</span>
+                            }
+                        </span>
+                        <span class="shrink-0 text-right">
+                            <span class="block text-2xl font-bold tabular-nums" data-testid="voucher-left">@voucher.Left.ToDisplayString(culture)</span>
+                            <span class="block text-xs font-medium uppercase tracking-wide text-stone-500">@T.Format("Payments.Vouchers.Of", voucher.Initial.ToDisplayString(culture))</span>
+                        </span>
+                    </a>
+                </li>
+            }
+        </ul>
+        <partial name="_Pager" model="Model.Pager" />
+    }
+</section>

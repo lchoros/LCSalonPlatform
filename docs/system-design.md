@@ -217,6 +217,12 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   sales of a day, newest first, and `POST .../{saleId}/lines/{lineId}/return`, which gives the money back at the
   price sold as a `ProductReturn` line with no client that points at the sale. `ICounterSaleService.ReturnAsync`
   claims the units in one statement, so two tills cannot return the same unit.
+- Gift vouchers (ADR 0057): `Payments/SellVoucher` at `/admin/payments/vouchers/new`, `Payments/Vouchers` at
+  `/admin/payments/vouchers` (the list with what the salon owes, a voucher's page, `POST .../{id}/refund`) and
+  `Payments/RedeemVoucher` (`POST /admin/payments/checkout/{appointmentId}/voucher`), all behind `Payments.Record`.
+  `IGiftVoucherService` records a sale as a `VoucherSale` line with no client, a use as a `VoucherRedeemed` line
+  with no method on the client's account, and a refund as `VoucherRefund`. `VisitBill.VoucherApplied` counts toward
+  the visit like a deposit held. What is left on a voucher is claimed in one statement.
 - `Reports/ExportMoney` — `GET /admin/reports/money.csv?from=&to=` (ADR 0042), same permissions as the report: every
   line of the period that moved money (`IReportService.GetMoneyLinesAsync`, the till's own rule) as a CSV written by
   the pure `Csv` (Core) in the reader's language, list separator and decimal sign, UTF-8 with a byte order mark;

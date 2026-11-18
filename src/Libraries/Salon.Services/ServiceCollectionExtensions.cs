@@ -68,6 +68,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IClientAccountService, ClientAccountService>();
         services.AddScoped<ICashUpService, CashUpService>();
         services.AddScoped<ICounterSaleService, CounterSaleService>();
+        services.AddScoped<IGiftVoucherService, GiftVoucherService>();
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<ILocationService, LocationService>();
         services.AddScoped<IStockService, StockService>();

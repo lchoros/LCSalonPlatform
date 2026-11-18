@@ -89,4 +89,16 @@ public enum ClientAccountEntryKind
 
     /// <summary>The salon gave money back for products a client returned (ADR 0040); points at the sale it undoes in part or in full.</summary>
     ProductReturn = 9,
+
+    /// <summary>The salon sold a gift voucher (ADR 0057): money in today for a visit somebody will have later. No client.</summary>
+    VoucherSale = 10,
+
+    /// <summary>
+    /// A gift voucher was used toward a visit (ADR 0057): no money changes hands, the visit has that much less left to
+    /// pay. Points at the sale of the voucher.
+    /// </summary>
+    VoucherRedeemed = 11,
+
+    /// <summary>The salon gave the money back for a gift voucher nobody had used (ADR 0057). No client; points at the sale.</summary>
+    VoucherRefund = 12,
 }

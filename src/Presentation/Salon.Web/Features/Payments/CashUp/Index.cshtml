@@ -16,7 +16,10 @@
 <section class="mx-auto max-w-2xl space-y-6">
     <header class="space-y-3">
         <h1 class="page-title">@T["Payments.CashUp.Title"]</h1>
-        <p><a href="@CashUpController.CounterSalePath" class="btn btn-compact btn-secondary" data-testid="counter-sale">@T["Payments.CounterSale.Link"]</a></p>
+        <p class="flex flex-wrap gap-2">
+            <a href="@CashUpController.CounterSalePath" class="btn btn-compact btn-secondary" data-testid="counter-sale">@T["Payments.CounterSale.Link"]</a>
+            <a href="@CashUpController.VouchersPath" class="btn btn-compact btn-secondary" data-testid="gift-vouchers">@T["Payments.Vouchers.Link"]</a>
+        </p>
         <p class="text-stone-600">@T["Payments.CashUp.Lead"]</p>
         <div class="flex items-center gap-2">
             <a href="@CashUpController.DayPath(day.Day.PlusDays(-1))" data-testid="prev-day" class="@navClass" aria-label="@T["Appointments.Day.Previous"]">&larr;</a>

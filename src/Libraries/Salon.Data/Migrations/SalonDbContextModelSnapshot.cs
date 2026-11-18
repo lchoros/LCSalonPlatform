@@ -1236,6 +1236,11 @@ namespace Salon.Data.Migrations
                         .HasDatabaseName("ux_client_account_entries_one_return_per_deposit")
                         .HasFilter("kind = 6");
 
+                    b.HasIndex(new[] { "TenantId", "AppointmentId", "RelatedEntryId" }, "OneUseOfAVoucherPerAppointment")
+                        .IsUnique()
+                        .HasDatabaseName("ux_client_account_entries_one_use_of_a_voucher_per_appointment")
+                        .HasFilter("kind = 11");
+
                     b.HasIndex(new[] { "TenantId", "AppointmentId" }, "OneVisitPaymentPerAppointment")
                         .IsUnique()
                         .HasDatabaseName("ux_client_account_entries_one_visit_payment_per_appointment")
@@ -1245,7 +1250,7 @@ namespace Salon.Data.Migrations
                         {
                             t.HasCheckConstraint("ck_client_account_entries_amount_positive", "amount > 0");
 
-                            t.HasCheckConstraint("ck_client_account_entries_client_unless_counter_sale", "client_id IS NOT NULL OR (kind IN (8, 9) AND appointment_id IS NULL)");
+                            t.HasCheckConstraint("ck_client_account_entries_client_unless_counter_sale", "client_id IS NOT NULL OR (kind IN (8, 9, 10, 12) AND appointment_id IS NULL)");
                         });
                 });
 
@@ -1321,6 +1326,89 @@ namespace Salon.Data.Migrations
                             t.HasCheckConstraint("ck_counter_sale_lines_returned_within_quantity", "returned_quantity >= 0 AND returned_quantity <= quantity");
 
                             t.HasCheckConstraint("ck_counter_sale_lines_unit_price_not_negative", "unit_price >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Salon.Core.Payments.GiftVoucher", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Balance")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("balance");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("code");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<LocalDate?>("ExpiresOn")
+                        .HasColumnType("date")
+                        .HasColumnName("expires_on");
+
+                    b.Property<decimal>("InitialAmount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("initial_amount");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("note");
+
+                    b.Property<Instant?>("RefundedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("refunded_at");
+
+                    b.Property<Guid>("SaleEntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sale_entry_id");
+
+                    b.Property<Instant>("SoldAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sold_at");
+
+                    b.Property<Guid?>("SoldByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sold_by_user_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_gift_vouchers");
+
+                    b.HasIndex("SaleEntryId")
+                        .HasDatabaseName("ix_gift_vouchers_sale_entry_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_gift_vouchers_tenant_id");
+
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_gift_vouchers_tenant_id_code");
+
+                    b.HasIndex("TenantId", "SaleEntryId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_gift_vouchers_tenant_id_sale_entry_id");
+
+                    b.ToTable("gift_vouchers", "salon", t =>
+                        {
+                            t.HasCheckConstraint("ck_gift_vouchers_balance_within_initial", "balance >= 0 AND balance <= initial_amount");
+
+                            t.HasCheckConstraint("ck_gift_vouchers_initial_amount_positive", "initial_amount > 0");
                         });
                 });
 
@@ -2114,6 +2202,23 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_counter_sale_lines_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Payments.GiftVoucher", b =>
+                {
+                    b.HasOne("Salon.Core.Payments.ClientAccountEntry", null)
+                        .WithMany()
+                        .HasForeignKey("SaleEntryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_gift_vouchers_client_account_entries_sale_entry_id");
+
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_gift_vouchers_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Payments.VisitProductLine", b =>
