@@ -21,7 +21,7 @@ public sealed record VouchersQuery(bool IncludeSpent, string? Search, int? Page)
 public sealed record VoucherQuery(Guid Id) : IQuery<VoucherCard?>;
 
 /// <summary>Gives the money back for a voucher nobody has used (ADR 0057). A command: the claim and the line of money commit together.</summary>
-public sealed record RefundVoucherCommand(Guid Id, PaymentMethod Method, Guid? ByUserId) : ICommand<Money>;
+public sealed record RefundVoucherCommand(Guid Id, PaymentChoice Method, Guid? ByUserId) : ICommand<Money>;
 
 public sealed class VouchersHandler(IGiftVoucherService vouchers) : IRequestHandler<VouchersQuery, VoucherList>
 {
@@ -99,7 +99,7 @@ public sealed class VouchersController(IDispatcher dispatcher, ILocalizationServ
 
     [HttpPost("{id:guid}/refund")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Refund(Guid id, PaymentMethod? method, CancellationToken cancellationToken)
+    public async Task<IActionResult> Refund(Guid id, PaymentChoice? method, CancellationToken cancellationToken)
     {
         try
         {

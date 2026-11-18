@@ -27,7 +27,7 @@ public sealed record CheckoutQuery(Guid AppointmentId) : IQuery<VisitBill?>;
 /// form (<paramref name="Fees"/>: the visits those fees are about). An arrived visit is completed in the same
 /// transaction. Nothing is charged (Phase 1).
 /// </summary>
-public sealed record PayBillCommand(Guid AppointmentId, PaymentMethod? Method, IReadOnlyList<Guid> Fees, Guid? ByUserId) : ICommand<VisitBill>;
+public sealed record PayBillCommand(Guid AppointmentId, PaymentChoice? Method, IReadOnlyList<Guid> Fees, Guid? ByUserId) : ICommand<VisitBill>;
 
 public sealed class PayBillValidator : AbstractValidator<PayBillCommand>
 {
@@ -36,7 +36,7 @@ public sealed class PayBillValidator : AbstractValidator<PayBillCommand>
         ArgumentNullException.ThrowIfNull(localizer);
 
         RuleFor(c => c.Method)
-            .Must(method => method is { } chosen && Enum.IsDefined(chosen))
+            .Must(method => method is { } chosen && chosen.IsWellFormed)
             .WithMessage(_ => localizer["Payments.Checkout.Validation.MethodRequired"]);
     }
 }

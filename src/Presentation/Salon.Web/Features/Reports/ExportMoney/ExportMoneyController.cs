@@ -56,7 +56,7 @@ public sealed class ExportMoneyController(IDispatcher dispatcher, ILocalizationS
             CsvValue.Text(line.ClientName),
             CsvValue.Text(localizer[$"Payments.Kind.{line.Kind}"]),
             CsvValue.Text(line.ServiceName),
-            CsvValue.Text(localizer[$"Payments.Method.{line.Method}"]),
+            CsvValue.Text(Salon.Services.Payments.PaymentMethodNames.Name(localizer, line.Method, line.MethodName)),
             // A plain minus and no thousands separator: a number, not a label.
             CsvValue.Number(line.Amount.Amount.ToString("0.00", culture.NumberFormat)),
             CsvValue.Text(line.Amount.Currency),

@@ -1,0 +1,124 @@
+@using Salon.Core.Payments
+@using Salon.Web.Features.Settings.PaymentMethods
+@model PaymentMethodsViewModel
+@{
+    ViewData["Title"] = T["Settings.PaymentMethods.Title"];
+    var builtIn = Model.Methods.BuiltIn;
+    const string buttonClass = "btn btn-compact btn-primary w-full sm:w-auto";
+    const string secondaryClass = "btn btn-compact btn-secondary";
+    const string inputClass = "field field-compact";
+    const string checkClass = "size-5 shrink-0 rounded border-stone-400";
+}
+<section class="mx-auto max-w-xl space-y-6">
+    <partial name="_SettingsNav" model="@("payment-methods")" />
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Settings.PaymentMethods.Title"]</h1>
+        <p class="text-stone-600">@T["Settings.PaymentMethods.Lead"]</p>
+    </header>
+
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+    @if (Model.Problem is { } problem)
+    {
+        <p role="alert" data-testid="problem" class="notice notice-error">@problem</p>
+    }
+
+    <section class="space-y-4 panel" data-testid="own-methods">
+        <h2 class="text-lg font-semibold">@T["Settings.PaymentMethods.Own.Title"]</h2>
+        @if (Model.InUse.Count == 0)
+        {
+            <p class="text-sm text-stone-600" data-testid="no-own-methods">@T["Settings.PaymentMethods.Own.None"]</p>
+        }
+        else
+        {
+            <ul class="list-card" data-testid="own-method-list">
+                @foreach (var method in Model.InUse)
+                {
+                    <li class="space-y-2 p-3" data-testid="own-method">
+                        <form method="post" action="@PaymentMethodsViewModel.RenamePath(method.Id)" class="flex flex-wrap items-end gap-2" novalidate>
+                            @Html.AntiForgeryToken()
+                            <div class="min-w-0 flex-1 space-y-1">
+                                <label for="name-@method.Id" class="field-label">@T["Settings.PaymentMethods.Name"]</label>
+                                <input id="name-@method.Id" name="name" value="@method.Name" type="text" maxlength="@SalonPaymentMethod.NameMaxLength" class="@inputClass" data-testid="own-method-name" />
+                            </div>
+                            <button type="submit" class="@secondaryClass" data-testid="rename-method">@T["Settings.PaymentMethods.Rename"]</button>
+                        </form>
+                        <form method="post" action="@PaymentMethodsViewModel.RetirePath(method.Id)">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="text-sm underline underline-offset-2" data-testid="retire-method">@T.Format("Settings.PaymentMethods.Retire", method.Name)</button>
+                            <span class="block text-sm text-stone-600">@T[method.IsUsed ? "Settings.PaymentMethods.RetireHint.Used" : "Settings.PaymentMethods.RetireHint.Unused"]</span>
+                        </form>
+                    </li>
+                }
+            </ul>
+        }
+
+        @if (Model.CanAdd)
+        {
+            <form method="post" asp-action="Add" class="flex flex-wrap items-end gap-2" novalidate data-testid="add-method-form">
+                <div class="min-w-0 flex-1 space-y-1">
+                    <label for="new-method" class="field-label">@T["Settings.PaymentMethods.Add.Label"]</label>
+                    <input id="new-method" name="name" type="text" maxlength="@SalonPaymentMethod.NameMaxLength" aria-describedby="new-method-hint" class="@inputClass" data-testid="new-method-name" />
+                    <p id="new-method-hint" class="text-sm text-stone-600">@T["Settings.PaymentMethods.Add.Hint"]</p>
+                </div>
+                <button type="submit" class="@buttonClass" data-testid="add-method">@T["Settings.PaymentMethods.Add.Submit"]</button>
+            </form>
+        }
+        else
+        {
+            <p class="text-sm text-stone-600" data-testid="methods-full">@T.Format("Settings.PaymentMethods.Refused.TooMany", SalonPaymentMethodRules.MaxMethods)</p>
+        }
+
+        @if (Model.Retired.Count > 0)
+        {
+            <h3 class="text-base font-semibold">@T["Settings.PaymentMethods.Retired.Title"]</h3>
+            <ul class="list-card" data-testid="retired-method-list">
+                @foreach (var method in Model.Retired)
+                {
+                    <li class="flex flex-wrap items-center justify-between gap-2 p-3" data-testid="retired-method">
+                        <span>@method.Name</span>
+                        <form method="post" action="@PaymentMethodsViewModel.RestorePath(method.Id)">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="@secondaryClass" data-testid="restore-method">@T["Settings.PaymentMethods.Restore"]</button>
+                        </form>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+
+    <form method="post" asp-action="BuiltIn" class="space-y-4 panel" novalidate data-testid="built-in-form">
+        <h2 class="text-lg font-semibold">@T["Settings.PaymentMethods.BuiltIn.Title"]</h2>
+        <p class="text-sm text-stone-600">@T["Settings.PaymentMethods.BuiltIn.Hint"]</p>
+        <label class="flex min-h-11 items-center gap-3">
+            <input type="checkbox" checked disabled class="@checkClass" />
+            <span class="font-medium">@T["Payments.Method.Cash"]</span>
+            <span class="text-sm text-stone-600">@T["Settings.PaymentMethods.BuiltIn.CashAlways"]</span>
+        </label>
+        <label class="flex min-h-11 items-center gap-3">
+            <input name="CardAtSalonTerminal" type="checkbox" value="true" checked="@builtIn.CardAtSalonTerminal" class="@checkClass" data-testid="built-in-card" />
+            <span class="font-medium">@T["Payments.Method.CardAtSalonTerminal"]</span>
+        </label>
+        <label class="flex min-h-11 items-center gap-3">
+            <input name="BankTransfer" type="checkbox" value="true" checked="@builtIn.BankTransfer" class="@checkClass" data-testid="built-in-transfer" />
+            <span class="font-medium">@T["Payments.Method.BankTransfer"]</span>
+        </label>
+        <label class="flex min-h-11 items-center gap-3">
+            <input name="Voucher" type="checkbox" value="true" checked="@builtIn.Voucher" class="@checkClass" data-testid="built-in-voucher" />
+            <span class="font-medium">@T["Payments.Method.Voucher"]</span>
+        </label>
+        <button type="submit" class="@buttonClass" data-testid="save-built-in">@T["Settings.PaymentMethods.BuiltIn.Submit"]</button>
+    </form>
+
+    <section class="space-y-2 rounded-md bg-stone-50 p-4 text-sm text-stone-700" data-testid="payment-method-notes">
+        <h2 class="font-semibold">@T["Settings.PaymentMethods.Notes.Title"]</h2>
+        <ul class="list-disc space-y-1 pl-5">
+            <li>@T["Settings.PaymentMethods.Notes.RecordOnly"]</li>
+            <li>@T["Settings.PaymentMethods.Notes.Everywhere"]</li>
+            <li>@T["Settings.PaymentMethods.Notes.History"]</li>
+        </ul>
+        <p><a href="@PaymentMethodsController.TillPath" class="font-medium underline underline-offset-2" data-testid="to-till">@T["Settings.PaymentMethods.ToTill"]</a></p>
+    </section>
+</section>

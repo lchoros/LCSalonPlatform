@@ -77,9 +77,9 @@ public sealed class BillProductsController(IDispatcher dispatcher, ILocalization
     /// </summary>
     [HttpPost("{lineId:guid}/return")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Return(Guid appointmentId, Guid lineId, int? quantity, PaymentMethod? method, bool? backOnShelf, CancellationToken cancellationToken)
+    public async Task<IActionResult> Return(Guid appointmentId, Guid lineId, int? quantity, PaymentChoice? method, bool? backOnShelf, CancellationToken cancellationToken)
     {
-        if (method is not { } chosen || !Enum.IsDefined(chosen))
+        if (method is not { } chosen || !chosen.IsWellFormed)
         {
             SetProblem(localizer["Payments.Checkout.Validation.MethodRequired"]);
             return BackToTheBill(appointmentId);

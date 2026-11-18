@@ -43,12 +43,12 @@ public sealed class VisitDepositController(IDispatcher dispatcher, ILocalization
 
     [HttpPost("")]
     [ValidateAntiForgeryToken]
-    public Task<IActionResult> Record(Guid appointmentId, decimal? amount, PaymentMethod? method, CancellationToken cancellationToken)
+    public Task<IActionResult> Record(Guid appointmentId, decimal? amount, PaymentChoice? method, CancellationToken cancellationToken)
         => ActAsync(appointmentId, new RecordDepositCommand(appointmentId, amount, method, CurrentUserId()), "Payments.Deposit.Recorded", cancellationToken);
 
     [HttpPost("return")]
     [ValidateAntiForgeryToken]
-    public Task<IActionResult> Return(Guid appointmentId, PaymentMethod? method, CancellationToken cancellationToken)
+    public Task<IActionResult> Return(Guid appointmentId, PaymentChoice? method, CancellationToken cancellationToken)
         => ActAsync(appointmentId, new ReturnDepositCommand(appointmentId, method, CurrentUserId()), "Payments.Deposit.Returned", cancellationToken);
 
     /// <summary>Sends the command; success goes back to the page with a confirmation, a refusal shows the page with the reason.</summary>

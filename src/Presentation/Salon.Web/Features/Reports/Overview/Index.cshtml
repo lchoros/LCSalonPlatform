@@ -148,7 +148,7 @@
             <dl class="@listClass">
                 @foreach (var total in Model.Takings.ByMethod)
                 {
-                    <dt>@T[$"Payments.Method.{total.Method}"]</dt>
+                    <dt>@PaymentMethodNames.Name(T, total.Method, total.MethodName)</dt>
                     <dd class="text-right tabular-nums" data-testid="method-@total.Method">@total.Amount.ToDisplayString(culture)</dd>
                 }
             </dl>

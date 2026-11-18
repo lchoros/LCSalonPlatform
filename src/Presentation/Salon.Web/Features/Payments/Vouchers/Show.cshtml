@@ -41,7 +41,7 @@
             <dt>@T["Payments.Vouchers.SoldOn"]</dt>
             <dd class="text-right tabular-nums">@voucher.SoldOn.ToString("d", culture)</dd>
             <dt>@T["Payments.Vouchers.SoldWith"]</dt>
-            <dd class="text-right">@T[$"Payments.Method.{card.SoldWith}"]</dd>
+            <dd class="text-right">@PaymentMethodNames.Name(T, card.SoldWith, card.SoldWithName)</dd>
             <dt>@T["Payments.Vouchers.SoldBy"]</dt>
             <dd class="text-right">@(card.SoldByName ?? T["Payments.Fee.History.Unknown"])</dd>
         </dl>
@@ -79,10 +79,7 @@
                 <div class="space-y-1">
                     <label for="method" class="field-label">@T["Payments.Checkout.Products.Return.Method"]</label>
                     <select id="method" name="method" class="@inputClass" data-testid="refund-method">
-                        @foreach (var method in GiftVoucherRules.PaymentMethods)
-                        {
-                            <option value="@method" selected="@(method == card.SoldWith)">@T[$"Payments.Method.{method}"]</option>
-                        }
+                        <payment-method-options selected="card.PaidWith" for-voucher="true" />
                     </select>
                 </div>
                 <button type="submit" class="btn btn-compact btn-danger w-full sm:w-auto" data-testid="refund-submit">@T.Format("Payments.Vouchers.Refund.Submit", voucher.Initial.ToDisplayString(culture))</button>

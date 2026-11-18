@@ -84,10 +84,7 @@
                 <div class="space-y-1">
                     <label for="method" class="field-label">@T["Payments.Fee.Pay.Method"]</label>
                     <select id="method" name="method" class="@inputClass" data-testid="sale-method">
-                        @foreach (var method in Enum.GetValues<PaymentMethod>())
-                        {
-                            <option value="@method">@T[$"Payments.Method.{method}"]</option>
-                        }
+                        <payment-method-options />
                     </select>
                 </div>
                 <p class="text-sm text-stone-600">@T["Payments.CounterSale.Hint"]</p>

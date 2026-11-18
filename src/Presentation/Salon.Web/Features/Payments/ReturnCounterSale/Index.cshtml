@@ -45,7 +45,7 @@
             {
                 <li class="space-y-3 panel" data-testid="sale" data-sale="@sale.Id">
                     <div class="flex flex-wrap items-baseline justify-between gap-2">
-                        <p class="font-semibold"><span class="tabular-nums">@sale.At.TimeOfDay.ToShortTime(culture)</span> · @T[$"Payments.Method.{sale.Method}"]</p>
+                        <p class="font-semibold"><span class="tabular-nums">@sale.At.TimeOfDay.ToShortTime(culture)</span> · @PaymentMethodNames.Name(T, sale.Method, sale.MethodName)</p>
                         <p class="text-lg font-bold tabular-nums" data-testid="sale-total">@sale.Total.ToDisplayString(culture)</p>
                     </div>
                     @if (sale.ByName is { } by)
@@ -83,10 +83,7 @@
                                                 <div class="space-y-1">
                                                     <label for="@(returnId)-method" class="field-label">@T["Payments.Checkout.Products.Return.Method"]</label>
                                                     <select id="@(returnId)-method" name="method" class="@inputClass" data-testid="return-method">
-                                                        @foreach (var method in Enum.GetValues<PaymentMethod>())
-                                                        {
-                                                            <option value="@method" selected="@(method == sale.Method)">@T[$"Payments.Method.{method}"]</option>
-                                                        }
+                                                        <payment-method-options selected="sale.PaidWith" />
                                                     </select>
                                                 </div>
                                             </div>

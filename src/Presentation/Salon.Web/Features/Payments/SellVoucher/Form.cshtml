@@ -29,10 +29,7 @@
         <div class="space-y-1">
             <label for="Method" class="field-label">@T["Payments.Fee.Pay.Method"]</label>
             <select id="Method" name="Method" class="@inputClass sm:max-w-xs" aria-describedby="method-error" data-testid="voucher-method">
-                @foreach (var method in GiftVoucherRules.PaymentMethods)
-                {
-                    <option value="@method" selected="@(method == form.Method)">@T[$"Payments.Method.{method}"]</option>
-                }
+                <payment-method-options selected="form.Method" for-voucher="true" />
             </select>
             <p id="method-error" class="text-sm text-red-700">@string.Join(" ", ViewData.ModelState.ErrorsFor("Method"))</p>
         </div>

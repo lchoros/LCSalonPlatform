@@ -40,7 +40,7 @@ public sealed class CounterSaleController(IDispatcher dispatcher, ILocalizationS
 
     [HttpPost("")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Record([FromForm] List<CounterSaleRow>? rows, PaymentMethod? method, Guid? sale, CancellationToken cancellationToken)
+    public async Task<IActionResult> Record([FromForm] List<CounterSaleRow>? rows, PaymentChoice? method, Guid? sale, CancellationToken cancellationToken)
     {
         try
         {
@@ -48,7 +48,7 @@ public sealed class CounterSaleController(IDispatcher dispatcher, ILocalizationS
             SetFlash(localizer.Format(
                 "Payments.CounterSale.Recorded",
                 receipt.Total.ToDisplayString(CultureInfo.CurrentCulture),
-                localizer[$"Payments.Method.{receipt.Method}"]));
+                PaymentMethodNames.Name(localizer, receipt.Method, receipt.MethodName)));
         }
         catch (CounterSaleException ex)
         {

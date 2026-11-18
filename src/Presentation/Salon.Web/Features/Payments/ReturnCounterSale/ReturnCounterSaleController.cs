@@ -22,7 +22,7 @@ public sealed record CounterSalesOfDayQuery(LocalDate? Day) : IQuery<CounterSale
 /// Gives the money back for units of one line of a counter sale (ADR 0054). A command: runs in the pipeline's
 /// transaction, so the claim on the units, the money line and the shelf commit together.
 /// </summary>
-public sealed record ReturnCounterSaleCommand(Guid SaleId, Guid LineId, int Quantity, PaymentMethod Method, bool BackOnShelf, Guid? ByUserId) : ICommand<Money>;
+public sealed record ReturnCounterSaleCommand(Guid SaleId, Guid LineId, int Quantity, PaymentChoice Method, bool BackOnShelf, Guid? ByUserId) : ICommand<Money>;
 
 public sealed class CounterSalesOfDayHandler(ICounterSaleService sales) : IRequestHandler<CounterSalesOfDayQuery, CounterSaleDay>
 {
@@ -69,7 +69,7 @@ public sealed class ReturnCounterSaleController(IDispatcher dispatcher, ILocaliz
 
     [HttpPost("{saleId:guid}/lines/{lineId:guid}/return")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Return(Guid saleId, Guid lineId, int? quantity, PaymentMethod? method, bool backOnShelf, string? date, CancellationToken cancellationToken)
+    public async Task<IActionResult> Return(Guid saleId, Guid lineId, int? quantity, PaymentChoice? method, bool backOnShelf, string? date, CancellationToken cancellationToken)
     {
         try
         {

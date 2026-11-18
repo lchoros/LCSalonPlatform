@@ -26,7 +26,7 @@ public sealed record DefaultVoucherExpiryQuery : IQuery<LocalDate?>;
 /// <param name="Amount">What the voucher is worth, which is what the buyer pays.</param>
 /// <param name="ExpiresOn">ISO date; empty for a voucher that never expires.</param>
 /// <param name="SaleId">The id the form was given; the same form sent twice is one voucher.</param>
-public sealed record SellVoucherCommand(decimal? Amount, PaymentMethod? Method, string? ExpiresOn, string? Note, Guid? SaleId = null, Guid? ByUserId = null) : ICommand<VoucherSummary>
+public sealed record SellVoucherCommand(decimal? Amount, PaymentChoice? Method, string? ExpiresOn, string? Note, Guid? SaleId = null, Guid? ByUserId = null) : ICommand<VoucherSummary>
 {
     /// <summary>An ISO date as typed; null for an empty field. An unreadable one is the validator's to refuse.</summary>
     public static LocalDate? Day(string? text)
@@ -44,7 +44,7 @@ public sealed class SellVoucherValidator : AbstractValidator<SellVoucherCommand>
             .WithMessage(_ => localizer.Format("Payments.Vouchers.Validation.Amount", GiftVoucherRules.MaxAmount));
 
         RuleFor(c => c.Method)
-            .Must(method => method is { } value && GiftVoucherRules.PaymentMethods.Contains(value))
+            .Must(method => method is { } value && GiftVoucherRules.CanBePaidWith(value))
             .WithMessage(_ => localizer["Payments.Vouchers.Validation.Method"]);
 
         RuleFor(c => c.ExpiresOn)

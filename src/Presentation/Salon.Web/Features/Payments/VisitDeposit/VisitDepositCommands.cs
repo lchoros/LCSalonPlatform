@@ -14,10 +14,10 @@ namespace Salon.Web.Features.Payments.VisitDeposit;
 public sealed record VisitDepositQuery(Guid AppointmentId) : IQuery<Deposit?>;
 
 /// <summary>Records that the salon received the visit's deposit; <paramref name="Amount"/> null takes what the booking asks for. Nothing is charged (Phase 1).</summary>
-public sealed record RecordDepositCommand(Guid AppointmentId, decimal? Amount, PaymentMethod? Method, Guid? ByUserId) : ICommand<DepositLine>;
+public sealed record RecordDepositCommand(Guid AppointmentId, decimal? Amount, PaymentChoice? Method, Guid? ByUserId) : ICommand<DepositLine>;
 
 /// <summary>Records that the visit's deposit went back to the client, in full.</summary>
-public sealed record ReturnDepositCommand(Guid AppointmentId, PaymentMethod? Method, Guid? ByUserId) : ICommand<DepositLine>;
+public sealed record ReturnDepositCommand(Guid AppointmentId, PaymentChoice? Method, Guid? ByUserId) : ICommand<DepositLine>;
 
 public sealed class RecordDepositValidator : AbstractValidator<RecordDepositCommand>
 {
@@ -31,7 +31,7 @@ public sealed class RecordDepositValidator : AbstractValidator<RecordDepositComm
             .WithMessage(_ => localizer["Payments.Deposit.Validation.Amount"]);
 
         RuleFor(c => c.Method)
-            .Must(method => method is { } chosen && Enum.IsDefined(chosen))
+            .Must(method => method is { } chosen && chosen.IsWellFormed)
             .WithMessage(_ => localizer["Payments.Deposit.Validation.MethodRequired"]);
     }
 }
@@ -43,7 +43,7 @@ public sealed class ReturnDepositValidator : AbstractValidator<ReturnDepositComm
         ArgumentNullException.ThrowIfNull(localizer);
 
         RuleFor(c => c.Method)
-            .Must(method => method is { } chosen && Enum.IsDefined(chosen))
+            .Must(method => method is { } chosen && chosen.IsWellFormed)
             .WithMessage(_ => localizer["Payments.Deposit.Validation.MethodRequired"]);
     }
 }
