@@ -174,6 +174,11 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   owner only (ADR 0051): every client card with contact details, notes, consent and visit counts, merged pointers
   left out. Health notes are never read. Each download is logged with who and how many rows. The client import
   reads the file back.
+- `Payments/PartPayment` — `POST /admin/payments/checkout/{appointmentId}/part` behind `Payments.Record` and
+  `Clients.View` (ADR 0061): a part of the visit's price paid one way before the rest is paid another.
+  `IClientAccountService.PayPartAsync` writes a `PartPayment` line (kind 13) that is less than what is left;
+  `VisitBill.Outstanding` counts it like a deposit held, and `PayBillAsync` settles the visit with one
+  `VisitPayment` for the rest. Both take a row lock on the visit first, so two requests cannot overpay it.
 - The salon's own payment methods (ADR 0060): `Settings/PaymentMethods` at `/admin/settings/payment-methods` behind
   `Settings.Manage` adds, renames and stops using `SalonPaymentMethod` rows and switches the built-in methods on and
   off (`PaymentMethodSettings`; cash is always on). `IPaymentMethodService.OptionsAsync` is the one list every form
