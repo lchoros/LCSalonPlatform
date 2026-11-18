@@ -18,6 +18,14 @@ public sealed record CounterSaleDay(LocalDate Day, LocalDate Today, IReadOnlyLis
 public sealed record CounterSaleRecord(Guid Id, ZonedDateTime At, PaymentMethod Method, string? ByName, Money Total, Money Returned, IReadOnlyList<CounterSaleRecordLine> Lines)
 {
     public bool HasReturns => Returned.Amount > 0m;
+
+    /// <summary>Which of the salon's own methods it was paid by, with its name on that day (ADR 0060); null for a built-in one.</summary>
+    public Guid? CustomMethodId { get; init; }
+
+    public string? MethodName { get; init; }
+
+    /// <summary>How it was paid, as a form offers it: the money goes back the same way unless the desk says otherwise.</summary>
+    public PaymentChoice PaidWith => new(Method, CustomMethodId);
 }
 
 /// <param name="ReturnedQuantity">Units brought back so far.</param>
@@ -74,20 +82,26 @@ internal sealed partial class CounterSaleService
                 s.ByUserId is { } userId && users.TryGetValue(userId, out var name) ? name : null,
                 s.Money,
                 new Money(returned[s.Id].Sum(), s.Currency),
-                [.. lines[s.Id].Select(l => new CounterSaleRecordLine(l.Id, l.ProductName, l.Quantity, l.ReturnedQuantity, new Money(l.UnitPrice, l.Currency)))]))
+                [.. lines[s.Id].Select(l => new CounterSaleRecordLine(l.Id, l.ProductName, l.Quantity, l.ReturnedQuantity, new Money(l.UnitPrice, l.Currency)))])
+            {
+                CustomMethodId = s.CustomMethodId,
+                MethodName = s.MethodName,
+            })
             .ToArray();
         return new CounterSaleDay(shown, today, records);
     }
 
-    public async Task<Money> ReturnAsync(Guid saleId, Guid lineId, int quantity, PaymentMethod method, bool backOnShelf, Guid? byUserId, CancellationToken cancellationToken = default)
+    public async Task<Money> ReturnAsync(Guid saleId, Guid lineId, int quantity, PaymentChoice method, bool backOnShelf, Guid? byUserId, CancellationToken cancellationToken = default)
     {
         var tenantId = tenantContext.TenantId ?? throw new TenantViolationException("A counter sale belongs to a salon, but no tenant is set in the current scope.");
         var line = await db.CounterSaleLines.AsNoTracking().FirstOrDefaultAsync(l => l.Id == lineId && l.PaymentEntryId == saleId, cancellationToken).ConfigureAwait(false)
             ?? throw new CounterSaleException(CounterSaleRefusal.SaleNotFound);
-        if (!Enum.IsDefined(method) || !ProductSaleRules.CanReturn(true, line.Quantity, line.ReturnedQuantity, quantity))
+        if (!ProductSaleRules.CanReturn(true, line.Quantity, line.ReturnedQuantity, quantity))
         {
             throw new CounterSaleException(CounterSaleRefusal.ReturnMoreThanKept);
         }
+
+        var paid = await methods.ResolveAsync(method, cancellationToken).ConfigureAwait(false) ?? throw new CounterSaleException(CounterSaleRefusal.MethodNotOffered);
 
         // The units are claimed in one statement that only succeeds while the buyer still has them, so two requests
         // for the last unit (a double click, two tills) cannot both get the money back.
@@ -101,7 +115,7 @@ internal sealed partial class CounterSaleService
 
         // The money goes back for what was paid: the price the line was sold at, not today's price.
         var back = new Money(ProductSaleRules.LineTotal(quantity, line.UnitPrice), line.Currency);
-        var result = await payments.RecordRefundAsync(new PaymentRequest(tenantId, null, back, method), cancellationToken).ConfigureAwait(false);
+        var result = await payments.RecordRefundAsync(new PaymentRequest(tenantId, null, back, paid.Method), cancellationToken).ConfigureAwait(false);
         if (!result.Succeeded)
         {
             // The caller's transaction takes the claim back with it.
@@ -117,7 +131,9 @@ internal sealed partial class CounterSaleService
             Kind = ClientAccountEntryKind.ProductReturn,
             Amount = back.Amount,
             Currency = back.Currency,
-            Method = method,
+            Method = paid.Method,
+            CustomMethodId = paid.CustomMethodId,
+            MethodName = paid.MethodName,
             ProviderSystemName = payments.SystemName,
             ProviderReference = result.ProviderReference,
             RelatedEntryId = saleId,

@@ -100,6 +100,9 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     /// <summary>Gift vouchers the salon sold; what is left on each is money it owes (ADR 0057).</summary>
     public DbSet<GiftVoucher> GiftVouchers => Set<GiftVoucher>();
 
+    /// <summary>The ways of taking money a salon named itself (ADR 0060).</summary>
+    public DbSet<SalonPaymentMethod> SalonPaymentMethods => Set<SalonPaymentMethod>();
+
     /// <summary>Consultation forms clients answered before a treatment; the answers are cipher text only (ADR 0058).</summary>
     public DbSet<ConsultationRecord> ConsultationRecords => Set<ConsultationRecord>();
 

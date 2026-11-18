@@ -31,6 +31,12 @@ public enum PaymentMethod
     CardAtSalonTerminal = 1,
     BankTransfer = 2,
     Voucher = 3,
+
+    /// <summary>
+    /// A method the salon named itself (ADR 0060): PayPal, a second card machine, a cheque. The line that carries it
+    /// says which one (<see cref="ClientAccountEntry.CustomMethodId"/>).
+    /// </summary>
+    Other = 4,
 }
 
 public sealed record PaymentRequest(

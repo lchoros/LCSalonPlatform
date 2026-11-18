@@ -244,7 +244,11 @@ public sealed record MoneyLine(
     string ClientName,
     string? ServiceName,
     string? RecordedBy,
-    string? Reference);
+    string? Reference)
+{
+    /// <summary>The name of the salon's own method on the day of the line (ADR 0060); null for a built-in one.</summary>
+    public string? MethodName { get; init; }
+}
 
 /// <summary>The visits of a period (ADR 0047).</summary>
 public sealed record VisitJournal(ReportPeriod Period, IReadOnlyList<VisitLine> Lines);

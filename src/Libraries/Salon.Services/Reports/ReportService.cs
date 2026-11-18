@@ -38,7 +38,7 @@ internal sealed class ReportService(
 
         var lines = await db.ClientAccountEntries.AsNoTracking()
             .Where(e => e.At >= start && e.At < end)
-            .Select(e => new LedgerRow(e.Kind, e.Method, e.Amount, e.At))
+            .Select(e => new LedgerRow(e.Kind, e.Method, e.Amount, e.At) { CustomMethodId = e.CustomMethodId, MethodName = e.MethodName })
             .ToListAsync(cancellationToken).ConfigureAwait(false);
         var visits = await db.Appointments.AsNoTracking()
             .Where(a => a.Start >= start && a.Start < end)
@@ -90,7 +90,7 @@ internal sealed class ReportService(
         var rows = await db.ClientAccountEntries.AsNoTracking()
             .Where(e => e.Method != null && e.At >= start && e.At < end)
             .OrderBy(e => e.At).ThenBy(e => e.Id)
-            .Select(e => new { e.Kind, Method = e.Method!.Value, e.Amount, e.Currency, e.At, e.ClientId, e.AppointmentId, e.ByUserId, e.ProviderReference })
+            .Select(e => new { e.Kind, Method = e.Method!.Value, e.MethodName, e.Amount, e.Currency, e.At, e.ClientId, e.AppointmentId, e.ByUserId, e.ProviderReference })
             .ToListAsync(cancellationToken).ConfigureAwait(false);
         rows = rows.Where(r => TillRules.Direction(r.Kind) != 0).ToList();
 
@@ -119,7 +119,10 @@ internal sealed class ReportService(
                 r.ClientId is { } clientId ? clients.GetValueOrDefault(clientId) ?? string.Empty : string.Empty,
                 r.AppointmentId is { } visitId ? services.GetValueOrDefault(visitId) : null,
                 r.ByUserId is { } userId ? users.GetValueOrDefault(userId) : null,
-                r.ProviderReference))
+                r.ProviderReference)
+            {
+                MethodName = r.MethodName,
+            })
             .ToArray();
         return new MoneyJournal(period, lines);
     }
@@ -164,8 +167,9 @@ internal sealed class ReportService(
     {
         // Only lines with a method moved money, exactly as on the till (ADR 0024).
         var moved = lines.Where(l => l.Method is not null && TillRules.Direction(l.Kind) != 0).ToArray();
-        var byMethod = TillRules.Totals(moved.Select(l => (l.Kind, l.Method!.Value, l.Amount)))
-            .Select(t => new MethodTotal(t.Method, money(t.Amount)))
+        // Each of the salon's own methods is a line of its own, under the name on its latest line (ADR 0060).
+        var byMethod = TillRules.TotalsByMethod(moved.OrderBy(l => l.At).Select(l => new MethodLine(l.Kind, l.Method!.Value, l.CustomMethodId, l.MethodName, l.Amount)))
+            .Select(t => new MethodTotal(t.Method, money(t.Amount)) { CustomMethodId = t.CustomMethodId, MethodName = t.MethodName })
             .ToArray();
         var byKind = moved
             .GroupBy(l => l.Kind)
@@ -319,7 +323,7 @@ internal sealed class ReportService(
 
         var linesBefore = await db.ClientAccountEntries.AsNoTracking()
             .Where(e => e.At >= beforeStart && e.At < beforeEnd)
-            .Select(e => new LedgerRow(e.Kind, e.Method, e.Amount, e.At))
+            .Select(e => new LedgerRow(e.Kind, e.Method, e.Amount, e.At) { CustomMethodId = e.CustomMethodId, MethodName = e.MethodName })
             .ToListAsync(cancellationToken).ConfigureAwait(false);
         var statusesBefore = await db.Appointments.AsNoTracking()
             .Where(a => a.Start >= beforeStart && a.Start < beforeEnd)
@@ -518,7 +522,12 @@ internal sealed class ReportService(
     /// <summary>One product line that was paid for in the period: on a visit's bill, or at the counter (ADR 0053).</summary>
     private sealed record SoldRow(Guid ProductId, string ProductName, int Quantity, decimal UnitPrice, decimal? UnitCost, int ReturnedQuantity, Guid? AppointmentId, Guid? CounterSaleId, Instant AddedAt);
 
-    private sealed record LedgerRow(ClientAccountEntryKind Kind, PaymentMethod? Method, decimal Amount, Instant At);
+    private sealed record LedgerRow(ClientAccountEntryKind Kind, PaymentMethod? Method, decimal Amount, Instant At)
+    {
+        public Guid? CustomMethodId { get; init; }
+
+        public string? MethodName { get; init; }
+    }
 
     private sealed record VisitRow(Guid Id, AppointmentStatus Status, AppointmentSource Source, Guid StaffMemberId, Guid ServiceId, Guid ClientId, decimal Price, int Minutes, Instant Start)
     {

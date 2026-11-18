@@ -25,7 +25,11 @@ public sealed record CounterSaleQuote(IReadOnlyList<CounterSaleQuoteLine> Lines,
 }
 
 /// <param name="EntryId">The account line that is the sale.</param>
-public sealed record CounterSaleReceipt(Guid EntryId, Money Total, int Units, PaymentMethod Method);
+public sealed record CounterSaleReceipt(Guid EntryId, Money Total, int Units, PaymentMethod Method)
+{
+    /// <summary>The name of the salon's own method, when the sale was paid by one (ADR 0060).</summary>
+    public string? MethodName { get; init; }
+}
 
 public enum CounterSaleRefusal
 {
@@ -55,6 +59,9 @@ public enum CounterSaleRefusal
 
     /// <summary>The units could not be put back on the shelf.</summary>
     StockNotRecorded,
+
+    /// <summary>The method chosen is not one the salon takes: not known, or one of its own taken out of use (ADR 0060).</summary>
+    MethodNotOffered,
 }
 
 public sealed class CounterSaleException : Exception
@@ -103,7 +110,7 @@ public interface ICounterSaleService
     /// <paramref name="saleId"/> is the form's own id for the sale: sending the same form again records nothing more
     /// and answers with the sale that was recorded the first time, so a double click cannot sell twice.
     /// </summary>
-    Task<CounterSaleReceipt> SellAsync(IReadOnlyList<(Guid ProductId, int Quantity)> lines, PaymentMethod method, Guid? byUserId, Guid? saleId = null, CancellationToken cancellationToken = default);
+    Task<CounterSaleReceipt> SellAsync(IReadOnlyList<(Guid ProductId, int Quantity)> lines, PaymentChoice method, Guid? byUserId, Guid? saleId = null, CancellationToken cancellationToken = default);
 
     /// <summary>The sales taken at the counter on <paramref name="day"/> in the salon's zone (today when null), newest first.</summary>
     Task<CounterSaleDay> ListAsync(LocalDate? day, CancellationToken cancellationToken = default);
@@ -114,7 +121,7 @@ public interface ICounterSaleService
     /// they can be sold again. Two requests for the last unit cannot both succeed. Throws
     /// <see cref="CounterSaleException"/> with the reason when nothing was recorded.
     /// </summary>
-    Task<Money> ReturnAsync(Guid saleId, Guid lineId, int quantity, PaymentMethod method, bool backOnShelf, Guid? byUserId, CancellationToken cancellationToken = default);
+    Task<Money> ReturnAsync(Guid saleId, Guid lineId, int quantity, PaymentChoice method, bool backOnShelf, Guid? byUserId, CancellationToken cancellationToken = default);
 }
 
 internal sealed partial class CounterSaleService(
@@ -122,6 +129,7 @@ internal sealed partial class CounterSaleService(
     ITenantContext tenantContext,
     ITenantLookup tenantLookup,
     IPaymentProvider payments,
+    IPaymentMethodService methods,
     IStockService stock,
     IClock clock,
     ILogger<CounterSaleService> logger) : ICounterSaleService
@@ -139,7 +147,7 @@ internal sealed partial class CounterSaleService(
     public async Task<CounterSaleQuote> QuoteAsync(IReadOnlyList<(Guid ProductId, int Quantity)> lines, CancellationToken cancellationToken = default)
         => (await PriceAsync(lines, cancellationToken).ConfigureAwait(false)).Quote;
 
-    public async Task<CounterSaleReceipt> SellAsync(IReadOnlyList<(Guid ProductId, int Quantity)> lines, PaymentMethod method, Guid? byUserId, Guid? saleId = null, CancellationToken cancellationToken = default)
+    public async Task<CounterSaleReceipt> SellAsync(IReadOnlyList<(Guid ProductId, int Quantity)> lines, PaymentChoice method, Guid? byUserId, Guid? saleId = null, CancellationToken cancellationToken = default)
     {
         var tenantId = tenantContext.TenantId ?? throw new TenantViolationException("A counter sale belongs to a salon, but no tenant is set in the current scope.");
         if (saleId is { } sent && await RecordedAsync(sent, cancellationToken).ConfigureAwait(false) is { } recorded)
@@ -148,10 +156,12 @@ internal sealed partial class CounterSaleService(
             return recorded;
         }
 
+        var paid = await methods.ResolveAsync(method, cancellationToken).ConfigureAwait(false) ?? throw new CounterSaleException(CounterSaleRefusal.MethodNotOffered);
+
         var (quote, products) = await PriceAsync(lines, cancellationToken).ConfigureAwait(false);
 
         // Phase 1: the plugin only records that the salon took the money itself (ADR 0024). No visit, so no appointment.
-        var result = await payments.RecordInSalonPaymentAsync(new PaymentRequest(tenantId, null, quote.Total, method), cancellationToken).ConfigureAwait(false);
+        var result = await payments.RecordInSalonPaymentAsync(new PaymentRequest(tenantId, null, quote.Total, paid.Method), cancellationToken).ConfigureAwait(false);
         if (!result.Succeeded)
         {
             logger.LogWarning("Payment plugin {Provider} did not record the money for a counter sale: {Error}", payments.SystemName, result.Error);
@@ -166,7 +176,9 @@ internal sealed partial class CounterSaleService(
             Kind = ClientAccountEntryKind.ProductSale,
             Amount = quote.Total.Amount,
             Currency = quote.Total.Currency,
-            Method = method,
+            Method = paid.Method,
+            CustomMethodId = paid.CustomMethodId,
+            MethodName = paid.MethodName,
             ProviderSystemName = payments.SystemName,
             ProviderReference = result.ProviderReference,
             ByUserId = byUserId,
@@ -216,7 +228,7 @@ internal sealed partial class CounterSaleService(
         }
 
         logger.LogInformation("Counter sale {EntryId}: {Units} units for {Amount} {Currency} by {Method}, recorded by user {UserId} through {Provider}", sale.Id, quote.Units, quote.Total.Amount, quote.Total.Currency, method, byUserId, payments.SystemName);
-        return new CounterSaleReceipt(sale.Id, quote.Total, quote.Units, method);
+        return new CounterSaleReceipt(sale.Id, quote.Total, quote.Units, paid.Method) { MethodName = paid.MethodName };
     }
 
     /// <summary>The sale already recorded under this id, if there is one in this salon; null otherwise.</summary>
@@ -235,7 +247,7 @@ internal sealed partial class CounterSaleService(
         }
 
         var units = await db.CounterSaleLines.AsNoTracking().Where(l => l.PaymentEntryId == saleId).SumAsync(l => l.Quantity, cancellationToken).ConfigureAwait(false);
-        return new CounterSaleReceipt(entry.Id, entry.Money, units, method);
+        return new CounterSaleReceipt(entry.Id, entry.Money, units, method) { MethodName = entry.MethodName };
     }
 
     private async Task<(CounterSaleQuote Quote, Dictionary<Guid, Product> Products)> PriceAsync(IReadOnlyList<(Guid ProductId, int Quantity)> lines, CancellationToken cancellationToken)

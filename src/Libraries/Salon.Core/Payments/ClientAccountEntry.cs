@@ -41,6 +41,18 @@ public class ClientAccountEntry : BaseEntity, ITenantEntity
     /// <summary>How the money changed hands; on payment, deposit and return lines.</summary>
     public PaymentMethod? Method { get; set; }
 
+    /// <summary>
+    /// Which of the salon's own methods it was (ADR 0060); set exactly when <see cref="Method"/> is
+    /// <see cref="PaymentMethod.Other"/>.
+    /// </summary>
+    public Guid? CustomMethodId { get; set; }
+
+    /// <summary>
+    /// What the salon called its own method on the day of the line, so the line reads the same after a rename; null
+    /// for the built-in methods, whose names are the resources'.
+    /// </summary>
+    public string? MethodName { get; set; }
+
     /// <summary>System name of the payment plugin that recorded a payment line.</summary>
     public string? ProviderSystemName { get; set; }
 

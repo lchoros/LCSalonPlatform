@@ -17,10 +17,18 @@ internal sealed class ClientAccountEntryConfiguration : IEntityTypeConfiguration
             // the counter (ADR 0053), the money given back for it (ADR 0054), a gift voucher sold and the money given
             // back for one (ADR 0057). The database refuses any other line without a client.
             t.HasCheckConstraint("ck_client_account_entries_client_unless_counter_sale", "client_id IS NOT NULL OR (kind IN (8, 9, 10, 12) AND appointment_id IS NULL)");
+            // A line paid by one of the salon's own methods (method 4, ADR 0060) says which one and what it was called;
+            // no other line does.
+            t.HasCheckConstraint(
+                "ck_client_account_entries_own_method_named",
+                "(method IS NOT DISTINCT FROM 4 AND custom_method_id IS NOT NULL AND method_name IS NOT NULL) OR (method IS DISTINCT FROM 4 AND custom_method_id IS NULL AND method_name IS NULL)");
         });
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Kind).HasConversion<int>();
         builder.Property(e => e.Method).HasConversion<int?>();
+        builder.Property(e => e.MethodName).HasMaxLength(SalonPaymentMethod.NameMaxLength);
+        // Restrict: a method money was recorded with is taken out of use, never deleted (ADR 0060).
+        builder.HasOne<SalonPaymentMethod>().WithMany().HasForeignKey(e => e.CustomMethodId).OnDelete(DeleteBehavior.Restrict);
         builder.Property(e => e.Amount).HasPrecision(10, 2);
         builder.Property(e => e.Currency).HasMaxLength(ClientAccountEntry.CurrencyLength).IsRequired();
         builder.Property(e => e.ProviderSystemName).HasMaxLength(ClientAccountEntry.ProviderNameMaxLength);

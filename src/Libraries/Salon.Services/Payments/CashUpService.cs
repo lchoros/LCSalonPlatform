@@ -87,7 +87,7 @@ internal sealed class CashUpService(
         var rows = await db.ClientAccountEntries.AsNoTracking()
             .Where(e => e.Method != null && e.At >= from && e.At < until)
             .OrderBy(e => e.At).ThenBy(e => e.Id)
-            .Select(e => new { e.Kind, Method = e.Method!.Value, e.Amount, e.At, e.ClientId, e.AppointmentId, e.ByUserId })
+            .Select(e => new { e.Kind, Method = e.Method!.Value, e.CustomMethodId, e.MethodName, e.Amount, e.At, e.ClientId, e.AppointmentId, e.ByUserId })
             .ToListAsync(cancellationToken).ConfigureAwait(false);
 
         var clientIds = rows.Where(r => r.ClientId is not null).Select(r => r.ClientId!.Value).Distinct().ToArray();
@@ -114,9 +114,16 @@ internal sealed class CashUpService(
                 In(TillRules.Direction(r.Kind) * r.Amount),
                 r.ClientId is { } clientId && clients.TryGetValue(clientId, out var client) ? client : string.Empty,
                 r.AppointmentId,
-                Name(r.ByUserId)))
+                Name(r.ByUserId))
+            {
+                MethodName = r.MethodName,
+            })
             .ToArray();
-        var totals = TillRules.Totals(lines).Select(t => new MethodTotal(t.Method, In(t.Amount))).ToArray();
+
+        // Each of the salon's own methods is a line of its own (ADR 0060); the rows are already oldest first.
+        var totals = TillRules.TotalsByMethod(rows.Select(r => new MethodLine(r.Kind, r.Method, r.CustomMethodId, r.MethodName, r.Amount)))
+            .Select(t => new MethodTotal(t.Method, In(t.Amount)) { CustomMethodId = t.CustomMethodId, MethodName = t.MethodName })
+            .ToArray();
 
         return new CashDay(
             day,

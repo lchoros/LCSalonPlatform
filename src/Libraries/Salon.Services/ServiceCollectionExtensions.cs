@@ -67,6 +67,7 @@ public static class ServiceCollectionExtensions
         // The client account (ADR 0022): needs the payment plugin the host registers, at resolve time.
         services.AddScoped<IClientAccountService, ClientAccountService>();
         services.AddScoped<ICashUpService, CashUpService>();
+        services.AddScoped<IPaymentMethodService, PaymentMethodService>();
         services.AddScoped<ICounterSaleService, CounterSaleService>();
         services.AddScoped<IGiftVoucherService, GiftVoucherService>();
         services.AddScoped<IReportService, ReportService>();

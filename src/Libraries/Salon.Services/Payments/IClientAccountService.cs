@@ -35,7 +35,7 @@ public interface IClientAccountService
     /// Records that the client paid the visit's fee, in full, at the salon. Throws <see cref="ClientAccountException"/> when
     /// there is no open fee or the payment plugin refuses to record it.
     /// </summary>
-    Task<FeeLine> RecordFeePaymentAsync(Guid appointmentId, PaymentMethod method, Guid? byUserId, CancellationToken cancellationToken = default);
+    Task<FeeLine> RecordFeePaymentAsync(Guid appointmentId, PaymentChoice method, Guid? byUserId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// The visit, the deposit it asks for and the deposit received for it, if any (ADR 0023). Null when the salon has no
@@ -49,10 +49,10 @@ public interface IClientAccountService
     /// <see cref="ClientAccountException"/> when the visit is unknown or no longer active, already has a deposit, the
     /// amount is out of range (or nothing was asked for and none was given), or the payment plugin refuses.
     /// </summary>
-    Task<DepositLine> RecordDepositAsync(Guid appointmentId, decimal? amount, PaymentMethod method, Guid? byUserId, CancellationToken cancellationToken = default);
+    Task<DepositLine> RecordDepositAsync(Guid appointmentId, decimal? amount, PaymentChoice method, Guid? byUserId, CancellationToken cancellationToken = default);
 
     /// <summary>Records that the visit's deposit went back to the client, in full. Throws <see cref="ClientAccountException"/> when there is none to return.</summary>
-    Task<DepositLine> ReturnDepositAsync(Guid appointmentId, PaymentMethod method, Guid? byUserId, CancellationToken cancellationToken = default);
+    Task<DepositLine> ReturnDepositAsync(Guid appointmentId, PaymentChoice method, Guid? byUserId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// The bill of a visit (ADR 0024): the booked price, the deposit the salon holds for it, what is left to pay, the
@@ -68,7 +68,7 @@ public interface IClientAccountService
     /// completed visit is paid for), there is nothing to pay, or the payment plugin refuses. The caller completes the
     /// visit; this only records money.
     /// </summary>
-    Task<VisitBill> PayBillAsync(Guid appointmentId, PaymentMethod method, IReadOnlyCollection<Guid> feeAppointmentIds, Guid? byUserId, CancellationToken cancellationToken = default);
+    Task<VisitBill> PayBillAsync(Guid appointmentId, PaymentChoice method, IReadOnlyCollection<Guid> feeAppointmentIds, Guid? byUserId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Puts a product on the visit's bill (ADR 0037), at the product's price of this moment. A product that already has
@@ -91,7 +91,7 @@ public interface IClientAccountService
     /// sold again. Throws <see cref="ClientAccountException"/> when the visit or the line is unknown, the line was
     /// not paid, the quantity is more than the client still has, or the payment plugin refuses.
     /// </summary>
-    Task<VisitBill> ReturnProductAsync(Guid appointmentId, Guid lineId, int quantity, PaymentMethod method, bool backOnShelf, Guid? byUserId, CancellationToken cancellationToken = default);
+    Task<VisitBill> ReturnProductAsync(Guid appointmentId, Guid lineId, int quantity, PaymentChoice method, bool backOnShelf, Guid? byUserId, CancellationToken cancellationToken = default);
 
 
     /// <summary>What the client owes, every fee and every deposit on their account, newest first. Empty for a client without any or an unknown id.</summary>
@@ -175,9 +175,21 @@ public sealed record DepositLine(
 {
     /// <summary>True while the salon still has the money.</summary>
     public bool IsHeld => Return is null;
+
+    /// <summary>Which of the salon's own methods it came by, with its name on that day (ADR 0060); null for a built-in one.</summary>
+    public Guid? CustomMethodId { get; init; }
+
+    public string? MethodName { get; init; }
+
+    /// <summary>How it came, as a form offers it: a deposit goes back the same way unless the desk says otherwise.</summary>
+    public PaymentChoice? PaidWith => Method is { } method ? new PaymentChoice(method, CustomMethodId) : null;
 }
 
-public sealed record DepositReturn(Instant At, string? ByName, PaymentMethod? Method, string? ProviderReference);
+public sealed record DepositReturn(Instant At, string? ByName, PaymentMethod? Method, string? ProviderReference)
+{
+    /// <summary>The name of the salon's own method on the day of the return (ADR 0060); null for a built-in one.</summary>
+    public string? MethodName { get; init; }
+}
 
 /// <summary>A visit as the checkout sees it (ADR 0024).</summary>
 /// <param name="Start">In the salon's zone.</param>
@@ -242,6 +254,14 @@ public sealed record BillProductLine(Guid LineId, Guid ProductId, string Name, i
 
     /// <summary>Units the client still has; a paid line with some left can still be returned.</summary>
     public int Kept => Quantity - Returned;
+
+    /// <summary>Which of the salon's own methods paid for it, with its name on that day (ADR 0060); null for a built-in one.</summary>
+    public Guid? PaidWithCustomMethodId { get; init; }
+
+    public string? PaidWithName { get; init; }
+
+    /// <summary>How it was paid, as a form offers it: the money for a return goes back the same way unless the desk says otherwise.</summary>
+    public PaymentChoice? PaidBy => PaidWith is { } method ? new PaymentChoice(method, PaidWithCustomMethodId) : null;
 }
 
 /// <summary>The payment taken for a visit at the checkout.</summary>
@@ -252,8 +272,11 @@ public sealed record VisitPaymentLine(
     Instant At,
     string? ByName,
     PaymentMethod? Method,
-    string? ProviderReference);
-
+    string? ProviderReference)
+{
+    /// <summary>The name of the salon's own method on the day of the payment (ADR 0060); null for a built-in one.</summary>
+    public string? MethodName { get; init; }
+}
 
 
 public enum FeeStatus
@@ -295,7 +318,11 @@ public sealed record FeeSettlement(
     string? ByName,
     PaymentMethod? Method,
     string? Note,
-    string? ProviderReference);
+    string? ProviderReference)
+{
+    /// <summary>The name of the salon's own method on the day of the payment (ADR 0060); null for a built-in one or a waiver.</summary>
+    public string? MethodName { get; init; }
+}
 
 /// <param name="Owed">The open fees added up; null when the client owes nothing.</param>
 /// <param name="Deposits">Every deposit received from the client, newest first, returned ones included.</param>
@@ -310,6 +337,9 @@ public sealed record PurchaseLine(Guid AppointmentId, string ProductName, int Qu
 {
     /// <summary>The card shows the latest purchases, not a ledger; the till and the reports have the rest.</summary>
     public const int MaxShown = 20;
+
+    /// <summary>The name of the salon's own method on the day of the payment (ADR 0060); null for a built-in one.</summary>
+    public string? MethodName { get; init; }
 }
 
 public enum ClientAccountRefusal
@@ -373,6 +403,9 @@ public enum ClientAccountRefusal
 
     /// <summary>More units were to be returned than the client still has of that line.</summary>
     ReturnMoreThanKept = 20,
+
+    /// <summary>The method chosen is not one the salon takes: not known, or one of its own taken out of use (ADR 0060).</summary>
+    MethodNotOffered = 21,
 }
 
 /// <summary>A request the account refuses; <see cref="Refusal"/> says why, for the message the screen shows.</summary>
