@@ -632,6 +632,14 @@ namespace Salon.Data.Migrations
                         .HasColumnType("character varying(254)")
                         .HasColumnName("email");
 
+                    b.Property<Instant?>("ErasedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("erased_at");
+
+                    b.Property<Guid?>("ErasedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("erased_by_user_id");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(100)

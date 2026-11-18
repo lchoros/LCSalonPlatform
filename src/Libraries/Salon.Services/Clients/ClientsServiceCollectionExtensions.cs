@@ -13,6 +13,7 @@ public static class ClientsServiceCollectionExtensions
     {
         services.AddScoped<IClientService, ClientService>();
         services.AddScoped<IConsultationService, ConsultationService>();
+        services.AddScoped<IClientDataService, ClientDataService>();
         services.AddScoped<Import.IClientImportService, Import.ClientImportService>();
         return services;
     }
