@@ -52,6 +52,15 @@ public partial class StaffMember : BaseEntity, ITenantEntity
     /// </summary>
     public string? CalendarFeedToken { get; set; }
 
+    /// <summary>
+    /// Percent of the price of the person's completed visits the salon pays them (ADR 0059); null when they are not
+    /// paid by commission on services.
+    /// </summary>
+    public decimal? ServiceCommissionPercent { get; set; }
+
+    /// <summary>Percent of the products sold on the person's visits the salon pays them (ADR 0059); null for none.</summary>
+    public decimal? ProductCommissionPercent { get; set; }
+
     /// <summary>True for <c>#RRGGBB</c> in either case; the entity stores the upper-case form.</summary>
     public static bool IsValidColour(string? colour) => colour is not null && ColourPattern().IsMatch(colour);
 

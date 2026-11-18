@@ -45,6 +45,10 @@ namespace Salon.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("client_id");
 
+                    b.Property<bool>("CommissionRatesKept")
+                        .HasColumnType("boolean")
+                        .HasColumnName("commission_rates_kept");
+
                     b.Property<Instant>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -84,10 +88,20 @@ namespace Salon.Data.Migrations
                         .HasColumnType("numeric(10,2)")
                         .HasColumnName("price_amount");
 
+                    b.Property<decimal?>("ProductCommissionPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("product_commission_percent");
+
                     b.Property<string>("PublicToken")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")
                         .HasColumnName("public_token");
+
+                    b.Property<decimal?>("ServiceCommissionPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("service_commission_percent");
 
                     b.Property<Guid>("ServiceId")
                         .HasColumnType("uuid")
@@ -1790,6 +1804,16 @@ namespace Salon.Data.Migrations
                         .HasColumnType("character varying(30)")
                         .HasColumnName("phone");
 
+                    b.Property<decimal?>("ProductCommissionPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("product_commission_percent");
+
+                    b.Property<decimal?>("ServiceCommissionPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("service_commission_percent");
+
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer")
                         .HasColumnName("sort_order");
@@ -1816,7 +1840,12 @@ namespace Salon.Data.Migrations
                     b.HasIndex("TenantId", "SortOrder")
                         .HasDatabaseName("ix_staff_members_tenant_id_sort_order");
 
-                    b.ToTable("staff_members", "salon");
+                    b.ToTable("staff_members", "salon", t =>
+                        {
+                            t.HasCheckConstraint("ck_staff_members_product_commission_percent", "product_commission_percent IS NULL OR (product_commission_percent >= 0 AND product_commission_percent <= 100)");
+
+                            t.HasCheckConstraint("ck_staff_members_service_commission_percent", "service_commission_percent IS NULL OR (service_commission_percent >= 0 AND service_commission_percent <= 100)");
+                        });
                 });
 
             modelBuilder.Entity("Salon.Core.Staff.StaffTimeOff", b =>

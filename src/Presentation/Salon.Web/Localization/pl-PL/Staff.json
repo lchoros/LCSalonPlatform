@@ -103,5 +103,18 @@
   "Staff.CalendarFeed.Off": "Wyłącz adres",
   "Staff.CalendarFeed.SwitchedOn": "Adres jest włączony. Wklej go do kalendarza.",
   "Staff.CalendarFeed.Replaced": "Jest nowy adres. Stary już nie działa.",
-  "Staff.CalendarFeed.SwitchedOff": "Adres jest wyłączony. Już nie działa."
+  "Staff.CalendarFeed.SwitchedOff": "Adres jest wyłączony. Już nie działa.",
+  "Staff.List.Commission": "Prowizje",
+  "Staff.Commission.Title": "Prowizje",
+  "Staff.Commission.Back": "Wróć do zespołu",
+  "Staff.Commission.Lead": "Ile płacisz każdej osobie jako udział w jej pracy i w produktach sprzedanych podczas jej wizyt. Zostaw pole puste, jeśli ktoś nie dostaje prowizji w ten sposób.",
+  "Staff.Commission.None": "Brak aktywnych pracowników.",
+  "Staff.Commission.Services": "Od usług",
+  "Staff.Commission.Products": "Od produktów",
+  "Staff.Commission.Hint": "Wizyta zachowuje stawki z dnia, w którym została zakończona, więc zmiana stawki dotyczy wizyt od teraz. Tylko właściciel może je zmienić.",
+  "Staff.Commission.Submit": "Zapisz stawki",
+  "Staff.Commission.SeeReport": "Zobacz w raporcie",
+  "Staff.Commission.Saved": "Stawki zostały zapisane.",
+  "Staff.Commission.Unchanged": "Nic się nie zmieniło.",
+  "Staff.Commission.Validation.Rate": "Podaj procent od 0 do 100, najwyżej z dwoma miejscami po przecinku, albo zostaw puste."
 }

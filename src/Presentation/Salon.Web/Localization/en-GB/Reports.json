@@ -102,5 +102,12 @@
   "Reports.Retail.WithoutCost.One": "{0} unit was sold with no cost on record and is left out of the profit.",
   "Reports.Retail.WithoutCost.Many": "{0} units were sold with no cost on record and are left out of the profit.",
   "Reports.Retail.LineProfit": "Profit: {0}",
-  "Reports.Retail.CounterSales": "Sales at the counter, without a visit"
+  "Reports.Retail.CounterSales": "Sales at the counter, without a visit",
+  "Reports.Staff.Retail": "Products sold on their visits",
+  "Reports.Staff.Commission": "Commission ({0})",
+  "Reports.Staff.ServiceRate": "{0}% services",
+  "Reports.Staff.ProductRate": "{0}% products",
+  "Reports.Staff.AfterCommission": "Left after commission",
+  "Reports.Staff.RatesChanged": "the rate changed in this period",
+  "Reports.Staff.CommissionPlain": "Commission"
 }

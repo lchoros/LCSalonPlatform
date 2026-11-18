@@ -18,7 +18,13 @@
             <h1 class="page-title">@T["Staff.List.Title"]</h1>
             <p class="text-stone-600">@T["Staff.List.Subtitle"]</p>
         </div>
-        <a href="/admin/staff/new" data-testid="add-staff" class="@buttonClass">@T["Staff.List.Add"]</a>
+        <div class="flex flex-col gap-2 sm:flex-row">
+            @if (User.HasClaim(Salon.Core.Identity.UserClaimTypes.Permission, Salon.Core.Identity.Permissions.SettingsManage))
+            {
+                <a href="/admin/staff/commission" data-testid="commission-link" class="@linkClass">@T["Staff.List.Commission"]</a>
+            }
+            <a href="/admin/staff/new" data-testid="add-staff" class="@buttonClass">@T["Staff.List.Add"]</a>
+        </div>
     </header>
     @if (Model.Staff.Count == 0)
     {

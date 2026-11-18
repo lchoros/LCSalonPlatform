@@ -20,6 +20,9 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
         builder.Property(a => a.Notes).HasMaxLength(Appointment.NotesMaxLength);
         builder.Property(a => a.PriceAmount).HasPrecision(10, 2);
         builder.Property(a => a.DepositAmount).HasPrecision(10, 2).HasDefaultValue(0m);
+        // The person's commission rates on the day the visit was completed (ADR 0059).
+        builder.Property(a => a.ServiceCommissionPercent).HasPrecision(5, 2);
+        builder.Property(a => a.ProductCommissionPercent).HasPrecision(5, 2);
         builder.Property(a => a.Currency).HasMaxLength(Appointment.CurrencyLength).IsRequired();
         builder.Property(a => a.CancellationReason).HasMaxLength(Appointment.CancellationReasonMaxLength);
         builder.Property(a => a.PublicToken).HasMaxLength(Appointment.PublicTokenMaxLength);

@@ -19,6 +19,14 @@ internal sealed class StaffMemberConfiguration : IEntityTypeConfiguration<StaffM
         // A calendar address is looked up by its secret alone (ADR 0038); two people never share one.
         builder.Property(s => s.CalendarFeedToken).HasMaxLength(64);
         builder.HasIndex(s => s.CalendarFeedToken).IsUnique().HasFilter("calendar_feed_token IS NOT NULL");
+        // Commission rates (ADR 0059): 0.00 to 100.00 percent; the database refuses anything else too.
+        builder.Property(s => s.ServiceCommissionPercent).HasPrecision(5, 2);
+        builder.Property(s => s.ProductCommissionPercent).HasPrecision(5, 2);
+        builder.ToTable(t =>
+        {
+            t.HasCheckConstraint("ck_staff_members_service_commission_percent", "service_commission_percent IS NULL OR (service_commission_percent >= 0 AND service_commission_percent <= 100)");
+            t.HasCheckConstraint("ck_staff_members_product_commission_percent", "product_commission_percent IS NULL OR (product_commission_percent >= 0 AND product_commission_percent <= 100)");
+        });
         builder.HasOne<Core.Tenancy.Tenant>().WithMany().HasForeignKey(s => s.TenantId).OnDelete(DeleteBehavior.Restrict);
     }
 }

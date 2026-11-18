@@ -55,6 +55,18 @@ public class Appointment : BaseEntity, ITenantEntity
     /// <summary>Duration of the service when it was booked.</summary>
     public int DurationMinutes { get; set; }
 
+    /// <summary>
+    /// True once the person's commission rates were copied onto the visit, when it was completed (ADR 0059). A visit
+    /// completed earlier has false and earns at the person's rate of today.
+    /// </summary>
+    public bool CommissionRatesKept { get; set; }
+
+    /// <summary>The person's services rate on the day the visit was completed; null when they had none.</summary>
+    public decimal? ServiceCommissionPercent { get; set; }
+
+    /// <summary>The person's products rate on the day the visit was completed; null when they had none.</summary>
+    public decimal? ProductCommissionPercent { get; set; }
+
     public Instant CreatedAt { get; set; }
 
     /// <summary>The login that made the booking in the admin; null for online bookings.</summary>

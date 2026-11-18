@@ -191,7 +191,38 @@ public sealed record ServiceLine(string Name, int Visits, Money Value);
 /// <param name="BookedMinutes">Visits that took place or still stand; no-shows and cancellations are left out.</param>
 /// <param name="WorkingMinutes">From today's rota less time off, so an old period is an estimate if the rota changed.</param>
 /// <param name="Utilisation">Percent; null for somebody without working time in the period.</param>
-public sealed record StaffLine(string Name, int Visits, Money Value, int BookedMinutes, int WorkingMinutes, decimal? Utilisation);
+public sealed record StaffLine(string Name, int Visits, Money Value, int BookedMinutes, int WorkingMinutes, decimal? Utilisation)
+{
+    /// <summary>
+    /// Products on the bills of the person's visits paid in the period, at the price sold, for the units the clients
+    /// kept (ADR 0059). Counter sales have no person and are not in anybody's line.
+    /// </summary>
+    public Money? Retail { get; init; }
+
+    /// <summary>
+    /// The services rate the period's visits earned at, percent (ADR 0059): the rate kept on each visit when it was
+    /// completed, today's for older visits. Null when the person has none, or when it changed during the period.
+    /// </summary>
+    public decimal? ServiceRate { get; init; }
+
+    /// <summary>The products rate, the same way as <see cref="ServiceRate"/>.</summary>
+    public decimal? ProductRate { get; init; }
+
+    /// <summary>A rate changed during the period, so no single rate is named.</summary>
+    public bool RatesVaried { get; init; }
+
+    /// <summary>What the rates earned on <see cref="Value"/> and <see cref="Retail"/>; null when the person has no rate.</summary>
+    public Money? Commission { get; init; }
+
+    public bool HasRetail => Retail is { Amount: > 0m };
+
+    public bool HasCommission => Commission is not null;
+
+    /// <summary>What the person's work and sales left the salon after their commission; null without a rate.</summary>
+    public Money? AfterCommission => Commission is { } paid
+        ? paid with { Amount = Value.Amount + (Retail?.Amount ?? 0m) - paid.Amount }
+        : null;
+}
 
 /// <param name="Start">In the salon's zone.</param>
 /// <param name="Outstanding">The booked price less the deposit the salon holds.</param>
