@@ -169,6 +169,10 @@
                         {
                             <p class="text-sm">@waitNote</p>
                         }
+                        @foreach (var offered in entry.Offered)
+                        {
+                            <p class="text-sm" data-testid="copy-offered">@T.Format("Clients.Data.Waitlist.Offered", offered.Start.LocalDateTime.ToString("g", culture)) · @T[$"Clients.Data.Waitlist.Offer.{offered.Ending}"]</p>
+                        }
                     </li>
                 }
             </ul>

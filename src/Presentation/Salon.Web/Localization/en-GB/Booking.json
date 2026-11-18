@@ -153,5 +153,17 @@
   "Booking.Privacy.Contact.Phone": "Call us on {0}.",
   "Booking.Privacy.Contact.Email": "Write to {0}.",
   "Booking.Privacy.Contact.AtSalon": "Ask at the salon.",
-  "Booking.Privacy.Updated": "Last updated {0}"
+  "Booking.Privacy.Updated": "Last updated {0}",
+  "Booking.Held.Title": "A time is kept for you",
+  "Booking.Held.Booked.Title": "Your visit is booked",
+  "Booking.Held.Price": "Price",
+  "Booking.Held.Until": "{0}, this time is kept for you until {1}. After that anybody can book it.",
+  "Booking.Held.Take": "Book this time",
+  "Booking.Held.OtherTimes": "See other times",
+  "Booking.Held.NoNeed": "If you do not want it, you need not do anything. You stay on the waiting list.",
+  "Booking.Held.Booked": "It is booked. We look forward to seeing you.",
+  "Booking.Held.Manage": "Change or cancel this visit",
+  "Booking.Held.Over": "This time is no longer kept for you. You are still on the waiting list, and you can look at the times that are free now.",
+  "Booking.Held.Gone": "Sorry, this time has just gone. You are still on the waiting list, and you can look at the times that are free now.",
+  "Booking.Held.Invalid": "We do not know this link. It may have been copied without its last letters. You can look at the times that are free now."
 }

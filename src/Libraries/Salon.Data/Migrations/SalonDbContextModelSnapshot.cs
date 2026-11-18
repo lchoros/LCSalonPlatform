@@ -303,6 +303,114 @@ namespace Salon.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Salon.Core.Appointments.WaitlistOffer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AppointmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("appointment_id");
+
+                    b.Property<Instant>("End")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("end");
+
+                    b.Property<Instant?>("EndedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ended_at");
+
+                    b.Property<Guid?>("EndedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("ended_by_user_id");
+
+                    b.Property<Guid?>("FreedByAppointmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("freed_by_appointment_id");
+
+                    b.Property<Instant>("HeldUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("held_until");
+
+                    b.Property<Instant>("OfferedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("offered_at");
+
+                    b.Property<int?>("Outcome")
+                        .HasColumnType("integer")
+                        .HasColumnName("outcome");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_id");
+
+                    b.Property<Guid>("StaffMemberId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("staff_member_id");
+
+                    b.Property<Instant>("Start")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(22)
+                        .HasColumnType("character varying(22)")
+                        .HasColumnName("token");
+
+                    b.Property<Guid>("WaitlistEntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("waitlist_entry_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_waitlist_offers");
+
+                    b.HasIndex("AppointmentId")
+                        .HasDatabaseName("ix_waitlist_offers_appointment_id");
+
+                    b.HasIndex("FreedByAppointmentId")
+                        .HasDatabaseName("ix_waitlist_offers_freed_by_appointment_id");
+
+                    b.HasIndex("ServiceId")
+                        .HasDatabaseName("ix_waitlist_offers_service_id");
+
+                    b.HasIndex("StaffMemberId")
+                        .HasDatabaseName("ix_waitlist_offers_staff_member_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_waitlist_offers_tenant_id");
+
+                    b.HasIndex("Token")
+                        .IsUnique()
+                        .HasDatabaseName("ux_waitlist_offers_token");
+
+                    b.HasIndex("WaitlistEntryId")
+                        .HasDatabaseName("ix_waitlist_offers_waitlist_entry_id");
+
+                    b.HasIndex("TenantId", "WaitlistEntryId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_waitlist_offers_one_standing_per_entry")
+                        .HasFilter("ended_at IS NULL");
+
+                    b.HasIndex("TenantId", "StaffMemberId", "Start")
+                        .IsUnique()
+                        .HasDatabaseName("ux_waitlist_offers_one_standing_per_time")
+                        .HasFilter("ended_at IS NULL");
+
+                    b.ToTable("waitlist_offers", "salon", t =>
+                        {
+                            t.HasCheckConstraint("ck_waitlist_offers_ended_with_outcome", "(ended_at IS NULL) = (outcome IS NULL)");
+
+                            t.HasCheckConstraint("ck_waitlist_offers_ends_after_start", "\"end\" > start");
+                        });
+                });
+
             modelBuilder.Entity("Salon.Core.Booking.PhoneVerification", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2150,6 +2258,49 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_waitlist_entries_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Appointments.WaitlistOffer", b =>
+                {
+                    b.HasOne("Salon.Core.Appointments.Appointment", null)
+                        .WithMany()
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_waitlist_offers_appointments_appointment_id");
+
+                    b.HasOne("Salon.Core.Appointments.Appointment", null)
+                        .WithMany()
+                        .HasForeignKey("FreedByAppointmentId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_waitlist_offers_appointments_freed_by_appointment_id");
+
+                    b.HasOne("Salon.Core.Catalog.Service", null)
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_waitlist_offers_services_service_id");
+
+                    b.HasOne("Salon.Core.Staff.StaffMember", null)
+                        .WithMany()
+                        .HasForeignKey("StaffMemberId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_waitlist_offers_staff_members_staff_member_id");
+
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_waitlist_offers_tenants_tenant_id");
+
+                    b.HasOne("Salon.Core.Appointments.WaitlistEntry", null)
+                        .WithMany()
+                        .HasForeignKey("WaitlistEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_waitlist_offers_waitlist_entries_waitlist_entry_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Booking.PhoneVerification", b =>

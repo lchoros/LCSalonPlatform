@@ -49,7 +49,20 @@ public sealed record CopyMoneyLine(ZonedDateTime At, ClientAccountEntryKind Kind
 public sealed record CopyProduct(ZonedDateTime AddedAt, string Name, int Quantity, int Returned, Money UnitPrice, bool Paid);
 
 /// <param name="CreatedOn">The day they asked, in the salon's zone.</param>
-public sealed record CopyWaitlistEntry(LocalDate CreatedOn, string ServiceName, string? StaffName, LocalDate? NotBefore, LocalDate? NotAfter, string? Note, WaitlistOutcome? Outcome);
+public sealed record CopyWaitlistEntry(LocalDate CreatedOn, string ServiceName, string? StaffName, LocalDate? NotBefore, LocalDate? NotAfter, string? Note, WaitlistOutcome? Outcome)
+{
+    /// <summary>The freed times that were kept for them because of this request (ADR 0065), oldest first.</summary>
+    public IReadOnlyList<CopyOfferedTime> Offered { get; init; } = [];
+}
+
+/// <summary>A freed time that was kept for the client (ADR 0065).</summary>
+/// <param name="Start">In the salon's zone.</param>
+/// <param name="Outcome">How it ended; null while it is still kept.</param>
+public sealed record CopyOfferedTime(ZonedDateTime Start, WaitlistOfferEnd? Outcome)
+{
+    /// <summary>What became of it, as the end of a resource key: the outcome, or "Standing" while it is kept.</summary>
+    public string Ending => Outcome?.ToString() ?? "Standing";
+}
 
 /// <summary>What erasing a client would do, shown before the owner confirms (ADR 0062).</summary>
 /// <param name="Blockers">What must be settled first; empty when the client can be erased now.</param>
@@ -161,8 +174,15 @@ internal sealed class ClientDataService(
             join s in db.Services.AsNoTracking() on w.ServiceId equals s.Id
             where w.ClientId == clientId
             orderby w.CreatedAt, w.Id
-            select new { w.CreatedAt, Service = s.Name, w.StaffMemberId, w.NotBefore, w.NotAfter, w.Note, w.Outcome })
+            select new { w.Id, w.CreatedAt, Service = s.Name, w.StaffMemberId, w.NotBefore, w.NotAfter, w.Note, w.Outcome })
             .ToListAsync(cancellationToken).ConfigureAwait(false);
+        var wishIds = waitRows.Select(w => w.Id).ToArray();
+        var offered = (await db.WaitlistOffers.AsNoTracking()
+                .Where(o => wishIds.Contains(o.WaitlistEntryId))
+                .OrderBy(o => o.OfferedAt).ThenBy(o => o.Id)
+                .Select(o => new { o.WaitlistEntryId, o.Start, o.Outcome })
+                .ToListAsync(cancellationToken).ConfigureAwait(false))
+            .ToLookup(o => o.WaitlistEntryId, o => new CopyOfferedTime(o.Start.InZone(zone), o.Outcome));
         var staffIds = waitRows.Where(w => w.StaffMemberId is not null).Select(w => w.StaffMemberId!.Value).Distinct().ToArray();
         var staff = await db.StaffMembers.AsNoTracking()
             .Where(m => staffIds.Contains(m.Id))
@@ -178,7 +198,7 @@ internal sealed class ClientDataService(
             [.. moneyRows.Select(e => new CopyMoneyLine(e.At.InZone(zone), e.Kind, new Money(e.Amount, e.Currency), e.Method, e.MethodName, e.Note))],
             [.. productRows.Select(p => new CopyProduct(p.AddedAt.InZone(zone), p.ProductName, p.Quantity, p.ReturnedQuantity, new Money(p.UnitPrice, p.Currency), p.Paid))],
             forms,
-            [.. waitRows.Select(w => new CopyWaitlistEntry(w.CreatedAt.InZone(zone).Date, w.Service, w.StaffMemberId is { } id ? staff.GetValueOrDefault(id) : null, w.NotBefore, w.NotAfter, w.Note, w.Outcome))],
+            [.. waitRows.Select(w => new CopyWaitlistEntry(w.CreatedAt.InZone(zone).Date, w.Service, w.StaffMemberId is { } id ? staff.GetValueOrDefault(id) : null, w.NotBefore, w.NotAfter, w.Note, w.Outcome) { Offered = [.. offered[w.Id]] })],
             merged);
     }
 

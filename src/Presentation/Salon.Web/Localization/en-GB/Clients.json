@@ -277,5 +277,11 @@
   "Clients.Erase.Understood": "I understand that this cannot be undone.",
   "Clients.Erase.Validation.Understood": "Tick the box to confirm that this cannot be undone.",
   "Clients.Erase.Submit": "Erase this client",
-  "Clients.Erase.Done": "The client was erased."
+  "Clients.Erase.Done": "The client was erased.",
+  "Clients.Data.Waitlist.Offered": "A time was kept for them: {0}",
+  "Clients.Data.Waitlist.Offer.Standing": "kept now",
+  "Clients.Data.Waitlist.Offer.Taken": "they booked it",
+  "Clients.Data.Waitlist.Offer.NotTaken": "not taken",
+  "Clients.Data.Waitlist.Offer.Released": "let go by the salon",
+  "Clients.Data.Waitlist.Offer.Gone": "could not be booked any more"
 }

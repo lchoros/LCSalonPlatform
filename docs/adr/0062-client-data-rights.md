@@ -40,6 +40,7 @@ are kept, is the salon's decision.
 | `clients` merged into this one | the duplicate's name (ADR 0017 cleared the rest) | name cleared, marked erased |
 | `consultation_records` | health answers (cipher text), what the form was for, consent wording | deleted |
 | `waitlist_entries` | what they waited for, days, a note | deleted |
+| `waitlist_offers` | the freed times kept for them (ADR 0065): which time, with whom, the secret of their link | deleted with the waitlist request |
 | `phone_verifications` | what they typed on the booking pages: name, number, email | deleted (by number, and by their visits) |
 | `appointments` | that a visit took place, when, with whom, the price; a note; a cancellation reason; the cancel link | kept; note, reason and link cleared |
 | `appointment_status_changes` | who changed a visit's status and when | kept: no personal data of the client |

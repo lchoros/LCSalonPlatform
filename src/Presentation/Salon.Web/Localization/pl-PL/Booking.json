@@ -153,5 +153,17 @@
   "Booking.Privacy.Contact.Phone": "Zadzwoń pod numer {0}.",
   "Booking.Privacy.Contact.Email": "Napisz na adres {0}.",
   "Booking.Privacy.Contact.AtSalon": "Zapytaj w salonie.",
-  "Booking.Privacy.Updated": "Ostatnia zmiana: {0}"
+  "Booking.Privacy.Updated": "Ostatnia zmiana: {0}",
+  "Booking.Held.Title": "Trzymamy dla Ciebie termin",
+  "Booking.Held.Booked.Title": "Twoja wizyta jest zarezerwowana",
+  "Booking.Held.Price": "Cena",
+  "Booking.Held.Until": "{0}, ten termin trzymamy dla Ciebie do {1}. Potem każdy może go zarezerwować.",
+  "Booking.Held.Take": "Zarezerwuj ten termin",
+  "Booking.Held.OtherTimes": "Zobacz inne terminy",
+  "Booking.Held.NoNeed": "Jeśli go nie chcesz, nie musisz nic robić. Zostajesz na liście oczekujących.",
+  "Booking.Held.Booked": "Zarezerwowane. Do zobaczenia.",
+  "Booking.Held.Manage": "Zmień lub odwołaj tę wizytę",
+  "Booking.Held.Over": "Tego terminu już dla Ciebie nie trzymamy. Nadal jesteś na liście oczekujących i możesz zobaczyć terminy, które są teraz wolne.",
+  "Booking.Held.Gone": "Przepraszamy, ten termin właśnie zniknął. Nadal jesteś na liście oczekujących i możesz zobaczyć terminy, które są teraz wolne.",
+  "Booking.Held.Invalid": "Nie znamy tego linku. Być może skopiowano go bez ostatnich znaków. Możesz zobaczyć terminy, które są teraz wolne."
 }

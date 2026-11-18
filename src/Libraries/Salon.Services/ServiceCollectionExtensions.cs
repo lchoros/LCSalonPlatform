@@ -62,6 +62,7 @@ public static class ServiceCollectionExtensions
         // Reminders (ADR 0020): needs IPublicUrlBuilder (Web.Framework) at resolve time, like the public booking service.
         services.AddScoped<IAppointmentReminderService, AppointmentReminderService>();
         services.AddScoped<IScheduleTask, AppointmentReminderTask>();
+        services.AddScoped<IScheduleTask, Appointments.WaitlistPassOnTask>();
         services.AddScoped<IDailySummaryService, DailySummaryService>();
         services.AddScoped<IScheduleTask, DailySummaryTask>();
         // The client account (ADR 0022): needs the payment plugin the host registers, at resolve time.

@@ -277,5 +277,11 @@
   "Clients.Erase.Understood": "Rozumiem, że tego nie da się cofnąć.",
   "Clients.Erase.Validation.Understood": "Zaznacz pole, aby potwierdzić, że tego nie da się cofnąć.",
   "Clients.Erase.Submit": "Usuń dane tego klienta",
-  "Clients.Erase.Done": "Dane klienta zostały usunięte."
+  "Clients.Erase.Done": "Dane klienta zostały usunięte.",
+  "Clients.Data.Waitlist.Offered": "Trzymano dla tej osoby termin: {0}",
+  "Clients.Data.Waitlist.Offer.Standing": "trzymany teraz",
+  "Clients.Data.Waitlist.Offer.Taken": "zarezerwowany",
+  "Clients.Data.Waitlist.Offer.NotTaken": "niewykorzystany",
+  "Clients.Data.Waitlist.Offer.Released": "zwolniony przez salon",
+  "Clients.Data.Waitlist.Offer.Gone": "nie dało się go już zarezerwować"
 }

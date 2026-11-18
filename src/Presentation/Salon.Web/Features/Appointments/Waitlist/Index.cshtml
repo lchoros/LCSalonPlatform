@@ -80,6 +80,15 @@
                     {
                         <p class="rounded-md bg-stone-50 p-2 text-sm" data-testid="waiting-note">@note</p>
                     }
+                    @if (item.Held is { } held)
+                    {
+                        <div class="notice notice-ok space-y-2" data-testid="waiting-held">
+                            <p>@T.Format("Appointments.Waitlist.Held", held.Start.LocalDateTime.ToString("ddd d MMM, HH:mm", culture), held.StaffName, held.HeldUntil.TimeOfDay.ToShortTime(culture))</p>
+                            <form method="post" action="@WaitlistController.ReleasePath(held.OfferId)" asp-antiforgery="true">
+                                <button type="submit" class="btn btn-compact btn-secondary w-full sm:w-auto" data-testid="release-held">@T["Appointments.Waitlist.Held.Release"]<span class="sr-only">: @item.ClientName</span></button>
+                            </form>
+                        </div>
+                    }
                     <div class="flex flex-col gap-2 sm:flex-row">
                         <a href="@WaitlistController.BookAddress(item)" class="btn btn-compact btn-primary" data-testid="waiting-book">@T["Appointments.Waitlist.Book"]<span class="sr-only">: @item.ClientName</span></a>
                         <form method="post" action="@WaitlistController.RemovePath(item.Id, waiting.Page)" asp-antiforgery="true">

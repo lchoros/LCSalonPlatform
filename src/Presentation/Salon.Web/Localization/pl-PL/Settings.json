@@ -238,5 +238,11 @@
   "Settings.Privacy.Notes.Title": "Warto wiedzieć",
   "Settings.Privacy.Notes.Where": "Klienci znajdą informację na dole każdej strony, którą widzą, przy formularzu rezerwacji i przy formularzu listy oczekujących.",
   "Settings.Privacy.Notes.Details": "Nazwa salonu, adres, numer telefonu i e-mail pochodzą z „Danych salonu”. Dbaj o ich aktualność.",
-  "Settings.Privacy.Notes.Rights": "Gdy klient poprosi o kopię danych lub o ich usunięcie, otwórz jego kartę: obie opcje są na dole."
+  "Settings.Privacy.Notes.Rights": "Gdy klient poprosi o kopię danych lub o ich usunięcie, otwórz jego kartę: obie opcje są na dole.",
+  "Settings.Waitlist.HoldMinutes": "Trzymaj dla nich termin przez tyle minut",
+  "Settings.Waitlist.HoldMinutesHint": "Dopóki termin jest trzymany, nikt inny nie może go zarezerwować, a klient rezerwuje go jednym kliknięciem z SMS-a. Jeśli tego nie zrobi, termin przechodzi do następnej osoby z listy. 0 oznacza, że termin nie jest trzymany: SMS zostaje wysłany, a termin ma ten, kto zarezerwuje pierwszy.",
+  "Settings.Waitlist.Validation.HoldMinutes": "Wpisz liczbę minut od 0 do {0}.",
+  "Settings.Messages.Token.HeldUntil": "do kiedy termin jest trzymany dla klienta",
+  "Settings.Messages.Name.Waitlist.TimeHeld": "Trzymamy dla Ciebie termin",
+  "Settings.Messages.When.Waitlist.TimeHeld": "Wysyłane do pierwszej osoby z listy oczekujących, gdy wizyta zostanie odwołana, a zwolnione terminy są dla niej trzymane (zakładka Lista oczekujących)."
 }

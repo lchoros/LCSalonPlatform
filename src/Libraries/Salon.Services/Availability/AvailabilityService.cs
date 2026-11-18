@@ -76,6 +76,14 @@ internal sealed class AvailabilityService(
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
+        // A freed time kept for a waiting client (ADR 0065) is busy for everybody else until the hold runs out or ends.
+        var now = clock.GetCurrentInstant();
+        var held = await db.WaitlistOffers.AsNoTracking()
+            .Where(o => staffIds.Contains(o.StaffMemberId) && o.EndedAt == null && o.HeldUntil > now && o.Start < windowEnd && o.End > busyFrom)
+            .Select(o => new { o.StaffMemberId, o.Start, o.End })
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
         var staff = staffIds
             .Select(id => new StaffAvailabilityInput(
                 id,
@@ -84,6 +92,7 @@ internal sealed class AvailabilityService(
                     .ToDictionary(g => g.Key, g => (IReadOnlyList<TimeRange>)g.Select(h => h.Range).OrderBy(r => r.Start).ToArray()),
                 appointments.Where(a => a.StaffMemberId == id).Select(a => new Interval(a.Start, a.End.Plus(buffer)))
                     .Concat(timeOff.Where(t => t.StaffMemberId == id).SelectMany(t => StaffTimeOffRules.ToIntervals(t, zone)))
+                    .Concat(held.Where(h => h.StaffMemberId == id).Select(h => new Interval(h.Start, h.End.Plus(buffer))))
                     .ToArray(),
                 offered[id].Duration))
             .ToArray();
@@ -95,7 +104,7 @@ internal sealed class AvailabilityService(
             service.Duration,
             buffer,
             settings.SlotStepMinutes,
-            clock.GetCurrentInstant(),
+            now,
             Duration.FromMinutes(settings.MinNoticeMinutes),
             settings.MaxAdvanceDays,
             staff);

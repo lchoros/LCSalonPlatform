@@ -22,6 +22,12 @@ public static class MessageTemplateCatalog
     /// <summary>Sent to the first client waiting when a visit is cancelled and its time can be booked again (ADR 0056). SMS only.</summary>
     public const string WaitlistTimeFreed = "Waitlist.TimeFreed";
 
+    /// <summary>
+    /// Sent in place of <see cref="WaitlistTimeFreed"/> when the salon keeps the freed time for the client (ADR 0065): it
+    /// says until when, and its link books the time with one tap. SMS only.
+    /// </summary>
+    public const string WaitlistTimeHeld = "Waitlist.TimeHeld";
+
     private static readonly MessageChannel[] SmsAndEmail = [MessageChannel.Sms, MessageChannel.Email];
     private static readonly MessageChannel[] SmsOnly = [MessageChannel.Sms];
 
@@ -35,6 +41,7 @@ public static class MessageTemplateCatalog
         new(BookingRescheduled, SmsAndEmail, [.. BookingTokens, "CancelUrl"]),
         new(BookingCode, SmsOnly, ["SalonName", "Code"]) { RequiredTokenNames = ["Code"] },
         new(WaitlistTimeFreed, SmsOnly, ["SalonName", "ClientFirstName", "ServiceName", "AppointmentStart", "BookingUrl"]),
+        new(WaitlistTimeHeld, SmsOnly, ["SalonName", "ClientFirstName", "ServiceName", "AppointmentStart", "HeldUntil", "BookingUrl"]),
     }.ToDictionary(d => d.Key, StringComparer.Ordinal);
 
     public static IReadOnlyList<MessageTemplateDefinition> All { get; } = [.. Definitions.Values];
