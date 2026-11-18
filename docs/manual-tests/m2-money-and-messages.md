@@ -573,6 +573,18 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
       "Erased client".
 - [ ] AU7. Book the same person again as a new client with the same phone number: it works.
 
+## AV. The privacy notice (after the branch `agent/m3-43-privacy-notice` is merged too; no migration)
+- [ ] AV1. Signed out, open the salon's price list. At the bottom: "How we use your details". It opens the notice,
+      which names the salon with its address, what is kept, what for, who sees it, and what a client can ask.
+- [ ] AV2. Start a booking and reach the form for your name and number: one sentence says what the details are
+      used for, with the same link. The waitlist form has the link too.
+- [ ] AV3. Read the standard notice once, sentence by sentence. Everything in it should be true of your salon.
+- [ ] AV4. As the owner: Settings, "Privacy notice". It says the standard notice is not legal advice. Tick "Show my
+      own text" with the box empty: refused. Type two paragraphs with an empty line between them and save.
+- [ ] AV5. The public notice now shows your text, with the salon's name above and how to reach you below. Untick
+      and save: the standard notice is back and your text is still in the box.
+- [ ] AV6. A manager does not have the "Privacy notice" tab.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

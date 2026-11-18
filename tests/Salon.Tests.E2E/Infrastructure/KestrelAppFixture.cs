@@ -293,6 +293,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         await settings.SaveAsync(new RebookSettings());
         await settings.SaveAsync(new DailySummarySettings());
         await settings.SaveAsync(new Salon.Core.Payments.PaymentMethodSettings());
+        await settings.SaveAsync(new PrivacyNoticeSettings());
     }
 
     /// <summary>
