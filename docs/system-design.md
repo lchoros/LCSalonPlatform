@@ -174,6 +174,13 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   owner only (ADR 0051): every client card with contact details, notes, consent and visit counts, merged pointers
   left out. Health notes are never read. Each download is logged with who and how many rows. The client import
   reads the file back.
+- The salon's own payment methods (ADR 0060): `Settings/PaymentMethods` at `/admin/settings/payment-methods` behind
+  `Settings.Manage` adds, renames and stops using `SalonPaymentMethod` rows and switches the built-in methods on and
+  off (`PaymentMethodSettings`; cash is always on). `IPaymentMethodService.OptionsAsync` is the one list every form
+  offers, rendered by the `<payment-method-options />` tag helper in `Salon.Web.Framework`; `ResolveAsync` checks a
+  posted `PaymentChoice` in `ClientAccountService`, `CounterSaleService` and `GiftVoucherService` before a line is
+  written. A line paid by an own method has `Method = Other`, `CustomMethodId` and `MethodName` (a check constraint
+  keeps the three together). `TillRules.TotalsByMethod` gives each own method its own line in the till and reports.
 - `Clients/Consultations` — `/admin/clients/{clientId}/consultations/new` and `.../consultations/{id}` behind
   `Clients.View` (ADR 0058): the consultation form before a colour and one kept record. `IConsultationService`
   keeps the answers, the details, the patch test day and the name the client typed as one document encrypted with

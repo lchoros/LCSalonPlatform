@@ -529,6 +529,22 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] AR6. Empty both boxes and save: the commission of the visits already done stays; visits done from now on earn
       none.
 
+## AS. Your own payment methods (after the branch `agent/m3-39-own-payment-methods` is merged too; it has a migration)
+- [ ] AS1. Settings has a "Payment methods" tab (owner only; a manager does not see it). Add "PayPal": it is listed
+      under "Your own methods". Add "paypal" again: "There is already a method with that name." "Cash" is refused
+      the same way.
+- [ ] AS2. Mark a client as arrived and open the checkout: the list of methods ends with PayPal. Pay by PayPal.
+      The bill says "Paid: PayPal".
+- [ ] AS3. The till of today has a line "PayPal" with the amount; "Cash expected in the drawer" does not include
+      it. Reports, today: "PayPal" is a line under the takings. The money file has "PayPal" in the method column.
+- [ ] AS4. The same list is on: a deposit and its return, a fee, a product brought back, "Sell at the counter" and
+      its return, selling a gift voucher and giving its money back (without "Voucher" there).
+- [ ] AS5. Rename PayPal to "PayPal Here": the till of today still has one line, now under the new name; the
+      payment already taken still says PayPal on its bill.
+- [ ] AS6. "Stop using PayPal Here": it moves to "No longer used" and is gone from the checkout list; the till
+      still shows its money. "Use again" brings it back. A method never used is removed instead.
+- [ ] AS7. Untick "Bank transfer" and save: it is gone from the checkout list. Cash cannot be unticked.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.
