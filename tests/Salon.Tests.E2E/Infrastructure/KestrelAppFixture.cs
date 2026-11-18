@@ -82,6 +82,8 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         await db.GiftVouchers.ExecuteDeleteAsync();
         // Waiting clients point at the clients, services and staff that are about to go (ADR 0041).
         await db.WaitlistEntries.ExecuteDeleteAsync();
+        // Consultation forms point at the clients that are about to go (ADR 0058).
+        await db.ConsultationRecords.ExecuteDeleteAsync();
         await db.StockMovements.Where(m => m.AppointmentId != null).ExecuteUpdateAsync(s => s.SetProperty(m => m.AppointmentId, (Guid?)null));
     }
 
@@ -209,6 +211,8 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         {
             scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
             var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+            // Consultation forms point at the clients that are about to go (ADR 0058).
+            await db.ConsultationRecords.ExecuteDeleteAsync();
             db.Appointments.RemoveRange(await db.Appointments.ToListAsync());
             db.StaffMembers.RemoveRange(await db.StaffMembers.ToListAsync());
             db.Clients.RemoveRange(await db.Clients.ToListAsync());

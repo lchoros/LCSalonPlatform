@@ -100,6 +100,9 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     /// <summary>Gift vouchers the salon sold; what is left on each is money it owes (ADR 0057).</summary>
     public DbSet<GiftVoucher> GiftVouchers => Set<GiftVoucher>();
 
+    /// <summary>Consultation forms clients answered before a treatment; the answers are cipher text only (ADR 0058).</summary>
+    public DbSet<ConsultationRecord> ConsultationRecords => Set<ConsultationRecord>();
+
     /// <summary>Platform-level (no tenant filter, no RLS): the dispatcher reads every tenant's pending events (ADR 0007).</summary>
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 

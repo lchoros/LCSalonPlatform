@@ -1,0 +1,84 @@
+@using Salon.Core.Clients
+@using Salon.Web.Features.Clients.Consultations
+@model ConsultationFormViewModel
+@{
+    ViewData["Title"] = T["Clients.Consultation.New.Title"];
+    var form = Model.Form;
+    const string inputClass = "field field-compact";
+    const string choiceClass = "flex min-h-11 items-center gap-2 rounded-md border border-stone-300 bg-white px-4";
+}
+<section class="mx-auto max-w-2xl space-y-6">
+    <a href="@Model.CardPath" class="back-link" data-testid="back">&larr; @T["Clients.Consultation.Back"]</a>
+    <header class="space-y-2">
+        <p class="text-sm text-stone-500" data-testid="consultation-client">@Model.Client.FullName</p>
+        <h1 class="page-title">@T["Clients.Consultation.New.Title"]</h1>
+        <p class="text-stone-600">@T["Clients.Consultation.New.Lead"]</p>
+    </header>
+
+    <form method="post" asp-action="Form" asp-route-clientId="@Model.Client.Id" class="space-y-5" novalidate autocomplete="off" data-testid="consultation-form">
+        <div asp-validation-summary="ModelOnly" class="notice notice-error" role="alert" data-testid="consultation-problem"></div>
+        <input type="hidden" name="RecordId" value="@Model.RecordId" />
+
+        <div class="space-y-1 panel">
+            <label for="For" class="field-label">@T["Clients.Consultation.For"]</label>
+            <input id="For" name="For" value="@form.For" type="text" maxlength="@ConsultationRecord.ForMaxLength" aria-describedby="for-hint for-error" class="@inputClass @ViewData.ModelState.InvalidClass("For")" data-testid="consultation-for" />
+            <p id="for-hint" class="text-sm text-stone-500">@T["Clients.Consultation.ForHint"]</p>
+            <p id="for-error" class="text-sm text-red-700">@string.Join(" ", ViewData.ModelState.ErrorsFor("For"))</p>
+        </div>
+
+        <div class="space-y-4 rounded-lg border border-amber-300 bg-amber-50 p-4" data-testid="consultation-questions">
+            <p class="text-sm text-amber-900">@T["Clients.Card.HealthNotesHint"]</p>
+            <p class="text-sm text-red-700" role="alert" data-testid="answers-error">@string.Join(" ", ViewData.ModelState.ErrorsFor("Answers"))</p>
+            @foreach (var question in Model.Questions)
+            {
+                <fieldset class="space-y-2" data-testid="question" data-question="@question.Key">
+                    <legend class="text-base font-medium">@T[question.TextKey]</legend>
+                    <div class="flex flex-wrap gap-3">
+                        <label class="@choiceClass">
+                            <input type="radio" name="@question.FieldName" value="true" checked="@(question.Answer == true)" data-testid="answer-yes" />
+                            <span>@T["Clients.Consultation.Yes"]</span>
+                        </label>
+                        <label class="@choiceClass">
+                            <input type="radio" name="@question.FieldName" value="false" checked="@(question.Answer == false)" data-testid="answer-no" />
+                            <span>@T["Clients.Consultation.No"]</span>
+                        </label>
+                    </div>
+                </fieldset>
+            }
+
+            <div class="space-y-1">
+                <label for="Details" class="field-label">@T["Clients.Consultation.Details"]</label>
+                <textarea id="Details" name="Details" rows="4" maxlength="@ConsultationRecord.DetailsMaxLength" aria-describedby="details-hint details-error" class="@inputClass @ViewData.ModelState.InvalidClass("Details")" data-testid="consultation-details">@form.Details</textarea>
+                <p id="details-hint" class="text-sm text-stone-600">@T["Clients.Consultation.DetailsHint"]</p>
+                <p id="details-error" class="text-sm text-red-700">@string.Join(" ", ViewData.ModelState.ErrorsFor("Details"))</p>
+            </div>
+
+            <div class="space-y-1">
+                <label for="PatchTestOn" class="field-label">@T["Clients.Consultation.PatchTestOn"]</label>
+                <input id="PatchTestOn" name="PatchTestOn" value="@form.PatchTestOn" type="date" aria-describedby="patch-hint patch-error" class="@inputClass tabular-nums sm:max-w-xs @ViewData.ModelState.InvalidClass("PatchTestOn")" data-testid="consultation-patch-test" />
+                <p id="patch-hint" class="text-sm text-stone-600">@T["Clients.Consultation.PatchTestOnHint"]</p>
+                <p id="patch-error" class="text-sm text-red-700" data-testid="patch-error">@string.Join(" ", ViewData.ModelState.ErrorsFor("PatchTestOn"))</p>
+            </div>
+        </div>
+
+        <div class="space-y-4 panel" data-testid="consultation-confirm">
+            <h2 class="text-lg font-semibold">@T["Clients.Consultation.Confirm.Title"]</h2>
+            <p class="text-sm text-stone-600">@T["Clients.Consultation.Confirm.Lead"]</p>
+            <div class="space-y-1">
+                <label class="flex min-h-11 items-start gap-3">
+                    <input type="checkbox" name="Agreed" value="true" checked="@form.Agreed" aria-describedby="agreed-error" class="mt-1 h-5 w-5" data-testid="consultation-agreed" />
+                    <span data-testid="consent-wording">@T[ConsultationsController.ConsentKey]</span>
+                </label>
+                <p id="agreed-error" class="text-sm text-red-700" data-testid="agreed-error">@string.Join(" ", ViewData.ModelState.ErrorsFor("Agreed"))</p>
+            </div>
+            <div class="space-y-1">
+                <label for="ConfirmedBy" class="field-label">@T["Clients.Consultation.ConfirmedBy"]</label>
+                <input id="ConfirmedBy" name="ConfirmedBy" value="@form.ConfirmedBy" type="text" aria-describedby="confirmed-hint confirmed-error" class="@inputClass sm:max-w-sm @ViewData.ModelState.InvalidClass("ConfirmedBy")" data-testid="consultation-confirmed-by" />
+                <p id="confirmed-hint" class="text-sm text-stone-500">@T["Clients.Consultation.ConfirmedByHint"]</p>
+                <p id="confirmed-error" class="text-sm text-red-700" data-testid="confirmed-error">@string.Join(" ", ViewData.ModelState.ErrorsFor("ConfirmedBy"))</p>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-compact btn-primary w-full sm:w-auto" data-testid="consultation-submit">@T["Clients.Consultation.Submit"]</button>
+    </form>
+</section>

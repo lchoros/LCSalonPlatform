@@ -18,4 +18,5 @@ public sealed record ClientCardQuery(Guid ClientId) : IQuery<ClientCardDetails?>
 /// <param name="Account">The fees on the client's account and what is still owed (ADR 0022).</param>
 /// <param name="FeesInUse">True when the salon's policy sets a fee or the client already has one: missed and cancelled visits then link to their fee page.</param>
 /// <param name="Purchases">The products the client bought, newest first (ADR 0039).</param>
-public sealed record ClientCardDetails(Card Card, ClientHistory History, string? MergedIntoName, ClientAccount Account, bool FeesInUse, IReadOnlyList<PurchaseLine> Purchases);
+/// <param name="Consultations">The consultation forms the client answered, newest first, without their answers (ADR 0058).</param>
+public sealed record ClientCardDetails(Card Card, ClientHistory History, string? MergedIntoName, ClientAccount Account, bool FeesInUse, IReadOnlyList<PurchaseLine> Purchases, IReadOnlyList<ConsultationSummary> Consultations);

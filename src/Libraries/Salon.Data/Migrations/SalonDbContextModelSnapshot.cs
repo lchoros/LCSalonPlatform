@@ -707,6 +707,64 @@ namespace Salon.Data.Migrations
                     b.ToTable("clients", "salon");
                 });
 
+            modelBuilder.Entity("Salon.Core.Clients.ConsultationRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AnswersProtected")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("answers_protected");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("client_id");
+
+                    b.Property<string>("ConsentWording")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("consent_wording");
+
+                    b.Property<string>("For")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("taken_for");
+
+                    b.Property<int>("FormVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("form_version");
+
+                    b.Property<Instant>("TakenAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("taken_at");
+
+                    b.Property<Guid?>("TakenByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("taken_by_user_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_consultation_records");
+
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("ix_consultation_records_client_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_consultation_records_tenant_id");
+
+                    b.HasIndex("TenantId", "ClientId", "TakenAt")
+                        .HasDatabaseName("ix_consultation_records_tenant_id_client_id_taken_at");
+
+                    b.ToTable("consultation_records", "salon");
+                });
+
             modelBuilder.Entity("Salon.Core.Events.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2083,6 +2141,23 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_clients_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Clients.ConsultationRecord", b =>
+                {
+                    b.HasOne("Salon.Core.Clients.Client", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_consultation_records_clients_client_id");
+
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_consultation_records_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Identity.User", b =>

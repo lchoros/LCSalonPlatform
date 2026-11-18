@@ -355,6 +355,12 @@ internal sealed class ClientService(
                 .ExecuteUpdateAsync(e => e.SetProperty(x => x.ClientId, target.Id), cancellationToken)
                 .ConfigureAwait(false);
 
+            // The consultations the duplicate answered are part of the same person's history (ADR 0058).
+            await db.ConsultationRecords
+                .Where(r => r.ClientId == source.Id)
+                .ExecuteUpdateAsync(r => r.SetProperty(x => x.ClientId, target.Id), cancellationToken)
+                .ConfigureAwait(false);
+
             await publisher.PublishAsync(new ClientsMerged(target.Id, source.Id, tenantId), cancellationToken).ConfigureAwait(false);
             if (transaction is not null)
             {

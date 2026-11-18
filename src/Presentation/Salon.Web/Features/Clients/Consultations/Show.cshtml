@@ -1,0 +1,67 @@
+@using System.Globalization
+@using Salon.Web.Features.Clients.Consultations
+@model ConsultationViewModel
+@{
+    ViewData["Title"] = T["Clients.Consultation.Title"];
+    var culture = CultureInfo.CurrentCulture;
+    var details = Model.Details;
+}
+<section class="mx-auto max-w-2xl space-y-6" data-testid="consultation">
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+    <a href="@Model.CardPath" class="back-link" data-testid="back">&larr; @T["Clients.Consultation.Back"]</a>
+    <header class="space-y-1">
+        <p class="text-sm text-stone-500" data-testid="consultation-client">@details.ClientName</p>
+        <h1 class="page-title">@T["Clients.Consultation.Title"]</h1>
+        <p class="text-stone-600" data-testid="consultation-taken">@ConsultationText.Taken(T, details.Summary, culture)</p>
+        @if (details.Summary.For is { } takenFor)
+        {
+            <p class="text-stone-600" data-testid="consultation-for">@T.Format("Clients.Consultation.ForLine", takenFor)</p>
+        }
+    </header>
+
+    @if (details.Answers is { } answers)
+    {
+        var lines = ConsultationText.Lines(T, answers);
+        <section class="space-y-3 rounded-lg border border-amber-300 bg-amber-50 p-4" data-testid="consultation-answers">
+            <p class="text-sm text-amber-900">@T["Clients.Card.HealthNotesHint"]</p>
+            <dl class="space-y-3">
+                @foreach (var line in lines)
+                {
+                    <div class="flex items-start justify-between gap-4" data-testid="answer-line" data-question="@line.Key" data-concern="@line.IsConcern.ToString().ToLowerInvariant()">
+                        <dt class="text-base">@line.Question</dt>
+                        <dd class="shrink-0 rounded px-2 py-0.5 text-sm font-semibold @(line.IsConcern ? "bg-amber-200 text-amber-950" : "bg-white text-stone-700")" data-testid="answer">@line.Answer</dd>
+                    </div>
+                }
+            </dl>
+            <div class="space-y-1">
+                <h2 class="text-base font-semibold">@T["Clients.Consultation.Details"]</h2>
+                @if (answers.Details is { } text)
+                {
+                    <p class="whitespace-pre-line text-base" data-testid="consultation-details">@text</p>
+                }
+                else
+                {
+                    <p class="text-sm text-stone-600" data-testid="consultation-details">@T["Clients.Consultation.NoDetails"]</p>
+                }
+            </div>
+            <dl>
+                <dt class="text-sm text-stone-600">@T["Clients.Consultation.PatchTestOn"]</dt>
+                <dd class="text-base" data-testid="consultation-patch-test">@ConsultationText.PatchTest(T, answers, culture)</dd>
+            </dl>
+        </section>
+
+        <section class="space-y-2 panel" data-testid="consultation-confirmed">
+            <h2 class="text-lg font-semibold">@T["Clients.Consultation.Confirm.Title"]</h2>
+            <p class="text-base" data-testid="confirmed-by">@T.Format("Clients.Consultation.ConfirmedByLine", answers.ConfirmedBy)</p>
+            <p class="text-sm text-stone-500">@T["Clients.Consultation.AgreedTo"]</p>
+            <blockquote class="border-l-2 border-stone-300 pl-3 text-sm text-stone-700" data-testid="consent-wording">@details.ConsentWording</blockquote>
+        </section>
+    }
+    else
+    {
+        <p role="alert" class="notice notice-error" data-testid="consultation-unreadable">@T["Clients.Consultation.Unreadable"]</p>
+    }
+</section>

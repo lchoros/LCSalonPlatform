@@ -39,7 +39,7 @@ public sealed class ClientCardController(IDispatcher dispatcher, ITenantContext 
         var tenant = await tenantLookup.FindByIdAsync(tenantContext.TenantId!.Value, cancellationToken);
         var zone = (tenant is null ? null : DateTimeZoneProviders.Tzdb.GetZoneOrNull(tenant.TimeZoneId)) ?? DateTimeZone.Utc;
 
-        return View(new ClientCardViewModel(details.Card, details.History, details.MergedIntoName, zone, TakeFlash(), details.Account, details.FeesInUse, details.Purchases));
+        return View(new ClientCardViewModel(details.Card, details.History, details.MergedIntoName, zone, TakeFlash(), details.Account, details.FeesInUse, details.Purchases, details.Consultations));
     }
 }
 
@@ -51,4 +51,14 @@ public sealed class ClientCardController(IDispatcher dispatcher, ITenantContext 
 /// <param name="Account">Fees on the client's account (ADR 0022).</param>
 /// <param name="FeesInUse">Whether missed and cancelled visits link to their fee page.</param>
 /// <param name="Purchases">Products the client bought, newest first (ADR 0039).</param>
-public sealed record ClientCardViewModel(Card Card, ClientHistory History, string? MergedIntoName, DateTimeZone Zone, string? Flash, ClientAccount Account, bool FeesInUse, IReadOnlyList<PurchaseLine> Purchases);
+/// <param name="Consultations">Consultation forms the client answered, newest first; no answers here (ADR 0058).</param>
+public sealed record ClientCardViewModel(Card Card, ClientHistory History, string? MergedIntoName, DateTimeZone Zone, string? Flash, ClientAccount Account, bool FeesInUse, IReadOnlyList<PurchaseLine> Purchases, IReadOnlyList<ConsultationSummary> Consultations)
+{
+    /// <summary>A form can be taken for a card in use: active and not merged into another.</summary>
+    public bool CanTakeConsultation => Card.IsActive && !Card.IsMerged;
+
+    /// <summary>The consultation form for this client; the Consultations slice owns the route.</summary>
+    public string NewConsultationPath => $"/admin/clients/{Card.Id}/consultations/new";
+
+    public string ConsultationPath(Guid consultationId) => $"/admin/clients/{Card.Id}/consultations/{consultationId}";
+}
