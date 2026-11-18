@@ -41,3 +41,12 @@ is wrong by the bottle.
 ## Rollback
 Revert the PR and run the migration's `Down`. Returns recorded meanwhile would remain as ledger rows of a kind the
 old code does not name; with no production data in Phase 1 there are none to keep.
+
+## Amendment (2026-11-16): the returned units are claimed in one statement
+Found while building ADR 0054: two requests for the same return at the same moment (a double click on "Record the
+return", or two tills) could both read "nothing returned yet" and both record the money given back. A test that
+starts six returns of one bottle at once saw four of them recorded. The cap in the database stopped the count of
+returned units going over, but not the extra lines of money.
+
+The units are now claimed by one `UPDATE ... WHERE quantity - returned_quantity >= n`, before the refund is recorded.
+Only one request can win; the others are refused as "more than the client still has". No schema change.

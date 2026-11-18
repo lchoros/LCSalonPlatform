@@ -351,7 +351,8 @@ internal sealed class ClientAccountService(
     {
         RequireKnown(method);
         var tenantId = RequireTenant();
-        var line = await db.VisitProductLines.FirstOrDefaultAsync(l => l.Id == lineId && l.AppointmentId == appointmentId, cancellationToken).ConfigureAwait(false)
+        // Read without tracking: the units are claimed below in one statement, not by saving this copy.
+        var line = await db.VisitProductLines.AsNoTracking().FirstOrDefaultAsync(l => l.Id == lineId && l.AppointmentId == appointmentId, cancellationToken).ConfigureAwait(false)
             ?? throw new ClientAccountException(ClientAccountRefusal.NotFound);
         if (line.PaymentEntryId is not { } saleId)
         {
@@ -359,6 +360,16 @@ internal sealed class ClientAccountService(
         }
 
         if (!ProductSaleRules.CanReturn(line.IsPaid, line.Quantity, line.ReturnedQuantity, quantity))
+        {
+            throw new ClientAccountException(ClientAccountRefusal.ReturnMoreThanKept);
+        }
+
+        // The units are claimed in one statement that only succeeds while the client still has them (ADR 0054), so
+        // two requests for the same bottle (a double click, two tills) cannot both get the money back.
+        var claimed = await db.VisitProductLines
+            .Where(l => l.Id == lineId && l.PaymentEntryId != null && l.Quantity - l.ReturnedQuantity >= quantity)
+            .ExecuteUpdateAsync(s => s.SetProperty(l => l.ReturnedQuantity, l => l.ReturnedQuantity + quantity), cancellationToken).ConfigureAwait(false);
+        if (claimed != 1)
         {
             throw new ClientAccountException(ClientAccountRefusal.ReturnMoreThanKept);
         }
@@ -372,7 +383,6 @@ internal sealed class ClientAccountService(
         entry.Method = method;
         entry.ProviderSystemName = payments.SystemName;
         entry.ProviderReference = result.ProviderReference;
-        line.ReturnedQuantity += quantity;
         await InsertAsync(entry, ClientAccountRefusal.ReturnMoreThanKept, cancellationToken).ConfigureAwait(false);
 
         // A bottle that can be sold again goes back on its shelf; an opened or broken one does not come back at all.

@@ -196,6 +196,30 @@ public partial class ProductReturnsTests(SalonWebApplicationFactory factory) : I
         (await Should.ThrowAsync<DbUpdateException>(() => db.SaveChangesAsync())).InnerException.ShouldNotBeNull().Message.ShouldContain("ck_visit_product_lines_returned_within_quantity");
     }
 
+    [Fact]
+    public async Task Two_tills_cannot_both_give_the_money_back_for_the_last_bottle()
+    {
+        var (visit, line) = await SoldAsync(1, PaymentMethod.Cash);
+
+        // A double click, or two people at two tills: the same return asked for six times at once.
+        var attempts = await Task.WhenAll(Enumerable.Range(0, 6).Select(async _ =>
+        {
+            try
+            {
+                await AccountAsync(s => s.ReturnProductAsync(visit, line, 1, PaymentMethod.Cash, false, null));
+                return true;
+            }
+            catch (ClientAccountException ex) when (ex.Refusal == ClientAccountRefusal.ReturnMoreThanKept)
+            {
+                return false;
+            }
+        }));
+
+        attempts.Count(done => done).ShouldBe(1, "one bottle came back, so the money goes back once");
+        (await EntriesAsync()).Count(e => e.Kind == ClientAccountEntryKind.ProductReturn).ShouldBe(1);
+        (await LineAsync(line)).ReturnedQuantity.ShouldBe(1);
+    }
+
     private static string CheckoutPath(Guid appointmentId) => $"/admin/payments/checkout/{appointmentId}";
 
     /// <summary>An arrived visit with the shampoo on its bill, paid: the visit and the paid bill line.</summary>
