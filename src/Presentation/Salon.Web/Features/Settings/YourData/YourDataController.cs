@@ -40,7 +40,7 @@ public sealed class YourDataHandler(
         var zone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(tenant.TimeZoneId) ?? DateTimeZone.Utc;
         var thisYear = clock.GetCurrentInstant().InZone(zone).Year;
 
-        var clients = await db.Clients.CountAsync(c => c.MergedIntoClientId == null, cancellationToken);
+        var clients = await db.Clients.CountAsync(c => c.MergedIntoClientId == null && c.ErasedAt == null, cancellationToken);
         var visits = await db.Appointments.CountAsync(cancellationToken);
         var moneyLines = await db.ClientAccountEntries.CountAsync(e => e.Method != null, cancellationToken);
         var products = await db.Products.CountAsync(cancellationToken);

@@ -1,0 +1,179 @@
+@using System.Globalization
+@using Salon.Web.Features.Clients.DataCopy
+@model DataCopyViewModel
+@{
+    ViewData["Title"] = T["Clients.Data.Title"];
+    var culture = CultureInfo.CurrentCulture;
+    var copy = Model.Copy;
+    var card = copy.Card;
+    const string labelClass = "text-sm text-stone-500";
+    const string none = "—";
+}
+<section class="mx-auto max-w-3xl space-y-6" data-testid="data-copy">
+    <a href="@Model.CardPath" class="back-link print:hidden" data-testid="back">&larr; @T["Clients.Consultation.Back"]</a>
+    <header class="space-y-2">
+        <p class="text-sm text-stone-500">@T["Clients.Data.Title"]</p>
+        <h1 class="page-title" data-testid="copy-name">@card.FullName</h1>
+        <p class="text-stone-600" data-testid="copy-made">@T.Format("Clients.Data.MadeAt", copy.MadeAt.LocalDateTime.ToString("g", culture))</p>
+        <p class="notice notice-warn print:hidden" data-testid="copy-how">@T["Clients.Data.How"]</p>
+    </header>
+
+    <section class="space-y-3 panel" data-testid="copy-details">
+        <h2 class="text-lg font-semibold">@T["Clients.Data.Details"]</h2>
+        <dl class="grid gap-3 sm:grid-cols-2">
+            <div><dt class="@labelClass">@T["Clients.Card.Phone"]</dt><dd data-testid="copy-phone">@(card.Phone ?? none)</dd></div>
+            <div><dt class="@labelClass">@T["Clients.Card.Email"]</dt><dd class="break-all" data-testid="copy-email">@(card.Email ?? none)</dd></div>
+            <div><dt class="@labelClass">@T["Clients.Data.CreatedOn"]</dt><dd>@card.CreatedAt.InZone(copy.MadeAt.Zone).Date.ToString("d", culture)</dd></div>
+            <div><dt class="@labelClass">@T["Clients.Card.MarketingConsent"]</dt><dd data-testid="copy-consent">@(card.MarketingConsent && card.MarketingConsentAt is { } consentAt ? T.Format("Clients.Card.ConsentGranted", consentAt.InZone(copy.MadeAt.Zone).LocalDateTime.ToString("g", culture)) : T["Clients.Card.ConsentNotGranted"])</dd></div>
+        </dl>
+        @if (card.MarketingConsentWording is { } wording)
+        {
+            <blockquote class="border-l-2 border-stone-300 pl-3 text-sm text-stone-700">@wording</blockquote>
+        }
+        <div>
+            <h3 class="@labelClass">@T["Clients.Card.Notes"]</h3>
+            <p class="whitespace-pre-line" data-testid="copy-notes">@(card.Notes ?? none)</p>
+        </div>
+        <div>
+            <h3 class="@labelClass">@T["Clients.Card.HealthNotes"]</h3>
+            @if (card.HealthNotesUnreadable)
+            {
+                <p role="alert" class="notice notice-error">@T["Clients.Card.HealthNotesUnreadable"]</p>
+            }
+            else
+            {
+                <p class="whitespace-pre-line" data-testid="copy-health">@(card.HealthNotes ?? none)</p>
+            }
+        </div>
+        <div>
+            <h3 class="@labelClass">@T["Clients.Card.LastPatchTestOn"]</h3>
+            <p>@(card.LastPatchTestOn is { } patchTest ? patchTest.ToString("d", culture) : none)</p>
+        </div>
+        @if (copy.MergedCards > 0)
+        {
+            <p class="text-sm text-stone-600">@T.Format("Clients.Data.Merged", copy.MergedCards)</p>
+        }
+    </section>
+
+    <section class="space-y-3 panel" data-testid="copy-visits">
+        <h2 class="text-lg font-semibold">@T.Format("Clients.Data.Visits", copy.Visits.Count)</h2>
+        @if (copy.Visits.Count == 0)
+        {
+            <p class="text-sm text-stone-600">@T["Clients.Data.None"]</p>
+        }
+        else
+        {
+            <ul class="list-card">
+                @foreach (var visit in copy.Visits)
+                {
+                    <li class="space-y-1 p-3" data-testid="copy-visit">
+                        <p class="flex flex-wrap justify-between gap-2"><span class="font-medium tabular-nums">@visit.Start.LocalDateTime.ToString("g", culture)</span><span class="tabular-nums">@visit.Price.ToDisplayString(culture)</span></p>
+                        <p class="text-sm text-stone-600">@visit.ServiceName · @visit.StaffName · @T[$"Appointments.Status.{visit.Status}"]</p>
+                        @if (visit.Notes is { } visitNotes)
+                        {
+                            <p class="whitespace-pre-line text-sm">@visitNotes</p>
+                        }
+                        @if (visit.CancellationReason is { } reason)
+                        {
+                            <p class="text-sm">@reason</p>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+
+    <section class="space-y-3 panel" data-testid="copy-money">
+        <h2 class="text-lg font-semibold">@T.Format("Clients.Data.Money", copy.Money.Count)</h2>
+        @if (copy.Money.Count == 0)
+        {
+            <p class="text-sm text-stone-600">@T["Clients.Data.None"]</p>
+        }
+        else
+        {
+            <ul class="list-card">
+                @foreach (var line in copy.Money)
+                {
+                    <li class="space-y-1 p-3" data-testid="copy-money-line">
+                        <p class="flex flex-wrap justify-between gap-2"><span class="font-medium">@T[$"Payments.Kind.{line.Kind}"]</span><span class="tabular-nums">@line.Amount.ToDisplayString(culture)</span></p>
+                        <p class="text-sm text-stone-600"><span class="tabular-nums">@line.At.LocalDateTime.ToString("g", culture)</span>@if (line.Method is not null) { <text> · @PaymentMethodNames.Name(T, line.Method, line.MethodName)</text> }</p>
+                        @if (line.Note is { } note)
+                        {
+                            <p class="text-sm">@note</p>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+
+    @if (copy.Products.Count > 0)
+    {
+        <section class="space-y-3 panel" data-testid="copy-products">
+            <h2 class="text-lg font-semibold">@T.Format("Clients.Data.Products", copy.Products.Count)</h2>
+            <ul class="list-card">
+                @foreach (var product in copy.Products)
+                {
+                    <li class="flex flex-wrap justify-between gap-2 p-3" data-testid="copy-product">
+                        <span>@T.Format("Clients.Purchases.Line", product.Name, product.Quantity)<span class="block text-sm text-stone-600 tabular-nums">@product.AddedAt.Date.ToString("d", culture)@if (product.Returned > 0) { <text> · @T.Format("Payments.Checkout.Products.ReturnedCount", product.Returned)</text> }</span></span>
+                        <span class="tabular-nums">@product.UnitPrice.ToDisplayString(culture)</span>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+
+    @if (copy.Consultations.Count > 0)
+    {
+        <section class="space-y-3 panel" data-testid="copy-consultations">
+            <h2 class="text-lg font-semibold">@T.Format("Clients.Data.Consultations", copy.Consultations.Count)</h2>
+            @foreach (var form in copy.Consultations)
+            {
+                <article class="space-y-2 rounded-md border border-stone-200 p-3" data-testid="copy-consultation">
+                    <h3 class="font-medium tabular-nums">@form.Summary.TakenOn.ToString("d", culture)@if (form.Summary.For is { } takenFor) { <text> · @takenFor</text> }</h3>
+                    @if (form.Answers is { } answers)
+                    {
+                        <dl class="space-y-1 text-sm">
+                            @foreach (var (question, answer) in DataCopyText.Answers(T, answers))
+                            {
+                                <div class="flex justify-between gap-4"><dt>@question</dt><dd class="shrink-0 font-semibold">@answer</dd></div>
+                            }
+                        </dl>
+                        @if (answers.Details is { } details)
+                        {
+                            <p class="whitespace-pre-line text-sm" data-testid="copy-consultation-details">@details</p>
+                        }
+                        <p class="text-sm text-stone-600">@T.Format("Clients.Consultation.ConfirmedByLine", answers.ConfirmedBy)</p>
+                        <blockquote class="border-l-2 border-stone-300 pl-3 text-sm text-stone-700">@form.ConsentWording</blockquote>
+                    }
+                    else
+                    {
+                        <p role="alert" class="notice notice-error">@T["Clients.Consultation.Unreadable"]</p>
+                    }
+                </article>
+            }
+        </section>
+    }
+
+    @if (copy.Waitlist.Count > 0)
+    {
+        <section class="space-y-3 panel" data-testid="copy-waitlist">
+            <h2 class="text-lg font-semibold">@T.Format("Clients.Data.Waitlist", copy.Waitlist.Count)</h2>
+            <ul class="list-card">
+                @foreach (var entry in copy.Waitlist)
+                {
+                    <li class="space-y-1 p-3" data-testid="copy-waitlist-entry">
+                        <p class="font-medium">@entry.ServiceName@if (entry.StaffName is { } staffName) { <text> · @staffName</text> }</p>
+                        <p class="text-sm text-stone-600"><span class="tabular-nums">@entry.CreatedOn.ToString("d", culture)</span> · @DataCopyText.Days(T, entry, culture)</p>
+                        @if (entry.Note is { } waitNote)
+                        {
+                            <p class="text-sm">@waitNote</p>
+                        }
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+
+    <p class="text-sm text-stone-600" data-testid="copy-footer">@T["Clients.Data.Footer"]</p>
+</section>

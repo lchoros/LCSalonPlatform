@@ -25,7 +25,7 @@ public sealed class EditClientHandler(
 
         // Through the tenant filter: another salon's client id is "not found", never "updated".
         var card = await clients.GetCardAsync(request.Id, cancellationToken);
-        if (card is null)
+        if (card is null or { IsErased: true })
         {
             return false;
         }

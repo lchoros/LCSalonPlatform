@@ -1,0 +1,63 @@
+@using Salon.Web.Features.Clients.EraseClient
+@model EraseClientViewModel
+@{
+    ViewData["Title"] = T["Clients.Erase.Title"];
+    var preview = Model.Preview;
+}
+<section class="mx-auto max-w-xl space-y-6" data-testid="erase-client">
+    <a href="@Model.CardPath" class="back-link" data-testid="back">&larr; @T["Clients.Consultation.Back"]</a>
+    <header class="space-y-2">
+        <p class="text-sm text-stone-500" data-testid="erase-name">@preview.ClientName</p>
+        <h1 class="page-title">@T["Clients.Erase.Title"]</h1>
+        <p class="text-stone-600">@T["Clients.Erase.Lead"]</p>
+    </header>
+
+    @if (Model.Problem is { } problem)
+    {
+        <p role="alert" data-testid="erase-problem" class="notice notice-error">@problem</p>
+    }
+
+    @if (!preview.CanErase)
+    {
+        <section class="space-y-2 notice notice-warn" data-testid="erase-blocked">
+            <h2 class="font-semibold">@T["Clients.Erase.Blocked.Title"]</h2>
+            <ul class="list-disc space-y-1 pl-5">
+                @foreach (var blocker in preview.Blockers)
+                {
+                    <li data-testid="erase-blocker" data-blocker="@blocker">@T[EraseClientViewModel.BlockerKey(blocker)]</li>
+                }
+            </ul>
+        </section>
+    }
+
+    <section class="space-y-2 panel" data-testid="erase-goes">
+        <h2 class="text-lg font-semibold">@T["Clients.Erase.Goes.Title"]</h2>
+        <ul class="list-disc space-y-1 pl-5">
+            <li>@T["Clients.Erase.Goes.Details"]</li>
+            <li>@T["Clients.Erase.Goes.Health"]</li>
+            <li data-testid="erase-consultations">@T.Format("Clients.Erase.Goes.Consultations", preview.ConsultationsRemoved)</li>
+            <li data-testid="erase-waitlist">@T.Format("Clients.Erase.Goes.Waitlist", preview.WaitlistEntriesRemoved)</li>
+            <li>@T["Clients.Erase.Goes.VisitNotes"]</li>
+        </ul>
+    </section>
+
+    <section class="space-y-2 panel" data-testid="erase-stays">
+        <h2 class="text-lg font-semibold">@T["Clients.Erase.Stays.Title"]</h2>
+        <ul class="list-disc space-y-1 pl-5">
+            <li data-testid="erase-visits">@T.Format("Clients.Erase.Stays.Visits", preview.VisitsKept)</li>
+            <li data-testid="erase-money">@T.Format("Clients.Erase.Stays.Money", preview.MoneyLinesKept)</li>
+        </ul>
+        <p class="text-sm text-stone-600">@T["Clients.Erase.Stays.Why"]</p>
+    </section>
+
+    @if (preview.CanErase)
+    {
+        <form method="post" asp-action="Confirm" asp-route-clientId="@preview.ClientId" class="space-y-4 panel" novalidate data-testid="erase-form">
+            <label class="flex min-h-11 items-start gap-3">
+                <input type="checkbox" name="understood" value="true" class="mt-1 size-5 shrink-0 rounded border-stone-400" data-testid="erase-understood" />
+                <span>@T["Clients.Erase.Understood"]</span>
+            </label>
+            <button type="submit" class="btn btn-compact btn-danger w-full sm:w-auto" data-testid="erase-submit">@T["Clients.Erase.Submit"]</button>
+        </form>
+    }
+</section>
