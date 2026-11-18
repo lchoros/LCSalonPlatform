@@ -433,6 +433,36 @@ public class OwnPaymentMethodsTests(SalonWebApplicationFactory factory) : IAsync
         after.ShouldContain("PayPal");
     }
 
+    [Fact]
+    public async Task A_name_with_markup_in_it_is_text_on_every_page_never_markup()
+    {
+        const string name = "<b>Pay</b> & \"Go\"";
+        var id = await AddAsync(name);
+        var visit = await VisitAsync(AppointmentStatus.Arrived);
+        using var owner = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Owner);
+
+        // The raw page, not decoded: the name must arrive escaped.
+        async Task<string> RawAsync(string path)
+        {
+            using var response = await owner.GetAsync(new Uri(path, UriKind.Relative));
+            response.StatusCode.ShouldBe(HttpStatusCode.OK, path);
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        var bill = await RawAsync(CheckoutPath(visit));
+        bill.ShouldNotContain("<b>Pay</b>");
+        bill.ShouldContain("&lt;b&gt;Pay&lt;/b&gt;");
+        WebUtility.HtmlDecode(bill).ShouldContain($"<option value=\"{id}\">{name}</option>");
+
+        await AccountAsync(s => s.PayBillAsync(visit, PaymentChoice.Own(id), [], null));
+        foreach (var path in new[] { CheckoutPath(visit), TillPath, $"/admin/reports?from={Today}&to={Today}", SettingsPath })
+        {
+            var page = await RawAsync(path);
+            page.ShouldNotContain("<b>Pay</b>", customMessage: path);
+            WebUtility.HtmlDecode(page).ShouldContain(name, customMessage: path);
+        }
+    }
+
     private static string CheckoutPath(Guid appointmentId) => $"/admin/payments/checkout/{appointmentId}";
 
     private async Task<Guid> AddAsync(string name)
