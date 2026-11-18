@@ -61,6 +61,8 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         var tenantDb = tenantScope.ServiceProvider.GetRequiredService<SalonDbContext>();
         await ClearSalesAsync(tenantDb);
         await tenantDb.ClientAccountEntries.ExecuteDeleteAsync();
+        // The salon's own payment methods go after the lines that were paid by them (ADR 0060).
+        await tenantDb.SalonPaymentMethods.ExecuteDeleteAsync();
         await tenantDb.CashUps.ExecuteDeleteAsync();
         await tenantDb.AppointmentStatusChanges.ExecuteDeleteAsync();
         await tenantDb.Appointments.ExecuteDeleteAsync();
@@ -176,6 +178,8 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
             var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
             await ClearSalesAsync(db);
             await db.ClientAccountEntries.ExecuteDeleteAsync();
+            // The salon's own payment methods go after the lines that were paid by them (ADR 0060).
+            await db.SalonPaymentMethods.ExecuteDeleteAsync();
             await db.CashUps.ExecuteDeleteAsync();
             // Codes sent to people who asked for the waitlist point at the services that are about to go (ADR 0055).
             await db.PhoneVerifications.ExecuteDeleteAsync();
@@ -288,6 +292,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         await settings.SaveAsync(new CancellationPolicySettings());
         await settings.SaveAsync(new RebookSettings());
         await settings.SaveAsync(new DailySummarySettings());
+        await settings.SaveAsync(new Salon.Core.Payments.PaymentMethodSettings());
     }
 
     /// <summary>

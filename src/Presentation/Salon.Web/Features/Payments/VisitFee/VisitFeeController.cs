@@ -49,7 +49,7 @@ public sealed class VisitFeeController(IDispatcher dispatcher, ILocalizationServ
 
     [HttpPost("paid")]
     [ValidateAntiForgeryToken]
-    public Task<IActionResult> Paid(Guid appointmentId, PaymentMethod? method, CancellationToken cancellationToken)
+    public Task<IActionResult> Paid(Guid appointmentId, PaymentChoice? method, CancellationToken cancellationToken)
         => ActAsync(appointmentId, new RecordFeePaymentCommand(appointmentId, method, CurrentUserId()), "Payments.Fee.PaymentRecorded", "Payments.Fee.Validation.MethodRequired", cancellationToken);
 
     [HttpPost("waive")]

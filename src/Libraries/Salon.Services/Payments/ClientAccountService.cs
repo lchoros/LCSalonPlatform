@@ -25,6 +25,7 @@ internal sealed class ClientAccountService(
     ITenantLookup tenantLookup,
     ISettingService settings,
     IPaymentProvider payments,
+    IPaymentMethodService methods,
     IStockService stock,
     IClock clock,
     ILogger<ClientAccountService> logger) : IClientAccountService
@@ -104,19 +105,19 @@ internal sealed class ClientAccountService(
         return await RequireFeeAsync(appointmentId, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<FeeLine> RecordFeePaymentAsync(Guid appointmentId, PaymentMethod method, Guid? byUserId, CancellationToken cancellationToken = default)
+    public async Task<FeeLine> RecordFeePaymentAsync(Guid appointmentId, PaymentChoice method, Guid? byUserId, CancellationToken cancellationToken = default)
     {
-        RequireKnown(method);
+        var paid = await RequireMethodAsync(method, cancellationToken).ConfigureAwait(false);
         var tenantId = RequireTenant();
         var fee = await RequireOpenFeeAsync(appointmentId, cancellationToken).ConfigureAwait(false);
 
         // Phase 1: the plugin only records that the salon took the money itself. An online gateway (M3) must claim the
         // settlement before it charges; see ADR 0022.
-        var request = new PaymentRequest(tenantId, appointmentId, fee.Line.Amount, method, fee.Line.Kind.ToString());
+        var request = new PaymentRequest(tenantId, appointmentId, fee.Line.Amount, paid.Method, fee.Line.Kind.ToString());
         var result = await RecordAsync(payments.RecordNoShowFeeAsync(request, cancellationToken), appointmentId).ConfigureAwait(false);
 
         var entry = Related(tenantId, fee.Visit.ClientId, appointmentId, ClientAccountEntryKind.FeePayment, fee.Line.Amount, fee.Line.EntryId, byUserId);
-        entry.Method = method;
+        Stamp(entry, paid);
         entry.ProviderSystemName = payments.SystemName;
         entry.ProviderReference = result.ProviderReference;
         await InsertAsync(entry, ClientAccountRefusal.AlreadySettled, cancellationToken).ConfigureAwait(false);
@@ -148,9 +149,9 @@ internal sealed class ClientAccountService(
             deposits.Count > 0 ? deposits[0] : null);
     }
 
-    public async Task<DepositLine> RecordDepositAsync(Guid appointmentId, decimal? amount, PaymentMethod method, Guid? byUserId, CancellationToken cancellationToken = default)
+    public async Task<DepositLine> RecordDepositAsync(Guid appointmentId, decimal? amount, PaymentChoice method, Guid? byUserId, CancellationToken cancellationToken = default)
     {
-        RequireKnown(method);
+        var paid = await RequireMethodAsync(method, cancellationToken).ConfigureAwait(false);
         var tenantId = RequireTenant();
         var visit = await GetDepositAsync(appointmentId, cancellationToken).ConfigureAwait(false) ?? throw new ClientAccountException(ClientAccountRefusal.NotFound);
         if (visit.Deposit is not null)
@@ -171,7 +172,7 @@ internal sealed class ClientAccountService(
         }
 
         var money = visit.Price with { Amount = value };
-        var result = await RecordAsync(payments.RecordDepositAsync(new PaymentRequest(tenantId, appointmentId, money, method), cancellationToken), appointmentId).ConfigureAwait(false);
+        var result = await RecordAsync(payments.RecordDepositAsync(new PaymentRequest(tenantId, appointmentId, money, paid.Method), cancellationToken), appointmentId).ConfigureAwait(false);
 
         var entry = new ClientAccountEntry
         {
@@ -181,7 +182,9 @@ internal sealed class ClientAccountService(
             Kind = ClientAccountEntryKind.DepositPaid,
             Amount = value,
             Currency = money.Currency,
-            Method = method,
+            Method = paid.Method,
+            CustomMethodId = paid.CustomMethodId,
+            MethodName = paid.MethodName,
             ProviderSystemName = payments.SystemName,
             ProviderReference = result.ProviderReference,
             ByUserId = byUserId,
@@ -192,17 +195,17 @@ internal sealed class ClientAccountService(
         return await RequireDepositAsync(appointmentId, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<DepositLine> ReturnDepositAsync(Guid appointmentId, PaymentMethod method, Guid? byUserId, CancellationToken cancellationToken = default)
+    public async Task<DepositLine> ReturnDepositAsync(Guid appointmentId, PaymentChoice method, Guid? byUserId, CancellationToken cancellationToken = default)
     {
-        RequireKnown(method);
+        var paid = await RequireMethodAsync(method, cancellationToken).ConfigureAwait(false);
         var tenantId = RequireTenant();
         var visit = await GetDepositAsync(appointmentId, cancellationToken).ConfigureAwait(false) ?? throw new ClientAccountException(ClientAccountRefusal.NotFound);
         var deposit = visit.Deposit is { IsHeld: true } held ? held : throw new ClientAccountException(ClientAccountRefusal.NoDepositHeld);
 
-        var result = await RecordAsync(payments.RecordDepositReturnAsync(new PaymentRequest(tenantId, appointmentId, deposit.Amount, method), cancellationToken), appointmentId).ConfigureAwait(false);
+        var result = await RecordAsync(payments.RecordDepositReturnAsync(new PaymentRequest(tenantId, appointmentId, deposit.Amount, paid.Method), cancellationToken), appointmentId).ConfigureAwait(false);
 
         var entry = Related(tenantId, visit.ClientId, appointmentId, ClientAccountEntryKind.DepositReturned, deposit.Amount, deposit.EntryId, byUserId);
-        entry.Method = method;
+        Stamp(entry, paid);
         entry.ProviderSystemName = payments.SystemName;
         entry.ProviderReference = result.ProviderReference;
         await InsertAsync(entry, ClientAccountRefusal.NoDepositHeld, cancellationToken).ConfigureAwait(false);
@@ -236,17 +239,17 @@ internal sealed class ClientAccountService(
         var saleIds = productRows.Where(l => l.PaymentEntryId is not null).Select(l => l.PaymentEntryId!.Value).Distinct().ToArray();
         var saleMethods = await db.ClientAccountEntries.AsNoTracking()
             .Where(e => saleIds.Contains(e.Id))
-            .ToDictionaryAsync(e => e.Id, e => e.Method, cancellationToken).ConfigureAwait(false);
+            .ToDictionaryAsync(e => e.Id, e => new { e.Method, e.CustomMethodId, e.MethodName }, cancellationToken).ConfigureAwait(false);
         var products = productRows
-            .Select(l => new BillProductLine(
-                l.Id,
-                l.ProductId,
-                l.ProductName,
-                l.Quantity,
-                new Money(l.UnitPrice, l.Currency),
-                l.PaymentEntryId is { } saleId && saleMethods.TryGetValue(saleId, out var paidWith) ? paidWith : null,
-                l.IsPaid,
-                l.ReturnedQuantity))
+            .Select(l =>
+            {
+                var paidWith = l.PaymentEntryId is { } saleId ? saleMethods.GetValueOrDefault(saleId) : null;
+                return new BillProductLine(l.Id, l.ProductId, l.ProductName, l.Quantity, new Money(l.UnitPrice, l.Currency), paidWith?.Method, l.IsPaid, l.ReturnedQuantity)
+                {
+                    PaidWithCustomMethodId = paidWith?.CustomMethodId,
+                    PaidWithName = paidWith?.MethodName,
+                };
+            })
             .ToArray();
 
         return new VisitBill(
@@ -353,9 +356,9 @@ internal sealed class ClientAccountService(
             ?? throw new ClientAccountException(ClientAccountRefusal.NotFound);
     }
 
-    public async Task<VisitBill> ReturnProductAsync(Guid appointmentId, Guid lineId, int quantity, PaymentMethod method, bool backOnShelf, Guid? byUserId, CancellationToken cancellationToken = default)
+    public async Task<VisitBill> ReturnProductAsync(Guid appointmentId, Guid lineId, int quantity, PaymentChoice method, bool backOnShelf, Guid? byUserId, CancellationToken cancellationToken = default)
     {
-        RequireKnown(method);
+        var paid = await RequireMethodAsync(method, cancellationToken).ConfigureAwait(false);
         var tenantId = RequireTenant();
         // Read without tracking: the units are claimed below in one statement, not by saving this copy.
         var line = await db.VisitProductLines.AsNoTracking().FirstOrDefaultAsync(l => l.Id == lineId && l.AppointmentId == appointmentId, cancellationToken).ConfigureAwait(false)
@@ -383,10 +386,10 @@ internal sealed class ClientAccountService(
         // The money goes back for what the client paid: the price the line was rung up at, not today's price.
         var sale = await db.ClientAccountEntries.AsNoTracking().FirstAsync(e => e.Id == saleId, cancellationToken).ConfigureAwait(false);
         var back = new Money(ProductSaleRules.LineTotal(quantity, line.UnitPrice), line.Currency);
-        var result = await RecordAsync(payments.RecordRefundAsync(new PaymentRequest(tenantId, appointmentId, back, method), cancellationToken), appointmentId).ConfigureAwait(false);
+        var result = await RecordAsync(payments.RecordRefundAsync(new PaymentRequest(tenantId, appointmentId, back, paid.Method), cancellationToken), appointmentId).ConfigureAwait(false);
 
         var entry = Related(tenantId, sale.ClientId, appointmentId, ClientAccountEntryKind.ProductReturn, back, saleId, byUserId);
-        entry.Method = method;
+        Stamp(entry, paid);
         entry.ProviderSystemName = payments.SystemName;
         entry.ProviderReference = result.ProviderReference;
         await InsertAsync(entry, ClientAccountRefusal.ReturnMoreThanKept, cancellationToken).ConfigureAwait(false);
@@ -408,10 +411,10 @@ internal sealed class ClientAccountService(
             ?? throw new ClientAccountException(ClientAccountRefusal.NotFound);
     }
 
-    public async Task<VisitBill> PayBillAsync(Guid appointmentId, PaymentMethod method, IReadOnlyCollection<Guid> feeAppointmentIds, Guid? byUserId, CancellationToken cancellationToken = default)
+    public async Task<VisitBill> PayBillAsync(Guid appointmentId, PaymentChoice method, IReadOnlyCollection<Guid> feeAppointmentIds, Guid? byUserId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(feeAppointmentIds);
-        RequireKnown(method);
+        var paid = await RequireMethodAsync(method, cancellationToken).ConfigureAwait(false);
         var tenantId = RequireTenant();
         var bill = await GetBillAsync(appointmentId, cancellationToken).ConfigureAwait(false) ?? throw new ClientAccountException(ClientAccountRefusal.NotFound);
         if (!bill.CanPay)
@@ -433,7 +436,7 @@ internal sealed class ClientAccountService(
         if (due.Amount > 0m)
         {
             // Phase 1: the plugin only records that the salon took the money itself (ADR 0024).
-            var result = await RecordAsync(payments.RecordInSalonPaymentAsync(new PaymentRequest(tenantId, appointmentId, due, method), cancellationToken), appointmentId).ConfigureAwait(false);
+            var result = await RecordAsync(payments.RecordInSalonPaymentAsync(new PaymentRequest(tenantId, appointmentId, due, paid.Method), cancellationToken), appointmentId).ConfigureAwait(false);
             var entry = new ClientAccountEntry
             {
                 TenantId = tenantId,
@@ -442,7 +445,9 @@ internal sealed class ClientAccountService(
                 Kind = ClientAccountEntryKind.VisitPayment,
                 Amount = due.Amount,
                 Currency = due.Currency,
-                Method = method,
+                Method = paid.Method,
+                CustomMethodId = paid.CustomMethodId,
+                MethodName = paid.MethodName,
                 ProviderSystemName = payments.SystemName,
                 ProviderReference = result.ProviderReference,
                 ByUserId = byUserId,
@@ -456,7 +461,7 @@ internal sealed class ClientAccountService(
             // The products on the bill are one more line of money (ADR 0037), kept apart from the visit so the till and
             // the reports can tell services from retail. Every unit leaves its shelf in the same transaction.
             var sold = due with { Amount = unpaidProducts.Sum(l => ProductSaleRules.LineTotal(l.Quantity, l.UnitPrice)) };
-            var result = await RecordAsync(payments.RecordInSalonPaymentAsync(new PaymentRequest(tenantId, appointmentId, sold, method), cancellationToken), appointmentId).ConfigureAwait(false);
+            var result = await RecordAsync(payments.RecordInSalonPaymentAsync(new PaymentRequest(tenantId, appointmentId, sold, paid.Method), cancellationToken), appointmentId).ConfigureAwait(false);
             var sale = new ClientAccountEntry
             {
                 TenantId = tenantId,
@@ -465,7 +470,9 @@ internal sealed class ClientAccountService(
                 Kind = ClientAccountEntryKind.ProductSale,
                 Amount = sold.Amount,
                 Currency = sold.Currency,
-                Method = method,
+                Method = paid.Method,
+                CustomMethodId = paid.CustomMethodId,
+                MethodName = paid.MethodName,
                 ProviderSystemName = payments.SystemName,
                 ProviderReference = result.ProviderReference,
                 ByUserId = byUserId,
@@ -528,24 +535,29 @@ internal sealed class ClientAccountService(
             join sale in db.ClientAccountEntries.AsNoTracking() on line.PaymentEntryId equals sale.Id
             where sale.ClientId == clientId && line.Quantity > line.ReturnedQuantity
             orderby sale.At descending, line.AddedAt descending
-            select new { line.AppointmentId, line.ProductName, Quantity = line.Quantity - line.ReturnedQuantity, line.UnitPrice, line.Currency, sale.At, sale.Method })
+            select new { line.AppointmentId, line.ProductName, Quantity = line.Quantity - line.ReturnedQuantity, line.UnitPrice, line.Currency, sale.At, sale.Method, sale.MethodName })
             .Take(PurchaseLine.MaxShown)
             .ToListAsync(cancellationToken).ConfigureAwait(false);
 
         return rows
-            .Select(r => new PurchaseLine(r.AppointmentId, r.ProductName, r.Quantity, new Money(ProductSaleRules.LineTotal(r.Quantity, r.UnitPrice), r.Currency), r.At.InZone(zone), r.Method))
+            .Select(r => new PurchaseLine(r.AppointmentId, r.ProductName, r.Quantity, new Money(ProductSaleRules.LineTotal(r.Quantity, r.UnitPrice), r.Currency), r.At.InZone(zone), r.Method) { MethodName = r.MethodName })
             .ToArray();
     }
 
     /// <summary>Above zero, to the penny, and no more than <paramref name="max"/>.</summary>
     private static bool IsAmount(decimal value, decimal max) => value > 0m && value <= max && decimal.Round(value, 2) == value;
 
-    private static void RequireKnown(PaymentMethod method)
+    /// <summary>The posted choice as one of the salon's methods (ADR 0060), or a refusal the desk can read.</summary>
+    private async Task<ResolvedPaymentMethod> RequireMethodAsync(PaymentChoice method, CancellationToken cancellationToken)
+        => await methods.ResolveAsync(method, cancellationToken).ConfigureAwait(false)
+            ?? throw new ClientAccountException(ClientAccountRefusal.MethodNotOffered);
+
+    /// <summary>How the money changed hands, written on the line: the method, and for the salon's own which one and its name.</summary>
+    private static void Stamp(ClientAccountEntry entry, ResolvedPaymentMethod paid)
     {
-        if (!Enum.IsDefined(method))
-        {
-            throw new ArgumentOutOfRangeException(nameof(method), method, "Unknown payment method.");
-        }
+        entry.Method = paid.Method;
+        entry.CustomMethodId = paid.CustomMethodId;
+        entry.MethodName = paid.MethodName;
     }
 
     private static DepositLine? Held(IReadOnlyList<DepositLine> deposits) => deposits.FirstOrDefault(d => d.IsHeld);
@@ -688,7 +700,7 @@ internal sealed class ClientAccountService(
                     Name(row.ByUserId),
                     service,
                     start,
-                    settled is null ? null : new FeeSettlement(settled.Kind, settled.At, Name(settled.ByUserId), settled.Method, settled.Note, settled.ProviderReference)));
+                    settled is null ? null : new FeeSettlement(settled.Kind, settled.At, Name(settled.ByUserId), settled.Method, settled.Note, settled.ProviderReference) { MethodName = settled.MethodName }));
             }
             else if (row.Kind == ClientAccountEntryKind.DepositPaid)
             {
@@ -704,11 +716,15 @@ internal sealed class ClientAccountService(
                     row.ProviderReference,
                     service,
                     start,
-                    returned is null ? null : new DepositReturn(returned.At, Name(returned.ByUserId), returned.Method, returned.ProviderReference)));
+                    returned is null ? null : new DepositReturn(returned.At, Name(returned.ByUserId), returned.Method, returned.ProviderReference) { MethodName = returned.MethodName })
+                {
+                    CustomMethodId = row.CustomMethodId,
+                    MethodName = row.MethodName,
+                });
             }
             else if (row.Kind == ClientAccountEntryKind.VisitPayment)
             {
-                visitPayments.Add(new VisitPaymentLine(row.Id, row.AppointmentId ?? Guid.Empty, row.Money, row.At, Name(row.ByUserId), row.Method, row.ProviderReference));
+                visitPayments.Add(new VisitPaymentLine(row.Id, row.AppointmentId ?? Guid.Empty, row.Money, row.At, Name(row.ByUserId), row.Method, row.ProviderReference) { MethodName = row.MethodName });
             }
         }
 

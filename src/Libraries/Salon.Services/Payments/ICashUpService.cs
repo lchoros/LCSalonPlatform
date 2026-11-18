@@ -51,9 +51,24 @@ public sealed record CashMovement(
     Money Amount,
     string ClientName,
     Guid? AppointmentId,
-    string? ByName);
+    string? ByName)
+{
+    /// <summary>The name of the salon's own method on the day of the line (ADR 0060); null for a built-in one.</summary>
+    public string? MethodName { get; init; }
+}
 
-public sealed record MethodTotal(PaymentMethod Method, Money Amount);
+/// <summary>What came in less what went out by one method; each of the salon's own methods is a line of its own (ADR 0060).</summary>
+public sealed record MethodTotal(PaymentMethod Method, Money Amount)
+{
+    /// <summary>Which of the salon's own methods; null for a built-in one.</summary>
+    public Guid? CustomMethodId { get; init; }
+
+    /// <summary>Its name on its latest line; null for a built-in one.</summary>
+    public string? MethodName { get; init; }
+
+    /// <summary>What tells this line from the others: the built-in method's name, or the id of the salon's own.</summary>
+    public string Key => new PaymentChoice(Method, CustomMethodId).Value;
+}
 
 /// <param name="Difference">Counted less expected: above zero is money over, below is money short.</param>
 /// <param name="ClosedAt">In the salon's zone.</param>

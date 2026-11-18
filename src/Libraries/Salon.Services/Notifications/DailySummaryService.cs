@@ -149,7 +149,7 @@ internal sealed class DailySummaryService(
             text.Append(Text("Taken", total)).Append('\n');
             foreach (var method in report.Takings.ByMethod)
             {
-                text.Append("- ").Append(localizer.Get($"Payments.Method.{method.Method}", tenant.Culture)).Append(": ").Append(method.Amount.ToDisplayString(culture)).Append('\n');
+                text.Append("- ").Append(Payments.PaymentMethodNames.Name(localizer, method.Method, method.MethodName, tenant.Culture)).Append(": ").Append(method.Amount.ToDisplayString(culture)).Append('\n');
             }
         }
 

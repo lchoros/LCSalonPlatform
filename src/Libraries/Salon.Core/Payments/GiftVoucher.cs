@@ -81,8 +81,14 @@ public static class GiftVoucherRules
     /// <summary>Letters and digits nobody mixes up when reading a code aloud: no 0 or O, no 1, I or L.</summary>
     public const string Alphabet = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
 
-    /// <summary>The ways money changes hands for a voucher: every method but "voucher", which is not how one is bought or given back.</summary>
-    public static IReadOnlyList<PaymentMethod> PaymentMethods { get; } = [.. Enum.GetValues<PaymentMethod>().Where(m => m != PaymentMethod.Voucher)];
+    /// <summary>
+    /// The built-in ways money changes hands for a voucher: every one but "voucher", which is not how one is bought or
+    /// given back. The salon's own methods (ADR 0060) can pay for one too; see <see cref="CanBePaidWith"/>.
+    /// </summary>
+    public static IReadOnlyList<PaymentMethod> PaymentMethods { get; } = [.. Enum.GetValues<PaymentMethod>().Where(m => m != PaymentMethod.Voucher && m != PaymentMethod.Other)];
+
+    /// <summary>A voucher is bought, and its money given back, by any method but another voucher.</summary>
+    public static bool CanBePaidWith(PaymentChoice choice) => choice.IsWellFormed && choice.Method != PaymentMethod.Voucher;
 
     /// <summary>An amount above zero, with at most two decimals, up to <see cref="MaxAmount"/>.</summary>
     public static bool IsAmount(decimal amount) => amount > 0m && amount <= MaxAmount && decimal.Round(amount, 2) == amount;

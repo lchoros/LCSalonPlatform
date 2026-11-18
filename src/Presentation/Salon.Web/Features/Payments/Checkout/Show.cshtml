@@ -49,7 +49,7 @@
             }
             @if (bill.Payment is { } paid)
             {
-                <dt>@T.Format("Payments.Checkout.PaidWith", T[$"Payments.Method.{paid.Method}"])</dt>
+                <dt>@T.Format("Payments.Checkout.PaidWith", PaymentMethodNames.Name(T, paid.Method, paid.MethodName))</dt>
                 <dd class="text-right tabular-nums" data-testid="bill-paid">−@paid.Amount.ToDisplayString(culture)</dd>
             }
         </dl>
@@ -64,7 +64,7 @@
                             <span class="block" data-testid="bill-product-name">@T.Format("Payments.Checkout.Products.Line", line.Name, line.Quantity)</span>
                             @if (line.IsPaid)
                             {
-                                <span class="block text-sm text-stone-600" data-testid="bill-product-paid">@T.Format("Payments.Checkout.PaidWith", line.PaidWith is { } paidWith ? T[$"Payments.Method.{paidWith}"] : "—")</span>
+                                <span class="block text-sm text-stone-600" data-testid="bill-product-paid">@T.Format("Payments.Checkout.PaidWith", line.IsPaid ? PaymentMethodNames.Name(T, line.PaidWith, line.PaidWithName) : "—")</span>
                             }
                             @if (line.Returned > 0)
                             {
@@ -93,10 +93,7 @@
                                         <div class="space-y-1">
                                             <label for="@(returnId)-method" class="field-label">@T["Payments.Checkout.Products.Return.Method"]</label>
                                             <select id="@(returnId)-method" name="method" class="@inputClass" data-testid="return-method">
-                                                @foreach (var method in Enum.GetValues<PaymentMethod>())
-                                                {
-                                                    <option value="@method">@T[$"Payments.Method.{method}"]</option>
-                                                }
+                                                <payment-method-options />
                                             </select>
                                         </div>
                                     </div>
@@ -215,10 +212,7 @@
                 <div class="space-y-1">
                     <label for="method" class="field-label">@T["Payments.Fee.Pay.Method"]</label>
                     <select id="method" name="method" class="@inputClass" data-testid="bill-method">
-                        @foreach (var method in Enum.GetValues<PaymentMethod>())
-                        {
-                            <option value="@method">@T[$"Payments.Method.{method}"]</option>
-                        }
+                        <payment-method-options />
                     </select>
                 </div>
                 <p class="text-sm text-stone-600">@T["Payments.Checkout.Pay.Hint"]</p>

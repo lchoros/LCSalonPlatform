@@ -37,6 +37,24 @@ public static class TillRules
             .ToArray();
     }
 
+    /// <summary>
+    /// The net amount per method with each of the salon's own methods on its own line (ADR 0060): the built-in
+    /// methods first in the order of <see cref="PaymentMethod"/>, then the salon's own by name. A method the salon
+    /// renamed is one line, under the name on its latest line; give the lines oldest first.
+    /// </summary>
+    public static IReadOnlyList<MethodNet> TotalsByMethod(IEnumerable<MethodLine> lines)
+    {
+        ArgumentNullException.ThrowIfNull(lines);
+        return lines
+            .Where(l => Direction(l.Kind) != 0)
+            .GroupBy(l => (l.Method, l.CustomMethodId))
+            .Select(g => new MethodNet(g.Key.Method, g.Key.CustomMethodId, g.Select(l => l.MethodName).LastOrDefault(name => name is not null), g.Sum(l => Direction(l.Kind) * l.Amount)))
+            .OrderBy(t => t.Method)
+            .ThenBy(t => t.MethodName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(t => t.CustomMethodId)
+            .ToArray();
+    }
+
     /// <summary>What the drawer should hold from the day's lines: cash in less cash out.</summary>
     public static decimal ExpectedCash(IEnumerable<(ClientAccountEntryKind Kind, PaymentMethod Method, decimal Amount)> lines)
     {
@@ -50,3 +68,10 @@ public static class TillRules
     /// <summary>More than any salon drawer holds; keeps a slip of the finger out of the books.</summary>
     public const decimal MaxCounted = 1_000_000m;
 }
+/// <summary>One line that carries a method, as the till adds it up (ADR 0060).</summary>
+/// <param name="CustomMethodId">Which of the salon's own methods; null for a built-in one.</param>
+/// <param name="MethodName">What the salon called its own method on the day of the line.</param>
+public readonly record struct MethodLine(ClientAccountEntryKind Kind, PaymentMethod Method, Guid? CustomMethodId, string? MethodName, decimal Amount);
+
+/// <summary>What came in less what went out by one method.</summary>
+public readonly record struct MethodNet(PaymentMethod Method, Guid? CustomMethodId, string? MethodName, decimal Amount);

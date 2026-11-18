@@ -19,7 +19,7 @@ public sealed record ChargeFeeCommand(Guid AppointmentId, decimal? Amount, Guid?
 public sealed record WaiveFeeCommand(Guid AppointmentId, string? Reason, Guid? ByUserId) : ICommand<FeeLine>;
 
 /// <summary>Records that the client paid the visit's fee at the salon. Nothing is charged (Phase 1).</summary>
-public sealed record RecordFeePaymentCommand(Guid AppointmentId, PaymentMethod? Method, Guid? ByUserId) : ICommand<FeeLine>;
+public sealed record RecordFeePaymentCommand(Guid AppointmentId, PaymentChoice? Method, Guid? ByUserId) : ICommand<FeeLine>;
 
 public sealed class ChargeFeeValidator : AbstractValidator<ChargeFeeCommand>
 {
@@ -56,7 +56,7 @@ public sealed class RecordFeePaymentValidator : AbstractValidator<RecordFeePayme
         ArgumentNullException.ThrowIfNull(localizer);
 
         RuleFor(c => c.Method)
-            .Must(method => method is { } chosen && Enum.IsDefined(chosen))
+            .Must(method => method is { } chosen && chosen.IsWellFormed)
             .WithMessage(_ => localizer["Payments.Fee.Validation.MethodRequired"]);
     }
 }

@@ -38,7 +38,7 @@ public sealed class RemoveBillProductHandler(IClientAccountService account) : IR
 /// </summary>
 /// <param name="BackOnShelf">True when the units can be sold again and go back on their shelf.</param>
 /// <param name="ByUserId">The login that records; set by the controller, never from the form.</param>
-public sealed record ReturnBillProductCommand(Guid AppointmentId, Guid LineId, int Quantity, PaymentMethod Method, bool BackOnShelf, Guid? ByUserId) : ICommand<VisitBill>;
+public sealed record ReturnBillProductCommand(Guid AppointmentId, Guid LineId, int Quantity, PaymentChoice Method, bool BackOnShelf, Guid? ByUserId) : ICommand<VisitBill>;
 
 public sealed class ReturnBillProductHandler(IClientAccountService account) : IRequestHandler<ReturnBillProductCommand, VisitBill>
 {

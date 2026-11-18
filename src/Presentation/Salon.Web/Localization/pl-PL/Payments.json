@@ -253,7 +253,7 @@
   "Payments.Vouchers.Validation.Note": "Użyj najwyżej {0} znaków.",
   "Payments.Vouchers.Refused.NotFound": "Nie ma bonu o takim kodzie. Sprawdź kod i spróbuj ponownie.",
   "Payments.Vouchers.Refused.AmountInvalid": "Za taką kwotę nie da się sprzedać bonu.",
-  "Payments.Vouchers.Refused.MethodNotAllowed": "Bonu nie można kupić ani zwrócić bonem.",
+  "Payments.Vouchers.Refused.MethodNotAllowed": "Wybierz sposób płatności, który salon przyjmuje. Bonu nie można kupić ani zwrócić bonem.",
   "Payments.Vouchers.Refused.ExpiryPast": "Ten dzień już minął.",
   "Payments.Vouchers.Refused.NoteTooLong": "Notatka jest za długa.",
   "Payments.Vouchers.Refused.PaymentNotRecorded": "Nie udało się zapisać płatności. Nic nie zmieniono.",
@@ -264,5 +264,8 @@
   "Payments.Vouchers.Refused.VisitNotPayable": "Bonu można użyć, gdy klient już przyszedł.",
   "Payments.Vouchers.Refused.NothingToPay": "Za tę wizytę nie ma już nic do zapłaty.",
   "Payments.Vouchers.Refused.AlreadyOnThisBill": "Ten bon jest już na tym rachunku.",
-  "Payments.Vouchers.Refused.NotRefundable": "Pieniądze można zwrócić tylko za bon, którego nikt nie użył."
+  "Payments.Vouchers.Refused.NotRefundable": "Pieniądze można zwrócić tylko za bon, którego nikt nie użył.",
+  "Payments.Method.Other": "Inny",
+  "Payments.Fee.Refused.MethodNotOffered": "Salon nie przyjmuje już płatności w ten sposób. Wybierz inny sposób płatności.",
+  "Payments.CounterSale.Refused.MethodNotOffered": "Salon nie przyjmuje już płatności w ten sposób. Wybierz inny sposób płatności."
 }

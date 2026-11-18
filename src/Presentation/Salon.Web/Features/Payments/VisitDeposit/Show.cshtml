@@ -61,10 +61,7 @@
                 <div class="space-y-1">
                     <label for="method" class="field-label">@T["Payments.Fee.Pay.Method"]</label>
                     <select id="method" name="method" class="@inputClass" data-testid="deposit-method">
-                        @foreach (var method in Enum.GetValues<PaymentMethod>())
-                        {
-                            <option value="@method">@T[$"Payments.Method.{method}"]</option>
-                        }
+                        <payment-method-options />
                     </select>
                 </div>
                 <button type="submit" class="@primaryClass" data-testid="record-deposit">@T["Payments.Deposit.Record.Submit"]</button>
@@ -90,14 +87,14 @@
             <ol class="space-y-2 text-sm" data-testid="deposit-history">
                 <li data-testid="deposit-history-received">
                     <time datetime="@deposit.At.ToIso()" class="tabular-nums text-stone-600">@deposit.At.ToShortDateTime(zone, culture)</time>
-                    <span class="block">@T.Format("Payments.Deposit.History.Received", T[$"Payments.Method.{deposit.Method}"], deposit.ByName ?? T["Payments.Fee.History.Unknown"])</span>
+                    <span class="block">@T.Format("Payments.Deposit.History.Received", PaymentMethodNames.Name(T, deposit.Method, deposit.MethodName), deposit.ByName ?? T["Payments.Fee.History.Unknown"])</span>
                     <span class="block break-all text-stone-600" data-testid="deposit-reference">@T.Format("Payments.Fee.History.Reference", deposit.ProviderReference ?? "—")</span>
                 </li>
                 @if (deposit.Return is { } returned)
                 {
                     <li data-testid="deposit-history-returned">
                         <time datetime="@returned.At.ToIso()" class="tabular-nums text-stone-600">@returned.At.ToShortDateTime(zone, culture)</time>
-                        <span class="block">@T.Format("Payments.Deposit.History.Returned", T[$"Payments.Method.{returned.Method}"], returned.ByName ?? T["Payments.Fee.History.Unknown"])</span>
+                        <span class="block">@T.Format("Payments.Deposit.History.Returned", PaymentMethodNames.Name(T, returned.Method, returned.MethodName), returned.ByName ?? T["Payments.Fee.History.Unknown"])</span>
                         <span class="block break-all text-stone-600" data-testid="deposit-return-reference">@T.Format("Payments.Fee.History.Reference", returned.ProviderReference ?? "—")</span>
                     </li>
                 }
@@ -113,10 +110,7 @@
                     <div class="space-y-1">
                         <label for="method" class="field-label">@T["Payments.Deposit.Return.Method"]</label>
                         <select id="method" name="method" class="@inputClass" data-testid="return-method">
-                            @foreach (var method in Enum.GetValues<PaymentMethod>())
-                            {
-                                <option value="@method">@T[$"Payments.Method.{method}"]</option>
-                            }
+                            <payment-method-options />
                         </select>
                     </div>
                     <button type="submit" class="@secondaryClass" data-testid="return-deposit">@T.Format("Payments.Deposit.Return.Submit", deposit.Amount.ToDisplayString(culture))</button>

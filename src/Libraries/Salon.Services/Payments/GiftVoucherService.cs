@@ -27,7 +27,16 @@ public sealed record VoucherUse(ZonedDateTime At, Guid AppointmentId, string Cli
 /// <param name="SoldWith">How the buyer paid.</param>
 /// <param name="SoldByName">Who sold it; null when the login is gone or unknown.</param>
 /// <param name="RefundedOn">The day the salon gave the money back; null for a voucher that stands.</param>
-public sealed record VoucherCard(VoucherSummary Voucher, PaymentMethod SoldWith, string? SoldByName, IReadOnlyList<VoucherUse> Uses, bool CanRefund, LocalDate? RefundedOn);
+public sealed record VoucherCard(VoucherSummary Voucher, PaymentMethod SoldWith, string? SoldByName, IReadOnlyList<VoucherUse> Uses, bool CanRefund, LocalDate? RefundedOn)
+{
+    /// <summary>Which of the salon's own methods the buyer paid by, with its name on that day (ADR 0060); null for a built-in one.</summary>
+    public Guid? SoldWithCustomMethodId { get; init; }
+
+    public string? SoldWithName { get; init; }
+
+    /// <summary>How the buyer paid, as a form offers it: the money goes back the same way unless the desk says otherwise.</summary>
+    public PaymentChoice PaidWith => new(SoldWith, SoldWithCustomMethodId);
+}
 
 /// <param name="Outstanding">What the salon owes on vouchers that can still be used: the sum of what is left on them.</param>
 /// <param name="ActiveCount">How many vouchers that is.</param>
@@ -121,7 +130,7 @@ public interface IGiftVoucherService
     /// Sells a voucher. <paramref name="saleId"/> is the form's own id for the sale: the same form sent twice is one
     /// voucher. Throws <see cref="GiftVoucherException"/> with the reason when nothing was recorded.
     /// </summary>
-    Task<VoucherSummary> SellAsync(decimal amount, PaymentMethod method, LocalDate? expiresOn, string? note, Guid? byUserId, Guid? saleId = null, CancellationToken cancellationToken = default);
+    Task<VoucherSummary> SellAsync(decimal amount, PaymentChoice method, LocalDate? expiresOn, string? note, Guid? byUserId, Guid? saleId = null, CancellationToken cancellationToken = default);
 
     /// <summary>The day a voucher sold today would expire by default.</summary>
     Task<LocalDate?> DefaultExpiryAsync(CancellationToken cancellationToken = default);
@@ -140,7 +149,7 @@ public interface IGiftVoucherService
     Task<VoucherApplied> ApplyAsync(Guid appointmentId, string? code, Guid? byUserId, CancellationToken cancellationToken = default);
 
     /// <summary>Gives the money back for a voucher nobody has used. Throws <see cref="GiftVoucherException"/> with the reason otherwise.</summary>
-    Task<Money> RefundAsync(Guid voucherId, PaymentMethod method, Guid? byUserId, CancellationToken cancellationToken = default);
+    Task<Money> RefundAsync(Guid voucherId, PaymentChoice method, Guid? byUserId, CancellationToken cancellationToken = default);
 }
 
 internal sealed class GiftVoucherService(
@@ -149,10 +158,11 @@ internal sealed class GiftVoucherService(
     ITenantLookup tenantLookup,
     IClientAccountService account,
     IPaymentProvider payments,
+    IPaymentMethodService methods,
     IClock clock,
     ILogger<GiftVoucherService> logger) : IGiftVoucherService
 {
-    public async Task<VoucherSummary> SellAsync(decimal amount, PaymentMethod method, LocalDate? expiresOn, string? note, Guid? byUserId, Guid? saleId = null, CancellationToken cancellationToken = default)
+    public async Task<VoucherSummary> SellAsync(decimal amount, PaymentChoice method, LocalDate? expiresOn, string? note, Guid? byUserId, Guid? saleId = null, CancellationToken cancellationToken = default)
     {
         var (tenant, zone) = await SalonAsync(cancellationToken).ConfigureAwait(false);
         var now = clock.GetCurrentInstant();
@@ -172,10 +182,9 @@ internal sealed class GiftVoucherService(
             throw new GiftVoucherException(GiftVoucherRefusal.AmountInvalid);
         }
 
-        if (!Enum.IsDefined(method) || method == PaymentMethod.Voucher)
-        {
-            throw new GiftVoucherException(GiftVoucherRefusal.MethodNotAllowed);
-        }
+        // Any method the salon takes but another voucher (ADR 0060).
+        var paid = (GiftVoucherRules.CanBePaidWith(method) ? await methods.ResolveAsync(method, cancellationToken).ConfigureAwait(false) : null)
+            ?? throw new GiftVoucherException(GiftVoucherRefusal.MethodNotAllowed);
 
         if (expiresOn is { } last && last < today)
         {
@@ -188,7 +197,7 @@ internal sealed class GiftVoucherService(
         }
 
         var money = new Money(amount, tenant.Currency);
-        var result = await payments.RecordInSalonPaymentAsync(new PaymentRequest(tenant.Id, null, money, method), cancellationToken).ConfigureAwait(false);
+        var result = await payments.RecordInSalonPaymentAsync(new PaymentRequest(tenant.Id, null, money, paid.Method), cancellationToken).ConfigureAwait(false);
         if (!result.Succeeded)
         {
             logger.LogWarning("Payment plugin {Provider} did not record the money for a gift voucher: {Error}", payments.SystemName, result.Error);
@@ -203,7 +212,9 @@ internal sealed class GiftVoucherService(
             Kind = ClientAccountEntryKind.VoucherSale,
             Amount = amount,
             Currency = tenant.Currency,
-            Method = method,
+            Method = paid.Method,
+            CustomMethodId = paid.CustomMethodId,
+            MethodName = paid.MethodName,
             ProviderSystemName = payments.SystemName,
             ProviderReference = result.ProviderReference,
             ByUserId = byUserId,
@@ -290,7 +301,11 @@ internal sealed class GiftVoucherService(
             soldBy,
             [.. uses.Select(u => new VoucherUse(u.At.InZone(zone), u.AppointmentId, u.FirstName + " " + u.LastName, new Money(u.Amount, u.Currency)))],
             GiftVoucherRules.CanRefund(voucher.InitialAmount, voucher.Balance, voucher.RefundedAt),
-            voucher.RefundedAt?.InZone(zone).Date);
+            voucher.RefundedAt?.InZone(zone).Date)
+        {
+            SoldWithCustomMethodId = sale.CustomMethodId,
+            SoldWithName = sale.MethodName,
+        };
     }
 
     public async Task<VoucherList> ListAsync(bool includeSpent, string? search, int? page, CancellationToken cancellationToken = default)
@@ -411,16 +426,15 @@ internal sealed class GiftVoucherService(
         return new VoucherApplied(GiftVoucherRules.Format(voucher.Code), new Money(amount, voucher.Currency), new Money(voucher.Balance - amount, voucher.Currency), after);
     }
 
-    public async Task<Money> RefundAsync(Guid voucherId, PaymentMethod method, Guid? byUserId, CancellationToken cancellationToken = default)
+    public async Task<Money> RefundAsync(Guid voucherId, PaymentChoice method, Guid? byUserId, CancellationToken cancellationToken = default)
     {
         var (tenant, _) = await SalonAsync(cancellationToken).ConfigureAwait(false);
         var now = clock.GetCurrentInstant();
         var voucher = await db.GiftVouchers.AsNoTracking().FirstOrDefaultAsync(v => v.Id == voucherId, cancellationToken).ConfigureAwait(false)
             ?? throw new GiftVoucherException(GiftVoucherRefusal.NotFound);
-        if (!Enum.IsDefined(method) || method == PaymentMethod.Voucher)
-        {
-            throw new GiftVoucherException(GiftVoucherRefusal.MethodNotAllowed);
-        }
+        // Any method the salon takes but another voucher (ADR 0060).
+        var paid = (GiftVoucherRules.CanBePaidWith(method) ? await methods.ResolveAsync(method, cancellationToken).ConfigureAwait(false) : null)
+            ?? throw new GiftVoucherException(GiftVoucherRefusal.MethodNotAllowed);
 
         if (!GiftVoucherRules.CanRefund(voucher.InitialAmount, voucher.Balance, voucher.RefundedAt))
         {
@@ -440,7 +454,7 @@ internal sealed class GiftVoucherService(
             }
 
             var back = voucher.Initial;
-            var result = await payments.RecordRefundAsync(new PaymentRequest(tenant.Id, null, back, method), cancellationToken).ConfigureAwait(false);
+            var result = await payments.RecordRefundAsync(new PaymentRequest(tenant.Id, null, back, paid.Method), cancellationToken).ConfigureAwait(false);
             if (!result.Succeeded)
             {
                 logger.LogWarning("Payment plugin {Provider} did not record the money given back for gift voucher {VoucherId}: {Error}", payments.SystemName, voucherId, result.Error);
@@ -455,7 +469,9 @@ internal sealed class GiftVoucherService(
                 Kind = ClientAccountEntryKind.VoucherRefund,
                 Amount = back.Amount,
                 Currency = back.Currency,
-                Method = method,
+                Method = paid.Method,
+                CustomMethodId = paid.CustomMethodId,
+                MethodName = paid.MethodName,
                 ProviderSystemName = payments.SystemName,
                 ProviderReference = result.ProviderReference,
                 RelatedEntryId = voucher.SaleEntryId,

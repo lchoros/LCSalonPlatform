@@ -1236,6 +1236,10 @@ namespace Salon.Data.Migrations
                         .HasColumnType("character varying(3)")
                         .HasColumnName("currency");
 
+                    b.Property<Guid?>("CustomMethodId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("custom_method_id");
+
                     b.Property<int>("Kind")
                         .HasColumnType("integer")
                         .HasColumnName("kind");
@@ -1243,6 +1247,11 @@ namespace Salon.Data.Migrations
                     b.Property<int?>("Method")
                         .HasColumnType("integer")
                         .HasColumnName("method");
+
+                    b.Property<string>("MethodName")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("method_name");
 
                     b.Property<string>("Note")
                         .HasMaxLength(500)
@@ -1275,6 +1284,9 @@ namespace Salon.Data.Migrations
 
                     b.HasIndex("ClientId")
                         .HasDatabaseName("ix_client_account_entries_client_id");
+
+                    b.HasIndex("CustomMethodId")
+                        .HasDatabaseName("ix_client_account_entries_custom_method_id");
 
                     b.HasIndex("RelatedEntryId")
                         .HasDatabaseName("ix_client_account_entries_related_entry_id");
@@ -1323,6 +1335,8 @@ namespace Salon.Data.Migrations
                             t.HasCheckConstraint("ck_client_account_entries_amount_positive", "amount > 0");
 
                             t.HasCheckConstraint("ck_client_account_entries_client_unless_counter_sale", "client_id IS NOT NULL OR (kind IN (8, 9, 10, 12) AND appointment_id IS NULL)");
+
+                            t.HasCheckConstraint("ck_client_account_entries_own_method_named", "(method IS NOT DISTINCT FROM 4 AND custom_method_id IS NOT NULL AND method_name IS NOT NULL) OR (method IS DISTINCT FROM 4 AND custom_method_id IS NULL AND method_name IS NULL)");
                         });
                 });
 
@@ -1482,6 +1496,47 @@ namespace Salon.Data.Migrations
 
                             t.HasCheckConstraint("ck_gift_vouchers_initial_amount_positive", "initial_amount > 0");
                         });
+                });
+
+            modelBuilder.Entity("Salon.Core.Payments.SalonPaymentMethod", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Instant>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_salon_payment_methods");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_salon_payment_methods_tenant_id");
+
+                    b.HasIndex("TenantId", "SortOrder")
+                        .HasDatabaseName("ix_salon_payment_methods_tenant_id_sort_order");
+
+                    b.ToTable("salon_payment_methods", "salon");
                 });
 
             modelBuilder.Entity("Salon.Core.Payments.VisitProductLine", b =>
@@ -2270,6 +2325,12 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_client_account_entries_clients_client_id");
 
+                    b.HasOne("Salon.Core.Payments.SalonPaymentMethod", null)
+                        .WithMany()
+                        .HasForeignKey("CustomMethodId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_client_account_entries_salon_payment_methods_custom_method_");
+
                     b.HasOne("Salon.Core.Payments.ClientAccountEntry", null)
                         .WithMany()
                         .HasForeignKey("RelatedEntryId")
@@ -2323,6 +2384,16 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_gift_vouchers_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Payments.SalonPaymentMethod", b =>
+                {
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_salon_payment_methods_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Payments.VisitProductLine", b =>

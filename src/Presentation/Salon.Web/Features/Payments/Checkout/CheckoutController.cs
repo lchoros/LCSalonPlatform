@@ -39,7 +39,7 @@ public sealed class CheckoutController(IDispatcher dispatcher, ILocalizationServ
 
     [HttpPost("")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Pay(Guid appointmentId, PaymentMethod? method, Guid[]? fees, CancellationToken cancellationToken)
+    public async Task<IActionResult> Pay(Guid appointmentId, PaymentChoice? method, Guid[]? fees, CancellationToken cancellationToken)
     {
         string? error = null;
 

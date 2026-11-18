@@ -253,7 +253,7 @@
   "Payments.Vouchers.Validation.Note": "Use at most {0} characters.",
   "Payments.Vouchers.Refused.NotFound": "There is no voucher with this code. Check the code and try again.",
   "Payments.Vouchers.Refused.AmountInvalid": "That is not an amount a voucher can be sold for.",
-  "Payments.Vouchers.Refused.MethodNotAllowed": "A voucher cannot be bought or given back with a voucher.",
+  "Payments.Vouchers.Refused.MethodNotAllowed": "Choose a way of paying that the salon takes. A voucher cannot be bought or given back with a voucher.",
   "Payments.Vouchers.Refused.ExpiryPast": "That day has already passed.",
   "Payments.Vouchers.Refused.NoteTooLong": "The note is too long.",
   "Payments.Vouchers.Refused.PaymentNotRecorded": "The payment could not be recorded. Nothing was changed.",
@@ -264,5 +264,8 @@
   "Payments.Vouchers.Refused.VisitNotPayable": "A voucher can be used once the client has arrived.",
   "Payments.Vouchers.Refused.NothingToPay": "This visit has nothing left to pay.",
   "Payments.Vouchers.Refused.AlreadyOnThisBill": "This voucher is already on this bill.",
-  "Payments.Vouchers.Refused.NotRefundable": "The money can only be given back for a voucher nobody has used."
+  "Payments.Vouchers.Refused.NotRefundable": "The money can only be given back for a voucher nobody has used.",
+  "Payments.Method.Other": "Other",
+  "Payments.Fee.Refused.MethodNotOffered": "The salon does not take money that way any more. Choose another way of paying.",
+  "Payments.CounterSale.Refused.MethodNotOffered": "The salon does not take money that way any more. Choose another way of paying."
 }
