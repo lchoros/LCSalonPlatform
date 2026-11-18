@@ -20,6 +20,9 @@ public sealed record YourDataPage(int Clients, int Visits, int MoneyLines, int P
 {
     /// <summary>A salon rarely needs more than these; older years are still reachable from the reports with dates.</summary>
     public const int MaxYears = 10;
+
+    /// <summary>Services on the price list, in use or not (ADR 0066).</summary>
+    public int Services { get; init; }
 }
 
 /// <summary>Reads through the tenant filter only: four counts and two earliest moments.</summary>
@@ -56,7 +59,8 @@ public sealed class YourDataHandler(
             .Select(back => thisYear - back)
             .Where(year => year >= firstYear)
             .ToArray();
-        return new YourDataPage(clients, visits, moneyLines, products, years);
+        var services = await db.Services.CountAsync(cancellationToken);
+        return new YourDataPage(clients, visits, moneyLines, products, years) { Services = services };
     }
 }
 
@@ -75,6 +79,9 @@ public sealed class YourDataController(IDispatcher dispatcher) : SalonController
 
     /// <summary>The product list with today's counts; the ExportProducts slice owns the route.</summary>
     public const string StockFilePath = "/admin/products/stock.csv";
+
+    /// <summary>The price list (ADR 0066); the ExportServices slice owns the route.</summary>
+    public const string PriceListFilePath = "/admin/services/price-list.csv";
 
     [HttpGet("")]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)

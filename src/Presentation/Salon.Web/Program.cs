@@ -22,6 +22,7 @@ builder.Services.AddManualPaymentProvider();
 builder.Services.AddLogSmsProvider();
 builder.Services.AddCsvClientImport();
 builder.Services.AddCsvProductImport();
+builder.Services.AddCsvServiceImport();
 builder.Services.AddSalonPlugins();
 builder.Services.AddSalonJobs(builder.Configuration);
 

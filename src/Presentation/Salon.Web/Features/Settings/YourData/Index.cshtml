@@ -44,6 +44,13 @@
         <a href="@YourDataController.StockFilePath" class="@buttonClass" data-testid="download-stock" download>@T["Settings.YourData.Products.Download"]</a>
     </section>
 
+    <section class="@cardClass" data-testid="your-services">
+        <h2 class="text-lg font-semibold">@T["Settings.YourData.Services.Title"]</h2>
+        <p class="text-stone-700" data-testid="your-services-count">@T.Plural("Settings.YourData.Services.Count", Model.Services)</p>
+        <p class="text-sm text-stone-600">@T["Settings.YourData.Services.What"]</p>
+        <a href="@YourDataController.PriceListFilePath" class="@buttonClass" data-testid="download-price-list" download>@T["Settings.YourData.Services.Download"]</a>
+    </section>
+
     <section class="space-y-2 rounded-md bg-stone-50 p-4 text-sm text-stone-700" data-testid="your-data-notes">
         <h2 class="font-semibold">@T["Settings.YourData.Notes.Title"]</h2>
         <ul class="list-disc space-y-1 pl-5">

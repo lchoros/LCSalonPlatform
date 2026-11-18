@@ -23,6 +23,12 @@ public sealed class ListServicesController(IDispatcher dispatcher, ILocalization
     public const string Path = "/admin/services";
     public const string CategoryParameter = "category";
 
+    /// <summary>The price list from a file (ADR 0066); the ImportServices slice owns the route.</summary>
+    public const string ImportPath = "/admin/services/import";
+
+    /// <summary>The price list as a file (ADR 0066); the ExportServices slice owns the route.</summary>
+    public const string PriceListFilePath = "/admin/services/price-list.csv";
+
     [HttpGet("")]
     public async Task<IActionResult> Index(string? category, string? q, int? page, CancellationToken cancellationToken)
     {
