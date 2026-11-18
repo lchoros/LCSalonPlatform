@@ -628,6 +628,24 @@ quiet hours.
 - [ ] AX10. Set the minutes to 0 and cancel another visit: the text is the old one ("Book it before it goes") with
       a link to the booking page, and nothing is kept.
 
+## AY. The price list from a file, and as a file (after the branch `agent/m3-46-price-list-file` is merged too; no migration)
+- [ ] AY1. Services: "Price list as a file" downloads a CSV with every service: category, service, minutes, price,
+      deposit %, in use. Open it in a spreadsheet.
+- [ ] AY2. Raise two prices and change one time in the spreadsheet, save it as CSV. Services, "Price list from a
+      file", choose the file, "Check the file".
+- [ ] AY3. The preview says nothing has changed yet. It counts 0 to add, 3 to change and the rest as staying, and
+      each changed service shows the old and the new number, such as "£45.00 → £47.50". The button says
+      "Add 0 and change 3".
+- [ ] AY4. Confirm: "The price list is read in", 3 services changed. The services page has the new numbers. A visit
+      booked before still has its old price.
+- [ ] AY5. Add two rows for services you do not have, one under a category you do not have, and a row with a time
+      of 47: the preview counts 2 to add and 1 left out, with "The time must be whole minutes from 5 to 600, in
+      steps of 5". Confirm: the two are at the end of the list and the new category exists.
+- [ ] AY6. Upload the same file again: "The file would add nothing and change nothing", and there is no button.
+- [ ] AY7. Upload a spreadsheet file (.xlsx): refused, "The file is not a text CSV file."
+- [ ] AY8. Settings, "Your data": the price list is among the files, with the number of services.
+- [ ] AY9. A receptionist cannot open the services page, the file or the import.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

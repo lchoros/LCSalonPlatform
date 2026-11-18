@@ -153,6 +153,14 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `Salon.Plugin.Import`) finds the columns by their headings and reads the numbers (`ImportNumbers`);
   `IProductImportService` classifies each row as new, already there or invalid with the product form's rules and adds
   the new ones with their opening count as a line of the stock history. A product the salon has is never changed.
+- `Catalog/ImportServices` — `/admin/services/import` behind `Catalog.Manage` (ADR 0066): the price list from a
+  CSV file in three steps like the product import, with one thing more: a service the salon has is updated. The
+  reader (`CsvServiceImportProvider`, `Salon.Plugin.Import`) finds the columns by their headings; the pure
+  `ServiceImportClassifier` calls each row new, changed (with the old and new time, price and deposit), unchanged,
+  repeated or invalid by `ServiceRules`; `IServiceImportService.CommitAsync` classifies again against the services
+  as they are then, adds the new ones under their categories and gives the others the file's numbers. Nothing is
+  removed. `Catalog/ExportServices` — `GET /admin/services/price-list.csv`: the same list as a file the import
+  reads back.
 - `Products/ExportProducts` — `GET /admin/products/stock.csv` behind `Catalog.Manage` (ADR 0047): every product with
   what is on the shelf today as a CSV file, under the headings the import reads, so the file of one salon is the
   product list of another. Written by `SalonControllerBase.CsvDownload` like the money file.
