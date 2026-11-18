@@ -33,6 +33,9 @@ public sealed class CashUpController(IDispatcher dispatcher, ILocalizationServic
     /// <summary>The gift vouchers (ADR 0057); the Vouchers slice owns the route.</summary>
     public const string VouchersPath = "/admin/payments/vouchers";
 
+    /// <summary>Where a line recorded under the wrong method is put right (ADR 0064); the CorrectMethod slice owns the route.</summary>
+    public static string CorrectPath(Guid entryId) => "/admin/payments/corrections/" + entryId;
+
     /// <summary>The till of one day (ADR 0043: addresses are built here, not in the view).</summary>
     public static string DayPath(LocalDate day) => Path + "?date=" + LocalDatePattern.Iso.Format(day);
 

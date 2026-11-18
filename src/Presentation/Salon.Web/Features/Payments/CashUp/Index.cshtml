@@ -127,6 +127,14 @@
                         <span class="flex flex-col gap-0.5">
                             <span class="font-medium"><span class="tabular-nums">@movement.At.TimeOfDay.ToShortTime(culture)</span> · @(movement.ClientName.Length > 0 ? movement.ClientName : T["Payments.CounterSale.NoClient"])</span>
                             <span class="text-sm text-stone-600">@T[$"Payments.Kind.{movement.Kind}"] · @PaymentMethodNames.Name(T, movement.Method, movement.MethodName)@(movement.ByName is { } by ? " · " + by : string.Empty)</span>
+                            @if (movement.CorrectedTo is { } to)
+                            {
+                                <span class="text-sm font-medium text-amber-900" data-testid="corrected-to">@T.Format("Payments.CashUp.CorrectedTo", PaymentMethodNames.Name(T, to.Method, to.MethodName))</span>
+                            }
+                            @if (movement.CanCorrect)
+                            {
+                                <a href="@CashUpController.CorrectPath(movement.EntryId)" class="inline-flex min-h-11 items-center self-start text-sm underline" data-testid="correct-link">@T["Payments.CashUp.Correct.Link"]</a>
+                            }
                         </span>
                         <span class="tabular-nums font-medium @(movement.Amount.Amount < 0m ? "text-red-800" : string.Empty)" data-testid="movement-amount">@movement.Amount.ToDisplayString(culture)</span>
                     </li>
