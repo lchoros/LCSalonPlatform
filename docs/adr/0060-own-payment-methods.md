@@ -66,3 +66,19 @@ Phase 1 charges nothing: a payment line records money the salon took itself (ADR
 ## Rollback
 Before any own method is used: revert the PR and run `Down`. After: lines with `Method = Other` would lose which
 method they were, so revert the settings page only (nobody can add or pick one) and keep the schema.
+
+## Amendment (2026-11-18): what a log line may carry
+The security scan runs on `main` only. After this change was merged it reported eleven log lines (`cs/log-forging`):
+nine wrote the posted `PaymentChoice` as the method, two (from ADR 0057 and ADR 0058) wrote a nullable user id that
+travels in the same command as the form's fields. None could put text into a log: a choice prints as a built-in
+method's name or an id. The scan cannot know that, and a red scan hides the next real finding.
+
+- A log line in a service that records money writes the **resolved** method (`paid.Method`, an enum), not the
+  posted choice. A line paid by one of the salon's own methods logs as `Other`; which one is on the ledger line.
+- A user id that reaches a log line through a command bound from a form is written as a plain id, all zeros for
+  nobody.
+- The rule for new code: a log line takes values whose type cannot carry text (an enum, a number, a plain id, a
+  date) or text the code itself wrote. Never a value type with its own `ToString`, and never a nullable id out of a
+  form's command.
+
+No behaviour changes; only what is written to the log.

@@ -170,8 +170,10 @@ internal sealed class ConsultationService(
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-        // Ids only: who recorded a consultation for whom, never what was said.
-        logger.LogInformation("Consultation {ConsultationId} recorded for client {ClientId} by user {UserId}", record.Id, client.Id, byUserId);
+        // Ids only: who recorded a consultation for whom, never what was said. The user id is written as a plain id
+        // (all zeros for nobody): it travels here beside what the form posted, and a log line takes only values
+        // whose type cannot carry text (ADR 0060 amendment).
+        logger.LogInformation("Consultation {ConsultationId} recorded for client {ClientId} by user {UserId}", record.Id, client.Id, byUserId ?? Guid.Empty);
         return new ConsultationResult(ConsultationOutcome.Recorded, record.Id);
     }
 
