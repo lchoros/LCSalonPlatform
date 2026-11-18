@@ -186,6 +186,13 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   posted `PaymentChoice` in `ClientAccountService`, `CounterSaleService` and `GiftVoucherService` before a line is
   written. A line paid by an own method has `Method = Other`, `CustomMethodId` and `MethodName` (a check constraint
   keeps the three together). `TillRules.TotalsByMethod` gives each own method its own line in the till and reports.
+- `Clients/DataCopy` — `/admin/clients/{clientId}/data` behind `Clients.View` and `Clients.Manage` (ADR 0062): one
+  page with everything the salon holds about a client, to print and hand over; never cached, logged by id.
+  `Clients/EraseClient` — `/admin/clients/{clientId}/erase` behind `Clients.Manage` and `Settings.Manage` (owner
+  only): what goes, what stays, what must be settled first, and a tick. `IClientDataService.EraseAsync` clears the
+  client's row (`ClientErasureRules.Scrub`, `Client.ErasedAt`), deletes consultation records, waitlist entries and
+  phone verifications, clears visit notes and cancel links, and keeps visits and ledger lines. ADR 0062 has the
+  table of every table that holds client data; a new one must be added there and to the erasure.
 - `Clients/Consultations` — `/admin/clients/{clientId}/consultations/new` and `.../consultations/{id}` behind
   `Clients.View` (ADR 0058): the consultation form before a colour and one kept record. `IConsultationService`
   keeps the answers, the details, the patch test day and the name the client typed as one document encrypted with

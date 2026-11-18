@@ -61,4 +61,13 @@ public sealed record ClientCardViewModel(Card Card, ClientHistory History, strin
     public string NewConsultationPath => $"/admin/clients/{Card.Id}/consultations/new";
 
     public string ConsultationPath(Guid consultationId) => $"/admin/clients/{Card.Id}/consultations/{consultationId}";
+
+    /// <summary>A card the salon still knows as a person: not merged away and not erased (ADR 0062).</summary>
+    public bool IsLive => !Card.IsMerged && !Card.IsErased;
+
+    /// <summary>Everything held about this client, to hand them a copy; the DataCopy slice owns the route.</summary>
+    public string DataCopyPath => $"/admin/clients/{Card.Id}/data";
+
+    /// <summary>Where the owner erases this client at their request; the EraseClient slice owns the route.</summary>
+    public string ErasePath => $"/admin/clients/{Card.Id}/erase";
 }

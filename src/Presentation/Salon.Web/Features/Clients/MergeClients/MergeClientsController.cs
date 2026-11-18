@@ -31,7 +31,7 @@ public sealed class MergeClientsController(IDispatcher dispatcher, ILocalization
     {
         var query = q?.Trim() is { Length: > 0 } text ? text[..Math.Min(text.Length, MaxQueryLength)] : null;
         var candidates = await dispatcher.SendAsync(new MergeCandidatesQuery(id, query), cancellationToken);
-        if (candidates is null)
+        if (candidates is null or { Source.IsErased: true })
         {
             return NotFound();
         }
@@ -53,7 +53,7 @@ public sealed class MergeClientsController(IDispatcher dispatcher, ILocalization
         }
 
         var preview = await dispatcher.SendAsync(new MergePreviewQuery(id, targetId), cancellationToken);
-        if (preview is null)
+        if (preview is null or { Source.IsErased: true } or { Target.IsErased: true })
         {
             return NotFound();
         }
