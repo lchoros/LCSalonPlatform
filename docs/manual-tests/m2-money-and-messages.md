@@ -604,6 +604,30 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
 - [ ] AW9. Sell a gift voucher for cash and correct it: "Voucher" is not among the methods offered.
 - [ ] AW10. A staff login (not reception, manager or owner) cannot open the correction page.
 
+## AX. A freed time kept for a waiting client (after the branch `agent/m3-45-waitlist-hold` is merged too; it has a migration)
+The texts land in Mailpit (http://localhost:8025) in Phase 1. Do this in the salon's daytime: nothing is sent in the
+quiet hours.
+- [ ] AX1. Settings, "Waitlist": tick "Text the first person waiting when a visit is cancelled". Under it, "Keep the
+      time for them for this many minutes" says 30. Type 500 and save: refused, "Enter a whole number of minutes
+      from 0 to 240." Put 30 back and save.
+- [ ] AX2. Put a client with a phone number on the waitlist for a service. Book another client for that service a
+      few days ahead, then cancel that visit.
+- [ ] AX3. Mailpit has a text to the waiting client: the service, the time, "is kept for you until" a time half an
+      hour from now, and a short link ending in `/w/` and some letters.
+- [ ] AX4. The waitlist shows, on that client, "Kept for this client: … with …, until …" and "Let this time go".
+- [ ] AX5. Signed out (a private window), open the public booking page for that service on that day: the freed
+      time is not among the times. The desk's booking form does not offer it either.
+- [ ] AX6. In the private window open the link from the text: "A time is kept for you", the service, the person,
+      the time, the price, until when. Press "Book this time": "Your visit is booked". The diary has the visit and
+      the client is no longer on the waitlist. Mailpit has their confirmation.
+- [ ] AX7. Open the link again: it shows the visit, not a second booking.
+- [ ] AX8. Do AX2 again with two clients waiting. Do not open the link. After half an hour (or set the minutes to
+      1 first and wait two minutes) the second client gets the text and the waitlist shows the time kept for them.
+- [ ] AX9. Press "Let this time go" on the waitlist: "The time is no longer kept." The link from the text now says
+      "This time is no longer kept for you", and the time is on the booking page again. Nobody else is texted.
+- [ ] AX10. Set the minutes to 0 and cancel another visit: the text is the old one ("Book it before it goes") with
+      a link to the booking page, and nothing is kept.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

@@ -195,6 +195,15 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   posted `PaymentChoice` in `ClientAccountService`, `CounterSaleService` and `GiftVoucherService` before a line is
   written. A line paid by an own method has `Method = Other`, `CustomMethodId` and `MethodName` (a check constraint
   keeps the three together). `TillRules.TotalsByMethod` gives each own method its own line in the till and reports.
+- `Booking/TakeHeldTime` — `GET` and `POST /w/{token}`, no sign-in (ADR 0065): the short address in the text a
+  waiting client gets when a freed time is kept for them. `IWaitlistOfferService.OfferFreedTimeAsync` writes a
+  `WaitlistOffer` (the time, the person, the waitlist entry, a token, `HeldUntil`); `AvailabilityService` counts a
+  standing offer as busy time, so the time is off every booking page. `TakeAsync` ends the offer in one statement
+  and books through `IBookingService.BookAsync`; `PassOnDueAsync`, run every minute by `WaitlistPassOnTask`, ends
+  offers that ran out or whose client stopped waiting and offers the time to the next in line.
+  `Appointments/ReleaseHeldTime` (`POST /admin/appointments/waitlist/held/{offerId}/release`, behind
+  `Bookings.Manage` and `Clients.View`) lets the desk end one by hand. Two partial unique indexes keep one time
+  for one client and one client to one time.
 - `Booking/ShowPrivacyNotice` — `/privacy` on a salon's address, no sign-in (ADR 0063): the salon's privacy notice.
   `IPrivacyNoticeService.GetAsync` gives the salon's name and contact details and either the standard notice (the
   `Booking.Privacy.*` resources, true of what the system does) or the owner's own text as paragraphs.
