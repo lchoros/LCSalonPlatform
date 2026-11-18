@@ -558,6 +558,21 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
       (deposit, part, rest), also with one of your own methods.
 - [ ] AT6. A product on the bill is paid with the rest, by the second method, not by the part.
 
+## AU. A client's data: a copy, and being forgotten (after the branch `agent/m3-42-client-data-rights` is merged too; it has a migration)
+- [ ] AU1. As the owner, open a client's card. At the bottom: "This client's data" with "A copy of their data" and
+      "Erase this client". A manager sees only the copy; the desk sees neither.
+- [ ] AU2. "A copy of their data": one page with the details, notes, health notes, visits, money, consultation
+      forms and waitlist requests. Print it or save it as a PDF from the browser.
+- [ ] AU3. "Erase this client" for a client with a visit still to come: the page says to cancel it first and has no
+      button. The same for a deposit you hold and for a fee they owe.
+- [ ] AU4. For a client with nothing open: the page lists what is deleted and what is kept. Without the tick:
+      "Tick the box to confirm that this cannot be undone." With it: "The client was erased."
+- [ ] AU5. The card now says "Erased client" with a banner and no details; the visit history and the payments are
+      still there. There is no Edit button. The client list and the client file no longer have them.
+- [ ] AU6. The till and the reports of the days they visited show the same totals as before; the line says
+      "Erased client".
+- [ ] AU7. Book the same person again as a new client with the same phone number: it works.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.
