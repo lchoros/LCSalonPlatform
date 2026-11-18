@@ -179,6 +179,15 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `IClientAccountService.PayPartAsync` writes a `PartPayment` line (kind 13) that is less than what is left;
   `VisitBill.Outstanding` counts it like a deposit held, and `PayBillAsync` settles the visit with one
   `VisitPayment` for the rest. Both take a row lock on the visit first, so two requests cannot overpay it.
+- `Payments/CorrectMethod` — `GET` and `POST /admin/payments/corrections/{entryId}` behind `Payments.Record` and
+  `Clients.View` (ADR 0064): "I pressed cash, it was card". Opened from a line of today's till.
+  `IMethodCorrectionService.CorrectAsync` never edits the line: it adds a `MethodCorrectionOut` (kind 15) under the
+  method the line stands at and a `MethodCorrectionIn` (kind 14) under the method it was paid by (the other way
+  round for money that went out), both pointing at the line. `TillRules.Direction` counts them one each way, so the
+  day's takings stay and each method's total becomes right on the till, the cash-up, the reports and the money
+  file. Only a line of today that moved money; a row lock on the line makes two requests go one after the other.
+  `MethodCorrections.LatestAsync` tells every read model where a line stands, so the bill, the deposit, the fee,
+  the purchases, the counter sales and the voucher card say the corrected method.
 - The salon's own payment methods (ADR 0060): `Settings/PaymentMethods` at `/admin/settings/payment-methods` behind
   `Settings.Manage` adds, renames and stops using `SalonPaymentMethod` rows and switches the built-in methods on and
   off (`PaymentMethodSettings`; cash is always on). `IPaymentMethodService.OptionsAsync` is the one list every form
