@@ -74,18 +74,20 @@ internal sealed partial class CounterSaleService
             .Where(u => userIds.Contains(u.Id))
             .ToDictionaryAsync(u => u.Id, u => u.DisplayName, cancellationToken).ConfigureAwait(false);
 
+        // A sale recorded under the wrong method and put right reads as it was paid (ADR 0064).
+        var standsAt = await MethodCorrections.LatestAsync(db, ids, cancellationToken).ConfigureAwait(false);
         var records = sales
             .Select(s => new CounterSaleRecord(
                 s.Id,
                 s.At.InZone(zone),
-                s.Method ?? PaymentMethod.Cash,
+                standsAt.Of(s.Id, s.Method, s.CustomMethodId, s.MethodName)?.Method ?? PaymentMethod.Cash,
                 s.ByUserId is { } userId && users.TryGetValue(userId, out var name) ? name : null,
                 s.Money,
                 new Money(returned[s.Id].Sum(), s.Currency),
                 [.. lines[s.Id].Select(l => new CounterSaleRecordLine(l.Id, l.ProductName, l.Quantity, l.ReturnedQuantity, new Money(l.UnitPrice, l.Currency)))])
             {
-                CustomMethodId = s.CustomMethodId,
-                MethodName = s.MethodName,
+                CustomMethodId = standsAt.Of(s.Id, s.Method, s.CustomMethodId, s.MethodName)?.CustomMethodId,
+                MethodName = standsAt.Of(s.Id, s.Method, s.CustomMethodId, s.MethodName)?.MethodName,
             })
             .ToArray();
         return new CounterSaleDay(shown, today, records);

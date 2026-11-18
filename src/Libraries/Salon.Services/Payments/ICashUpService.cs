@@ -55,6 +55,15 @@ public sealed record CashMovement(
 {
     /// <summary>The name of the salon's own method on the day of the line (ADR 0060); null for a built-in one.</summary>
     public string? MethodName { get; init; }
+
+    /// <summary>The ledger line this movement is, so a wrong method can be put right (ADR 0064).</summary>
+    public Guid EntryId { get; init; }
+
+    /// <summary>True for a line of today that moved money and is not itself half of a correction.</summary>
+    public bool CanCorrect { get; init; }
+
+    /// <summary>Where the line stands after it was corrected; null for a line nobody corrected.</summary>
+    public ResolvedPaymentMethod? CorrectedTo { get; init; }
 }
 
 /// <summary>What came in less what went out by one method; each of the salon's own methods is a line of its own (ADR 0060).</summary>

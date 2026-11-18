@@ -15,13 +15,15 @@ public static class TillRules
     /// <summary>
     /// +1 for money that came in (a deposit, a fee paid, a visit paid in part or in full, products or a gift voucher sold), -1 for money
     /// that went out (a deposit returned, products returned, a voucher given back), 0 for lines that moved no money (a
-    /// fee added or waived, a voucher used: its money came in when it was sold).
+    /// fee added or waived, a voucher used: its money came in when it was sold). The two halves of a correction
+    /// (ADR 0064) count one each way, so together they add nothing to the day and move an amount between two methods.
     /// </summary>
     public static int Direction(ClientAccountEntryKind kind) => kind switch
     {
         ClientAccountEntryKind.DepositPaid or ClientAccountEntryKind.FeePayment or ClientAccountEntryKind.VisitPayment or ClientAccountEntryKind.ProductSale
-            or ClientAccountEntryKind.VoucherSale or ClientAccountEntryKind.PartPayment => 1,
-        ClientAccountEntryKind.DepositReturned or ClientAccountEntryKind.ProductReturn or ClientAccountEntryKind.VoucherRefund => -1,
+            or ClientAccountEntryKind.VoucherSale or ClientAccountEntryKind.PartPayment or ClientAccountEntryKind.MethodCorrectionIn => 1,
+        ClientAccountEntryKind.DepositReturned or ClientAccountEntryKind.ProductReturn or ClientAccountEntryKind.VoucherRefund
+            or ClientAccountEntryKind.MethodCorrectionOut => -1,
         _ => 0,
     };
 

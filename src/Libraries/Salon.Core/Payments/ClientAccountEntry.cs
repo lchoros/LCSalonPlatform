@@ -119,4 +119,14 @@ public enum ClientAccountEntryKind
     /// less than what was left. The payment that settles the visit is still one <see cref="VisitPayment"/>.
     /// </summary>
     PartPayment = 13,
+
+    /// <summary>
+    /// A line recorded under the wrong method was put right (ADR 0064): this much came in by the method named here.
+    /// With its twin <see cref="MethodCorrectionOut"/> it moves the money of one line from one method to another and
+    /// changes nothing else. Points at the line it corrects.
+    /// </summary>
+    MethodCorrectionIn = 14,
+
+    /// <summary>The other half of a correction (ADR 0064): this much went out by the method named here. Points at the line it corrects.</summary>
+    MethodCorrectionOut = 15,
 }

@@ -240,10 +240,14 @@ internal sealed class ClientAccountService(
         var saleMethods = await db.ClientAccountEntries.AsNoTracking()
             .Where(e => saleIds.Contains(e.Id))
             .ToDictionaryAsync(e => e.Id, e => new { e.Method, e.CustomMethodId, e.MethodName }, cancellationToken).ConfigureAwait(false);
+        var saleStandsAt = await MethodCorrections.LatestAsync(db, saleIds, cancellationToken).ConfigureAwait(false);
         var products = productRows
             .Select(l =>
             {
-                var paidWith = l.PaymentEntryId is { } saleId ? saleMethods.GetValueOrDefault(saleId) : null;
+                // A sale recorded under the wrong method and put right reads as it was paid (ADR 0064).
+                var paidWith = l.PaymentEntryId is { } saleId && saleMethods.GetValueOrDefault(saleId) is { } sale
+                    ? saleStandsAt.Of(saleId, sale.Method, sale.CustomMethodId, sale.MethodName)
+                    : null;
                 return new BillProductLine(l.Id, l.ProductId, l.ProductName, l.Quantity, new Money(l.UnitPrice, l.Currency), paidWith?.Method, l.IsPaid, l.ReturnedQuantity)
                 {
                     PaidWithCustomMethodId = paidWith?.CustomMethodId,
@@ -624,12 +628,17 @@ internal sealed class ClientAccountService(
             join sale in db.ClientAccountEntries.AsNoTracking() on line.PaymentEntryId equals sale.Id
             where sale.ClientId == clientId && line.Quantity > line.ReturnedQuantity
             orderby sale.At descending, line.AddedAt descending
-            select new { line.AppointmentId, line.ProductName, Quantity = line.Quantity - line.ReturnedQuantity, line.UnitPrice, line.Currency, sale.At, sale.Method, sale.MethodName })
+            select new { SaleId = sale.Id, line.AppointmentId, line.ProductName, Quantity = line.Quantity - line.ReturnedQuantity, line.UnitPrice, line.Currency, sale.At, sale.Method, sale.CustomMethodId, sale.MethodName })
             .Take(PurchaseLine.MaxShown)
             .ToListAsync(cancellationToken).ConfigureAwait(false);
+        var standsAt = await MethodCorrections.LatestAsync(db, [.. rows.Select(r => r.SaleId).Distinct()], cancellationToken).ConfigureAwait(false);
 
         return rows
-            .Select(r => new PurchaseLine(r.AppointmentId, r.ProductName, r.Quantity, new Money(ProductSaleRules.LineTotal(r.Quantity, r.UnitPrice), r.Currency), r.At.InZone(zone), r.Method) { MethodName = r.MethodName })
+            .Select(r =>
+            {
+                var paid = standsAt.Of(r.SaleId, r.Method, r.CustomMethodId, r.MethodName);
+                return new PurchaseLine(r.AppointmentId, r.ProductName, r.Quantity, new Money(ProductSaleRules.LineTotal(r.Quantity, r.UnitPrice), r.Currency), r.At.InZone(zone), paid?.Method) { MethodName = paid?.MethodName };
+            })
             .ToArray();
     }
 
@@ -771,6 +780,10 @@ internal sealed class ClientAccountService(
         }
 
         var closing = rows.Where(r => r.RelatedEntryId is not null).ToLookup(r => r.RelatedEntryId!.Value);
+
+        // A line recorded under the wrong method and put right reads as it was paid (ADR 0064).
+        var standsAt = await MethodCorrections.LatestAsync(db, [.. rows.Where(r => r.Method is not null && MethodCorrectionRules.CanCorrect(r.Kind)).Select(r => r.Id)], cancellationToken).ConfigureAwait(false);
+        ResolvedPaymentMethod? PaidBy(ClientAccountEntry row) => standsAt.Of(row.Id, row.Method, row.CustomMethodId, row.MethodName);
         var fees = new List<FeeLine>();
         var deposits = new List<DepositLine>();
         var visitPayments = new List<VisitPaymentLine>();
@@ -789,7 +802,7 @@ internal sealed class ClientAccountService(
                     Name(row.ByUserId),
                     service,
                     start,
-                    settled is null ? null : new FeeSettlement(settled.Kind, settled.At, Name(settled.ByUserId), settled.Method, settled.Note, settled.ProviderReference) { MethodName = settled.MethodName }));
+                    settled is null ? null : new FeeSettlement(settled.Kind, settled.At, Name(settled.ByUserId), PaidBy(settled)?.Method, settled.Note, settled.ProviderReference) { MethodName = PaidBy(settled)?.MethodName }));
             }
             else if (row.Kind == ClientAccountEntryKind.DepositPaid)
             {
@@ -801,21 +814,21 @@ internal sealed class ClientAccountService(
                     row.Money,
                     row.At,
                     Name(row.ByUserId),
-                    row.Method,
+                    PaidBy(row)?.Method,
                     row.ProviderReference,
                     service,
                     start,
-                    returned is null ? null : new DepositReturn(returned.At, Name(returned.ByUserId), returned.Method, returned.ProviderReference) { MethodName = returned.MethodName })
+                    returned is null ? null : new DepositReturn(returned.At, Name(returned.ByUserId), PaidBy(returned)?.Method, returned.ProviderReference) { MethodName = PaidBy(returned)?.MethodName })
                 {
-                    CustomMethodId = row.CustomMethodId,
-                    MethodName = row.MethodName,
+                    CustomMethodId = PaidBy(row)?.CustomMethodId,
+                    MethodName = PaidBy(row)?.MethodName,
                 });
             }
             else if (row.Kind is ClientAccountEntryKind.VisitPayment or ClientAccountEntryKind.PartPayment)
             {
-                visitPayments.Add(new VisitPaymentLine(row.Id, row.AppointmentId ?? Guid.Empty, row.Money, row.At, Name(row.ByUserId), row.Method, row.ProviderReference)
+                visitPayments.Add(new VisitPaymentLine(row.Id, row.AppointmentId ?? Guid.Empty, row.Money, row.At, Name(row.ByUserId), PaidBy(row)?.Method, row.ProviderReference)
                 {
-                    MethodName = row.MethodName,
+                    MethodName = PaidBy(row)?.MethodName,
                     IsPart = row.Kind == ClientAccountEntryKind.PartPayment,
                 });
             }

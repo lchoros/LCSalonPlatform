@@ -171,7 +171,9 @@ internal sealed class ReportService(
         var byMethod = TillRules.TotalsByMethod(moved.OrderBy(l => l.At).Select(l => new MethodLine(l.Kind, l.Method!.Value, l.CustomMethodId, l.MethodName, l.Amount)))
             .Select(t => new MethodTotal(t.Method, money(t.Amount)) { CustomMethodId = t.CustomMethodId, MethodName = t.MethodName })
             .ToArray();
+        // The two halves of a correction (ADR 0064) add nothing: they are in the totals per method, not a kind of takings.
         var byKind = moved
+            .Where(l => !ClientAccountRules.IsMethodCorrection(l.Kind))
             .GroupBy(l => l.Kind)
             .OrderBy(g => g.Key)
             .Select(g => new KindTotal(g.Key, money(TillRules.Direction(g.Key) * g.Sum(l => l.Amount))))
