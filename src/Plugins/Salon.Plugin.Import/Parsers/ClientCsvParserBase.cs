@@ -99,7 +99,7 @@ public abstract class ClientCsvParserBase : IClientImportParser
             record.SourceRow,
             firstName,
             lastName,
-            NullIfEmpty(Field(fields, map.Phone)),
+            NullIfEmpty(UnguardPhone(Field(fields, map.Phone))),
             NullIfEmpty(Field(fields, map.Email)),
             NullIfEmpty(Field(fields, map.Notes)),
             IsYes(Field(fields, map.Consent)),
@@ -107,15 +107,16 @@ public abstract class ClientCsvParserBase : IClientImportParser
     }
 
     private static string Field(IReadOnlyList<string> fields, int index)
-        => index >= 0 && index < fields.Count ? Unguard(fields[index].Trim()) : string.Empty;
+        => index >= 0 && index < fields.Count ? fields[index].Trim() : string.Empty;
 
     /// <summary>
-    /// A file written for a spreadsheet puts an apostrophe in front of text that would run as a formula, such as a
-    /// phone number that starts with a plus (ADR 0042). Reading such a file back, the apostrophe is not part of the
-    /// text. Only that one case: an apostrophe before anything else stays.
+    /// A file written for a spreadsheet puts an apostrophe in front of a phone number that starts with a plus, so it
+    /// is not run as a formula (ADR 0042, ADR 0051). Reading such a file back, that apostrophe is not part of the
+    /// number. Only the phone, and only before a plus: a name or a note is kept exactly as it was typed, apostrophe
+    /// and all, because nothing here can tell a guard from what somebody meant to write.
     /// </summary>
-    private static string Unguard(string cell)
-        => cell.Length > 1 && cell[0] == '\'' && "=+-@".Contains(cell[1], StringComparison.Ordinal) ? cell[1..] : cell;
+    private static string UnguardPhone(string cell)
+        => cell.Length > 1 && cell[0] == '\'' && cell[1] == '+' ? cell[1..] : cell;
 
     private static string? NullIfEmpty(string value) => value.Length == 0 ? null : value;
 
