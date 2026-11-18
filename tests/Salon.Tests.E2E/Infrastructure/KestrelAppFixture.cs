@@ -173,6 +173,8 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
             await ClearSalesAsync(db);
             await db.ClientAccountEntries.ExecuteDeleteAsync();
             await db.CashUps.ExecuteDeleteAsync();
+            // Codes sent to people who asked for the waitlist point at the services that are about to go (ADR 0055).
+            await db.PhoneVerifications.ExecuteDeleteAsync();
             db.Appointments.RemoveRange(await db.Appointments.ToListAsync());
             db.Services.RemoveRange(await db.Services.ToListAsync());
             var sortOrder = 0;

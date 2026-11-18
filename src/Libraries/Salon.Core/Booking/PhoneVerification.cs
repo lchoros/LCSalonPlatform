@@ -61,4 +61,29 @@ public class PhoneVerification : BaseEntity, ITenantEntity
 
     /// <summary>The consent text shown next to the tick, recorded on the client card when the booking is made.</summary>
     public string? ConsentWording { get; set; }
+
+    /// <summary>
+    /// What the verified number is for (ADR 0055). A row made for one purpose is never accepted by the other: a code
+    /// sent for the waitlist cannot make a booking.
+    /// </summary>
+    public PhoneVerificationPurpose Purpose { get; set; } = PhoneVerificationPurpose.Booking;
+
+    // The pending waitlist request, when that is the purpose; <see cref="Start"/> is then the moment it was asked.
+
+    /// <summary>No use offering a day before this one; null means as soon as possible.</summary>
+    public LocalDate? WaitNotBefore { get; set; }
+
+    /// <summary>No use offering a day after this one; null means any time.</summary>
+    public LocalDate? WaitNotAfter { get; set; }
+
+    /// <summary>What the client wants the desk to know, such as "mornings only".</summary>
+    public string? WaitNote { get; set; }
+}
+public enum PhoneVerificationPurpose
+{
+    /// <summary>The row carries a booking (ADR 0014).</summary>
+    Booking = 1,
+
+    /// <summary>The row carries a request to be told when a time comes up (ADR 0055).</summary>
+    Waitlist = 2,
 }

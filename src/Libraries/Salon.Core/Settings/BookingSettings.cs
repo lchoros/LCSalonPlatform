@@ -17,6 +17,12 @@ public sealed class BookingSettings : ISettings
 
     public bool RequireSmsVerification { get; set; } = true;
 
+    /// <summary>
+    /// Whether the public booking pages offer "tell me when a time comes up" (ADR 0055). Off until the owner switches
+    /// it on: it lets people who are not clients yet leave their name and number.
+    /// </summary>
+    public bool PublicWaitlist { get; set; }
+
     /// <summary>0 means no deposit. Applied as a percentage of the service price.</summary>
     public decimal DefaultDepositPercent { get; set; }
 }

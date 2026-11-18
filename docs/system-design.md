@@ -235,6 +235,11 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `ReportRules.Compare`, ADR 0046). In the takings, each day of the period as a bar (ADR 0048): plain SVG shapes
   laid out by the pure `BarChart` (Core) and written by `TakingsCharts` beside the view; no script, no chart
   library. Periods of 2 to 62 days (`ReportRules.ChartDays`).
+- `Booking/JoinWaitlist` — `/book/{serviceId}/waitlist`, `/book/waitlist/verify/{id}`, `/book/waitlist/done`
+  (ADR 0055): a visitor who finds no time leaves a name and a number, proves the number with the booking's SMS code
+  and is put on the desk's waitlist (ADR 0041) by `IPublicWaitlistService`. `PhoneVerification.Purpose` keeps a
+  waitlist code from making a booking and the other way round. Only while `BookingSettings.PublicWaitlist` is on;
+  the owner's switch is `Settings/PublicWaitlist` at `/admin/settings/waitlist`.
 - `Booking/Reschedule` — `/book/change/{token}` (ADR 0021): the client's own link moves the visit through
   `IBookingService.MoveAsync`; inside the policy's notice period it offers no times (ADR 0022), while
   `Booking/CancelBooking` still cancels and states the late fee first. The details page states the policy before the

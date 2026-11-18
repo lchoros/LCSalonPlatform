@@ -352,6 +352,12 @@ namespace Salon.Data.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("phone_e164");
 
+                    b.Property<int>("Purpose")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1)
+                        .HasColumnName("purpose");
+
                     b.Property<Guid>("ServiceId")
                         .HasColumnType("uuid")
                         .HasColumnName("service_id");
@@ -371,6 +377,19 @@ namespace Salon.Data.Migrations
                     b.Property<Instant?>("VerifiedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("verified_at");
+
+                    b.Property<LocalDate?>("WaitNotAfter")
+                        .HasColumnType("date")
+                        .HasColumnName("wait_not_after");
+
+                    b.Property<LocalDate?>("WaitNotBefore")
+                        .HasColumnType("date")
+                        .HasColumnName("wait_not_before");
+
+                    b.Property<string>("WaitNote")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("wait_note");
 
                     b.HasKey("Id")
                         .HasName("pk_phone_verifications");

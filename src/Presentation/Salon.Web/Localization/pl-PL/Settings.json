@@ -172,5 +172,18 @@
   "Settings.YourData.Notes.Title": "Warto wiedzieć",
   "Settings.YourData.Notes.Format": "Pliki są w formacie CSV. Otworzy je Excel, Numbers i Arkusze Google, a także każdy inny system dla salonów.",
   "Settings.YourData.Notes.Health": "Notatek o zdrowiu nie ma w żadnym pliku. Pozostają zaszyfrowane na karcie klienta.",
-  "Settings.YourData.Notes.Care": "Pobrany plik zawiera dane osobowe i to Ty odpowiadasz za jego bezpieczeństwo. Każde pobranie listy klientów jest zapisywane wraz z tym, kto ją pobrał."
+  "Settings.YourData.Notes.Care": "Pobrany plik zawiera dane osobowe i to Ty odpowiadasz za jego bezpieczeństwo. Każde pobranie listy klientów jest zapisywane wraz z tym, kto ją pobrał.",
+  "Settings.Nav.Waitlist": "Lista oczekujących",
+  "Settings.Waitlist.Title": "Lista oczekujących na stronach rezerwacji",
+  "Settings.Waitlist.Lead": "Pozwól osobie, której nie pasuje żaden termin, zostawić imię i numer. Pojawi się na liście oczekujących recepcji, a zwolniony termin wypełnisz własnymi klientami.",
+  "Settings.Waitlist.Enabled": "Pokazuj „dajcie znać, gdy zwolni się termin” na stronach rezerwacji",
+  "Settings.Waitlist.Hint": "Propozycja jest widoczna pod terminami każdej usługi.",
+  "Settings.Waitlist.Submit": "Zapisz",
+  "Settings.Waitlist.SavedOn": "Strony rezerwacji proponują teraz listę oczekujących.",
+  "Settings.Waitlist.SavedOff": "Strony rezerwacji nie proponują już listy oczekujących.",
+  "Settings.Waitlist.Notes.Title": "Warto wiedzieć",
+  "Settings.Waitlist.Notes.Checked": "Numer jest sprawdzany kodem SMS, zanim ktokolwiek trafi na listę, tak samo jak przy rezerwacji.",
+  "Settings.Waitlist.Notes.Desk": "Nikt nie dostaje automatycznych wiadomości. Recepcja idzie po liście od góry i sama się kontaktuje.",
+  "Settings.Waitlist.Notes.NoMarketplace": "To Twoi klienci. Nikt inny nie widzi tej listy ani nie proponuje im innego salonu.",
+  "Settings.Waitlist.ToList": "Otwórz listę oczekujących"
 }
