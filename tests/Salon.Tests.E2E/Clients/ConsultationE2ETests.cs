@@ -25,7 +25,9 @@ public class ConsultationE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
         var tenantId = await app.EnsureTenantAsync(Slug, "Studio 20", [("Cut & blow-dry", 45, 45m), ("Colour (roots)", 90, 65m)]);
         await app.EnsureDemoStaffAsync(tenantId);
         await app.EnsureUserAsync(tenantId, Email, "Studio 20 Owner", Role.Owner, Password);
-        var (_, clientId, _) = await app.AddVisitAsync(tenantId, "Harriet", "Colour", Duration.FromHours(3), 0m);
+        // Three days ago: the demo data books its own visits into the first free times from now on, so a visit placed
+        // a few hours ahead lands on one of them at some hours of the day. The form needs a client, not a time.
+        var (_, clientId, _) = await app.AddVisitAsync(tenantId, "Harriet", "Colour", -Duration.FromDays(3), 0m);
         await using var context = await app.Browser.NewContextAsync(new BrowserNewContextOptions
         {
             ViewportSize = new ViewportSize { Width = 390, Height = 844 },
