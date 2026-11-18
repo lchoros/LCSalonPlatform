@@ -179,11 +179,15 @@
   "Settings.Waitlist.Enabled": "Offer \"tell me when a time comes up\" on the booking pages",
   "Settings.Waitlist.Hint": "The offer is shown under the times of every service.",
   "Settings.Waitlist.Submit": "Save",
-  "Settings.Waitlist.SavedOn": "The booking pages now offer the waitlist.",
-  "Settings.Waitlist.SavedOff": "The booking pages no longer offer the waitlist.",
   "Settings.Waitlist.Notes.Title": "Good to know",
   "Settings.Waitlist.Notes.Checked": "The number is checked with a text message code before anybody reaches your list, the same way as a booking.",
   "Settings.Waitlist.Notes.Desk": "Nobody is messaged automatically. The desk works the list from the top and gets in touch.",
   "Settings.Waitlist.Notes.NoMarketplace": "These are your clients. Nobody else sees the list or offers them another salon.",
-  "Settings.Waitlist.ToList": "Open the waitlist"
+  "Settings.Waitlist.ToList": "Open the waitlist",
+  "Settings.Waitlist.TellWhenFreed": "Text the first person waiting when a visit is cancelled",
+  "Settings.Waitlist.TellWhenFreedHint": "One text, to whoever asked first for that service, day and person, with a link to book the time. Not at night, and not more than once a day to the same person. Each text costs what your texts cost.",
+  "Settings.Waitlist.Notes.Texts": "The text holds nothing for anybody: whoever books first has the time, and the desk still has the whole list.",
+  "Settings.Messages.Name.Waitlist.TimeFreed": "A time has come up",
+  "Settings.Messages.When.Waitlist.TimeFreed": "Sent to the first client waiting when a visit is cancelled, if you have switched that on under Waitlist.",
+  "Settings.Waitlist.Saved": "The waitlist settings have been saved."
 }

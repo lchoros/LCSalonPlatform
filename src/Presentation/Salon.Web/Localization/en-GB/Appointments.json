@@ -145,5 +145,6 @@
   "Appointments.Waitlist.Refused.DaysInvalid": "Check the days: the last day cannot be before the first, or already past.",
   "Appointments.Waitlist.Refused.NoteTooLong": "The note can have at most 200 characters.",
   "Appointments.Book.Waitlist": "Put on the waitlist",
-  "Appointments.Waitlist.AskedOnline": "Asked online"
+  "Appointments.Waitlist.AskedOnline": "Asked online",
+  "Appointments.Waitlist.ToldOn": "Texted about a freed time on {0}"
 }

@@ -45,7 +45,7 @@ public class PublicWaitlistE2ETests(KestrelAppFixture app) : IClassFixture<Kestr
                 (await admin.GetByTestId("public-waitlist-enabled").IsCheckedAsync()).ShouldBeFalse();
                 await admin.GetByTestId("public-waitlist-enabled").CheckAsync();
                 await admin.GetByTestId("save-public-waitlist").ClickAsync();
-                await Assertions.Expect(admin.GetByTestId("flash")).ToHaveTextAsync("The booking pages now offer the waitlist.");
+                await Assertions.Expect(admin.GetByTestId("flash")).ToHaveTextAsync("The waitlist settings have been saved.");
                 await CheckPageAsync(admin, await StylesheetLoadedAsync(admin), "settings-waitlist-mobile-390.png");
             }
 

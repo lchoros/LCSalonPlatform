@@ -23,5 +23,10 @@
     "Sms": "{{SalonName}}: Twój kod to {{Code}}. Ważny przez 10 minut.",
     "EmailSubject": "Twój kod rezerwacji w {{SalonName}}",
     "EmailBody": "Twój kod rezerwacji w {{SalonName}} to {{Code}}. Ważny przez 10 minut."
+  },
+  "Waitlist.TimeFreed": {
+    "Sms": "{{SalonName}}: zwolnił się termin na usługę {{ServiceName}}: {{AppointmentStart}}. Zarezerwuj, zanim zniknie: {{BookingUrl}}",
+    "EmailSubject": "Zwolnił się termin w {{SalonName}}",
+    "EmailBody": "Cześć {{ClientFirstName}},\nZwolnił się termin na usługę {{ServiceName}} w {{SalonName}}: {{AppointmentStart}}.\nZarezerwuj go tutaj, zanim zniknie: {{BookingUrl}}"
   }
 }

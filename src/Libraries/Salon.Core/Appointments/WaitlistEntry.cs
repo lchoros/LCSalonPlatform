@@ -43,6 +43,12 @@ public class WaitlistEntry : BaseEntity, ITenantEntity
     /// <summary>How it ended; set together with <see cref="ClosedAt"/>.</summary>
     public WaitlistOutcome? Outcome { get; set; }
 
+    /// <summary>
+    /// When the client was last sent a message that a time had come up (ADR 0056); null when never. A client is not
+    /// told again for a day, so two cancellations in one afternoon are not two messages.
+    /// </summary>
+    public Instant? LastToldAt { get; set; }
+
     /// <summary>The login that took the client off the list; null when a booking did it.</summary>
     public Guid? ClosedByUserId { get; set; }
 
@@ -78,4 +84,19 @@ public static class WaitlistRules
 
     /// <summary>The day the booking form opens on when the desk books a waiting client: the first day they can come, never in the past.</summary>
     public static LocalDate BookingDay(LocalDate? notBefore, LocalDate today) => notBefore is { } first && first > today ? first : today;
+
+    /// <summary>A waiting client is told about a freed time at most once in this long (ADR 0056).</summary>
+    public static Duration TellAgainAfter { get; } = Duration.FromHours(24);
+
+    /// <summary>
+    /// Whether a freed time is one the waiting client asked for (ADR 0056): on a day inside their days, and with the
+    /// person they want when they named one.
+    /// </summary>
+    public static bool Wants(LocalDate? notBefore, LocalDate? notAfter, Guid? wantedStaffId, LocalDate day, Guid staffId)
+        => (notBefore is null || day >= notBefore)
+            && (notAfter is null || day <= notAfter)
+            && (wantedStaffId is null || wantedStaffId == staffId);
+
+    /// <summary>Whether the client may be sent a message now: never told, or told long enough ago.</summary>
+    public static bool CanBeTold(Instant? lastToldAt, Instant now) => lastToldAt is null || now - lastToldAt.Value >= TellAgainAfter;
 }

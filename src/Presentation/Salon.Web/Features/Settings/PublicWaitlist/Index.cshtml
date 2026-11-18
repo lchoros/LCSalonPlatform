@@ -24,6 +24,13 @@
             </label>
             <p id="waitlist-hint" class="text-sm text-stone-600">@T["Settings.Waitlist.Hint"]</p>
         </div>
+        <div class="space-y-1">
+            <label class="flex min-h-11 items-center gap-3">
+                <input id="TellWhenFreed" name="TellWhenFreed" type="checkbox" value="true" checked="@Model.Form.TellWhenFreed" aria-describedby="tell-hint" data-testid="tell-when-freed" class="size-5 shrink-0 rounded border-stone-400" />
+                <span class="font-medium">@T["Settings.Waitlist.TellWhenFreed"]</span>
+            </label>
+            <p id="tell-hint" class="text-sm text-stone-600">@T["Settings.Waitlist.TellWhenFreedHint"]</p>
+        </div>
         <button type="submit" class="@buttonClass" data-testid="save-public-waitlist">@T["Settings.Waitlist.Submit"]</button>
     </form>
 
@@ -32,6 +39,7 @@
         <ul class="list-disc space-y-1 pl-5">
             <li>@T["Settings.Waitlist.Notes.Checked"]</li>
             <li>@T["Settings.Waitlist.Notes.Desk"]</li>
+            <li>@T["Settings.Waitlist.Notes.Texts"]</li>
             <li>@T["Settings.Waitlist.Notes.NoMarketplace"]</li>
         </ul>
         <p><a href="@PublicWaitlistController.ListPath" class="font-medium underline underline-offset-2" data-testid="to-waitlist">@T["Settings.Waitlist.ToList"]</a></p>

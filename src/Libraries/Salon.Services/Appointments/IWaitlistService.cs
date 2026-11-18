@@ -78,4 +78,7 @@ public sealed record WaitlistItem(
 {
     /// <summary>True when the client put themselves on the list from the public booking pages (ADR 0055), not the desk.</summary>
     public bool AskedOnline { get; init; }
+
+    /// <summary>The day the client was last sent a text that a time had come up (ADR 0056); null when never.</summary>
+    public LocalDate? LastToldOn { get; init; }
 }

@@ -294,7 +294,7 @@ public class PublicWaitlistTests(SalonWebApplicationFactory factory) : IAsyncLif
 
         saved.StatusCode.ShouldBe(HttpStatusCode.Redirect);
         var after = await GetAsync(owner, path);
-        after.ShouldContain("The booking pages now offer the waitlist.");
+        after.ShouldContain("The waitlist settings have been saved.");
         after.ShouldContain("checked=\"checked\"");
         var rules = await LoadAsync(_studio.Id);
         (rules.PublicWaitlist, rules.MinNoticeMinutes).ShouldBe((true, 120));

@@ -40,6 +40,10 @@
                         {
                             <p><span class="rounded bg-sky-100 px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-sky-900" data-testid="asked-online">@T["Appointments.Waitlist.AskedOnline"]</span></p>
                         }
+                        @if (item.LastToldOn is { } toldOn)
+                        {
+                            <p class="text-sm text-stone-600" data-testid="told-on">@T.Format("Appointments.Waitlist.ToldOn", toldOn.ToString("d", culture))</p>
+                        }
                     </div>
                     <dl class="grid gap-x-4 gap-y-1 text-sm sm:grid-cols-2">
                         <div class="flex gap-2">
