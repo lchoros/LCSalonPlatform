@@ -47,6 +47,12 @@
                 <dt>@T["Payments.Checkout.Voucher"]</dt>
                 <dd class="text-right tabular-nums" data-testid="bill-voucher">−@voucher.ToDisplayString(culture)</dd>
             }
+            @foreach (var part in bill.PartPayments)
+            {
+                @* A part paid another way before the rest (ADR 0061). *@
+                <dt data-testid="bill-part-method">@T.Format("Payments.Checkout.Part.Line", PaymentMethodNames.Name(T, part.Method, part.MethodName))</dt>
+                <dd class="text-right tabular-nums" data-testid="bill-part">−@part.Amount.ToDisplayString(culture)</dd>
+            }
             @if (bill.Payment is { } paid)
             {
                 <dt>@T.Format("Payments.Checkout.PaidWith", PaymentMethodNames.Name(T, paid.Method, paid.MethodName))</dt>
@@ -162,6 +168,30 @@
                     <p id="voucher-hint" class="text-sm text-stone-600">@T["Payments.Checkout.Voucher.Hint"]</p>
                 </div>
                 <button type="submit" class="@secondaryClass" data-testid="use-voucher">@T["Payments.Checkout.Voucher.Submit"]</button>
+            </form>
+        </details>
+    }
+
+    @if (Model.CanPayPart)
+    {
+        @* "£20 in cash and the rest by card" (ADR 0061): the part is recorded first, the rest is paid below. The
+           PartPayment slice owns the address. *@
+        <details class="panel" data-testid="part-step">
+            <summary class="inline-flex min-h-11 cursor-pointer items-center font-medium underline underline-offset-2" data-testid="part-open">@T["Payments.Checkout.Part.Open"]</summary>
+            <form method="post" action="@Model.PartPath" asp-antiforgery="true" class="mt-3 space-y-3" data-testid="part-form">
+                <input type="hidden" name="part" value="@Model.PartId" />
+                <div class="space-y-1">
+                    <label for="part-amount" class="field-label">@T.Format("Payments.Checkout.Part.Amount", bill.Price.Currency)</label>
+                    <input id="part-amount" name="amount" type="text" inputmode="decimal" autocomplete="off" required aria-describedby="part-hint" class="@inputClass tabular-nums sm:max-w-xs" data-testid="part-amount" />
+                    <p id="part-hint" class="text-sm text-stone-600">@T.Format("Payments.Checkout.Part.Hint", bill.Outstanding.ToDisplayString(culture))</p>
+                </div>
+                <div class="space-y-1">
+                    <label for="part-method" class="field-label">@T["Payments.Fee.Pay.Method"]</label>
+                    <select id="part-method" name="method" class="@inputClass" data-testid="part-method">
+                        <payment-method-options />
+                    </select>
+                </div>
+                <button type="submit" class="@secondaryClass" data-testid="pay-part">@T["Payments.Checkout.Part.Submit"]</button>
             </form>
         </details>
     }

@@ -262,15 +262,101 @@ internal sealed class ClientAccountService(
             visit.Status,
             visit.Price,
             Held(deposits)?.Amount,
-            visitPayments.Count > 0 ? visitPayments[0] : null,
+            visitPayments.FirstOrDefault(p => !p.IsPart),
             account.Fees.Where(f => f.Status == FeeStatus.Owed).ToArray(),
             products)
         {
             ServiceId = visit.ServiceId,
             StaffMemberId = visit.StaffMemberId,
             VoucherApplied = vouchers > 0m ? visit.Price with { Amount = vouchers } : null,
+            // The parts paid another way before the rest (ADR 0061), oldest first.
+            PartPayments = [.. visitPayments.Where(p => p.IsPart).OrderBy(p => p.At).ThenBy(p => p.EntryId)],
         };
     }
+
+    public async Task<VisitBill> PayPartAsync(Guid appointmentId, decimal amount, PaymentChoice method, Guid? byUserId, Guid? partId = null, CancellationToken cancellationToken = default)
+    {
+        var paid = await RequireMethodAsync(method, cancellationToken).ConfigureAwait(false);
+        var tenantId = RequireTenant();
+
+        // Its own transaction when the caller has none, so the lock below holds until the part is written.
+        var own = db.Database.CurrentTransaction is null ? await db.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false) : null;
+        try
+        {
+            await LockVisitAsync(appointmentId, cancellationToken).ConfigureAwait(false);
+            var bill = await GetBillAsync(appointmentId, cancellationToken).ConfigureAwait(false) ?? throw new ClientAccountException(ClientAccountRefusal.NotFound);
+            if (partId is { } sent)
+            {
+                var again = await db.ClientAccountEntries.AsNoTracking().Where(e => e.Id == sent).Select(e => new { e.Kind, e.AppointmentId }).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+                if (again is not null)
+                {
+                    // The same form again (a second click, a reload of the post): one part. Another line's id is not ours.
+                    return again.Kind == ClientAccountEntryKind.PartPayment && again.AppointmentId == appointmentId
+                        ? bill
+                        : throw new ClientAccountException(ClientAccountRefusal.AlreadyBeingRecorded);
+                }
+            }
+
+            if (!bill.CanPay)
+            {
+                throw new ClientAccountException(ClientAccountRefusal.VisitNotPayable);
+            }
+
+            if (!TillRules.IsPart(amount, bill.Outstanding.Amount))
+            {
+                // Also a visit already paid, or covered by a deposit or a voucher: nothing is left to take a part of.
+                throw new ClientAccountException(ClientAccountRefusal.PartNotLessThanDue);
+            }
+
+            var part = bill.Price with { Amount = amount };
+            var result = await RecordAsync(payments.RecordInSalonPaymentAsync(new PaymentRequest(tenantId, appointmentId, part, paid.Method), cancellationToken), appointmentId).ConfigureAwait(false);
+            var entry = new ClientAccountEntry
+            {
+                TenantId = tenantId,
+                ClientId = bill.ClientId,
+                AppointmentId = appointmentId,
+                Kind = ClientAccountEntryKind.PartPayment,
+                Amount = amount,
+                Currency = part.Currency,
+                Method = paid.Method,
+                CustomMethodId = paid.CustomMethodId,
+                MethodName = paid.MethodName,
+                ProviderSystemName = payments.SystemName,
+                ProviderReference = result.ProviderReference,
+                ByUserId = byUserId,
+            };
+            if (partId is { } chosen)
+            {
+                // The form's id is the line's id, so the database itself refuses the same part twice.
+                entry.Id = chosen;
+            }
+
+            await InsertAsync(entry, ClientAccountRefusal.AlreadyBeingRecorded, cancellationToken).ConfigureAwait(false);
+            if (own is not null)
+            {
+                await own.CommitAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            logger.LogInformation("Visit {AppointmentId} paid in part: {Amount} {Currency} by {Method}, recorded by user {UserId} through {Provider}", appointmentId, amount, part.Currency, paid.Method, byUserId ?? Guid.Empty, payments.SystemName);
+            return await GetBillAsync(appointmentId, cancellationToken).ConfigureAwait(false)
+                ?? throw new InvalidOperationException($"The bill of appointment {appointmentId} was paid in part but cannot be read back.");
+        }
+        finally
+        {
+            if (own is not null)
+            {
+                await own.DisposeAsync().ConfigureAwait(false);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Holds the visit's row until the transaction ends (ADR 0061), so two requests that take money toward the same
+    /// visit go one after the other and the second sees what the first wrote. A write that changes nothing: the row
+    /// lock is the point.
+    /// </summary>
+    private Task<int> LockVisitAsync(Guid appointmentId, CancellationToken cancellationToken)
+        => db.Appointments.Where(a => a.Id == appointmentId).ExecuteUpdateAsync(s => s.SetProperty(a => a.DurationMinutes, a => a.DurationMinutes), cancellationToken);
 
     public async Task<VisitBill> AddProductAsync(Guid appointmentId, Guid productId, int quantity, Guid? byUserId, CancellationToken cancellationToken = default)
     {
@@ -416,6 +502,9 @@ internal sealed class ClientAccountService(
         ArgumentNullException.ThrowIfNull(feeAppointmentIds);
         var paid = await RequireMethodAsync(method, cancellationToken).ConfigureAwait(false);
         var tenantId = RequireTenant();
+
+        // A part payment recorded at this very moment must be seen before the rest is worked out (ADR 0061).
+        await LockVisitAsync(appointmentId, cancellationToken).ConfigureAwait(false);
         var bill = await GetBillAsync(appointmentId, cancellationToken).ConfigureAwait(false) ?? throw new ClientAccountException(ClientAccountRefusal.NotFound);
         if (!bill.CanPay)
         {
@@ -722,9 +811,13 @@ internal sealed class ClientAccountService(
                     MethodName = row.MethodName,
                 });
             }
-            else if (row.Kind == ClientAccountEntryKind.VisitPayment)
+            else if (row.Kind is ClientAccountEntryKind.VisitPayment or ClientAccountEntryKind.PartPayment)
             {
-                visitPayments.Add(new VisitPaymentLine(row.Id, row.AppointmentId ?? Guid.Empty, row.Money, row.At, Name(row.ByUserId), row.Method, row.ProviderReference) { MethodName = row.MethodName });
+                visitPayments.Add(new VisitPaymentLine(row.Id, row.AppointmentId ?? Guid.Empty, row.Money, row.At, Name(row.ByUserId), row.Method, row.ProviderReference)
+                {
+                    MethodName = row.MethodName,
+                    IsPart = row.Kind == ClientAccountEntryKind.PartPayment,
+                });
             }
         }
 

@@ -545,6 +545,19 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
       still shows its money. "Use again" brings it back. A method never used is removed instead.
 - [ ] AS7. Untick "Bank transfer" and save: it is gone from the checkout list. Cash cannot be unticked.
 
+## AT. Paying one bill two ways (after the branch `agent/m3-41-part-payment` is merged too; no migration)
+- [ ] AT1. Mark a client as arrived for a £45 visit and open the checkout. "Pay part of it another way": type 45:
+      refused, "A part is more than nothing and less than what is left". Nothing is recorded.
+- [ ] AT2. Type 20, choose Cash, "Record this part": "£20.00 is recorded. £25.00 is left to pay for the visit."
+      The bill has "Part paid: Cash −£20.00" and £25.00 left. The visit is still "Arrived".
+- [ ] AT3. "Record payment" with the card: the bill has "Paid: Card at the salon's terminal −£25.00" and the visit
+      is completed. The part form is gone.
+- [ ] AT4. The till of today: Cash £20.00, Card £25.00, takings £45.00, cash expected in the drawer £20.00. "Money
+      in and out" has "Visit paid in part" and "Visit paid".
+- [ ] AT5. A visit with a deposit already held: the part is counted after the deposit, and three ways work
+      (deposit, part, rest), also with one of your own methods.
+- [ ] AT6. A product on the bill is paid with the rest, by the second method, not by the part.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

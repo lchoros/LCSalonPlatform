@@ -267,5 +267,15 @@
   "Payments.Vouchers.Refused.NotRefundable": "Pieniądze można zwrócić tylko za bon, którego nikt nie użył.",
   "Payments.Method.Other": "Inny",
   "Payments.Fee.Refused.MethodNotOffered": "Salon nie przyjmuje już płatności w ten sposób. Wybierz inny sposób płatności.",
-  "Payments.CounterSale.Refused.MethodNotOffered": "Salon nie przyjmuje już płatności w ten sposób. Wybierz inny sposób płatności."
+  "Payments.CounterSale.Refused.MethodNotOffered": "Salon nie przyjmuje już płatności w ten sposób. Wybierz inny sposób płatności.",
+  "Payments.Kind.PartPayment": "Wizyta opłacona w części",
+  "Payments.Checkout.Part.Open": "Zapłać część w inny sposób",
+  "Payments.Checkout.Part.Amount": "Kwota części ({0})",
+  "Payments.Checkout.Part.Hint": "Na przykład gotówka, gdy reszta idzie kartą. Mniej niż {0}, które zostało za wizytę. Resztę zapłać poniżej.",
+  "Payments.Checkout.Part.Submit": "Zapisz tę część",
+  "Payments.Checkout.Part.Line": "Część zapłacona: {0}",
+  "Payments.Checkout.Part.Recorded": "Zapisano {0}. Za wizytę zostało {1}.",
+  "Payments.Checkout.Part.Refused.Incomplete": "Podaj kwotę części i wybierz sposób płatności.",
+  "Payments.Fee.Refused.PartNotLessThanDue": "Część to więcej niż nic i mniej niż to, co zostało za wizytę. Aby zapłacić wszystko, co zostało, zapisz płatność poniżej.",
+  "Payments.Fee.Refused.AlreadyBeingRecorded": "Ta część jest już zapisywana. Sprawdź rachunek przed ponowną próbą."
 }

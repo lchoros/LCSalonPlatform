@@ -13,17 +13,24 @@ public static class TillRules
     public static decimal Outstanding(decimal price, decimal depositHeld) => Math.Max(0m, price - Math.Max(0m, depositHeld));
 
     /// <summary>
-    /// +1 for money that came in (a deposit, a fee paid, a visit paid, products or a gift voucher sold), -1 for money
+    /// +1 for money that came in (a deposit, a fee paid, a visit paid in part or in full, products or a gift voucher sold), -1 for money
     /// that went out (a deposit returned, products returned, a voucher given back), 0 for lines that moved no money (a
     /// fee added or waived, a voucher used: its money came in when it was sold).
     /// </summary>
     public static int Direction(ClientAccountEntryKind kind) => kind switch
     {
         ClientAccountEntryKind.DepositPaid or ClientAccountEntryKind.FeePayment or ClientAccountEntryKind.VisitPayment or ClientAccountEntryKind.ProductSale
-            or ClientAccountEntryKind.VoucherSale => 1,
+            or ClientAccountEntryKind.VoucherSale or ClientAccountEntryKind.PartPayment => 1,
         ClientAccountEntryKind.DepositReturned or ClientAccountEntryKind.ProductReturn or ClientAccountEntryKind.VoucherRefund => -1,
         _ => 0,
     };
+
+    /// <summary>
+    /// Whether an amount can be a part payment (ADR 0061): above zero, to the penny, and less than what is left to
+    /// pay for the visit. All that is left is not a part: it is the payment.
+    /// </summary>
+    public static bool IsPart(decimal amount, decimal outstanding)
+        => amount > 0m && amount < outstanding && decimal.Round(amount, 2) == amount;
 
     /// <summary>The day's net amount per method, in the order of <see cref="PaymentMethod"/>; methods nobody used are left out.</summary>
     public static IReadOnlyList<(PaymentMethod Method, decimal Amount)> Totals(IEnumerable<(ClientAccountEntryKind Kind, PaymentMethod Method, decimal Amount)> lines)

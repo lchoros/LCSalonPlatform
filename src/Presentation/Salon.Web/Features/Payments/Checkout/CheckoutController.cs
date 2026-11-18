@@ -118,6 +118,15 @@ public sealed record CheckoutViewModel(VisitBill Bill, string? Flash, string? Er
     /// <summary>A voucher can go toward the visit while the client is here and the visit has something left to pay.</summary>
     public bool CanUseVoucher => Bill.CanPay && Bill.Outstanding.Amount > 0m;
 
+    /// <summary>Where a part payment posts (ADR 0061); the PartPayment slice owns the route.</summary>
+    public string PartPath => CheckoutController.BasePath + "/" + Bill.AppointmentId + "/part";
+
+    /// <summary>A part can be paid another way while the client is here and the visit has something left to pay.</summary>
+    public bool CanPayPart => Bill.CanPay && Bill.Outstanding.Amount > 0m;
+
+    /// <summary>The id this page's part payment will have, so the same form sent twice is one part (ADR 0061).</summary>
+    public Guid PartId { get; } = Guid.CreateVersion7();
+
     /// <summary>Why nothing is left to pay: it was paid, a voucher covered it, or the deposit did.</summary>
     public string SettledKey => Bill.Payment is not null ? "Payments.Checkout.Settled"
         : Bill.VoucherApplied is not null ? "Payments.Checkout.CoveredByVoucher"
