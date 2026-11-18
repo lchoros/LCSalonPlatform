@@ -244,5 +244,10 @@
   "Settings.Waitlist.Validation.HoldMinutes": "Wpisz liczbę minut od 0 do {0}.",
   "Settings.Messages.Token.HeldUntil": "do kiedy termin jest trzymany dla klienta",
   "Settings.Messages.Name.Waitlist.TimeHeld": "Trzymamy dla Ciebie termin",
-  "Settings.Messages.When.Waitlist.TimeHeld": "Wysyłane do pierwszej osoby z listy oczekujących, gdy wizyta zostanie odwołana, a zwolnione terminy są dla niej trzymane (zakładka Lista oczekujących)."
+  "Settings.Messages.When.Waitlist.TimeHeld": "Wysyłane do pierwszej osoby z listy oczekujących, gdy wizyta zostanie odwołana, a zwolnione terminy są dla niej trzymane (zakładka Lista oczekujących).",
+  "Settings.YourData.Services.Title": "Cennik",
+  "Settings.YourData.Services.Count.One": "{0} usługa.",
+  "Settings.YourData.Services.Count.Many": "Usługi: {0}.",
+  "Settings.YourData.Services.What": "Każda usługa z kategorią, czasem, ceną i zadatkiem. Liczby możesz zmienić w arkuszu i wczytać plik z powrotem w zakładce Usługi.",
+  "Settings.YourData.Services.Download": "Pobierz cennik"
 }

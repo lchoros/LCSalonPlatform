@@ -24,4 +24,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IProductImportProvider, CsvProductImportProvider>();
         return services;
     }
+
+    /// <summary>Registers the CSV price list reader (ADR 0066). Not a plugin of its own, like the product list reader.</summary>
+    public static IServiceCollection AddCsvServiceImport(this IServiceCollection services)
+    {
+        services.AddSingleton<IServiceImportProvider, CsvServiceImportProvider>();
+        return services;
+    }
 }

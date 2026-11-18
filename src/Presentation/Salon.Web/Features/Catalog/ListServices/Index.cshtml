@@ -17,6 +17,8 @@
             <p class="text-stone-600">@T["Catalog.List.Subtitle"]</p>
         </div>
         <div class="flex flex-col gap-3 sm:flex-row">
+            <a href="@ListServicesController.PriceListFilePath" data-testid="download-price-list" class="@linkClass">@T["Catalog.List.PriceListFile"]</a>
+            <a href="@ListServicesController.ImportPath" data-testid="import-services" class="@linkClass">@T["Catalog.List.Import"]</a>
             <a href="/admin/services/categories" data-testid="manage-categories" class="@linkClass">@T["Catalog.List.Categories"]</a>
             <a href="/admin/services/new" data-testid="add-service" class="@buttonClass">@T["Catalog.List.Add"]</a>
         </div>

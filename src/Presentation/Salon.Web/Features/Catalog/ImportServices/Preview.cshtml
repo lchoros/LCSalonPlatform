@@ -1,0 +1,75 @@
+@using System.Globalization
+@using Salon.Web.Features.Catalog.ImportServices
+@model PreviewServicesViewModel
+@{
+    ViewData["Title"] = T["Catalog.Import.Preview.Title"];
+    var culture = CultureInfo.CurrentCulture;
+}
+<section class="space-y-6" data-testid="import-preview">
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Catalog.Import.Preview.Title"]</h1>
+        <p class="text-sm text-stone-600" data-testid="import-summary">@T.Format("Catalog.Import.Preview.Summary", Model.FileName, Model.Total)</p>
+        <p class="text-stone-600">@T["Catalog.Import.Preview.Lead"]</p>
+    </header>
+
+    <dl class="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
+        <div class="rounded-lg border border-green-200 bg-green-50 p-3">
+            <dt class="text-xs font-medium text-green-800">@T["Catalog.Import.Preview.New"]</dt>
+            <dd data-testid="count-new" class="text-2xl font-bold text-green-900">@Model.NewCount</dd>
+        </div>
+        <div class="rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <dt class="text-xs font-medium text-amber-900">@T["Catalog.Import.Preview.Changed"]</dt>
+            <dd data-testid="count-changed" class="text-2xl font-bold text-amber-900">@Model.ChangedCount</dd>
+        </div>
+        <div class="rounded-lg border border-stone-200 bg-stone-100 p-3">
+            <dt class="text-xs font-medium text-stone-700">@T["Catalog.Import.Preview.Unchanged"]</dt>
+            <dd data-testid="count-unchanged" class="text-2xl font-bold text-stone-900">@Model.UnchangedCount</dd>
+        </div>
+        <div class="rounded-lg border border-red-200 bg-red-50 p-3">
+            <dt class="text-xs font-medium text-red-800">@T["Catalog.Import.Preview.LeftOut"]</dt>
+            <dd data-testid="count-left-out" class="text-2xl font-bold text-red-900">@Model.LeftOutCount</dd>
+        </div>
+    </dl>
+
+    <ul class="list-card" aria-label="@T["Catalog.Import.Preview.Rows"]">
+        @foreach (var row in Model.Rows)
+        {
+            <li data-testid="import-row" data-status="@row.Status" class="flex flex-col gap-2 p-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                <div class="min-w-0 space-y-1">
+                    <p class="text-xs text-stone-600">@T["Catalog.Import.Preview.Row"] @row.Row.SourceRow</p>
+                    <p class="font-semibold break-words" data-testid="import-row-name">@row.Row.Name.OrDash()</p>
+                    <p class="text-sm text-stone-700 break-words tabular-nums" data-testid="import-row-details">@ServiceImportText.Details(T, row, Model.Currency, culture)</p>
+                    @if (row.Problems.Count > 0)
+                    {
+                        <ul class="space-y-0.5 text-sm text-red-700">
+                            @foreach (var problem in row.Problems)
+                            {
+                                <li>@ServiceImportText.Problem(T, problem)</li>
+                            }
+                        </ul>
+                    }
+                </div>
+                <span class="inline-flex w-fit shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold @Badges.ServiceImportRow(row.Status)">@ServiceImportText.Status(T, row.Status)</span>
+            </li>
+        }
+    </ul>
+
+    @if (Model.HiddenCount > 0)
+    {
+        <p data-testid="import-more" class="text-sm text-stone-600">@T.Plural("Catalog.Import.Preview.More", Model.HiddenCount)</p>
+    }
+
+    <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
+        <a href="@ImportServicesController.UploadPath" class="btn btn-compact btn-secondary">@T["Catalog.Import.Preview.Back"]</a>
+        @if (Model.HasWork)
+        {
+            <form method="post" action="@ImportServicesController.ConfirmPath(Model.Token)" asp-antiforgery="true" class="flex">
+                <button type="submit" data-testid="import-confirm" class="btn btn-compact btn-primary w-full sm:w-auto">@T.Format("Catalog.Import.Preview.Confirm", Model.NewCount, Model.ChangedCount)</button>
+            </form>
+        }
+        else
+        {
+            <p data-testid="nothing-to-do" class="empty-state p-3 text-sm">@T["Catalog.Import.Preview.NothingToDo"]</p>
+        }
+    </div>
+</section>

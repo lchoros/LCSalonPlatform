@@ -1,4 +1,5 @@
 using Salon.Core.Appointments;
+using Salon.Services.Catalog.Import;
 using Salon.Services.Clients.Import;
 using Salon.Services.Payments;
 
@@ -64,6 +65,15 @@ public static class Badges
     {
         ImportRowStatus.New => Good,
         ImportRowStatus.Duplicate => Done,
+        _ => Bad,
+    };
+
+    /// <summary>A row of a price list file (ADR 0066): added, changed, as it was, left out because it is said twice, or not readable.</summary>
+    public static string ServiceImportRow(ServiceImportStatus status) => status switch
+    {
+        ServiceImportStatus.New => Good,
+        ServiceImportStatus.Changed => Warn,
+        ServiceImportStatus.Unchanged or ServiceImportStatus.Repeated => Done,
         _ => Bad,
     };
 

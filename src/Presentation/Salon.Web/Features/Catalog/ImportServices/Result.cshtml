@@ -1,0 +1,34 @@
+@using Salon.Services.Catalog.Import
+@using Salon.Web.Features.Catalog.ImportServices
+@model ServiceImportResult
+@{
+    ViewData["Title"] = T["Catalog.Import.Result.Title"];
+}
+<section class="mx-auto max-w-lg space-y-6" data-testid="import-result">
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Catalog.Import.Result.Title"]</h1>
+        <p class="text-sm text-stone-600">@Model.FileName</p>
+    </header>
+
+    <div class="grid grid-cols-2 gap-2 sm:gap-4">
+        <div class="rounded-lg border border-green-200 bg-green-50 p-5 text-center">
+            <p data-testid="result-added" class="text-5xl font-bold text-green-900">@Model.Added</p>
+            <p class="mt-1 text-sm font-medium text-green-800">@T["Catalog.Import.Result.AddedLabel"]</p>
+        </div>
+        <div class="rounded-lg border border-amber-200 bg-amber-50 p-5 text-center">
+            <p data-testid="result-updated" class="text-5xl font-bold text-amber-900">@Model.Updated</p>
+            <p class="mt-1 text-sm font-medium text-amber-900">@T["Catalog.Import.Result.UpdatedLabel"]</p>
+        </div>
+    </div>
+
+    @if (Model.Categories > 0)
+    {
+        <p class="text-stone-600" data-testid="result-categories">@T.Plural("Catalog.Import.Result.Categories", Model.Categories)</p>
+    }
+    <p class="text-stone-600" data-testid="result-rest">@T.Format("Catalog.Import.Result.Rest", Model.Unchanged, Model.LeftOut)</p>
+
+    <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+        <a href="@ImportServicesController.UploadPath" class="btn btn-compact btn-secondary">@T["Catalog.Import.Result.Again"]</a>
+        <a href="@ImportServicesController.ListPath" data-testid="to-services" class="btn btn-compact btn-primary">@T["Catalog.Import.Result.ToServices"]</a>
+    </div>
+</section>

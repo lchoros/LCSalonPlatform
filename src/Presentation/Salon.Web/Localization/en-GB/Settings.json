@@ -244,5 +244,10 @@
   "Settings.Waitlist.Validation.HoldMinutes": "Enter a whole number of minutes from 0 to {0}.",
   "Settings.Messages.Token.HeldUntil": "until when the time is kept for the client",
   "Settings.Messages.Name.Waitlist.TimeHeld": "A time is kept for you",
-  "Settings.Messages.When.Waitlist.TimeHeld": "Sent to the first client waiting when a visit is cancelled and you keep freed times for them, under Waitlist."
+  "Settings.Messages.When.Waitlist.TimeHeld": "Sent to the first client waiting when a visit is cancelled and you keep freed times for them, under Waitlist.",
+  "Settings.YourData.Services.Title": "Price list",
+  "Settings.YourData.Services.Count.One": "{0} service.",
+  "Settings.YourData.Services.Count.Many": "{0} services.",
+  "Settings.YourData.Services.What": "Every service with its category, its time, its price and its deposit. You can change the numbers in a spreadsheet and read the file back in under Services.",
+  "Settings.YourData.Services.Download": "Download the price list"
 }
