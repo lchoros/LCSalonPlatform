@@ -251,7 +251,9 @@ internal sealed class GiftVoucherService(
             throw new GiftVoucherException(GiftVoucherRefusal.AlreadyBeingRecorded);
         }
 
-        logger.LogInformation("Gift voucher {VoucherId} sold for {Amount} {Currency} by {Method}, recorded by user {UserId} through {Provider}", voucher.Id, amount, tenant.Currency, method, byUserId, payments.SystemName);
+        // The user id is written as a plain id (all zeros for nobody): it travels here beside what the form posted,
+        // and a log line takes only values whose type cannot carry text (ADR 0060 amendment).
+        logger.LogInformation("Gift voucher {VoucherId} sold for {Amount} {Currency} by {Method}, recorded by user {UserId} through {Provider}", voucher.Id, amount, tenant.Currency, paid.Method, byUserId ?? Guid.Empty, payments.SystemName);
         return Summary(voucher, zone, today);
     }
 
@@ -484,7 +486,7 @@ internal sealed class GiftVoucherService(
                 await own.CommitAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            logger.LogInformation("Gift voucher {VoucherId}: {Amount} {Currency} given back by {Method}, recorded by user {UserId}", voucherId, back.Amount, back.Currency, method, byUserId);
+            logger.LogInformation("Gift voucher {VoucherId}: {Amount} {Currency} given back by {Method}, recorded by user {UserId}", voucherId, back.Amount, back.Currency, paid.Method, byUserId);
             return back;
         }
         catch

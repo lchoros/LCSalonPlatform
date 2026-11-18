@@ -122,7 +122,7 @@ internal sealed class ClientAccountService(
         entry.ProviderReference = result.ProviderReference;
         await InsertAsync(entry, ClientAccountRefusal.AlreadySettled, cancellationToken).ConfigureAwait(false);
 
-        logger.LogInformation("Fee {FeeId} of appointment {AppointmentId} paid by {Method}, recorded by user {UserId} through {Provider}", fee.Line.EntryId, appointmentId, method, byUserId, payments.SystemName);
+        logger.LogInformation("Fee {FeeId} of appointment {AppointmentId} paid by {Method}, recorded by user {UserId} through {Provider}", fee.Line.EntryId, appointmentId, paid.Method, byUserId, payments.SystemName);
         return await RequireFeeAsync(appointmentId, cancellationToken).ConfigureAwait(false);
     }
 
@@ -191,7 +191,7 @@ internal sealed class ClientAccountService(
         };
         await InsertAsync(entry, ClientAccountRefusal.DepositAlreadyRecorded, cancellationToken).ConfigureAwait(false);
 
-        logger.LogInformation("Deposit of {Amount} {Currency} for appointment {AppointmentId} received by {Method}, recorded by user {UserId} through {Provider}", value, money.Currency, appointmentId, method, byUserId, payments.SystemName);
+        logger.LogInformation("Deposit of {Amount} {Currency} for appointment {AppointmentId} received by {Method}, recorded by user {UserId} through {Provider}", value, money.Currency, appointmentId, paid.Method, byUserId, payments.SystemName);
         return await RequireDepositAsync(appointmentId, cancellationToken).ConfigureAwait(false);
     }
 
@@ -210,7 +210,7 @@ internal sealed class ClientAccountService(
         entry.ProviderReference = result.ProviderReference;
         await InsertAsync(entry, ClientAccountRefusal.NoDepositHeld, cancellationToken).ConfigureAwait(false);
 
-        logger.LogInformation("Deposit {DepositId} of appointment {AppointmentId} returned by {Method}, recorded by user {UserId} through {Provider}", deposit.EntryId, appointmentId, method, byUserId, payments.SystemName);
+        logger.LogInformation("Deposit {DepositId} of appointment {AppointmentId} returned by {Method}, recorded by user {UserId} through {Provider}", deposit.EntryId, appointmentId, paid.Method, byUserId, payments.SystemName);
         return await RequireDepositAsync(appointmentId, cancellationToken).ConfigureAwait(false);
     }
 
@@ -406,7 +406,7 @@ internal sealed class ClientAccountService(
             }
         }
 
-        logger.LogInformation("Product line {LineId} of appointment {AppointmentId}: {Quantity} returned, {Amount} {Currency} back by {Method}, on the shelf again: {BackOnShelf}, recorded by user {UserId}", lineId, appointmentId, quantity, back.Amount, back.Currency, method, backOnShelf, byUserId);
+        logger.LogInformation("Product line {LineId} of appointment {AppointmentId}: {Quantity} returned, {Amount} {Currency} back by {Method}, on the shelf again: {BackOnShelf}, recorded by user {UserId}", lineId, appointmentId, quantity, back.Amount, back.Currency, paid.Method, backOnShelf, byUserId);
         return await GetBillAsync(appointmentId, cancellationToken).ConfigureAwait(false)
             ?? throw new ClientAccountException(ClientAccountRefusal.NotFound);
     }
@@ -453,7 +453,7 @@ internal sealed class ClientAccountService(
                 ByUserId = byUserId,
             };
             await InsertAsync(entry, ClientAccountRefusal.NothingToPay, cancellationToken).ConfigureAwait(false);
-            logger.LogInformation("Visit {AppointmentId} paid: {Amount} {Currency} by {Method}, recorded by user {UserId} through {Provider}", appointmentId, due.Amount, due.Currency, method, byUserId, payments.SystemName);
+            logger.LogInformation("Visit {AppointmentId} paid: {Amount} {Currency} by {Method}, recorded by user {UserId} through {Provider}", appointmentId, due.Amount, due.Currency, paid.Method, byUserId, payments.SystemName);
         }
 
         if (unpaidProducts.Count > 0)
@@ -499,7 +499,7 @@ internal sealed class ClientAccountService(
             }
 
             await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            logger.LogInformation("Products on appointment {AppointmentId} paid: {Amount} {Currency} by {Method}, {Lines} lines, recorded by user {UserId} through {Provider}", appointmentId, sold.Amount, sold.Currency, method, unpaidProducts.Count, byUserId, payments.SystemName);
+            logger.LogInformation("Products on appointment {AppointmentId} paid: {Amount} {Currency} by {Method}, {Lines} lines, recorded by user {UserId} through {Provider}", appointmentId, sold.Amount, sold.Currency, paid.Method, unpaidProducts.Count, byUserId, payments.SystemName);
         }
 
         // Fees from earlier visits ride on the same bill, each settled by its own line so the account stays readable.

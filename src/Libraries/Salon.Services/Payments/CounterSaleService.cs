@@ -227,7 +227,7 @@ internal sealed partial class CounterSaleService(
             }
         }
 
-        logger.LogInformation("Counter sale {EntryId}: {Units} units for {Amount} {Currency} by {Method}, recorded by user {UserId} through {Provider}", sale.Id, quote.Units, quote.Total.Amount, quote.Total.Currency, method, byUserId, payments.SystemName);
+        logger.LogInformation("Counter sale {EntryId}: {Units} units for {Amount} {Currency} by {Method}, recorded by user {UserId} through {Provider}", sale.Id, quote.Units, quote.Total.Amount, quote.Total.Currency, paid.Method, byUserId, payments.SystemName);
         return new CounterSaleReceipt(sale.Id, quote.Total, quote.Units, paid.Method) { MethodName = paid.MethodName };
     }
 

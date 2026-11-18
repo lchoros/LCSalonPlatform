@@ -153,7 +153,7 @@ internal sealed partial class CounterSaleService
             }
         }
 
-        logger.LogInformation("Counter sale {SaleId} line {LineId}: {Quantity} returned, {Amount} {Currency} back by {Method}, on the shelf again: {BackOnShelf}, recorded by user {UserId}", saleId, lineId, quantity, back.Amount, back.Currency, method, backOnShelf, byUserId);
+        logger.LogInformation("Counter sale {SaleId} line {LineId}: {Quantity} returned, {Amount} {Currency} back by {Method}, on the shelf again: {BackOnShelf}, recorded by user {UserId}", saleId, lineId, quantity, back.Amount, back.Currency, paid.Method, backOnShelf, byUserId);
         return back;
     }
 }
