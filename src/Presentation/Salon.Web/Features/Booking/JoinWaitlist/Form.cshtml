@@ -81,7 +81,7 @@
             @Html.ValidationMessage("Note", null, new { id = "note-error", @class = "field-error" })
         </div>
 
-        <p class="text-sm text-stone-600" data-testid="waitlist-privacy">@T["Booking.Waitlist.Privacy"]</p>
+        <p class="text-sm text-stone-600" data-testid="waitlist-privacy">@T["Booking.Waitlist.Privacy"] <a href="/privacy" class="font-medium underline underline-offset-2" data-testid="waitlist-privacy-link">@T["Booking.Privacy.Link"]</a></p>
 
         <button type="submit" data-testid="submit-waitlist" class="btn btn-primary w-full">
             @(s.RequireSmsVerification ? T["Booking.Public.SendCode"] : T["Booking.Waitlist.Submit"])

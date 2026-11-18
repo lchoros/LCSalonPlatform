@@ -118,6 +118,9 @@
             <span class="text-sm text-stone-700" data-testid="consent-wording">@s.ConsentWording</span>
         </label>
 
+        @* What the salon does with what is typed here, said where it is typed (ADR 0063). *@
+        <p class="text-sm text-stone-600" data-testid="details-privacy">@T["Booking.Privacy.AtForm"] <a href="/privacy" class="font-medium underline underline-offset-2" data-testid="details-privacy-link">@T["Booking.Privacy.Link"]</a></p>
+
         <button type="submit" data-testid="submit-details" class="btn btn-primary w-full">
             @(s.RequireSmsVerification ? T["Booking.Public.SendCode"] : T["Booking.Public.Book"])
         </button>

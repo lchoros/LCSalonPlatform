@@ -221,5 +221,22 @@
   "Settings.PaymentMethods.Notes.RecordOnly": "A method here only records how you were paid. Nothing is charged through it and no account details are asked for.",
   "Settings.PaymentMethods.Notes.Everywhere": "Your methods appear wherever money is taken or given back, and as their own lines in the till, the reports and the daily summary.",
   "Settings.PaymentMethods.Notes.History": "Renaming a method does not change what was already recorded.",
-  "Settings.PaymentMethods.ToTill": "Open the till"
+  "Settings.PaymentMethods.ToTill": "Open the till",
+  "Settings.Nav.Privacy": "Privacy notice",
+  "Settings.Privacy.Title": "Privacy notice",
+  "Settings.Privacy.Lead": "What your clients are told about their details. They can read it from every page they see and from the booking form.",
+  "Settings.Privacy.NotAdvice": "The standard notice says what this system does with client details. It is a starting text, not legal advice. Read it, and use your own text if something is different in your salon.",
+  "Settings.Privacy.See": "Read the notice as your clients see it",
+  "Settings.Privacy.UseOwnText": "Show my own text in place of the standard notice",
+  "Settings.Privacy.UseOwnTextHint": "Your salon's name, address and how to reach you are still shown above and below it.",
+  "Settings.Privacy.OwnText": "Your own text",
+  "Settings.Privacy.OwnTextHint": "Plain text. Leave an empty line between paragraphs. It is kept here while the standard notice is shown.",
+  "Settings.Privacy.Submit": "Save",
+  "Settings.Privacy.Saved": "The privacy notice is saved.",
+  "Settings.Privacy.Validation.TextRequired": "Write your own text, or untick the box to show the standard notice.",
+  "Settings.Privacy.Validation.TooLong": "Use at most {0} characters.",
+  "Settings.Privacy.Notes.Title": "Good to know",
+  "Settings.Privacy.Notes.Where": "Clients find the notice at the bottom of every page they see, next to the booking form and next to the waitlist form.",
+  "Settings.Privacy.Notes.Details": "The salon's name, address, phone number and email come from \"Salon details\". Keep them up to date.",
+  "Settings.Privacy.Notes.Rights": "When a client asks for a copy of their data or to be deleted, open their card: both are at the bottom."
 }
