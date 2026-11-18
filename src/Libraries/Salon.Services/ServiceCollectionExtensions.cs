@@ -72,6 +72,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGiftVoucherService, GiftVoucherService>();
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<ILocationService, LocationService>();
+        services.AddScoped<Privacy.IPrivacyNoticeService, Privacy.PrivacyNoticeService>();
         services.AddScoped<IStockService, StockService>();
         services.AddScoped<Products.Import.IProductImportService, Products.Import.ProductImportService>();
         services.AddScoped<DemoSeeder>();

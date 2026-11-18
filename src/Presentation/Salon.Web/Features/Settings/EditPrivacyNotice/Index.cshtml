@@ -1,0 +1,51 @@
+@using Salon.Core.Settings
+@using Salon.Web.Features.Settings.EditPrivacyNotice
+@model EditPrivacyNoticeViewModel
+@{
+    ViewData["Title"] = T["Settings.Privacy.Title"];
+    var form = Model.Form;
+    var errors = ViewData.ModelState.ErrorsFor("OwnText");
+    const string buttonClass = "btn btn-compact btn-primary w-full sm:w-auto";
+}
+<section class="mx-auto max-w-xl space-y-6">
+    <partial name="_SettingsNav" model="@("privacy")" />
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Settings.Privacy.Title"]</h1>
+        <p class="text-stone-600">@T["Settings.Privacy.Lead"]</p>
+    </header>
+
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+
+    <p class="notice notice-warn" data-testid="privacy-not-advice">@T["Settings.Privacy.NotAdvice"]</p>
+    <p><a href="@EditPrivacyNoticeController.NoticePath" class="font-medium underline underline-offset-2" data-testid="see-notice">@T["Settings.Privacy.See"]</a></p>
+
+    <form method="post" asp-action="Index" class="space-y-5 panel" novalidate data-testid="privacy-form">
+        <div class="space-y-1">
+            <label class="flex min-h-11 items-center gap-3">
+                <input id="UseOwnText" name="UseOwnText" type="checkbox" value="true" checked="@form.UseOwnText" aria-describedby="own-hint" class="size-5 shrink-0 rounded border-stone-400" data-testid="use-own-text" />
+                <span class="font-medium">@T["Settings.Privacy.UseOwnText"]</span>
+            </label>
+            <p id="own-hint" class="text-sm text-stone-600">@T["Settings.Privacy.UseOwnTextHint"]</p>
+        </div>
+        <div class="space-y-1">
+            <label for="OwnText" class="field-label">@T["Settings.Privacy.OwnText"]</label>
+            <textarea id="OwnText" name="OwnText" rows="14" maxlength="@PrivacyNoticeRules.OwnTextMaxLength" aria-describedby="text-hint text-error" aria-invalid="@(errors.Count > 0 ? "true" : "false")"
+                      class="field field-compact aria-[invalid=true]:border-red-600" data-testid="own-text">@form.OwnText</textarea>
+            <p id="text-hint" class="text-sm text-stone-600">@T["Settings.Privacy.OwnTextHint"]</p>
+            <p id="text-error" class="text-sm text-red-700" data-testid="own-text-error">@string.Join(" ", errors)</p>
+        </div>
+        <button type="submit" class="@buttonClass" data-testid="save-privacy">@T["Settings.Privacy.Submit"]</button>
+    </form>
+
+    <section class="space-y-2 rounded-md bg-stone-50 p-4 text-sm text-stone-700" data-testid="privacy-notes">
+        <h2 class="font-semibold">@T["Settings.Privacy.Notes.Title"]</h2>
+        <ul class="list-disc space-y-1 pl-5">
+            <li>@T["Settings.Privacy.Notes.Where"]</li>
+            <li>@T["Settings.Privacy.Notes.Details"]</li>
+            <li>@T["Settings.Privacy.Notes.Rights"]</li>
+        </ul>
+    </section>
+</section>

@@ -1,0 +1,81 @@
+@using System.Globalization
+@using Salon.Web.Features.Booking.ShowPrivacyNotice
+@model PrivacyNoticeViewModel
+@{
+    ViewData["Title"] = T["Booking.Privacy.Title"];
+    var culture = CultureInfo.CurrentCulture;
+    var notice = Model.Notice;
+    const string headingClass = "text-lg font-semibold";
+    const string listClass = "list-disc space-y-1 pl-5";
+}
+<section class="mx-auto max-w-2xl space-y-6" data-testid="privacy-notice" data-own="@notice.IsOwnText.ToString().ToLowerInvariant()">
+    <a href="@ShowPrivacyNoticeController.ServicesPath" class="back-link" data-testid="back">&larr; @T["Booking.Privacy.Back"]</a>
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Booking.Privacy.Title"]</h1>
+        <p class="text-stone-600" data-testid="privacy-who">@PrivacyNoticeText.Who(T, notice)</p>
+    </header>
+
+    @if (notice.IsOwnText)
+    {
+        @* The salon's own notice, as the owner wrote it: plain text, one paragraph per blank line. *@
+        <div class="space-y-4 panel" data-testid="privacy-own">
+            @foreach (var paragraph in notice.OwnParagraphs)
+            {
+                <p class="whitespace-pre-line">@paragraph</p>
+            }
+        </div>
+    }
+    else
+    {
+        <section class="space-y-2 panel" data-testid="privacy-what">
+            <h2 class="@headingClass">@T["Booking.Privacy.What.Title"]</h2>
+            <ul class="@listClass">
+                <li>@T["Booking.Privacy.What.Contact"]</li>
+                <li>@T["Booking.Privacy.What.Visits"]</li>
+                <li>@T["Booking.Privacy.What.Health"]</li>
+            </ul>
+        </section>
+
+        <section class="space-y-2 panel" data-testid="privacy-why">
+            <h2 class="@headingClass">@T["Booking.Privacy.Why.Title"]</h2>
+            <ul class="@listClass">
+                <li>@T["Booking.Privacy.Why.Visits"]</li>
+                <li>@T["Booking.Privacy.Why.Messages"]</li>
+                <li>@T["Booking.Privacy.Why.Records"]</li>
+                <li>@T["Booking.Privacy.Why.Offers"]</li>
+            </ul>
+        </section>
+
+        <section class="space-y-2 panel" data-testid="privacy-shared">
+            <h2 class="@headingClass">@T["Booking.Privacy.Shared.Title"]</h2>
+            <p>@T.Format("Booking.Privacy.Shared.Staff", notice.SalonName)</p>
+            <p>@T["Booking.Privacy.Shared.Helpers"]</p>
+            <p>@T["Booking.Privacy.Shared.NotSold"]</p>
+        </section>
+
+        <section class="space-y-2 panel" data-testid="privacy-how-long">
+            <h2 class="@headingClass">@T["Booking.Privacy.HowLong.Title"]</h2>
+            <p>@T["Booking.Privacy.HowLong.Client"]</p>
+            <p>@T["Booking.Privacy.HowLong.Deleted"]</p>
+        </section>
+
+        <section class="space-y-2 panel" data-testid="privacy-rights">
+            <h2 class="@headingClass">@T["Booking.Privacy.Rights.Title"]</h2>
+            <ul class="@listClass">
+                <li>@T["Booking.Privacy.Rights.Copy"]</li>
+                <li>@T["Booking.Privacy.Rights.Correct"]</li>
+                <li>@T["Booking.Privacy.Rights.Delete"]</li>
+                <li>@T["Booking.Privacy.Rights.Offers"]</li>
+            </ul>
+            <p>@T["Booking.Privacy.Rights.Answer"]</p>
+            <p>@T["Booking.Privacy.Rights.Complain"]</p>
+        </section>
+    }
+
+    <section class="space-y-2 panel" data-testid="privacy-contact">
+        <h2 class="@headingClass">@T["Booking.Privacy.Contact.Title"]</h2>
+        <p data-testid="privacy-contact-line">@PrivacyNoticeText.Contact(T, notice)</p>
+    </section>
+
+    <p class="text-sm text-stone-600" data-testid="privacy-updated">@T.Format("Booking.Privacy.Updated", notice.UpdatedOn.ToString("d", culture))</p>
+</section>

@@ -221,5 +221,22 @@
   "Settings.PaymentMethods.Notes.RecordOnly": "Sposób tutaj tylko zapisuje, jak zapłacono. Nic nie jest przez niego pobierane i nie są potrzebne żadne dane konta.",
   "Settings.PaymentMethods.Notes.Everywhere": "Twoje sposoby pojawiają się wszędzie, gdzie przyjmuje się lub zwraca pieniądze, oraz jako osobne wiersze w kasie, raportach i podsumowaniu dnia.",
   "Settings.PaymentMethods.Notes.History": "Zmiana nazwy nie zmienia tego, co już zapisano.",
-  "Settings.PaymentMethods.ToTill": "Otwórz kasę"
+  "Settings.PaymentMethods.ToTill": "Otwórz kasę",
+  "Settings.Nav.Privacy": "Informacja o prywatności",
+  "Settings.Privacy.Title": "Informacja o prywatności",
+  "Settings.Privacy.Lead": "To, co klienci czytają o swoich danych. Mogą to przeczytać z każdej strony, którą widzą, i z formularza rezerwacji.",
+  "Settings.Privacy.NotAdvice": "Standardowa informacja opisuje, co ten system robi z danymi klientów. To tekst wyjściowy, a nie porada prawna. Przeczytaj ją i użyj własnego tekstu, jeśli w Twoim salonie coś jest inaczej.",
+  "Settings.Privacy.See": "Przeczytaj informację tak, jak widzą ją klienci",
+  "Settings.Privacy.UseOwnText": "Pokaż mój własny tekst zamiast standardowej informacji",
+  "Settings.Privacy.UseOwnTextHint": "Nazwa salonu, adres i sposób kontaktu są nadal pokazywane nad i pod tekstem.",
+  "Settings.Privacy.OwnText": "Twój własny tekst",
+  "Settings.Privacy.OwnTextHint": "Zwykły tekst. Zostaw pustą linię między akapitami. Tekst jest tu przechowywany także wtedy, gdy pokazywana jest standardowa informacja.",
+  "Settings.Privacy.Submit": "Zapisz",
+  "Settings.Privacy.Saved": "Informacja o prywatności została zapisana.",
+  "Settings.Privacy.Validation.TextRequired": "Wpisz własny tekst albo odznacz pole, aby pokazać standardową informację.",
+  "Settings.Privacy.Validation.TooLong": "Użyj najwyżej {0} znaków.",
+  "Settings.Privacy.Notes.Title": "Warto wiedzieć",
+  "Settings.Privacy.Notes.Where": "Klienci znajdą informację na dole każdej strony, którą widzą, przy formularzu rezerwacji i przy formularzu listy oczekujących.",
+  "Settings.Privacy.Notes.Details": "Nazwa salonu, adres, numer telefonu i e-mail pochodzą z „Danych salonu”. Dbaj o ich aktualność.",
+  "Settings.Privacy.Notes.Rights": "Gdy klient poprosi o kopię danych lub o ich usunięcie, otwórz jego kartę: obie opcje są na dole."
 }

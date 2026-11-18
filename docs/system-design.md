@@ -186,6 +186,13 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   posted `PaymentChoice` in `ClientAccountService`, `CounterSaleService` and `GiftVoucherService` before a line is
   written. A line paid by an own method has `Method = Other`, `CustomMethodId` and `MethodName` (a check constraint
   keeps the three together). `TillRules.TotalsByMethod` gives each own method its own line in the till and reports.
+- `Booking/ShowPrivacyNotice` — `/privacy` on a salon's address, no sign-in (ADR 0063): the salon's privacy notice.
+  `IPrivacyNoticeService.GetAsync` gives the salon's name and contact details and either the standard notice (the
+  `Booking.Privacy.*` resources, true of what the system does) or the owner's own text as paragraphs.
+  `Settings/EditPrivacyNotice` — `/admin/settings/privacy` behind `Settings.Manage` saves `PrivacyNoticeSettings`.
+  The layout's footer links to the notice for visitors on a salon's address; the booking and waitlist forms link to
+  it beside their buttons. A change to what the system does with client data changes the standard text and
+  `PrivacyNoticeRules.StandardTextDate`.
 - `Clients/DataCopy` — `/admin/clients/{clientId}/data` behind `Clients.View` and `Clients.Manage` (ADR 0062): one
   page with everything the salon holds about a client, to print and hand over; never cached, logged by id.
   `Clients/EraseClient` — `/admin/clients/{clientId}/erase` behind `Clients.Manage` and `Settings.Manage` (owner
