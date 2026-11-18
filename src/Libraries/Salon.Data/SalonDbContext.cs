@@ -73,6 +73,9 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     /// <summary>Clients who want a visit the diary has no room for yet; closed, never deleted (ADR 0041).</summary>
     public DbSet<WaitlistEntry> WaitlistEntries => Set<WaitlistEntry>();
 
+    /// <summary>Freed times held for a waiting client until they take them or the hold runs out (ADR 0065).</summary>
+    public DbSet<WaitlistOffer> WaitlistOffers => Set<WaitlistOffer>();
+
     /// <summary>What clients owe the salon and how it was settled; lines are only ever added (ADR 0022).</summary>
     public DbSet<ClientAccountEntry> ClientAccountEntries => Set<ClientAccountEntry>();
 

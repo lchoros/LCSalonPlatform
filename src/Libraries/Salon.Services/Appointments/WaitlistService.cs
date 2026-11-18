@@ -46,7 +46,15 @@ internal sealed class WaitlistService(
         var services = await db.Services.AsNoTracking()
             .Where(s => serviceIds.Contains(s.Id))
             .ToDictionaryAsync(s => s.Id, s => s.Name, cancellationToken).ConfigureAwait(false);
-        var staffIds = entries.Where(e => e.StaffMemberId is not null).Select(e => e.StaffMemberId!.Value).Distinct().ToArray();
+        // The freed times kept for these clients right now (ADR 0065), so the desk does not offer them to somebody else.
+        var now = clock.GetCurrentInstant();
+        var entryIds = entries.Select(e => e.Id).ToArray();
+        var held = await db.WaitlistOffers.AsNoTracking()
+            .Where(o => entryIds.Contains(o.WaitlistEntryId) && o.EndedAt == null && o.HeldUntil > now)
+            .Select(o => new { o.Id, o.WaitlistEntryId, o.StaffMemberId, o.Start, o.HeldUntil })
+            .ToDictionaryAsync(o => o.WaitlistEntryId, cancellationToken).ConfigureAwait(false);
+        var staffIds = entries.Where(e => e.StaffMemberId is not null).Select(e => e.StaffMemberId!.Value)
+            .Concat(held.Values.Select(h => h.StaffMemberId)).Distinct().ToArray();
         var staff = await db.StaffMembers.AsNoTracking()
             .Where(s => staffIds.Contains(s.Id))
             .ToDictionaryAsync(s => s.Id, s => s.DisplayName, cancellationToken).ConfigureAwait(false);
@@ -72,6 +80,9 @@ internal sealed class WaitlistService(
                 {
                     AskedOnline = e.CreatedByUserId is null,
                     LastToldOn = e.LastToldAt is { } told ? told.InZone(zone).Date : null,
+                    Held = held.TryGetValue(e.Id, out var hold)
+                        ? new WaitlistHold(hold.Id, hold.Start.InZone(zone), staff.GetValueOrDefault(hold.StaffMemberId) ?? string.Empty, hold.HeldUntil.InZone(zone))
+                        : null,
                 };
             })
             .ToArray();

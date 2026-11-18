@@ -28,5 +28,10 @@
     "Sms": "{{SalonName}}: zwolnił się termin na usługę {{ServiceName}}: {{AppointmentStart}}. Zarezerwuj, zanim zniknie: {{BookingUrl}}",
     "EmailSubject": "Zwolnił się termin w {{SalonName}}",
     "EmailBody": "Cześć {{ClientFirstName}},\nZwolnił się termin na usługę {{ServiceName}} w {{SalonName}}: {{AppointmentStart}}.\nZarezerwuj go tutaj, zanim zniknie: {{BookingUrl}}"
+  },
+  "Waitlist.TimeHeld": {
+    "Sms": "{{SalonName}}: wolny termin na {{ServiceName}}: {{AppointmentStart}}. Trzymamy go dla Ciebie do {{HeldUntil}}. Rezerwuj: {{BookingUrl}}",
+    "EmailSubject": "Trzymamy dla Ciebie termin w {{SalonName}}",
+    "EmailBody": "Cześć {{ClientFirstName}},\nZwolnił się termin na usługę {{ServiceName}} w {{SalonName}}: {{AppointmentStart}}.\nTrzymamy go dla Ciebie do {{HeldUntil}}. Zarezerwuj go tutaj: {{BookingUrl}}"
   }
 }

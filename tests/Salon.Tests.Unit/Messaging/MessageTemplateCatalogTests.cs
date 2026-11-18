@@ -8,10 +8,10 @@ public class MessageTemplateCatalogTests
     private static readonly string[] BookingTokens = ["SalonName", "ClientFirstName", "ServiceName", "StaffName", "AppointmentStart"];
 
     [Fact]
-    public void Lists_exactly_the_four_booking_templates_the_code_and_the_waitlist_message()
+    public void Lists_exactly_the_four_booking_templates_the_code_and_the_two_waitlist_messages()
     {
         MessageTemplateCatalog.All.Select(d => d.Key).Order(StringComparer.Ordinal)
-            .ShouldBe(["Booking.Cancelled", "Booking.Code", "Booking.Confirmation", "Booking.Reminder", "Booking.Rescheduled", "Waitlist.TimeFreed"]);
+            .ShouldBe(["Booking.Cancelled", "Booking.Code", "Booking.Confirmation", "Booking.Reminder", "Booking.Rescheduled", "Waitlist.TimeFreed", "Waitlist.TimeHeld"]);
     }
 
     [Fact]

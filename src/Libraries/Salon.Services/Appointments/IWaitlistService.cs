@@ -81,4 +81,12 @@ public sealed record WaitlistItem(
 
     /// <summary>The day the client was last sent a text that a time had come up (ADR 0056); null when never.</summary>
     public LocalDate? LastToldOn { get; init; }
+
+    /// <summary>The freed time kept for this client right now (ADR 0065); null when none is.</summary>
+    public WaitlistHold? Held { get; init; }
 }
+
+/// <summary>A freed time kept for a waiting client, as the desk reads it (ADR 0065).</summary>
+/// <param name="Start">In the salon's zone.</param>
+/// <param name="HeldUntil">In the salon's zone.</param>
+public sealed record WaitlistHold(Guid OfferId, ZonedDateTime Start, string StaffName, ZonedDateTime HeldUntil);

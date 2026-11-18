@@ -29,6 +29,13 @@ public sealed class BookingSettings : ISettings
     /// </summary>
     public bool TellWaitlistWhenFreed { get; set; }
 
+    /// <summary>
+    /// For how many minutes the freed time is kept for the client who was told (ADR 0065): off the booking pages, and
+    /// theirs with one tap. 0 means the time is not held and whoever books first has it (ADR 0056). Only matters while
+    /// <see cref="TellWaitlistWhenFreed"/> is on.
+    /// </summary>
+    public int HoldFreedTimeMinutes { get; set; } = 30;
+
     /// <summary>0 means no deposit. Applied as a percentage of the service price.</summary>
     public decimal DefaultDepositPercent { get; set; }
 }
