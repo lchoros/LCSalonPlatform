@@ -26,4 +26,11 @@ public static class ClientAccountRules
     /// <summary>A gift voucher sold, used toward a visit, or given back (ADR 0057): money taken ahead of the visit it pays for.</summary>
     public static bool IsVoucher(ClientAccountEntryKind kind)
         => kind is ClientAccountEntryKind.VoucherSale or ClientAccountEntryKind.VoucherRedeemed or ClientAccountEntryKind.VoucherRefund;
+
+    /// <summary>
+    /// One of the two lines that move a line's money from the method it was recorded under to the one it was paid by
+    /// (ADR 0064): no new money, only where the till counts it.
+    /// </summary>
+    public static bool IsMethodCorrection(ClientAccountEntryKind kind)
+        => kind is ClientAccountEntryKind.MethodCorrectionIn or ClientAccountEntryKind.MethodCorrectionOut;
 }

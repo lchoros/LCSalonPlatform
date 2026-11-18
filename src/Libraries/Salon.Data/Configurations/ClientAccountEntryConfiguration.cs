@@ -15,8 +15,9 @@ internal sealed class ClientAccountEntryConfiguration : IEntityTypeConfiguration
             t.HasCheckConstraint("ck_client_account_entries_amount_positive", "amount > 0");
             // Every line is on a client's account except four kinds that have no client and no visit: a product sold at
             // the counter (ADR 0053), the money given back for it (ADR 0054), a gift voucher sold and the money given
-            // back for one (ADR 0057). The database refuses any other line without a client.
-            t.HasCheckConstraint("ck_client_account_entries_client_unless_counter_sale", "client_id IS NOT NULL OR (kind IN (8, 9, 10, 12) AND appointment_id IS NULL)");
+            // back for one (ADR 0057). The two halves of a correction (ADR 0064) follow the line they correct, so they
+            // may be without a client too. The database refuses any other line without a client.
+            t.HasCheckConstraint("ck_client_account_entries_client_unless_counter_sale", "client_id IS NOT NULL OR (kind IN (8, 9, 10, 12, 14, 15) AND appointment_id IS NULL)");
             // A line paid by one of the salon's own methods (method 4, ADR 0060) says which one and what it was called;
             // no other line does.
             t.HasCheckConstraint(

@@ -585,6 +585,25 @@ An existing `salon_dev` gets seven demo products on the next start, because it h
       and save: the standard notice is back and your text is still in the box.
 - [ ] AV6. A manager does not have the "Privacy notice" tab.
 
+## AW. Putting right a payment recorded under the wrong method (after the branch `agent/m3-44-correct-method` is merged too; it has a migration)
+- [ ] AW1. Mark a client as arrived for a £45 visit, open the checkout and record the payment as Cash. The till of
+      today: Cash £45.00, cash expected in the drawer £45.00. The line has "Wrong method?" under it.
+- [ ] AW2. "Wrong method?": a page for that one payment, with the client, "Visit paid · £45.00" and "Recorded as
+      Cash". Press "Correct" with Cash still chosen: "It is already recorded that way. Nothing was changed."
+- [ ] AW3. Choose "Card at the salon's terminal" and "Correct": back on the till, "Corrected. It was paid by: Card
+      at the salon's terminal." Cash £0.00, Card £45.00, takings still £45.00, cash expected in the drawer £0.00.
+- [ ] AW4. "Money in and out" has three lines: the payment, with "corrected to Card at the salon's terminal" under
+      it, then "Method corrected: taken off · Cash −£45.00" and "Method corrected: put on · Card … £45.00". Only
+      the payment has "Wrong method?".
+- [ ] AW5. The bill of that visit says "Paid: Card at the salon's terminal".
+- [ ] AW6. Correct the same payment again, to one of your own methods, then back to Cash: each time the till moves
+      the £45.00 and the takings stay £45.00.
+- [ ] AW7. Close the day with a count, then correct a cash payment of that day: the count stands, and the page says
+      money was recorded after the day was closed and what the drawer should hold now.
+- [ ] AW8. Go to yesterday's till: no line has "Wrong method?".
+- [ ] AW9. Sell a gift voucher for cash and correct it: "Voucher" is not among the methods offered.
+- [ ] AW10. A staff login (not reception, manager or owner) cannot open the correction page.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

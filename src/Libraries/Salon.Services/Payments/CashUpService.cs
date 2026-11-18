@@ -87,7 +87,7 @@ internal sealed class CashUpService(
         var rows = await db.ClientAccountEntries.AsNoTracking()
             .Where(e => e.Method != null && e.At >= from && e.At < until)
             .OrderBy(e => e.At).ThenBy(e => e.Id)
-            .Select(e => new { e.Kind, Method = e.Method!.Value, e.CustomMethodId, e.MethodName, e.Amount, e.At, e.ClientId, e.AppointmentId, e.ByUserId })
+            .Select(e => new { e.Id, e.Kind, Method = e.Method!.Value, e.CustomMethodId, e.MethodName, e.Amount, e.At, e.ClientId, e.AppointmentId, e.ByUserId })
             .ToListAsync(cancellationToken).ConfigureAwait(false);
 
         var clientIds = rows.Where(r => r.ClientId is not null).Select(r => r.ClientId!.Value).Distinct().ToArray();
@@ -104,6 +104,10 @@ internal sealed class CashUpService(
         string? Name(Guid? userId) => userId is { } id && users.TryGetValue(id, out var name) ? name : null;
         Money In(decimal amount) => new(amount, currency);
 
+        // A line of today that moved money can still be put right (ADR 0064); one already corrected says where it stands.
+        var correctable = rows.Where(r => MethodCorrectionRules.CanCorrect(r.Kind)).Select(r => r.Id).ToArray();
+        var standsAt = await MethodCorrections.LatestAsync(db, correctable, cancellationToken).ConfigureAwait(false);
+
         var lines = rows.Select(r => (r.Kind, r.Method, r.Amount)).ToArray();
         var movements = rows
             .Where(r => TillRules.Direction(r.Kind) != 0)
@@ -117,6 +121,9 @@ internal sealed class CashUpService(
                 Name(r.ByUserId))
             {
                 MethodName = r.MethodName,
+                EntryId = r.Id,
+                CanCorrect = day == today && MethodCorrectionRules.CanCorrect(r.Kind),
+                CorrectedTo = standsAt.GetValueOrDefault(r.Id),
             })
             .ToArray();
 

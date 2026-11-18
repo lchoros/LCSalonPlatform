@@ -126,8 +126,8 @@ public class CancellationPolicyTests
         foreach (var kind in Enum.GetValues<ClientAccountEntryKind>())
         {
             // Products sold are a fifth family (ADR 0037) and gift vouchers a sixth (ADR 0057); the rule itself is
-            // unchanged: one family each, no kind without one.
-            new[] { ClientAccountRules.IsFee(kind), ClientAccountRules.IsSettlement(kind), ClientAccountRules.IsDeposit(kind), ClientAccountRules.IsVisitPayment(kind), ClientAccountRules.IsProductSale(kind), ClientAccountRules.IsVoucher(kind) }.Count(family => family).ShouldBe(1, kind.ToString());
+            // unchanged: one family each, no kind without one. The two halves of a correction are a seventh (ADR 0064).
+            new[] { ClientAccountRules.IsFee(kind), ClientAccountRules.IsSettlement(kind), ClientAccountRules.IsDeposit(kind), ClientAccountRules.IsVisitPayment(kind), ClientAccountRules.IsProductSale(kind), ClientAccountRules.IsVoucher(kind), ClientAccountRules.IsMethodCorrection(kind) }.Count(family => family).ShouldBe(1, kind.ToString());
         }
     }
 }

@@ -1342,7 +1342,7 @@ namespace Salon.Data.Migrations
                         {
                             t.HasCheckConstraint("ck_client_account_entries_amount_positive", "amount > 0");
 
-                            t.HasCheckConstraint("ck_client_account_entries_client_unless_counter_sale", "client_id IS NOT NULL OR (kind IN (8, 9, 10, 12) AND appointment_id IS NULL)");
+                            t.HasCheckConstraint("ck_client_account_entries_client_unless_counter_sale", "client_id IS NOT NULL OR (kind IN (8, 9, 10, 12, 14, 15) AND appointment_id IS NULL)");
 
                             t.HasCheckConstraint("ck_client_account_entries_own_method_named", "(method IS NOT DISTINCT FROM 4 AND custom_method_id IS NOT NULL AND method_name IS NOT NULL) OR (method IS DISTINCT FROM 4 AND custom_method_id IS NULL AND method_name IS NULL)");
                         });

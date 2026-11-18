@@ -1,0 +1,62 @@
+@using System.Globalization
+@using Salon.Web.Features.Payments.CorrectMethod
+@model CorrectMethodViewModel
+@{
+    var line = Model.Line;
+    var culture = CultureInfo.CurrentCulture;
+    ViewData["Title"] = T["Payments.Correct.Title"];
+    const string inputClass = "field field-compact";
+    const string primaryClass = "btn btn-compact btn-primary w-full sm:w-auto";
+    const string cardClass = "space-y-3 panel";
+}
+<section class="mx-auto max-w-lg space-y-6">
+    <a href="@CorrectMethodController.TillPath(line.Day)" data-testid="back" class="back-link">&larr; @T["Payments.Correct.Back"]</a>
+    <h1 class="page-title">@T["Payments.Correct.Title"]</h1>
+    <p class="text-stone-600">@T["Payments.Correct.Lead"]</p>
+
+    @if (Model.Error is { } error)
+    {
+        <p role="alert" data-testid="error" class="notice notice-error">@error</p>
+    }
+
+    <section class="@cardClass" data-testid="correct-line" data-kind="@line.Kind">
+        <h2 class="text-lg font-semibold">@T["Payments.Correct.Line"]</h2>
+        <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-base">
+            <dt class="text-sm text-stone-600">@T["Payments.Correct.When"]</dt>
+            <dd class="tabular-nums">@line.At.LocalDateTime.ToString("g", culture)</dd>
+            <dt class="text-sm text-stone-600">@T["Payments.Correct.Who"]</dt>
+            <dd data-testid="correct-client">@(line.ClientName.Length > 0 ? line.ClientName : T["Payments.CounterSale.NoClient"])</dd>
+            <dt class="text-sm text-stone-600">@T["Payments.Correct.Amount"]</dt>
+            <dd class="tabular-nums" data-testid="correct-amount">@T[$"Payments.Kind.{line.Kind}"] · @line.Amount.ToDisplayString(culture)</dd>
+            <dt class="text-sm text-stone-600">@T["Payments.Correct.Recorded"]</dt>
+            <dd data-testid="correct-recorded">@PaymentMethodNames.Name(T, line.Recorded.Method, line.Recorded.MethodName)</dd>
+            @if (line.WasCorrected)
+            {
+                <dt class="text-sm text-stone-600">@T["Payments.Correct.StandsAt"]</dt>
+                <dd class="font-medium" data-testid="correct-stands-at">@PaymentMethodNames.Name(T, line.StandsAt.Method, line.StandsAt.MethodName)</dd>
+            }
+        </dl>
+    </section>
+
+    @if (line.IsToday)
+    {
+        <section class="@cardClass accent-5" data-testid="correct-step">
+            <form method="post" action="@CorrectMethodController.LinePath(line.EntryId)" asp-antiforgery="true" class="space-y-3" data-testid="correct-form">
+                <input type="hidden" name="correction" value="@Model.CorrectionId" />
+                <div class="space-y-1">
+                    <label for="method" class="field-label">@T["Payments.Correct.Method"]</label>
+                    <select id="method" name="method" class="@inputClass" data-testid="correct-method">
+                        <payment-method-options selected="line.Choice" for-voucher="line.IsVoucherMoney" />
+                    </select>
+                </div>
+                <button type="submit" class="@primaryClass" data-testid="correct-submit">@T["Payments.Correct.Submit"]</button>
+            </form>
+        </section>
+    }
+    else
+    {
+        <section class="@cardClass" data-testid="correct-not-today">
+            <p>@T["Payments.Correct.Refused.NotToday"]</p>
+        </section>
+    }
+</section>

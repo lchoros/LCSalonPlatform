@@ -286,6 +286,9 @@ internal sealed class GiftVoucherService(
         var (_, zone) = await SalonAsync(cancellationToken).ConfigureAwait(false);
         var today = clock.GetCurrentInstant().InZone(zone).Date;
         var sale = await db.ClientAccountEntries.AsNoTracking().FirstAsync(e => e.Id == voucher.SaleEntryId, cancellationToken).ConfigureAwait(false);
+
+        // A sale recorded under the wrong method and put right reads as it was paid (ADR 0064).
+        var soldWith = (await MethodCorrections.LatestAsync(db, [sale.Id], cancellationToken).ConfigureAwait(false)).Of(sale.Id, sale.Method, sale.CustomMethodId, sale.MethodName);
         var soldBy = voucher.SoldByUserId is { } userId
             ? await db.Users.AsNoTracking().Where(u => u.Id == userId).Select(u => u.DisplayName).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false)
             : null;
@@ -299,14 +302,14 @@ internal sealed class GiftVoucherService(
 
         return new VoucherCard(
             Summary(voucher, zone, today),
-            sale.Method ?? PaymentMethod.Cash,
+            soldWith?.Method ?? PaymentMethod.Cash,
             soldBy,
             [.. uses.Select(u => new VoucherUse(u.At.InZone(zone), u.AppointmentId, u.FirstName + " " + u.LastName, new Money(u.Amount, u.Currency)))],
             GiftVoucherRules.CanRefund(voucher.InitialAmount, voucher.Balance, voucher.RefundedAt),
             voucher.RefundedAt?.InZone(zone).Date)
         {
-            SoldWithCustomMethodId = sale.CustomMethodId,
-            SoldWithName = sale.MethodName,
+            SoldWithCustomMethodId = soldWith?.CustomMethodId,
+            SoldWithName = soldWith?.MethodName,
         };
     }
 
