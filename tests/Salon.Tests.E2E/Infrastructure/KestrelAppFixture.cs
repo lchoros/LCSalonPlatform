@@ -376,6 +376,67 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
     }
 
     /// <summary>
+    /// A freed time kept for a waiting client (ADR 0065), as a given: the salon texts its waiting clients at any hour
+    /// and keeps freed times for them; the client is on the waitlist for the first service; somebody else's visit, at
+    /// the first time that can be booked from the day after tomorrow, was cancelled; and the service that offers
+    /// freed times has just run for it. Returns the address in the client's text and the time that is kept.
+    /// </summary>
+    public async Task<(string LinkPath, Instant Start, string ServiceName)> KeepFreedTimeAsync(Guid tenantId, string firstName, string lastName, string phone)
+    {
+        using var scope = _factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
+        var services = scope.ServiceProvider;
+        var db = services.GetRequiredService<SalonDbContext>();
+        var settings = services.GetRequiredService<ISettingService>();
+        var booking = await settings.LoadAsync<BookingSettings>();
+        booking.TellWaitlistWhenFreed = true;
+        await settings.SaveAsync(booking);
+
+        // No quiet hours, so the test does not depend on the hour it runs at.
+        var notifications = await settings.LoadAsync<NotificationSettings>();
+        (notifications.QuietHoursStartMinute, notifications.QuietHoursEndMinute) = (0, 0);
+        await settings.SaveAsync(notifications);
+
+        var now = SystemClock.Instance.GetCurrentInstant();
+        var service = await db.Services.AsNoTracking().Where(s => s.IsActive).OrderBy(s => s.Name).FirstAsync();
+        var staffId = await db.StaffMembers.AsNoTracking().Where(s => s.IsActive && s.IsBookable).OrderBy(s => s.SortOrder).Select(s => s.Id).FirstAsync();
+        var waiting = new Core.Clients.Client { FirstName = firstName, LastName = lastName, Phone = phone, CreatedAt = now, UpdatedAt = now };
+        var gaveUp = new Core.Clients.Client { FirstName = "Gave", LastName = "Up" + lastName, CreatedAt = now, UpdatedAt = now };
+        db.Clients.AddRange(waiting, gaveUp);
+        await db.SaveChangesAsync();
+        var added = await services.GetRequiredService<Salon.Services.Appointments.IWaitlistService>()
+            .AddAsync(new Salon.Services.Appointments.WaitlistRequest(waiting.Id, service.Id, null, null, null, null), null);
+        added.ShouldBe(Salon.Services.Appointments.WaitlistAddOutcome.Added);
+
+        var zone = DateTimeZoneProviders.Tzdb["Europe/London"];
+        var from = now.InZone(zone).Date.PlusDays(2);
+        var slot = (await services.GetRequiredService<Salon.Services.Availability.IAvailabilityService>().GetSlotsAsync(service.Id, staffId, from, from.PlusDays(14)))[0];
+        var cancelled = new Appointment
+        {
+            TenantId = tenantId,
+            ClientId = gaveUp.Id,
+            StaffMemberId = staffId,
+            ServiceId = service.Id,
+            Start = slot.Start,
+            End = slot.Start + service.Duration,
+            Status = AppointmentStatus.CancelledByClient,
+            Source = AppointmentSource.Online,
+            PriceAmount = service.Price,
+            Currency = service.Currency,
+            DurationMinutes = (int)service.Duration.TotalMinutes,
+            CreatedAt = now - Duration.FromDays(1),
+            CancelledAt = now,
+        };
+        db.Appointments.Add(cancelled);
+        await db.SaveChangesAsync();
+
+        var offers = services.GetRequiredService<Salon.Services.Appointments.IWaitlistOfferService>();
+        (await offers.OfferFreedTimeAsync(cancelled.Id, now)).ShouldBe(Salon.Services.Appointments.WaitlistOfferOutcome.Told);
+        var token = await db.WaitlistOffers.AsNoTracking().Where(o => o.FreedByAppointmentId == cancelled.Id).Select(o => o.Token).SingleAsync();
+        return ("/w/" + token, slot.Start, service.Name);
+    }
+
+    /// <summary>
     /// Says what became of a visit, written straight to the table: for a visit in the past whose outcome a test needs
     /// as a given, not as something to click through.
     /// </summary>

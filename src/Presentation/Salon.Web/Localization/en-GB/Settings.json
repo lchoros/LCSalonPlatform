@@ -238,5 +238,11 @@
   "Settings.Privacy.Notes.Title": "Good to know",
   "Settings.Privacy.Notes.Where": "Clients find the notice at the bottom of every page they see, next to the booking form and next to the waitlist form.",
   "Settings.Privacy.Notes.Details": "The salon's name, address, phone number and email come from \"Salon details\". Keep them up to date.",
-  "Settings.Privacy.Notes.Rights": "When a client asks for a copy of their data or to be deleted, open their card: both are at the bottom."
+  "Settings.Privacy.Notes.Rights": "When a client asks for a copy of their data or to be deleted, open their card: both are at the bottom.",
+  "Settings.Waitlist.HoldMinutes": "Keep the time for them for this many minutes",
+  "Settings.Waitlist.HoldMinutesHint": "While the time is kept, nobody else can book it and the client books it with one tap from the text. If they do not, it goes to the next client waiting. 0 keeps nothing: the text goes out and whoever books first has the time.",
+  "Settings.Waitlist.Validation.HoldMinutes": "Enter a whole number of minutes from 0 to {0}.",
+  "Settings.Messages.Token.HeldUntil": "until when the time is kept for the client",
+  "Settings.Messages.Name.Waitlist.TimeHeld": "A time is kept for you",
+  "Settings.Messages.When.Waitlist.TimeHeld": "Sent to the first client waiting when a visit is cancelled and you keep freed times for them, under Waitlist."
 }

@@ -146,5 +146,8 @@
   "Appointments.Waitlist.Refused.NoteTooLong": "Notatka może mieć najwyżej 200 znaków.",
   "Appointments.Book.Waitlist": "Dodaj do listy oczekujących",
   "Appointments.Waitlist.AskedOnline": "Zgłoszenie online",
-  "Appointments.Waitlist.ToldOn": "SMS o zwolnionym terminie: {0}"
+  "Appointments.Waitlist.ToldOn": "SMS o zwolnionym terminie: {0}",
+  "Appointments.Waitlist.Held": "Trzymany dla tej osoby: {0}, {1}, do {2}. Dostała SMS z linkiem do rezerwacji.",
+  "Appointments.Waitlist.Held.Release": "Zwolnij ten termin",
+  "Appointments.Waitlist.Held.Released": "Termin nie jest już trzymany. Teraz każdy może go zarezerwować."
 }

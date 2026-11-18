@@ -75,7 +75,13 @@ public class WaitlistOfferTests(SalonWebApplicationFactory factory) : IAsyncLife
         _olivia = await VisitSeed.ClientAsync(factory, _studio.Id, "Olivia", "Brown", "+447700900123");
         _noah = await VisitSeed.ClientAsync(factory, _studio.Id, "Noah", "Adams", NoahPhone);
         _mia = await VisitSeed.ClientAsync(factory, _studio.Id, "Mia", "Clark", MiaPhone);
-        await SettingsAsync<BookingSettings>(s => s.TellWaitlistWhenFreed = true);
+        // These tests are about the text alone (ADR 0056): the time is not kept for the client. Keeping it is ADR 0065
+        // and has its own tests.
+        await SettingsAsync<BookingSettings>(s =>
+        {
+            s.TellWaitlistWhenFreed = true;
+            s.HoldFreedTimeMinutes = 0;
+        });
     }
 
     public Task DisposeAsync() => Task.CompletedTask;

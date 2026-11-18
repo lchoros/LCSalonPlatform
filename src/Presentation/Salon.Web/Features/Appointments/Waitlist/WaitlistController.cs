@@ -59,6 +59,9 @@ public sealed class WaitlistController(IDispatcher dispatcher, ILocalizationServ
     public static string RemovePath(Guid id, int page)
         => ListUrl.Build($"{Path}/{id}/remove", (ListUrl.PageParameter, page.ToString(CultureInfo.InvariantCulture)));
 
+    /// <summary>Where the desk lets go of a time kept for a waiting client (ADR 0065); the ReleaseHeldTime slice owns the route.</summary>
+    public static string ReleasePath(Guid offerId) => $"{Path}/held/{offerId}/release";
+
     /// <summary>The booking form for a waiting client: who, what, with whom and the first day they can come.</summary>
     public static string BookAddress(WaitlistItem item)
     {

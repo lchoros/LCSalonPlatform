@@ -16,6 +16,11 @@
         <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
     }
 
+    @if (Model.Error is { } error)
+    {
+        <p role="alert" data-testid="error" class="notice notice-error">@error</p>
+    }
+
     <form method="post" asp-action="Index" class="space-y-6 panel" novalidate data-testid="public-waitlist-form">
         <div class="space-y-1">
             <label class="flex min-h-11 items-center gap-3">
@@ -30,6 +35,11 @@
                 <span class="font-medium">@T["Settings.Waitlist.TellWhenFreed"]</span>
             </label>
             <p id="tell-hint" class="text-sm text-stone-600">@T["Settings.Waitlist.TellWhenFreedHint"]</p>
+        </div>
+        <div class="space-y-1">
+            <label for="HoldMinutes" class="field-label">@T["Settings.Waitlist.HoldMinutes"]</label>
+            <input id="HoldMinutes" name="HoldMinutes" type="text" inputmode="numeric" value="@Model.Form.HoldMinutes" aria-describedby="hold-hint" data-testid="hold-minutes" class="field field-compact w-28 tabular-nums" />
+            <p id="hold-hint" class="text-sm text-stone-600">@T["Settings.Waitlist.HoldMinutesHint"]</p>
         </div>
         <button type="submit" class="@buttonClass" data-testid="save-public-waitlist">@T["Settings.Waitlist.Submit"]</button>
     </form>
