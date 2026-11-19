@@ -212,6 +212,11 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `Appointments/ReleaseHeldTime` (`POST /admin/appointments/waitlist/held/{offerId}/release`, behind
   `Bookings.Manage` and `Clients.View`) lets the desk end one by hand. Two partial unique indexes keep one time
   for one client and one client to one time.
+- `Payments/Receipt` — `/admin/payments/receipt/{appointmentId}` and `POST .../email`, behind `Payments.Record` and
+  `Clients.View` (ADR 0070): the receipt of a paid visit. `IReceiptService.GetAsync` reads the bill through
+  `IClientAccountService.GetBillAsync`; the pure `ReceiptRules` lists the products kept and the payments (deposit,
+  vouchers, parts, the checkout, products per method), which add up to the total. `EmailAsync` sends it in the salon's
+  language through `IEmailSender`, unless the card has no address or the salon sends no emails. Nothing is stored.
 - `Booking/ShowPrivacyNotice` — `/privacy` on a salon's address, no sign-in (ADR 0063): the salon's privacy notice.
   `IPrivacyNoticeService.GetAsync` gives the salon's name and contact details and either the standard notice (the
   `Booking.Privacy.*` resources, true of what the system does) or the owner's own text as paragraphs.

@@ -671,6 +671,21 @@ Needs the client import switched on (`Features:ClientImport`, on in Development)
 - [ ] AZ9. A file with a date such as 11/27/2026 is refused as month-first.
 - [ ] AZ10. A receptionist cannot open the page; a manager can.
 
+## BC. The receipt of a paid visit (after the branch `agent/m3-50-receipt` is merged too; no migration)
+- [ ] BC1. Give a client an email address on their card. Book them in, mark them arrived, take £5 as a part payment
+      by card, ring up two bottles of a product, and pay the rest in cash.
+- [ ] BC2. The paid bill has a "Receipt" link. Open it: the salon's name, address and phone, the client, the visit
+      with whom and when, the service and the products with their prices, the total, and how it was paid (the part
+      by card, the rest in cash, the products in cash). The payments add up to the total.
+- [ ] BC3. Return one bottle from the bill. Open the receipt again: one bottle, and the total and the products'
+      payment are that much less.
+- [ ] BC4. "Email it to ...": Mailpit has the receipt in English, with the same lines and the salon's address.
+- [ ] BC5. Print preview in the browser: only the receipt, without the menus and the buttons.
+- [ ] BC6. A client with no email address: no button, and the page says why. Switch off "Also email clients" in
+      Settings, Reminders: the button says emails are off. Switch it back on.
+- [ ] BC7. A visit not paid yet has no "Receipt" link; its receipt address is "not found". A staff login cannot open
+      a receipt.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.
