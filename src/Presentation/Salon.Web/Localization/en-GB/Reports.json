@@ -110,5 +110,9 @@
   "Reports.Staff.AfterCommission": "Left after commission",
   "Reports.Staff.RatesChanged": "the rate changed in this period",
   "Reports.Staff.CommissionPlain": "Commission",
-  "Reports.Export.BookedBy.Import": "From the old system"
+  "Reports.Export.BookedBy.Import": "From the old system",
+  "Reports.Chart.TitleWeekly": "Takings each week",
+  "Reports.Chart.Week": "{0} to {1}",
+  "Reports.Chart.BestWeek": "Best week: {0}, {1}.",
+  "Reports.Chart.NoBestWeek": "No week of this period ended above zero."
 }

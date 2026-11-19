@@ -88,6 +88,9 @@ public sealed class CheckoutController(IDispatcher dispatcher, ILocalizationServ
     }
 
     /// <summary>Where the product forms post; the BillProducts slice owns the routes.</summary>
+    /// <summary>The receipt of the paid visit (ADR 0070); the Receipt slice owns the route.</summary>
+    public static string ReceiptPath(Guid appointmentId) => $"/admin/payments/receipt/{appointmentId}";
+
     public static string ProductsPath(Guid appointmentId) => $"{BasePath}/{appointmentId}/products";
 
     public static string RemoveProductPath(Guid appointmentId, Guid lineId) => $"{BasePath}/{appointmentId}/products/{lineId}/remove";

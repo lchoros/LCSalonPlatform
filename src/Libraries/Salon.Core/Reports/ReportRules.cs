@@ -36,7 +36,7 @@ public static class ReportRules
     /// <summary>A whole year including a leap day; longer spans are asked for in two reports.</summary>
     public const int MaxDays = 366;
 
-    /// <summary>The longest period drawn day by day (ADR 0048): two months of bars still fit a phone.</summary>
+    /// <summary>The longest period drawn day by day (ADR 0048): two months of bars still fit a phone. Longer ones are drawn by week (ADR 0071).</summary>
     public const int MaxChartDays = 62;
 
     public const ReportPreset DefaultPreset = ReportPreset.ThisMonth;
@@ -89,6 +89,29 @@ public static class ReportRules
     /// </summary>
     public static IReadOnlyList<LocalDate> ChartDays(ReportPeriod period)
         => period.Days is < 2 or > MaxChartDays ? [] : [.. Enumerable.Range(0, period.Days).Select(period.From.PlusDays)];
+
+    /// <summary>
+    /// The weeks a longer period is drawn as (ADR 0071): Monday to Sunday, the first and the last cut at the period's
+    /// ends, in order. None for a period short enough to be drawn day by day (<see cref="ChartDays"/>).
+    /// </summary>
+    public static IReadOnlyList<ReportPeriod> ChartWeeks(ReportPeriod period)
+    {
+        if (period.Days <= MaxChartDays)
+        {
+            return [];
+        }
+
+        var weeks = new List<ReportPeriod>();
+        for (var from = period.From; from <= period.To;)
+        {
+            var sunday = from.PlusDays(7 - (int)from.DayOfWeek);
+            var to = sunday < period.To ? sunday : period.To;
+            weeks.Add(new ReportPeriod(from, to));
+            from = to.PlusDays(1);
+        }
+
+        return weeks;
+    }
 
     /// <summary>
     /// The days a period is compared with (ADR 0046): the same days one period earlier, and only as far as today, so

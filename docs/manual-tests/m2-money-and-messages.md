@@ -695,6 +695,29 @@ Needs the client import switched on (`Features:ClientImport`, on in Development)
 - [ ] BB7. Repeat BB2 with another client and wait until the 30 minutes have passed: the card is gone from the
       day list (the next client in line may now have it, with their own card).
 
+## BC. The receipt of a paid visit (after the branch `agent/m3-50-receipt` is merged too; no migration)
+- [ ] BC1. Give a client an email address on their card. Book them in, mark them arrived, take £5 as a part payment
+      by card, ring up two bottles of a product, and pay the rest in cash.
+- [ ] BC2. The paid bill has a "Receipt" link. Open it: the salon's name, address and phone, the client, the visit
+      with whom and when, the service and the products with their prices, the total, and how it was paid (the part
+      by card, the rest in cash, the products in cash). The payments add up to the total.
+- [ ] BC3. Return one bottle from the bill. Open the receipt again: one bottle, and the total and the products'
+      payment are that much less.
+- [ ] BC4. "Email it to ...": Mailpit has the receipt in English, with the same lines and the salon's address.
+- [ ] BC5. Print preview in the browser: only the receipt, without the menus and the buttons.
+- [ ] BC6. A client with no email address: no button, and the page says why. Switch off "Also email clients" in
+      Settings, Reminders: the button says emails are off. Switch it back on.
+- [ ] BC7. A visit not paid yet has no "Receipt" link; its receipt address is "not found". A staff login cannot open
+      a receipt.
+
+## BD. A longer period's takings, week by week (after the branch `agent/m3-51-weekly-chart` is merged too; no migration)
+- [ ] BD1. Reports, "Other dates": the first of January to the last of March. The takings card says "Takings each
+      week" and has one bar per week (14), the first from 1 January, the last ending on 31 March.
+- [ ] BD2. Point at a bar (or tap it): it says the week's dates and its takings. Under the chart, the best week is
+      named.
+- [ ] BD3. A period of exactly 62 days is still drawn day by day; 63 days are drawn by week.
+- [ ] BD4. On a phone the chart fits the card without a sideways scroll.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

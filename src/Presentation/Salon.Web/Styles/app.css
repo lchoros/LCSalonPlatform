@@ -320,4 +320,11 @@
   .stat-value {
     @apply text-2xl font-bold tabular-nums text-stone-900;
   }
+
+  /* Left out of a printed page (ADR 0070): the menus, the footer and the buttons around a receipt. */
+  @media print {
+    .screen-only {
+      display: none;
+    }
+  }
 }

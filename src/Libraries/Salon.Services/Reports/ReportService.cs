@@ -53,7 +53,7 @@ internal sealed class ReportService(
 
         var (unpaid, unpaidCount, unpaidTotal) = await UnpaidAsync(completed, start, end, zone, In, cancellationToken).ConfigureAwait(false);
         var takings = Takings(lines, zone, In);
-        takings = takings with { Daily = Daily(takings.ByDay, period, In) };
+        takings = takings with { Daily = Daily(takings.ByDay, period, In), Weekly = Weekly(takings.ByDay, period, In) };
 
         return new SalonReport(
             period,
@@ -185,6 +185,12 @@ internal sealed class ReportService(
             .ToArray();
         return new TakingsReport(money(byMethod.Sum(t => t.Amount.Amount)), byMethod, byKind, byDay);
     }
+
+    /// <summary>The takings of every week of a longer period (ADR 0071); nothing to draw while no day has money.</summary>
+    private static WeekTakings[] Weekly(IReadOnlyList<DayTakings> byDay, ReportPeriod period, Func<decimal, Money> money)
+        => byDay.Count == 0
+            ? []
+            : [.. ReportRules.ChartWeeks(period).Select(week => new WeekTakings(week.From, week.To, money(byDay.Where(d => d.Day >= week.From && d.Day <= week.To).Sum(d => d.Amount.Amount))))];
 
     /// <summary>The takings of every day of a charted period (ADR 0048); nothing to draw while no day has money.</summary>
     private static DayTakings[] Daily(IReadOnlyList<DayTakings> byDay, ReportPeriod period, Func<decimal, Money> money)

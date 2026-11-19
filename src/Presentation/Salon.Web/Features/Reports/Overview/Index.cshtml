@@ -130,9 +130,9 @@
             </p>
             @if (TakingsCharts.For(Model.Takings, T, culture) is { } chart)
             {
-                @* The same days as bars (ADR 0048): plain SVG shapes, no script. The list under "Day by day" below has the figures. *@
+                @* The same days, or the weeks of a longer period, as bars (ADR 0048, ADR 0071): plain SVG shapes, no script. *@
                 <figure class="space-y-1" data-testid="takings-chart">
-                    <figcaption class="@subheadClass">@T["Reports.Chart.Title"]</figcaption>
+                    <figcaption class="@subheadClass">@chart.Title</figcaption>
                     <svg viewBox="@chart.ViewBox" preserveAspectRatio="none" role="img" aria-label="@chart.Summary" class="h-40 w-full">
                         @foreach (var bar in chart.Bars)
                         {

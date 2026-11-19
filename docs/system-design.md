@@ -219,6 +219,11 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   what is set up of the salon and what is left. `GettingStartedHandler` reads a handful of counts and settings
   through the tenant filter (main location, bookable staff and their hours, services, clients, coming visits,
   reminders, privacy notice, cancellation policy), so each step is done when the data says so; nothing is stored.
+- `Payments/Receipt` — `/admin/payments/receipt/{appointmentId}` and `POST .../email`, behind `Payments.Record` and
+  `Clients.View` (ADR 0070): the receipt of a paid visit. `IReceiptService.GetAsync` reads the bill through
+  `IClientAccountService.GetBillAsync`; the pure `ReceiptRules` lists the products kept and the payments (deposit,
+  vouchers, parts, the checkout, products per method), which add up to the total. `EmailAsync` sends it in the salon's
+  language through `IEmailSender`, unless the card has no address or the salon sends no emails. Nothing is stored.
 - `Booking/ShowPrivacyNotice` — `/privacy` on a salon's address, no sign-in (ADR 0063): the salon's privacy notice.
   `IPrivacyNoticeService.GetAsync` gives the salon's name and contact details and either the standard notice (the
   `Booking.Privacy.*` resources, true of what the system does) or the owner's own text as paragraphs.
@@ -319,7 +324,8 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   days one period earlier: total taken, completed visits, no-shows, the change in words (`ReportComparison`,
   `ReportRules.Compare`, ADR 0046). In the takings, each day of the period as a bar (ADR 0048): plain SVG shapes
   laid out by the pure `BarChart` (Core) and written by `TakingsCharts` beside the view; no script, no chart
-  library. Periods of 2 to 62 days (`ReportRules.ChartDays`).
+  library. Periods of 2 to 62 days (`ReportRules.ChartDays`); longer ones by Monday-to-Sunday week, cut at the
+  period's ends (`ReportRules.ChartWeeks`, `TakingsReport.Weekly`, ADR 0071).
 - `Booking/JoinWaitlist` — `/book/{serviceId}/waitlist`, `/book/waitlist/verify/{id}`, `/book/waitlist/done`
   (ADR 0055): a visitor who finds no time leaves a name and a number, proves the number with the booking's SMS code
   and is put on the desk's waitlist (ADR 0041) by `IPublicWaitlistService`. `PhoneVerification.Purpose` keeps a
