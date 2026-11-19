@@ -727,6 +727,16 @@ Needs the client import switched on (`Features:ClientImport`, on in Development)
       pages without anything to dismiss.
 - [ ] BE4. Undo one step (switch reminders off): the note is back with one step fewer done.
 
+## BF. Variants as columns in the price list file (after the branch `agent/m3-54-price-list-variants` is merged too; no migration)
+- [ ] BF1. Services, "From a file": the example columns name "Variant". Upload a file with the columns
+      Service,Variant,Minutes,Price and two rows "Keratin,Long hair,120,150" and "Keratin,Short hair,90,110":
+      the preview shows "Keratin · Long hair" and "Keratin · Short hair" as two services to add, not a repeat.
+- [ ] BF2. Confirm: the services list has both, each saying "Variant of Keratin"; the public booking page shows
+      one "Keratin" with a price range.
+- [ ] BF3. Download the price list: the two rows have "Keratin" under Service and the variant under Variant.
+      Read the file straight back: nothing to do.
+- [ ] BF4. A row whose variant is over 100 characters is left out with the reason.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

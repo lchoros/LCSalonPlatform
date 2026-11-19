@@ -25,8 +25,10 @@ public sealed record ExportServicesQuery : IQuery<PriceList>;
 public sealed record PriceList(LocalDate Day, IReadOnlyList<PriceListLine> Lines);
 
 /// <param name="Category">The heading the service is listed under; null for a service without one.</param>
+/// <param name="Name">The variant group for a variant ("Keratin"), the full name otherwise: with <paramref name="Variant"/> it reads back as the same service (ADR 0073).</param>
+/// <param name="Variant">What tells a variant from its siblings ("Long hair"); null for a service without variants.</param>
 /// <param name="DepositPercent">The service's own deposit; null follows the salon's rule.</param>
-public sealed record PriceListLine(string? Category, string Name, int Minutes, decimal Price, decimal? DepositPercent, bool InUse);
+public sealed record PriceListLine(string? Category, string Name, string? Variant, int Minutes, decimal Price, decimal? DepositPercent, bool InUse);
 
 /// <summary>Reads through the tenant filter only: a salon has tens or a few hundred services.</summary>
 public sealed class ExportServicesHandler(
@@ -57,7 +59,7 @@ public sealed class ExportServicesHandler(
             .ThenBy(x => x.Service.SortOrder)
             .ThenBy(x => x.Service.Name, StringComparer.CurrentCultureIgnoreCase)
             .ThenBy(x => x.Service.Id)
-            .Select(x => new PriceListLine(x.Category?.Name, x.Service.Name, (int)x.Service.Duration.TotalMinutes, x.Service.Price, x.Service.DepositPercent, x.Service.IsActive))
+            .Select(x => new PriceListLine(x.Category?.Name, x.Service.VariantGroup ?? x.Service.Name, x.Service.VariantLabel, (int)x.Service.Duration.TotalMinutes, x.Service.Price, x.Service.DepositPercent, x.Service.IsActive))
             .ToArray();
         return new PriceList(clock.GetCurrentInstant().InZone(zone).Date, lines);
     }
@@ -74,7 +76,7 @@ public sealed class ExportServicesHandler(
 [Route("admin/services")]
 public sealed class ExportServicesController(IDispatcher dispatcher, ILocalizationService localizer) : SalonControllerBase
 {
-    private static readonly string[] Columns = ["Category", "Service", "Minutes", "Price", "Deposit", "InUse"];
+    private static readonly string[] Columns = ["Category", "Service", "Variant", "Minutes", "Price", "Deposit", "InUse"];
 
     [HttpGet("price-list.csv")]
     public async Task<IActionResult> Download(CancellationToken cancellationToken)
@@ -86,6 +88,7 @@ public sealed class ExportServicesController(IDispatcher dispatcher, ILocalizati
         [
             CsvValue.Text(line.Category),
             CsvValue.Text(line.Name),
+            CsvValue.Text(line.Variant),
             CsvValue.Number(line.Minutes.ToString(CultureInfo.InvariantCulture)),
             // No thousands separator: a number, not a label.
             CsvValue.Number(line.Price.ToString("0.00", culture.NumberFormat)),

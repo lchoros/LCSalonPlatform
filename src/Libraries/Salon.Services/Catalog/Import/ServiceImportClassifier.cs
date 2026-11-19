@@ -18,7 +18,8 @@ internal sealed record ExistingService(Guid Id, string Name, int Minutes, decima
 /// Pure classification of the rows of a price list file against the salon's services (ADR 0066). Invalid wins over
 /// everything; a name repeated in the file is taken once, the first row. A service the salon has is matched by its
 /// name without case and is "changed" when the file gives another time, price or deposit, "unchanged" otherwise: an
-/// empty cell means "leave it as it is". A service the salon does not have needs a time and a price. The rules are
+/// empty cell means "leave it as it is". A row with a variant is the service "Name · Variant" (ADR 0073). A service
+/// the salon does not have needs a time and a price. The rules are
 /// <see cref="ServiceRules"/>, the ones the service form uses, so what the preview calls new or changed will save.
 /// </summary>
 internal static class ServiceImportClassifier
@@ -37,10 +38,13 @@ internal static class ServiceImportClassifier
         foreach (var row in rows)
         {
             var problems = new List<ServiceImportProblem>(row.Problems);
-            var key = NameKey(row.Name);
+
+            // A variant row is the service "Name · Variant" (ADR 0073): matched, repeated and capped as that full name.
+            var key = NameKey(row.FullName);
             var has = existing.TryGetValue(key, out var service);
             Check(!ServiceRules.HasName(row.Name), ServiceImportProblem.MissingName);
-            Check(!ServiceRules.NameFits(row.Name), ServiceImportProblem.NameTooLong);
+            Check(row.Variant is not null && !(ServiceRules.VariantLabelFits(row.Variant) && ServiceRules.VariantGroupFits(row.Name)), ServiceImportProblem.VariantTooLong);
+            Check(!problems.Contains(ServiceImportProblem.VariantTooLong) && !ServiceRules.NameFits(row.FullName), ServiceImportProblem.NameTooLong);
             Check(!ServiceRules.CategoryNameFits(row.Category), ServiceImportProblem.CategoryTooLong);
             Check(row.Minutes is { } minutes && !(ServiceRules.IsDurationInRange(minutes) && ServiceRules.IsOnStep(minutes)), ServiceImportProblem.InvalidMinutes);
 
