@@ -7,6 +7,7 @@ using NodaTime.Text;
 using Salon.Core.Cqrs;
 using Salon.Core.Identity;
 using Salon.Services.Appointments;
+using Salon.Services.Formatting;
 using Salon.Services.Localization;
 using Salon.Web.Framework.Controllers;
 using Salon.Web.Framework.Mvc;
@@ -102,6 +103,9 @@ public sealed class CalendarController(IDispatcher dispatcher, ILocalizationServ
         => $"{CalendarPath}?view={ViewSegment(view)}&date={LocalDatePattern.Iso.Format(day)}{StaffQuery(staff)}";
 
     /// <summary>The calendar for <paramref name="view"/> on today in the salon's zone (the handler decides what "today" is).</summary>
+    /// <summary>The day list of one day, where a kept time says until when and can be let go (ADR 0069).</summary>
+    public static string DayListDayPath(LocalDate day) => $"{DayListPath}?date={day.ToIso()}";
+
     public static string TodayPath(CalendarView view, Guid? staff) => $"{CalendarPath}?view={ViewSegment(view)}{StaffQuery(staff)}";
 
     /// <summary>The appointment card, optionally with the move form set to another person and day.</summary>

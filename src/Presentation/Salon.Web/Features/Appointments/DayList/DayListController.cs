@@ -29,6 +29,9 @@ public sealed class DayListController(IDispatcher dispatcher, ILocalizationServi
     /// <summary>The fee page of a visit (ADR 0022); the Payments module owns the route, the day list only sends people there.</summary>
     public const string FeePath = "/admin/payments/fees";
 
+    /// <summary>Where the desk lets go of a time kept for a waiting client (ADR 0065); the ReleaseHeldTime slice owns the route.</summary>
+    public static string ReleasePath(Guid offerId) => $"/admin/appointments/waitlist/held/{offerId}/release";
+
     [HttpGet("")]
     public async Task<IActionResult> Index(string? date, CancellationToken cancellationToken)
     {

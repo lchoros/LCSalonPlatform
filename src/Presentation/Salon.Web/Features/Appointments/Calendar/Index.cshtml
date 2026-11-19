@@ -136,6 +136,20 @@
                                         <span class="mt-auto self-start rounded px-1 text-[10px] font-medium @Badges.AppointmentInList(block.Status)" data-testid="status-badge">@T[$"Appointments.Status.{block.Status}"]</span>
                                     </a>
                                 }
+                                @foreach (var kept in column.Kept)
+                                {
+                                    <a href="@CalendarController.DayListDayPath(column.Date)"
+                                       data-testid="calendar-kept"
+                                       data-offer-id="@kept.OfferId"
+                                       data-staff-id="@column.Staff.Id"
+                                       class="relative z-10 flex min-w-0 flex-col overflow-hidden rounded border border-dashed border-amber-400 bg-amber-50 px-1 py-0.5 text-[11px] leading-tight text-stone-900 hover:ring-2 hover:ring-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900"
+                                       style="@CalendarBlockStyle.For(kept)"
+                                       title="@kept.Start.ToShortTime(culture)–@kept.End.ToShortTime(culture) @T.Format("Appointments.Calendar.Kept", kept.ClientFirstName) · @kept.ServiceName">
+                                        <span class="truncate"><span class="font-semibold tabular-nums">@kept.Start.ToShortTime(culture)</span> @T.Format("Appointments.Calendar.Kept", kept.ClientFirstName)</span>
+                                        <span class="truncate">@kept.ServiceName</span>
+                                        <span class="mt-auto self-start rounded px-1 text-[10px] font-medium @Badges.KeptTime">@T["Appointments.Day.Kept.Badge"]</span>
+                                    </a>
+                                }
                             </div>
                         </div>
                     }
@@ -153,6 +167,24 @@
                             <span class="size-3 shrink-0 rounded-full" style="background-color: @column.Staff.Colour" aria-hidden="true"></span>
                             <a href="@CalendarController.Path(CalendarView.Day, column.Date, column.Staff.Id)" class="hover:underline">@column.Staff.DisplayName</a>
                         </h2>
+                        @if (column.Kept.Count > 0)
+                        {
+                            <ul class="space-y-2">
+                                @foreach (var kept in column.Kept)
+                                {
+                                    <li>
+                                        <a href="@CalendarController.DayListDayPath(column.Date)" data-testid="calendar-list-kept" class="flex min-h-11 items-center gap-3 rounded-lg border border-dashed border-amber-400 bg-amber-50 px-2 py-2">
+                                            <span class="w-24 shrink-0 font-semibold tabular-nums">@kept.Start.ToShortTime(culture)–@kept.End.ToShortTime(culture)</span>
+                                            <span class="min-w-0 flex-1">
+                                                <span class="block truncate">@T.Format("Appointments.Calendar.Kept", kept.ClientFirstName)</span>
+                                                <span class="block truncate text-sm text-stone-600">@kept.ServiceName</span>
+                                            </span>
+                                            <span class="rounded px-1.5 py-0.5 text-xs font-medium @Badges.KeptTime">@T["Appointments.Day.Kept.Badge"]</span>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        }
                         @if (column.Blocks.Count == 0)
                         {
                             <p class="text-sm italic text-stone-500">@T["Appointments.Calendar.Empty"]</p>

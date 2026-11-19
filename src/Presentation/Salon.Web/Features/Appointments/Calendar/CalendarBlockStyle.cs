@@ -15,6 +15,13 @@ public static class CalendarBlockStyle
         return $"grid-row: {block.Row} / span {block.Span}; grid-column: 1; margin-left: {Percent(block.Lane, block.Lanes)}%; width: {Percent(1, block.Lanes)}%; background-color: {colour}26; border-color: {colour}";
     }
 
+    /// <summary>Row placement and lane offset of a kept time; its dashed look comes from classes, not the staff colour.</summary>
+    public static string For(CalendarKeptBlock block)
+    {
+        ArgumentNullException.ThrowIfNull(block);
+        return $"grid-row: {block.Row} / span {block.Span}; grid-column: 1; margin-left: {Percent(block.Lane, block.Lanes)}%; width: {Percent(1, block.Lanes)}%";
+    }
+
     /// <summary>A share as a CSS percentage: a point as the decimal sign whatever the reader's language.</summary>
     public static string Percent(int part, int whole) => (part * 100m / whole).ToString("0.##", CultureInfo.InvariantCulture);
 }
