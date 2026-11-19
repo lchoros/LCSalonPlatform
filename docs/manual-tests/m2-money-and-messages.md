@@ -671,6 +671,30 @@ Needs the client import switched on (`Features:ClientImport`, on in Development)
 - [ ] AZ9. A file with a date such as 11/27/2026 is refused as month-first.
 - [ ] AZ10. A receptionist cannot open the page; a manager can.
 
+## BA. Getting started (after the branch `agent/m3-48-getting-started` is merged too; no migration)
+- [ ] BA1. As the owner: Settings, "Getting started" is the first tab. Each step says what the salon has and links
+      to where it is done; the counts match the salon (people, services, clients, coming visits).
+- [ ] BA2. A step not done shows "To do" and "Set it up"; for the price list, clients and visits also "From a file".
+- [ ] BA3. Open "Your privacy notice", save it, come back: the step is done. Switch reminders off: that step is to do.
+- [ ] BA4. Add a person who takes bookings and give them no hours: "Working hours" is to do and counts them.
+- [ ] BA5. "Open your booking page" opens the public booking page.
+- [ ] BA6. A manager does not have the tab and cannot open the page.
+
+## BB. A time kept for a waiting client, on the diary (after the branch `agent/m3-49-kept-times-on-diary` is merged too; no migration)
+- [ ] BB1. As the owner, at Settings, Waitlist: tick "Text the first person waiting when a visit is cancelled" and
+      keep the time for 30 minutes.
+- [ ] BB2. Put a client with a mobile number on the waitlist for a service (the text goes to the log and
+      Mailpit). Book another client for that service with Anna in three days' time, then cancel that visit.
+- [ ] BB3. Open the day list of that day: Anna's column shows a dashed "Kept" card above her visits, with the time,
+      "Kept for <name> from the waitlist (<service>) until <time>", and "Let this time go".
+- [ ] BB4. Open the calendar of that day: the time has a dashed block "Kept for <first name>". On a phone it is in
+      the day's list. Tap it: the day list of that day opens.
+- [ ] BB5. Try to book that time from "Book": it is not offered.
+- [ ] BB6. Press "Let this time go": the same day comes back with "The time is no longer kept. Anybody can book it
+      now." The card is gone and the time can be booked from "Book".
+- [ ] BB7. Repeat BB2 with another client and wait until the 30 minutes have passed: the card is gone from the
+      day list (the next client in line may now have it, with their own card).
+
 ## BC. The receipt of a paid visit (after the branch `agent/m3-50-receipt` is merged too; no migration)
 - [ ] BC1. Give a client an email address on their card. Book them in, mark them arrived, take £5 as a part payment
       by card, ring up two bottles of a product, and pay the rest in cash.
@@ -685,6 +709,14 @@ Needs the client import switched on (`Features:ClientImport`, on in Development)
       Settings, Reminders: the button says emails are off. Switch it back on.
 - [ ] BC7. A visit not paid yet has no "Receipt" link; its receipt address is "not found". A staff login cannot open
       a receipt.
+
+## BD. A longer period's takings, week by week (after the branch `agent/m3-51-weekly-chart` is merged too; no migration)
+- [ ] BD1. Reports, "Other dates": the first of January to the last of March. The takings card says "Takings each
+      week" and has one bar per week (14), the first from 1 January, the last ending on 31 March.
+- [ ] BD2. Point at a bar (or tap it): it says the week's dates and its takings. Under the chart, the best week is
+      named.
+- [ ] BD3. A period of exactly 62 days is still drawn day by day; 63 days are drawn by week.
+- [ ] BD4. On a phone the chart fits the card without a sideways scroll.
 
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the

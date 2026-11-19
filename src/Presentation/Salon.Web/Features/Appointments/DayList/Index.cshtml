@@ -52,6 +52,20 @@
                         <span class="size-3 shrink-0 rounded-full" style="background-color: @column.Colour" aria-hidden="true"></span>
                         <span data-testid="staff-name">@column.DisplayName</span>
                     </h2>
+                    @foreach (var kept in column.Kept)
+                    {
+                        <div class="space-y-2 rounded-lg border border-dashed border-amber-400 bg-amber-50 p-3" data-testid="kept-time" data-offer-id="@kept.OfferId">
+                            <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                                <span class="font-semibold tabular-nums" data-testid="kept-time-time">@kept.Start.ToShortTime(culture)–@kept.End.ToShortTime(culture)</span>
+                                <span class="rounded px-1.5 py-0.5 text-xs font-medium @Badges.KeptTime">@T["Appointments.Day.Kept.Badge"]</span>
+                            </div>
+                            <p class="text-sm" data-testid="kept-time-text">@T.Format("Appointments.Day.Kept", kept.ClientName, kept.ServiceName, kept.Until(culture))</p>
+                            <form method="post" action="@DayListController.ReleasePath(kept.OfferId)" asp-antiforgery="true">
+                                <input type="hidden" name="day" value="@board.Day.ToIso()" />
+                                <button type="submit" class="@actionClass" data-testid="release-kept">@T["Appointments.Waitlist.Held.Release"]<span class="sr-only">: @kept.ClientName</span></button>
+                            </form>
+                        </div>
+                    }
                     @if (column.Appointments.Count == 0)
                     {
                         <p data-testid="column-empty" class="text-sm italic text-stone-500">@T["Appointments.Day.Empty"]</p>

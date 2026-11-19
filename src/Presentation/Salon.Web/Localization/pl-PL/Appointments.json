@@ -271,5 +271,8 @@
   "Appointments.Import.Result.ToDiary": "Przejdź do terminarza",
   "Appointments.Import.Preview.SpanOneDay": "Wizyty w dniu {0}.",
   "Appointments.Import.Preview.RemindersNone": "Nasze przypomnienia wychodzą od teraz. Żadna wizyta do dodania nie zaczyna się przed {0}, więc żadna nie straci od nas przypomnienia.",
-  "Appointments.Import.Result.RemindersNone": "Od teraz to my wysyłamy przypomnienia. Żadna dodana wizyta nie zaczyna się przed {0}."
+  "Appointments.Import.Result.RemindersNone": "Od teraz to my wysyłamy przypomnienia. Żadna dodana wizyta nie zaczyna się przed {0}.",
+  "Appointments.Day.Kept.Badge": "Trzymany",
+  "Appointments.Day.Kept": "Trzymany dla: {0} z listy oczekujących ({1}) do {2}. Do tego czasu nikt inny nie może go zarezerwować, ani tutaj, ani online.",
+  "Appointments.Calendar.Kept": "Trzymany dla: {0}"
 }

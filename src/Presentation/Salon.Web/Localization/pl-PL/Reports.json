@@ -110,5 +110,9 @@
   "Reports.Staff.AfterCommission": "Zostaje po prowizji",
   "Reports.Staff.RatesChanged": "stawka zmieniła się w tym okresie",
   "Reports.Staff.CommissionPlain": "Prowizja",
-  "Reports.Export.BookedBy.Import": "Z poprzedniego systemu"
+  "Reports.Export.BookedBy.Import": "Z poprzedniego systemu",
+  "Reports.Chart.TitleWeekly": "Utarg w kolejnych tygodniach",
+  "Reports.Chart.Week": "{0} – {1}",
+  "Reports.Chart.BestWeek": "Najlepszy tydzień: {0}, {1}.",
+  "Reports.Chart.NoBestWeek": "Żaden tydzień tego okresu nie zakończył się na plusie."
 }

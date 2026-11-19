@@ -1,0 +1,41 @@
+@using Salon.Web.Features.Settings.GettingStarted
+@model SetupChecklist
+@{
+    ViewData["Title"] = T["Settings.GettingStarted.Title"];
+}
+<section class="mx-auto max-w-xl space-y-6">
+    <partial name="_SettingsNav" model="@("getting-started")" />
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Settings.GettingStarted.Title"]</h1>
+        <p class="text-stone-600">@T["Settings.GettingStarted.Lead"]</p>
+        <p class="@(Model.AllDone ? "notice notice-ok" : "text-sm font-medium text-stone-700")" data-testid="setup-progress">
+            @(Model.AllDone ? T["Settings.GettingStarted.AllDone"] : T.Format("Settings.GettingStarted.Progress", Model.RequiredDone, Model.Required))
+        </p>
+    </header>
+
+    <ol class="list-card" data-testid="setup-steps">
+        @foreach (var step in Model.Steps)
+        {
+            <li class="flex flex-col gap-2 p-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4" data-testid="setup-step" data-step="@step.Key" data-done="@step.Done.ToString().ToLowerInvariant()">
+                <div class="min-w-0 space-y-1">
+                    <p class="font-semibold">@T[$"Settings.GettingStarted.{step.Key}.Title"]@if (step.Optional) { <span class="text-sm font-normal text-stone-600"> · @T["Settings.GettingStarted.Optional"]</span> }</p>
+                    <p class="text-sm text-stone-700" data-testid="setup-step-sentence">@T.Format(step.SentenceKey, step.Arguments)</p>
+                    <p class="flex flex-wrap gap-x-4">
+                        <a href="@step.Path" class="inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-2" data-testid="setup-step-link">@T[step.Done ? "Settings.GettingStarted.Open" : "Settings.GettingStarted.Do"]</a>
+                        @if (step.ImportPath is { } importPath && !step.Done)
+                        {
+                            <a href="@importPath" class="inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-2" data-testid="setup-step-import">@T["Settings.GettingStarted.FromFile"]</a>
+                        }
+                    </p>
+                </div>
+                <span class="inline-flex w-fit shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold @Badges.SetupStep(step.Done, step.Optional)">@T[step.Done ? "Settings.GettingStarted.State.Done" : step.Optional ? "Settings.GettingStarted.State.Optional" : "Settings.GettingStarted.State.Todo"]</span>
+            </li>
+        }
+    </ol>
+
+    <section class="space-y-2 rounded-md bg-stone-50 p-4 text-sm text-stone-700" data-testid="setup-last">
+        <h2 class="font-semibold">@T["Settings.GettingStarted.Last.Title"]</h2>
+        <p>@T["Settings.GettingStarted.Last.Lead"]</p>
+        <p><a href="@GettingStartedController.BookingPagePath" class="inline-flex min-h-11 items-center font-medium underline underline-offset-2" data-testid="setup-booking-page">@T["Settings.GettingStarted.Last.Link"]</a></p>
+    </section>
+</section>

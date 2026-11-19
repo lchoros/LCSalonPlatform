@@ -12,13 +12,15 @@ namespace Salon.Web.Features.Appointments.Calendar;
 
 /// <summary>
 /// Reads through the tenant filter only: the staff and their rota (ADR 0010), the active appointments in the window
-/// (ADR 0012) and the client first names and service names they show. Health notes are never read (ADR 0011). The pure
-/// <see cref="CalendarLayout"/> turns the rota into rows and the appointments into positioned blocks.
+/// (ADR 0012), the times kept for waiting clients (ADR 0069) and the client first names and service names they show.
+/// Health notes are never read (ADR 0011). The pure <see cref="CalendarLayout"/> turns the rota into rows and the
+/// appointments and kept times into positioned blocks.
 /// </summary>
 public sealed class CalendarHandler(
     SalonDbContext db,
     ITenantContext tenantContext,
     ITenantLookup tenantLookup,
+    IWaitlistOfferService waitlistOffers,
     IClock clock) : IRequestHandler<CalendarQuery, CalendarBoard>
 {
     public async Task<CalendarBoard> HandleAsync(CalendarQuery request, CancellationToken cancellationToken)
@@ -43,6 +45,7 @@ public sealed class CalendarHandler(
             .OrderBy(a => a.Start)
             .Select(a => new { a.Id, a.StaffMemberId, a.ClientId, a.ServiceId, a.Start, a.End, a.Status })
             .ToListAsync(cancellationToken);
+        var kept = await waitlistOffers.KeptBetweenAsync(windowStart, windowEnd, clock.GetCurrentInstant(), cancellationToken);
 
         var staffWithVisits = appointments.Select(a => a.StaffMemberId).Distinct().ToArray();
         var staff = await db.StaffMembers.AsNoTracking()
@@ -64,11 +67,11 @@ public sealed class CalendarHandler(
             .Where(w => shownIds.Contains(w.StaffMemberId))
             .ToListAsync(cancellationToken);
 
-        var clientIds = appointments.Select(a => a.ClientId).Distinct().ToArray();
+        var clientIds = appointments.Select(a => a.ClientId).Concat(kept.Select(k => k.ClientId)).Distinct().ToArray();
         var clients = await db.Clients.AsNoTracking()
             .Where(c => clientIds.Contains(c.Id))
             .ToDictionaryAsync(c => c.Id, c => c.FirstName, cancellationToken);
-        var serviceIds = appointments.Select(a => a.ServiceId).Distinct().ToArray();
+        var serviceIds = appointments.Select(a => a.ServiceId).Concat(kept.Select(k => k.ServiceId)).Distinct().ToArray();
         var services = await db.Services.AsNoTracking()
             .Where(s => serviceIds.Contains(s.Id))
             .ToDictionaryAsync(s => s.Id, s => s.Name, cancellationToken);
@@ -90,18 +93,24 @@ public sealed class CalendarHandler(
             var blocks = appointments
                 .Where(a => a.StaffMemberId == cell.Staff.Id && a.Start >= dayStart && a.Start < dayEnd)
                 .Select(a => new BlockInput(a.Id, MinutesInto(dayStart, a.Start), MinutesInto(dayStart, a.End)))
+                .Concat(kept
+                    .Where(k => k.StaffMemberId == cell.Staff.Id && k.Start >= dayStart && k.Start < dayEnd)
+                    .Select(k => new BlockInput(k.OfferId, MinutesInto(dayStart, k.Start), MinutesInto(dayStart, k.End))))
                 .ToArray();
             return (cell.Date, cell.Staff, Ranges: (IReadOnlyList<TimeRange>)ranges, Blocks: (IReadOnlyList<BlockInput>)blocks);
         }).ToList();
 
         var grid = CalendarLayout.Range(inputs.SelectMany(i => i.Ranges), inputs.SelectMany(i => i.Blocks));
         var byId = appointments.ToDictionary(a => a.Id);
+        var keptById = kept.ToDictionary(k => k.OfferId);
+        var placed = inputs.Select(i => CalendarLayout.Position(grid, i.Blocks)).ToArray();
         var columns = inputs
-            .Select(i => new CalendarColumn(
+            .Select((i, n) => new CalendarColumn(
                 i.Date,
                 i.Staff,
                 i.Ranges,
-                CalendarLayout.Position(grid, i.Blocks)
+                placed[n]
+                    .Where(p => byId.ContainsKey(p.Id))
                     .Select(p =>
                     {
                         var a = byId[p.Id];
@@ -112,6 +121,23 @@ public sealed class CalendarHandler(
                             clients.GetValueOrDefault(a.ClientId, string.Empty),
                             services.GetValueOrDefault(a.ServiceId, string.Empty),
                             a.Status,
+                            p.Row,
+                            p.Span,
+                            p.Lane,
+                            p.Lanes);
+                    })
+                    .ToArray(),
+                placed[n]
+                    .Where(p => keptById.ContainsKey(p.Id))
+                    .Select(p =>
+                    {
+                        var k = keptById[p.Id];
+                        return new CalendarKeptBlock(
+                            k.OfferId,
+                            k.Start.InZone(zone).TimeOfDay,
+                            k.End.InZone(zone).TimeOfDay,
+                            clients.GetValueOrDefault(k.ClientId, string.Empty),
+                            services.GetValueOrDefault(k.ServiceId, string.Empty),
                             p.Row,
                             p.Span,
                             p.Lane,
