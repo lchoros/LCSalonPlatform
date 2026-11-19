@@ -20,4 +20,11 @@ internal sealed class OutboxEventPublisher(SalonDbContext db, ITenantContext ten
         db.OutboxMessages.Add(OutboxMessageFactory.Create(domainEvent, tenantContext.TenantId, clock.GetCurrentInstant(), registry));
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    public void Queue<TEvent>(TEvent domainEvent)
+        where TEvent : IEvent
+    {
+        ArgumentNullException.ThrowIfNull(domainEvent);
+        db.OutboxMessages.Add(OutboxMessageFactory.Create(domainEvent, tenantContext.TenantId, clock.GetCurrentInstant(), registry));
+    }
 }

@@ -46,6 +46,13 @@ public abstract class AppointmentBookedNotice : IConsumer<AppointmentBooked>
     {
         ArgumentNullException.ThrowIfNull(domainEvent);
 
+        // A visit brought over from the old system's diary was confirmed there already (ADR 0067).
+        if (domainEvent.Source == AppointmentSource.Import)
+        {
+            _logger.LogDebug("Appointment {AppointmentId} was brought over from the old system; no confirmation", domainEvent.AppointmentId);
+            return;
+        }
+
         if (domainEvent.Source != AppointmentSource.Online
             && !(await _settings.LoadAsync<NotificationSettings>(cancellationToken).ConfigureAwait(false)).ConfirmDeskBookings)
         {
