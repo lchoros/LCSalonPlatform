@@ -69,6 +69,9 @@ public static class Badges
         _ => Bad,
     };
 
+    /// <summary>A step of setting a salon up (ADR 0068): done, left to do, or one the salon may leave.</summary>
+    public static string SetupStep(bool done, bool optional) => done ? Good : optional ? Neutral : Warn;
+
     /// <summary>A row of a diary file (ADR 0067): added, already there, cancelled, of earlier today, cancelled since and to look at, or not readable.</summary>
     public static string AppointmentImportRow(AppointmentImportStatus status) => status switch
     {
@@ -91,6 +94,9 @@ public static class Badges
     /// A day tile of the booking pages: the chosen day, a day with free times, or a day without. Days without free
     /// times stay tappable but muted (<c>.is-dim</c> keeps AA contrast on white).
     /// </summary>
+    /// <summary>A time kept for a waiting client on the diary (ADR 0069): something the desk should notice.</summary>
+    public static string KeptTime => Warn;
+
     public static string DayTile(bool chosen, bool hasFreeTimes) => chosen ? "is-on" : hasFreeTimes ? "is-off" : "is-dim";
 
     /// <summary>The answer the desk gives most often is the primary button; the other is secondary.</summary>
