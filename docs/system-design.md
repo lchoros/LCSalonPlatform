@@ -265,6 +265,10 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   platform's names back; the country sets zone, language and currency; the command is `IPlatformRequest`, puts the
   new tenant in scope and creates the owner through `IUserService`. The done page hands over the salon's own
   sign-in address; the auth cookie stays host-scoped (ADR 0009).
+- `Identity/TeamLogins`, `Identity/CreateLogin`, `Identity/EditLogin` — `/admin/settings/team` behind
+  `Settings.Manage` (ADR 0076): the salon's logins with role, state and last sign-in; a new login takes a starting
+  password handed over in person; a change rotates the security stamp (signs that person out everywhere); the last
+  active owner login can be neither demoted nor turned off, in the form and in the handler both.
 - `Clients/ImportClients` — `/admin/clients/import` behind `Clients.Manage` and `Features:ClientImport` (ADR 0019):
   upload a Booksy or Versum CSV, preview (new / duplicate / invalid), confirm. Parsing lives in the plugin
   `Salon.Plugin.Import`; the preview is kept server-side under a random token bound to the salon.

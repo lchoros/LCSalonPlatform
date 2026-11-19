@@ -757,6 +757,17 @@ Needs the client import switched on (`Features:ClientImport`, on in Development)
       off in appsettings, the bare-domain page does not exist either.
 - [ ] BH5. Create a salon in Poland: its admin is in Polish, prices in zł, times in Europe/Warsaw.
 
+## BI. Team logins (after the branch `agent/m3-57-team-logins` is merged too; no migration)
+- [ ] BI1. As the owner: Settings, "Team logins" lists your own login marked "you", with your last sign-in. Add a
+      login for a receptionist with a starting password: the list says they can sign in now and have never signed in.
+- [ ] BI2. Sign in as that person in another browser: the diary opens; Settings has no "Team logins" tab for them.
+- [ ] BI3. Change their role to Manager and set a new password: the old password stops working everywhere, the new
+      one works, and the role chip on the list says Manager.
+- [ ] BI4. Turn the login off: they cannot sign in, and the refusal looks exactly like a wrong password. Turn it
+      back on: they can.
+- [ ] BI5. Open your own login: the page says it is the salon's only owner login and offers no demotion and no
+      switch-off; posting a demotion anyway is refused. Add a second owner: now your own role can change.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.
