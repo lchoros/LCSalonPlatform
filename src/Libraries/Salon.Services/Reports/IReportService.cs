@@ -74,11 +74,20 @@ public sealed record TakingsReport(Money Total, IReadOnlyList<MethodTotal> ByMet
     /// has no money or is not drawn day by day (<see cref="ReportRules.ChartDays"/>).
     /// </summary>
     public IReadOnlyList<DayTakings> Daily { get; init; } = [];
+
+    /// <summary>
+    /// Every week of a longer period in order, a week without money as zero, for the chart (ADR 0071). Empty when the
+    /// period has no money or is drawn day by day (<see cref="ReportRules.ChartWeeks"/>).
+    /// </summary>
+    public IReadOnlyList<WeekTakings> Weekly { get; init; } = [];
 }
 
 public sealed record KindTotal(ClientAccountEntryKind Kind, Money Amount);
 
 public sealed record DayTakings(LocalDate Day, Money Amount);
+
+/// <summary>The net takings of the days <paramref name="From"/> to <paramref name="To"/>, both included.</summary>
+public sealed record WeekTakings(LocalDate From, LocalDate To, Money Amount);
 
 /// <param name="Total">Every visit that starts in the period, whatever became of it.</param>
 /// <param name="Open">Booked, confirmed or arrived: no outcome yet.</param>

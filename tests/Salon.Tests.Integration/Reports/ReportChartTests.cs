@@ -15,8 +15,8 @@ namespace Salon.Tests.Integration.Reports;
 /// <summary>
 /// The takings of each day as bars (ADR 0048): one bar per day of the period, with or without money, the best day
 /// reaching the top, a day with more out than in hanging red under the line. Plain SVG shapes whose numbers keep a
-/// point as the decimal sign in every language. No chart for one day, for more than 62 days or without money. The
-/// week here is Monday 2 to Sunday 8 March 2026.
+/// point as the decimal sign in every language. No chart for one day or without money; more than 62 days are drawn
+/// by week (ADR 0071). The week here is Monday 2 to Sunday 8 March 2026.
 /// </summary>
 [Collection(SharedDatabase.Name)]
 public partial class ReportChartTests(SalonWebApplicationFactory factory) : IAsyncLifetime
@@ -93,7 +93,7 @@ public partial class ReportChartTests(SalonWebApplicationFactory factory) : IAsy
     }
 
     [Fact]
-    public async Task One_day_more_than_two_months_or_no_money_have_no_chart()
+    public async Task One_day_or_no_money_have_no_chart_and_more_than_two_months_are_drawn_by_week()
     {
         using var owner = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Owner);
         (await GetAsync(owner, Week)).ShouldNotContain("data-testid=\"takings-chart\"", Case.Sensitive, "nothing to draw while no money was recorded");
@@ -101,13 +101,46 @@ public partial class ReportChartTests(SalonWebApplicationFactory factory) : IAsy
         await MoneyAsync(_studio.Id, _clientId, Monday, 100m);
 
         (await GetAsync(owner, "/admin/reports?from=2026-03-02&to=2026-03-02")).ShouldNotContain("data-testid=\"takings-chart\"", Case.Sensitive, "one day is one number");
-        (await GetAsync(owner, "/admin/reports?from=2026-01-01&to=2026-03-04")).ShouldNotContain("data-testid=\"takings-chart\"", Case.Sensitive, "63 days are too many bars");
+        var sixtyThree = await GetAsync(owner, "/admin/reports?from=2026-01-01&to=2026-03-04");
+        sixtyThree.ShouldContain("Takings each week", Case.Sensitive, "63 days are too many bars for days");
+        Bars(sixtyThree).Count.ShouldBe(10, "1-4 January, eight whole weeks, 2-4 March");
         Bars(await GetAsync(owner, "/admin/reports?from=2026-01-02&to=2026-03-04")).Count.ShouldBe(62);
         Bars(await GetAsync(owner, "/admin/reports?from=2026-03-02&to=2026-03-03")).Count.ShouldBe(2);
     }
 
     [Fact]
+    public async Task A_quarter_is_drawn_week_by_week_and_the_best_week_reaches_the_top()
+    {
+        await MoneyAsync(_studio.Id, _clientId, new LocalDate(2026, 1, 10), 100m);
+        await MoneyAsync(_studio.Id, _clientId, Monday, 50m);
+        await MoneyAsync(_studio.Id, _clientId, Monday.PlusDays(5), 150m);
+
+        var weekly = (await ReportAsync(_studio.Id, new LocalDate(2026, 1, 1), new LocalDate(2026, 3, 31))).Takings.Weekly;
+        weekly.Count.ShouldBe(14, "Thursday 1 to Sunday 4 January, twelve whole weeks, Monday 30 and Tuesday 31 March");
+        weekly.Sum(w => w.Amount.Amount).ShouldBe(300m);
+        (await ReportAsync(_studio.Id, Monday, Monday.PlusDays(6))).Takings.Weekly.ShouldBeEmpty("a week is drawn day by day");
+
+        using var owner = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Owner);
+        var html = await GetAsync(owner, "/admin/reports?from=2026-01-01&to=2026-03-31");
+
+        var bars = Bars(html);
+        bars.Count.ShouldBe(14);
+        bars[0].Day.ShouldBe("2026-01-01");
+        bars[1].Day.ShouldBe("2026-01-05");
+        var march = bars.Single(b => b.Day == "2026-03-02");
+        (march.Y, march.Height).ShouldBe(("0", "160"), "the best week is the whole height");
+        bars.Single(b => b.Day == "2026-01-05").Height.ShouldBe("80", "half the best week");
+        html.ShouldContain("Takings each week");
+        html.ShouldNotContain("Takings each day");
+        html.ShouldContain("<title>2 Mar to 8 Mar 2026: £200.00</title>");
+        html.ShouldContain("data-testid=\"chart-best\">Best week: 2 Mar to 8 Mar 2026, £200.00.<");
+        html.ShouldContain("data-testid=\"chart-first\">1 Jan<");
+        html.ShouldContain("data-testid=\"chart-last\">31 Mar<");
+    }
+
+    [Fact]
     public async Task A_Polish_salon_reads_its_own_days_in_Polish_and_the_shapes_keep_a_decimal_point()
+
     {
         await MoneyAsync(_studio.Id, _clientId, Monday, 999m);
         var anna = await VisitSeed.ClientAsync(factory, _polish.Id, "Anna", "Nowak", "601 234 567");

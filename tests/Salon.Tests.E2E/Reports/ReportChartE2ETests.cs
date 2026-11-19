@@ -10,8 +10,8 @@ namespace Salon.Tests.E2E.Reports;
 
 /// <summary>
 /// The demo owner on a phone takes a payment and sees the days of the period as bars (ADR 0048): one bar per day,
-/// today's above the line, the best day named in words. The picture fits 390 px without a sideways scroll and the
-/// page is axe clean.
+/// today's above the line, the best day named in words; a quarter is drawn by week (ADR 0071). The picture fits
+/// 390 px without a sideways scroll and the page is axe clean.
 /// </summary>
 public class ReportChartE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppFixture>
 {
@@ -84,6 +84,27 @@ public class ReportChartE2ETests(KestrelAppFixture app) : IClassFixture<KestrelA
             FullPage = true,
         });
         var axe = await page.RunAxe();
+        axe.Violations.ShouldBeEmpty(string.Join("; ", axe.Violations.Select(v => $"{v.Id}: {v.Help}")));
+
+        // 4. Ninety days to tomorrow are drawn by week (ADR 0071): the best week is named.
+        var quarter = $"/admin/reports?from={iso.Format(day.PlusDays(-90))}&to={iso.Format(day.PlusDays(1))}";
+        (await page.GotoAsync(app.TenantUrl(Slug) + quarter)).ShouldNotBeNull().Ok.ShouldBeTrue();
+        chart = page.GetByTestId("takings-chart");
+        await Assertions.Expect(chart.Locator("figcaption")).ToHaveTextAsync("Takings each week");
+        (await chart.GetByTestId("chart-bar").CountAsync()).ShouldBeInRange(14, 15);
+        (await page.GetByTestId("chart-best").TextContentAsync()).ShouldNotBeNull().ShouldStartWith("Best week: ");
+        await chart.ScrollIntoViewIfNeededAsync();
+        if (styled)
+        {
+            (await page.EvaluateAsync<int>("() => document.documentElement.scrollWidth")).ShouldBeLessThanOrEqualTo(390);
+        }
+
+        await page.ScreenshotAsync(new PageScreenshotOptions
+        {
+            Path = Path.Combine(KestrelAppFixture.ScreenshotDirectory, "reports-chart-weekly-mobile-390.png"),
+            FullPage = true,
+        });
+        axe = await page.RunAxe();
         axe.Violations.ShouldBeEmpty(string.Join("; ", axe.Violations.Select(v => $"{v.Id}: {v.Help}")));
     }
 
