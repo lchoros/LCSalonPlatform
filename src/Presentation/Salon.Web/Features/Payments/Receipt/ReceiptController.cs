@@ -77,8 +77,14 @@ public sealed class ReceiptController(IDispatcher dispatcher, ILocalizationServi
             case ReceiptEmailOutcome.Sent:
                 SetFlash(localizer["Payments.Receipt.Sent"]);
                 break;
+
+            // Literal keys, not $"...{outcome}": CodeQL follows the outcome back to the client's email address and
+            // flags the missing-resource log in LocalizationService as exposing it (cs/exposure-of-sensitive-information).
+            case ReceiptEmailOutcome.NoEmail:
+                SetProblem(localizer["Payments.Receipt.NotSent.NoEmail"]);
+                break;
             default:
-                SetProblem(localizer[$"Payments.Receipt.NotSent.{outcome}"]);
+                SetProblem(localizer["Payments.Receipt.NotSent.EmailsOff"]);
                 break;
         }
 
