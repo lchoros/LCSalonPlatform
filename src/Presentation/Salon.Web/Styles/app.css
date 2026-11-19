@@ -176,7 +176,7 @@
 
   /* The round "earlier / later days" paddles beside the strip. */
   .strip-arrow {
-    @apply inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-emerald-300 bg-white text-emerald-700 transition-all hover:-translate-y-0.5 hover:border-emerald-500 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+    @apply inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-emerald-300 bg-white text-emerald-700 transition-colors hover:border-emerald-500 hover:bg-emerald-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
   }
 
   .is-on {
@@ -198,7 +198,12 @@
   }
 
   .tile.is-off {
-    @apply border-emerald-300 bg-white hover:-translate-y-0.5 hover:border-emerald-500 hover:shadow-md hover:shadow-emerald-100;
+    @apply border-emerald-300 bg-white hover:border-emerald-500 hover:bg-emerald-50;
+  }
+
+  /* The chosen person matches the chosen day: the flow speaks one accent. */
+  .pill.is-on {
+    @apply border-emerald-700 bg-emerald-700 text-white;
   }
 
   /* A day with nothing free stays calm grey — only the date wears the red strike (a phone has no hover, the strike
@@ -231,7 +236,7 @@
   }
 
   .steps > .is-done {
-    @apply bg-stone-900;
+    @apply bg-emerald-600;
   }
 
   /* Outcome notices: colour plus text, so colour alone never carries the meaning. */
