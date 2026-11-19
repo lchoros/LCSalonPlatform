@@ -10,6 +10,7 @@ using Salon.Services.Appointments.Import;
 using Salon.Services.Localization;
 using Salon.Services.Payments;
 using Salon.Services.Products;
+using Salon.Web.Features.Settings.GettingStarted;
 
 namespace Salon.Tests.Architecture;
 
@@ -124,5 +125,15 @@ public partial class LocalizationResourceTests
         var known = Resources.Value[SupportedCultures.EnGb];
 
         expected.Where(key => !known.ContainsKey(key)).ShouldBeEmpty();
+    }
+    [Fact]
+    public void Every_step_of_getting_started_has_its_title_and_both_sentences()
+    {
+        var known = Resources.Value[SupportedCultures.EnGb];
+
+        Enum.GetNames<SetupStepKey>()
+            .SelectMany(step => new[] { $"Settings.GettingStarted.{step}.Title", $"Settings.GettingStarted.{step}.Done", $"Settings.GettingStarted.{step}.Todo" })
+            .Where(key => !known.ContainsKey(key))
+            .ShouldBeEmpty();
     }
 }
