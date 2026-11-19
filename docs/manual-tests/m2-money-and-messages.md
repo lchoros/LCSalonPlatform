@@ -746,6 +746,17 @@ Needs the client import switched on (`Features:ClientImport`, on in Development)
       those two stay with their history and money; only the untouched rest goes.
 - [ ] BG4. A staff login cannot open the page; a receptionist cannot either (the import's own permissions).
 
+## BH. Public sign-up (after the branch `agent/m3-56-signup` is merged too; no migration; needs `Features:SignUp` on, as in Development)
+- [ ] BH1. On http://localhost:5240 (the bare domain): "Start your salon". The form asks for the salon, its web
+      address, where it is, your name, email and password; a bad address or a short password is refused with the
+      reason by the field.
+- [ ] BH2. Create "Pilot Salon" at "pilot-salon" in England. The done page says it is ready and the sign-in link
+      names pilot-salon.localhost. Sign in: you land on "Getting started" with 1 of 8 steps done.
+- [ ] BH3. Try to sign up again with "pilot-salon" and with "admin": both say the address is taken.
+- [ ] BH4. On a salon's own address (studio-20.localhost/signup): the page does not exist. With `Features:SignUp`
+      off in appsettings, the bare-domain page does not exist either.
+- [ ] BH5. Create a salon in Poland: its admin is in Polish, prices in zł, times in Europe/Warsaw.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.
