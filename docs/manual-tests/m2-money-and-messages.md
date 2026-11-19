@@ -671,6 +671,15 @@ Needs the client import switched on (`Features:ClientImport`, on in Development)
 - [ ] AZ9. A file with a date such as 11/27/2026 is refused as month-first.
 - [ ] AZ10. A receptionist cannot open the page; a manager can.
 
+## BA. Getting started (after the branch `agent/m3-48-getting-started` is merged too; no migration)
+- [ ] BA1. As the owner: Settings, "Getting started" is the first tab. Each step says what the salon has and links
+      to where it is done; the counts match the salon (people, services, clients, coming visits).
+- [ ] BA2. A step not done shows "To do" and "Set it up"; for the price list, clients and visits also "From a file".
+- [ ] BA3. Open "Your privacy notice", save it, come back: the step is done. Switch reminders off: that step is to do.
+- [ ] BA4. Add a person who takes bookings and give them no hours: "Working hours" is to do and counts them.
+- [ ] BA5. "Open your booking page" opens the public booking page.
+- [ ] BA6. A manager does not have the tab and cannot open the page.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

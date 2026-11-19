@@ -212,6 +212,10 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `Appointments/ReleaseHeldTime` (`POST /admin/appointments/waitlist/held/{offerId}/release`, behind
   `Bookings.Manage` and `Clients.View`) lets the desk end one by hand. Two partial unique indexes keep one time
   for one client and one client to one time.
+- `Settings/GettingStarted` — `/admin/settings/getting-started` behind `Settings.Manage` (ADR 0068): one page with
+  what is set up of the salon and what is left. `GettingStartedHandler` reads a handful of counts and settings
+  through the tenant filter (main location, bookable staff and their hours, services, clients, coming visits,
+  reminders, privacy notice, cancellation policy), so each step is done when the data says so; nothing is stored.
 - `Booking/ShowPrivacyNotice` — `/privacy` on a salon's address, no sign-in (ADR 0063): the salon's privacy notice.
   `IPrivacyNoticeService.GetAsync` gives the salon's name and contact details and either the standard notice (the
   `Booking.Privacy.*` resources, true of what the system does) or the owner's own text as paragraphs.
