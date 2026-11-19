@@ -109,5 +109,6 @@
   "Reports.Staff.ProductRate": "{0}% od produktów",
   "Reports.Staff.AfterCommission": "Zostaje po prowizji",
   "Reports.Staff.RatesChanged": "stawka zmieniła się w tym okresie",
-  "Reports.Staff.CommissionPlain": "Prowizja"
+  "Reports.Staff.CommissionPlain": "Prowizja",
+  "Reports.Export.BookedBy.Import": "Z poprzedniego systemu"
 }

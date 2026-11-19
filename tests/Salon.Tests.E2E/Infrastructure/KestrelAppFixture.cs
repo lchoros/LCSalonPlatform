@@ -448,6 +448,15 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         await db.Appointments.Where(a => a.Id == appointmentId).ExecuteUpdateAsync(s => s.SetProperty(a => a.Status, status));
     }
 
+    /// <summary>The name of the salon's first person who takes bookings, as a diary file from the old system would write it.</summary>
+    public async Task<string> FirstStaffNameAsync(Guid tenantId)
+    {
+        using var scope = _factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
+        var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+        return await db.StaffMembers.AsNoTracking().Where(s => s.IsActive && s.IsBookable).OrderBy(s => s.SortOrder).Select(s => s.DisplayName).FirstAsync();
+    }
+
     /// <summary>The salon's earliest active appointment that has not started yet (the demo seed books a few over the coming days).</summary>
     public async Task<(Guid Id, Instant Start, Guid StaffMemberId)> FirstUpcomingAppointmentAsync(Guid tenantId)
     {

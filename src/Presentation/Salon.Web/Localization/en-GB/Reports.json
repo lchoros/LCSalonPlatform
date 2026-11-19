@@ -109,5 +109,6 @@
   "Reports.Staff.ProductRate": "{0}% products",
   "Reports.Staff.AfterCommission": "Left after commission",
   "Reports.Staff.RatesChanged": "the rate changed in this period",
-  "Reports.Staff.CommissionPlain": "Commission"
+  "Reports.Staff.CommissionPlain": "Commission",
+  "Reports.Export.BookedBy.Import": "From the old system"
 }

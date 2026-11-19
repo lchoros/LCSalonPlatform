@@ -1,0 +1,61 @@
+@using System.Globalization
+@using Salon.Web.Features.Appointments.ImportAppointments
+@model AppointmentImportResultViewModel
+@{
+    ViewData["Title"] = T["Appointments.Import.Result.Title"];
+    var culture = CultureInfo.CurrentCulture;
+    var result = Model.Result;
+}
+<section class="mx-auto max-w-lg space-y-6" data-testid="import-result">
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Appointments.Import.Result.Title"]</h1>
+        <p class="text-sm text-stone-600">@result.FileName</p>
+    </header>
+
+    <div class="rounded-lg border border-green-200 bg-green-50 p-5 text-center">
+        <p data-testid="result-added" class="text-5xl font-bold text-green-900">@result.Added</p>
+        <p class="mt-1 text-sm font-medium text-green-800">@T["Appointments.Import.Result.AddedLabel"]</p>
+    </div>
+
+    <p class="text-stone-600" data-testid="result-rest">@T.Format("Appointments.Import.Result.Rest", result.AlreadyThere, result.Cancelled, result.Past)</p>
+
+    @if (result.RemindersFrom is { } remindersFrom)
+    {
+        if (result.NotFullyReminded > 0)
+        {
+            <p class="notice notice-warn" data-testid="result-reminders">@T.Format("Appointments.Import.Result.Reminders", AppointmentImportText.Moment(remindersFrom, culture), result.NotFullyReminded)</p>
+        }
+        else
+        {
+            <p class="text-sm text-stone-700" data-testid="result-reminders">@T.Format("Appointments.Import.Result.RemindersNone", AppointmentImportText.Moment(remindersFrom, culture))</p>
+        }
+    }
+
+    @if (Model.CancelledSince.Count > 0)
+    {
+        <section class="space-y-2 panel" data-testid="result-cancelled-since">
+            <h2 class="text-lg font-semibold">@T["Appointments.Import.Result.CancelledSince.Title"]</h2>
+            <p class="text-sm text-stone-600">@T["Appointments.Import.Result.CancelledSince.Lead"]</p>
+            <ul class="space-y-1 text-sm">
+                @foreach (var row in Model.CancelledSince)
+                {
+                    <li><a href="@ImportAppointmentsController.VisitPath(row.Match.ExistingAppointmentId!.Value)" class="inline-flex min-h-11 items-center underline underline-offset-2" data-testid="cancelled-since-visit">@AppointmentImportText.When(row, culture) · @AppointmentImportText.Client(T, row)</a></li>
+                }
+            </ul>
+        </section>
+    }
+
+    @if (Model.Invalid > 0)
+    {
+        <p class="notice notice-error" data-testid="result-invalid">@T.Plural("Appointments.Import.Result.Invalid", Model.Invalid)</p>
+    }
+
+    <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+        @if (result.NotBrought.Count > 0)
+        {
+            <a href="@ImportAppointmentsController.NotBroughtPath(Model.Token)" class="btn btn-compact btn-secondary" data-testid="download-not-brought">@T["Appointments.Import.NotBroughtFile"]</a>
+        }
+        <a href="@ImportAppointmentsController.UploadPath" class="btn btn-compact btn-secondary">@T["Appointments.Import.Result.Again"]</a>
+        <a href="@ImportAppointmentsController.DiaryPath" data-testid="to-diary" class="btn btn-compact btn-primary">@T["Appointments.Import.Result.ToDiary"]</a>
+    </div>
+</section>

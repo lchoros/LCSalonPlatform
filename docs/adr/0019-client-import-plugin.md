@@ -101,3 +101,7 @@ import is a compile-time plugin behind `IPlugin`, and the slice never depends on
   letters, a broken file), a FsCheck round trip (generated rows → CSV → parser → same rows), caps, the pure classifier,
   the three steps over HTTP (counts, normalised phones, idempotent second run, cross-tenant token, Receptionist 403, flag
   off 404) and one Playwright run at 390 px with screenshots and axe.
+
+## Later
+- 2026-11-19, ADR 0067: visits **from today on** come over from a diary file once the clients and the price list are
+  in. Visit history stays out, as decided here.

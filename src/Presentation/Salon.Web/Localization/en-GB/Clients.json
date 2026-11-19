@@ -112,7 +112,7 @@
   "Clients.Import.Intro": "Bring your client list over from Booksy or Versum. Export it there as CSV, then upload the file here. You will see what will be added before anything changes.",
   "Clients.Import.File": "CSV file",
   "Clients.Import.FileHint": "Up to {0} rows and {1} MB. Booksy and Versum exports are recognised by their column headings.",
-  "Clients.Import.NotImported": "Visit history and health information are not imported; general notes go to the client's notes.",
+  "Clients.Import.NotImported": "Visit history and health information are not imported; general notes go to the client's notes. Visits from today on can be brought over afterwards, from your diary file.",
   "Clients.Import.Upload": "Check the file",
   "Clients.Import.Cancel": "Cancel",
   "Clients.Import.Expired": "The preview has expired. Upload the file again.",
@@ -283,5 +283,7 @@
   "Clients.Data.Waitlist.Offer.Taken": "they booked it",
   "Clients.Data.Waitlist.Offer.NotTaken": "not taken",
   "Clients.Data.Waitlist.Offer.Released": "let go by the salon",
-  "Clients.Data.Waitlist.Offer.Gone": "could not be booked any more"
+  "Clients.Data.Waitlist.Offer.Gone": "could not be booked any more",
+  "Clients.Import.Result.NextDiary": "Next: the coming weeks of your diary.",
+  "Clients.Import.Result.NextDiaryLink": "Bring your diary over from a file"
 }

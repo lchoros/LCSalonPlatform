@@ -31,4 +31,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IServiceImportProvider, CsvServiceImportProvider>();
         return services;
     }
+
+    /// <summary>Registers the CSV diary reader (ADR 0067). Not a plugin of its own, like the other two readers.</summary>
+    public static IServiceCollection AddCsvAppointmentImport(this IServiceCollection services)
+    {
+        services.AddSingleton<IAppointmentImportProvider, CsvAppointmentImportProvider>();
+        return services;
+    }
 }

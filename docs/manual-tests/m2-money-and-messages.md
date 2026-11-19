@@ -646,6 +646,31 @@ quiet hours.
 - [ ] AY8. Settings, "Your data": the price list is among the files, with the number of services.
 - [ ] AY9. A receptionist cannot open the services page, the file or the import.
 
+## AZ. The coming weeks of the diary from a file (after the branch `agent/m3-47-appointments-file` is merged too; no migration)
+Needs the client import switched on (`Features:ClientImport`, on in Development). Texts go to Mailpit in Phase 1.
+- [ ] AZ1. Clients, "Import clients": bring over two clients with phone numbers. The result page offers "Bring your
+      diary over from a file".
+- [ ] AZ2. In a spreadsheet make a file with the headings `Date,Start time,End time,Client,Phone,Service,Staff,Price,Status`
+      and rows for: a visit next week for each client (day first, e.g. 26/11/2026), a visit last year, a visit
+      next week with a service you do not have, one marked `Cancelled`, one marked `Pending`, and a notes column.
+      Save as CSV.
+- [ ] AZ3. Appointments, the diary file page: it lists the order (clients, price list, diary) and says notes are
+      not brought over. Upload the file.
+- [ ] AZ4. The preview: nothing has changed yet. It counts 2 to add, 1 cancelled and 2 not brought over (the
+      unknown service and "Pending"), says the history rows are left out with their dates as read, lists the
+      unknown service and the status words with how each was read, and says until when the old system must keep
+      reminding. Every row shows its weekday and date.
+- [ ] AZ5. "Download the visits not brought over": a CSV with the two rows and why.
+- [ ] AZ6. "Add 2 visits": the result says 2 added. The day list of next week shows both visits. Mailpit has no
+      confirmation for them.
+- [ ] AZ7. A visit brought over within the next day: the next morning, check it got a reminder only if its
+      reminder time was after the import (as the page said).
+- [ ] AZ8. Upload the same file again: nothing to add, the two visits are "already there". Cancel one of them here,
+      upload again: still "already there", it is not brought back. Change the other row's status to `Cancelled`
+      and upload: it is shown as cancelled in the old system since, still booked here, with a link to the visit.
+- [ ] AZ9. A file with a date such as 11/27/2026 is refused as month-first.
+- [ ] AZ10. A receptionist cannot open the page; a manager can.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

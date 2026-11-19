@@ -232,6 +232,15 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `IFieldEncryptor` (`consultation_records.answers_protected`); only it opens them, and only for the record's own
   page. The card (`Clients/ClientCard`) lists a form by day and purpose. The pages are `no-store`; the log has ids
   only. A patch test on a form moves `Client.LastPatchTestOn` forward; `IClientService.MergeAsync` moves the forms.
+- `Appointments/ImportAppointments` — `/admin/appointments/import` behind `Bookings.Manage`, `Clients.View`,
+  `Clients.Manage` and `Features:ClientImport` (ADR 0067): the coming weeks of the old system's diary from a CSV file
+  in three steps like the other imports. `CsvAppointmentImportProvider` reads the columns by their headings and the
+  dates day-first or ISO (`ImportDates`), dropping the rows of earlier days and refusing a month-first file;
+  `AppointmentImportClassifier` matches each row to a client, a service and a person failing closed and finds
+  clashes, rows brought over before and rows cancelled since; `IAppointmentImportService.CommitAsync` classifies
+  again and writes the visits (`AppointmentSource.Import`, no deposit, the client's own link), their first history
+  line and their queued `AppointmentBooked` events in one save. The confirmation consumer skips `Import`; a clash the
+  database refuses rolls the whole file back. `GET …/{token}/not-brought.csv` gives the rows not brought over.
 - `Clients/ImportClients` — `/admin/clients/import` behind `Clients.Manage` and `Features:ClientImport` (ADR 0019):
   upload a Booksy or Versum CSV, preview (new / duplicate / invalid), confirm. Parsing lives in the plugin
   `Salon.Plugin.Import`; the preview is kept server-side under a random token bound to the salon.
