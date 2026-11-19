@@ -671,6 +671,21 @@ Needs the client import switched on (`Features:ClientImport`, on in Development)
 - [ ] AZ9. A file with a date such as 11/27/2026 is refused as month-first.
 - [ ] AZ10. A receptionist cannot open the page; a manager can.
 
+## BB. A time kept for a waiting client, on the diary (after the branch `agent/m3-49-kept-times-on-diary` is merged too; no migration)
+- [ ] BB1. As the owner, at Settings, Waitlist: tick "Text the first person waiting when a visit is cancelled" and
+      keep the time for 30 minutes.
+- [ ] BB2. Put a client with a mobile number on the waitlist for a service (the text goes to the log and
+      Mailpit). Book another client for that service with Anna in three days' time, then cancel that visit.
+- [ ] BB3. Open the day list of that day: Anna's column shows a dashed "Kept" card above her visits, with the time,
+      "Kept for <name> from the waitlist (<service>) until <time>", and "Let this time go".
+- [ ] BB4. Open the calendar of that day: the time has a dashed block "Kept for <first name>". On a phone it is in
+      the day's list. Tap it: the day list of that day opens.
+- [ ] BB5. Try to book that time from "Book": it is not offered.
+- [ ] BB6. Press "Let this time go": the same day comes back with "The time is no longer kept. Anybody can book it
+      now." The card is gone and the time can be booked from "Book".
+- [ ] BB7. Repeat BB2 with another client and wait until the 30 minutes have passed: the card is gone from the
+      day list (the next client in line may now have it, with their own card).
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.
