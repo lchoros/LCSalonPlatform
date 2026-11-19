@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using Salon.Core.Messaging;
 using Salon.Plugin.Sms.Log;
@@ -11,7 +12,7 @@ public class LogSmsProviderTests
     public async Task Mirrors_the_sms_to_the_mailpit_inbox()
     {
         var email = Substitute.For<IEmailSender>();
-        var provider = new LogSmsProvider(email, NullLogger<LogSmsProvider>.Instance);
+        var provider = new LogSmsProvider(email, Options.Create(new SmsMirrorOptions()), NullLogger<LogSmsProvider>.Instance);
 
         await provider.SendAsync(new SmsMessage("+447700900123", "Your appointment is tomorrow at 10:00"));
 
@@ -24,10 +25,26 @@ public class LogSmsProviderTests
     }
 
     [Fact]
+    public async Task A_configured_mirror_address_receives_the_copy_instead()
+    {
+        var email = Substitute.For<IEmailSender>();
+        var provider = new LogSmsProvider(
+            email,
+            Options.Create(new SmsMirrorOptions { MirrorAddress = "pilot-owner@example.com" }),
+            NullLogger<LogSmsProvider>.Instance);
+
+        await provider.SendAsync(new SmsMessage("+447700900123", "Your appointment is tomorrow at 10:00"));
+
+        await email.Received(1).SendAsync(
+            Arg.Is<EmailMessage>(m => m.To == "pilot-owner@example.com"),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Html_encodes_the_body()
     {
         var email = Substitute.For<IEmailSender>();
-        var provider = new LogSmsProvider(email, NullLogger<LogSmsProvider>.Instance);
+        var provider = new LogSmsProvider(email, Options.Create(new SmsMirrorOptions()), NullLogger<LogSmsProvider>.Instance);
 
         await provider.SendAsync(new SmsMessage("+48600700800", "<b>Hi</b>"));
 

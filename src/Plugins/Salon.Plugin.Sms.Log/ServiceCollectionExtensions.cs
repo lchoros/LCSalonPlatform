@@ -8,6 +8,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddLogSmsProvider(this IServiceCollection services)
     {
+        services.AddOptions<SmsMirrorOptions>().BindConfiguration(SmsMirrorOptions.SectionName);
         services.AddSingleton<LogSmsProvider>();
         services.AddSingleton<ISmsSender>(sp => sp.GetRequiredService<LogSmsProvider>());
         services.AddSingleton<IPlugin>(sp => sp.GetRequiredService<LogSmsProvider>());

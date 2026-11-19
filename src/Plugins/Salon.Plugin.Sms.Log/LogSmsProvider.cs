@@ -1,13 +1,15 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Salon.Core.Messaging;
 
 namespace Salon.Plugin.Sms.Log;
 
 /// <summary>
-/// Phase 1 SMS provider. Writes the message to the log and mirrors it to Mailpit as an email so the whole flow
-/// can be inspected in the local inbox. Sends nothing to a real phone.
+/// Phase 1 SMS provider. Writes the message to the log and mirrors it as an email — to Mailpit locally, or to the
+/// configured <see cref="SmsMirrorOptions.MirrorAddress"/> on a hosted pilot — so the whole flow can be inspected
+/// in an inbox. Sends nothing to a real phone.
 /// </summary>
-public sealed class LogSmsProvider(IEmailSender emailSender, ILogger<LogSmsProvider> logger) : ISmsSender
+public sealed class LogSmsProvider(IEmailSender emailSender, IOptions<SmsMirrorOptions> options, ILogger<LogSmsProvider> logger) : ISmsSender
 {
     public const string PluginSystemName = "Sms.Log";
 
@@ -26,6 +28,6 @@ public sealed class LogSmsProvider(IEmailSender emailSender, ILogger<LogSmsProvi
 
         var subject = $"SMS to {message.ToE164}";
         var html = $"<p><strong>To:</strong> {System.Net.WebUtility.HtmlEncode(message.ToE164)}</p><pre>{System.Net.WebUtility.HtmlEncode(message.Body)}</pre>";
-        await emailSender.SendAsync(new EmailMessage(MirrorMailbox, subject, html, message.Body), cancellationToken);
+        await emailSender.SendAsync(new EmailMessage(options.Value.MirrorAddress, subject, html, message.Body), cancellationToken);
     }
 }

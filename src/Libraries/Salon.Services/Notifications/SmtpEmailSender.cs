@@ -8,7 +8,7 @@ using Salon.Core.Messaging;
 
 namespace Salon.Services.Notifications;
 
-/// <summary>Plain SMTP sender. In phase 1 the target is Mailpit; no credentials, no TLS.</summary>
+/// <summary>SMTP sender. Locally the target is Mailpit (no credentials, no TLS); a real relay such as Gmail gets STARTTLS and a login (ADR 0078).</summary>
 internal sealed class SmtpEmailSender(IOptions<EmailOptions> options, ILogger<SmtpEmailSender> logger) : IEmailSender
 {
     public async Task SendAsync(EmailMessage message, CancellationToken cancellationToken = default)
@@ -23,7 +23,16 @@ internal sealed class SmtpEmailSender(IOptions<EmailOptions> options, ILogger<Sm
         mime.Body = new BodyBuilder { HtmlBody = message.HtmlBody, TextBody = message.TextBody }.ToMessageBody();
 
         using var client = new SmtpClient();
-        await client.ConnectAsync(settings.Host, settings.Port, SecureSocketOptions.None, cancellationToken);
+        await client.ConnectAsync(
+            settings.Host,
+            settings.Port,
+            settings.UseStartTls ? SecureSocketOptions.StartTls : SecureSocketOptions.None,
+            cancellationToken);
+        if (settings.Username is { Length: > 0 })
+        {
+            await client.AuthenticateAsync(settings.Username, settings.Password, cancellationToken);
+        }
+
         await client.SendAsync(new SendRequest(mime), cancellationToken);
         await client.DisconnectAsync(quit: true, cancellationToken);
 
