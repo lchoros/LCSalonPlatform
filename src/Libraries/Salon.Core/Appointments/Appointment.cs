@@ -37,6 +37,9 @@ public class Appointment : BaseEntity, ITenantEntity
 
     public AppointmentSource Source { get; set; }
 
+    /// <summary>The file read-in that brought this visit over (ADR 0074); null for a visit not from a file.</summary>
+    public Guid? ImportBatchId { get; set; }
+
     /// <summary>Operational notes ("wants the same colour as last time"); never health data.</summary>
     public string? Notes { get; set; }
 

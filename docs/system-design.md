@@ -257,6 +257,9 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   again and writes the visits (`AppointmentSource.Import`, no deposit, the client's own link), their first history
   line and their queued `AppointmentBooked` events in one save. The confirmation consumer skips `Import`; a clash the
   database refuses rolls the whole file back. `GET …/{token}/not-brought.csv` gives the rows not brought over.
+  Every commit stamps its visits with one `ImportBatchId`; `Appointments/UndoImport` — `/admin/appointments/import/undo`
+  (ADR 0074) lists the read-ins and takes one out again: one `ExecuteDelete` of the visits still exactly as the file
+  left them (booked, one history line, no money, no products), history and reminders by cascade, the rest kept.
 - `Clients/ImportClients` — `/admin/clients/import` behind `Clients.Manage` and `Features:ClientImport` (ADR 0019):
   upload a Booksy or Versum CSV, preview (new / duplicate / invalid), confirm. Parsing lives in the plugin
   `Salon.Plugin.Import`; the preview is kept server-side under a random token bound to the salon.

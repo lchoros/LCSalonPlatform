@@ -1,0 +1,44 @@
+@using System.Globalization
+@using Salon.Services.Formatting
+@using Salon.Web.Features.Appointments.UndoImport
+@model UndoImportViewModel
+@{
+    var culture = CultureInfo.CurrentCulture;
+    ViewData["Title"] = T["Appointments.Import.Undo.Title"];
+}
+<section class="mx-auto max-w-xl space-y-6">
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Appointments.Import.Undo.Title"]</h1>
+        <p class="text-stone-600">@T["Appointments.Import.Undo.Lead"]</p>
+    </header>
+
+    @if (Model.List.Batches.Count == 0)
+    {
+        <p class="panel text-stone-600" data-testid="undo-empty">@T["Appointments.Import.Undo.None"]</p>
+    }
+    else
+    {
+        <ol class="list-card">
+            @foreach (var batch in Model.List.Batches)
+            {
+                <li class="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4" data-testid="undo-batch" data-brought="@batch.Brought" data-untouched="@batch.Untouched">
+                    <div class="min-w-0 space-y-1">
+                        <p class="font-semibold">@T.Format("Appointments.Import.Undo.ReadIn", batch.Day.ToDayHeading(culture), batch.Time.ToShortTime(culture))</p>
+                        <p class="text-sm text-stone-700" data-testid="undo-batch-counts">@T.Plural("Appointments.Import.Undo.Brought", batch.Brought) @T.Format("Appointments.Import.Undo.Untouched", batch.Untouched)</p>
+                    </div>
+                    @if (batch.Untouched > 0)
+                    {
+                        <form method="post" action="@UndoImportController.UndoPath/@batch.Id" class="shrink-0">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-compact btn-secondary" data-testid="undo-import">@T["Appointments.Import.Undo.Button"]</button>
+                        </form>
+                    }
+                </li>
+            }
+        </ol>
+    }
+</section>

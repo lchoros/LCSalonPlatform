@@ -737,6 +737,15 @@ Needs the client import switched on (`Features:ClientImport`, on in Development)
       Read the file straight back: nothing to do.
 - [ ] BF4. A row whose variant is over 100 characters is left out with the reason.
 
+## BG. Undoing a diary import (after the branch `agent/m3-55-undo-diary-import` is merged too; additive migration `UndoDiaryImport`)
+- [ ] BG1. Read a small diary file in (section AZ). The import page has "Take a file out of the diary"; the page
+      lists the read-in with when, how many visits it brought and how many are still untouched.
+- [ ] BG2. Press "Take this file out": the page says how many visits were removed and the day list no longer has
+      them. The same file read in again brings them back.
+- [ ] BG3. Read the file in again, mark one visit arrived and take a part payment for another. Take the file out:
+      those two stay with their history and money; only the untouched rest goes.
+- [ ] BG4. A staff login cannot open the page; a receptionist cannot either (the import's own permissions).
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

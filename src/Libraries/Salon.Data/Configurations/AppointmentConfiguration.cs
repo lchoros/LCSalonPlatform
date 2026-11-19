@@ -17,6 +17,8 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
         builder.Property(a => a.End).HasColumnName("end_at");
         builder.Property(a => a.Status).HasConversion<int>();
         builder.Property(a => a.Source).HasConversion<int>();
+        // The undo of a diary import (ADR 0074) asks "the visits of this read-in".
+        builder.HasIndex(a => new { a.TenantId, a.ImportBatchId }).HasFilter("import_batch_id IS NOT NULL");
         builder.Property(a => a.Notes).HasMaxLength(Appointment.NotesMaxLength);
         builder.Property(a => a.PriceAmount).HasPrecision(10, 2);
         builder.Property(a => a.DepositAmount).HasPrecision(10, 2).HasDefaultValue(0m);

@@ -85,7 +85,9 @@ internal sealed class AppointmentImportService(
         var now = context.Now;
 
         // Every visit, its first history line and its event are added, then written in one save: the database's rule
-        // against two visits of one person at one time refuses the whole file or none of it.
+        // against two visits of one person at one time refuses the whole file or none of it. One batch id marks them
+        // all, so a file read in by mistake can be taken out again (ADR 0074).
+        var batchId = Guid.CreateVersion7();
         var added = new List<Appointment>();
         foreach (var row in rows.Where(r => r.Status == AppointmentImportStatus.New))
         {
@@ -100,6 +102,7 @@ internal sealed class AppointmentImportService(
                 End = match.End!.Value,
                 Status = AppointmentStatus.Booked,
                 Source = AppointmentSource.Import,
+                ImportBatchId = batchId,
                 PriceAmount = match.Price!.Value,
 
                 // No deposit is asked of a visit the old system booked; money paid there is not recorded here.
@@ -158,6 +161,59 @@ internal sealed class AppointmentImportService(
     }
 
     /// <summary>Everything the rows are classified against, read through the tenant filter.</summary>
+    public async Task<IReadOnlyList<DiaryImportBatch>> BatchesAsync(CancellationToken cancellationToken = default)
+    {
+        var batches = await db.Appointments.AsNoTracking()
+            .Where(a => a.ImportBatchId != null)
+            .GroupBy(a => a.ImportBatchId!.Value)
+            .Select(g => new { Id = g.Key, ReadAt = g.Min(a => a.CreatedAt), Brought = g.Count() })
+            .OrderByDescending(b => b.ReadAt)
+            .Take(10)
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+        var ids = batches.Select(b => b.Id).ToArray();
+        var untouched = await db.Appointments.AsNoTracking()
+            .Where(a => a.ImportBatchId != null && ids.Contains(a.ImportBatchId.Value))
+            .Where(Unworn())
+            .GroupBy(a => a.ImportBatchId!.Value)
+            .Select(g => new { Id = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.Id, x => x.Count, cancellationToken).ConfigureAwait(false);
+        return [.. batches.Select(b => new DiaryImportBatch(b.Id, b.ReadAt, b.Brought, untouched.GetValueOrDefault(b.Id)))];
+    }
+
+    public async Task<DiaryImportUndo?> UndoAsync(Guid batchId, Guid? byUserId, CancellationToken cancellationToken = default)
+    {
+        var brought = await db.Appointments.CountAsync(a => a.ImportBatchId == batchId, cancellationToken).ConfigureAwait(false);
+        if (brought == 0)
+        {
+            return null;
+        }
+
+        // One statement that checks again as it deletes: a visit is removed only while it is still exactly as the
+        // file left it - booked, never moved (a move writes a second history line), no money, no products. History
+        // and reminder rows go with it (cascade); a payment racing this very statement makes the database refuse and
+        // the command roll back, so nothing is half done.
+        var removed = await db.Appointments
+            .Where(a => a.ImportBatchId == batchId)
+            .Where(Unworn())
+            .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+
+        // Counts and ids only (the log rule): never a client's name or number.
+        logger.LogInformation(
+            "Diary import {BatchId} undone by user {UserId}: {Removed} visits removed, {Kept} kept",
+            batchId, byUserId ?? Guid.Empty, removed, brought - removed);
+        return new DiaryImportUndo(removed, brought - removed);
+    }
+
+    /// <summary>
+    /// Still exactly as the file left it: booked, never moved or marked (a move writes a second history line), no
+    /// money, no products. Only such a visit may an undo remove.
+    /// </summary>
+    private System.Linq.Expressions.Expression<Func<Appointment, bool>> Unworn()
+        => a => a.Status == AppointmentStatus.Booked
+            && !db.ClientAccountEntries.Any(e => e.AppointmentId == a.Id)
+            && !db.VisitProductLines.Any(l => l.AppointmentId == a.Id)
+            && db.AppointmentStatusChanges.Count(c => c.AppointmentId == a.Id) == 1;
+
     private async Task<AppointmentImportContext> ContextAsync(IReadOnlyList<ImportedAppointmentRow> rows, TenantInfo tenant, DateTimeZone zone, CancellationToken cancellationToken)
     {
         var now = clock.GetCurrentInstant();
