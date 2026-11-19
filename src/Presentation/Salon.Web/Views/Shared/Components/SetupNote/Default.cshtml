@@ -1,0 +1,8 @@
+@using Salon.Services.Settings
+@model SetupProgress
+@* The owner's nudge while set-up is unfinished (ADR 0072). The address belongs to the getting started slice; a
+   shared view may only link to it. *@
+<p role="status" class="notice notice-warn flex flex-wrap items-center justify-between gap-x-4" data-testid="setup-note" data-done="@Model.RequiredDone" data-required="@Model.Required">
+    <span>@T.Format("Settings.SetupNote.Text", Model.RequiredDone, Model.Required)</span>
+    <a href="/admin/settings/getting-started" class="inline-flex min-h-11 items-center font-semibold underline underline-offset-4" data-testid="setup-note-link">@T["Settings.SetupNote.Link"]</a>
+</p>

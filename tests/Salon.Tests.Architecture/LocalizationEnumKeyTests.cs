@@ -5,12 +5,12 @@ using Salon.Core.Messaging;
 using Salon.Core.Payments;
 using Salon.Core.Products;
 using Salon.Core.Reports;
+using Salon.Core.Settings;
 using Salon.Services.Appointments;
 using Salon.Services.Appointments.Import;
 using Salon.Services.Localization;
 using Salon.Services.Payments;
 using Salon.Services.Products;
-using Salon.Web.Features.Settings.GettingStarted;
 
 namespace Salon.Tests.Architecture;
 

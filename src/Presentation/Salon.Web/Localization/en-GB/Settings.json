@@ -255,6 +255,8 @@
   "Settings.GettingStarted.Lead": "What is set up of your salon and what is left, step by step. Each step is read from your salon as it is now, so it ticks itself when it is done.",
   "Settings.GettingStarted.Progress": "{0} of {1} steps done.",
   "Settings.GettingStarted.AllDone": "Everything is set up. Your salon is ready for its clients.",
+  "Settings.SetupNote.Text": "Your salon is not set up yet: {0} of {1} steps done.",
+  "Settings.SetupNote.Link": "Getting started",
   "Settings.GettingStarted.Optional": "optional",
   "Settings.GettingStarted.Open": "Open",
   "Settings.GettingStarted.Do": "Set it up",

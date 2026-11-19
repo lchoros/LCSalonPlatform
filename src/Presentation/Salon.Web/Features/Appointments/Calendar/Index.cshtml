@@ -27,6 +27,7 @@
         <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
     }
     @await Component.InvokeAsync("VisitsWithoutOutcome")
+    @await Component.InvokeAsync("SetupNote")
     <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div class="space-y-2">
             <h1 class="page-title">@T["Appointments.Calendar.Title"]</h1>

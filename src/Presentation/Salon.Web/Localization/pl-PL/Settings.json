@@ -255,6 +255,8 @@
   "Settings.GettingStarted.Lead": "Co w Twoim salonie jest już ustawione, a co zostało, krok po kroku. Każdy krok jest odczytywany z salonu takiego, jaki jest teraz, więc zaznacza się sam, gdy jest gotowy.",
   "Settings.GettingStarted.Progress": "Gotowe kroki: {0} z {1}.",
   "Settings.GettingStarted.AllDone": "Wszystko jest ustawione. Salon jest gotowy na klientów.",
+  "Settings.SetupNote.Text": "Salon nie jest jeszcze w pełni ustawiony. Gotowe kroki: {0} z {1}.",
+  "Settings.SetupNote.Link": "Pierwsze kroki",
   "Settings.GettingStarted.Optional": "opcjonalnie",
   "Settings.GettingStarted.Open": "Otwórz",
   "Settings.GettingStarted.Do": "Ustaw",
