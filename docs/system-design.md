@@ -215,6 +215,10 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   The diary marks a standing offer (ADR 0069): `IWaitlistOfferService.KeptBetweenAsync` gives `Appointments/DayList`
   (above the person's visits, with the release button, which sends the day back) and `Appointments/Calendar` (on the
   grid beside the visits) the times kept in their window.
+- `Settings/GettingStarted` — `/admin/settings/getting-started` behind `Settings.Manage` (ADR 0068): one page with
+  what is set up of the salon and what is left. `GettingStartedHandler` reads a handful of counts and settings
+  through the tenant filter (main location, bookable staff and their hours, services, clients, coming visits,
+  reminders, privacy notice, cancellation policy), so each step is done when the data says so; nothing is stored.
 - `Booking/ShowPrivacyNotice` — `/privacy` on a salon's address, no sign-in (ADR 0063): the salon's privacy notice.
   `IPrivacyNoticeService.GetAsync` gives the salon's name and contact details and either the standard notice (the
   `Booking.Privacy.*` resources, true of what the system does) or the owner's own text as paragraphs.

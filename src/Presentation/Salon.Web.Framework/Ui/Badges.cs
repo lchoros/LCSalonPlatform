@@ -69,6 +69,9 @@ public static class Badges
         _ => Bad,
     };
 
+    /// <summary>A step of setting a salon up (ADR 0068): done, left to do, or one the salon may leave.</summary>
+    public static string SetupStep(bool done, bool optional) => done ? Good : optional ? Neutral : Warn;
+
     /// <summary>A row of a diary file (ADR 0067): added, already there, cancelled, of earlier today, cancelled since and to look at, or not readable.</summary>
     public static string AppointmentImportRow(AppointmentImportStatus status) => status switch
     {

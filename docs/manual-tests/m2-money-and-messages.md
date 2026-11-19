@@ -671,6 +671,15 @@ Needs the client import switched on (`Features:ClientImport`, on in Development)
 - [ ] AZ9. A file with a date such as 11/27/2026 is refused as month-first.
 - [ ] AZ10. A receptionist cannot open the page; a manager can.
 
+## BA. Getting started (after the branch `agent/m3-48-getting-started` is merged too; no migration)
+- [ ] BA1. As the owner: Settings, "Getting started" is the first tab. Each step says what the salon has and links
+      to where it is done; the counts match the salon (people, services, clients, coming visits).
+- [ ] BA2. A step not done shows "To do" and "Set it up"; for the price list, clients and visits also "From a file".
+- [ ] BA3. Open "Your privacy notice", save it, come back: the step is done. Switch reminders off: that step is to do.
+- [ ] BA4. Add a person who takes bookings and give them no hours: "Working hours" is to do and counts them.
+- [ ] BA5. "Open your booking page" opens the public booking page.
+- [ ] BA6. A manager does not have the tab and cannot open the page.
+
 ## BB. A time kept for a waiting client, on the diary (after the branch `agent/m3-49-kept-times-on-diary` is merged too; no migration)
 - [ ] BB1. As the owner, at Settings, Waitlist: tick "Text the first person waiting when a visit is cancelled" and
       keep the time for 30 minutes.
