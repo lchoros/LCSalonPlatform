@@ -43,7 +43,8 @@ public sealed record CalendarStaff(Guid Id, string DisplayName, string Colour);
 /// <param name="Date">The local day of the column.</param>
 /// <param name="WorkingRanges">The person's rota for that weekday; rows outside are shaded.</param>
 /// <param name="Blocks">Active appointments, already positioned, in start order.</param>
-public sealed record CalendarColumn(LocalDate Date, CalendarStaff Staff, IReadOnlyList<TimeRange> WorkingRanges, IReadOnlyList<CalendarBlock> Blocks);
+/// <param name="Kept">Times kept for a waiting client right now (ADR 0069), positioned beside the visits, in start order.</param>
+public sealed record CalendarColumn(LocalDate Date, CalendarStaff Staff, IReadOnlyList<TimeRange> WorkingRanges, IReadOnlyList<CalendarBlock> Blocks, IReadOnlyList<CalendarKeptBlock> Kept);
 
 /// <summary>One appointment on the grid; <see cref="Row"/>, <see cref="Span"/>, <see cref="Lane"/> and <see cref="Lanes"/> come from <see cref="CalendarLayout.Position"/>.</summary>
 public sealed record CalendarBlock(
@@ -53,6 +54,21 @@ public sealed record CalendarBlock(
     string ClientFirstName,
     string ServiceName,
     AppointmentStatus Status,
+    int Row,
+    int Span,
+    int Lane,
+    int Lanes);
+
+/// <summary>
+/// A freed time kept off the booking pages for the waiting client who was told about it (ADR 0065, ADR 0069), placed on
+/// the grid like a visit. Its day's list says until when and lets it go.
+/// </summary>
+public sealed record CalendarKeptBlock(
+    Guid OfferId,
+    LocalTime Start,
+    LocalTime End,
+    string ClientFirstName,
+    string ServiceName,
     int Row,
     int Span,
     int Lane,

@@ -94,6 +94,9 @@ public static class Badges
     /// A day tile of the booking pages: the chosen day, a day with free times, or a day without. Days without free
     /// times stay tappable but muted (<c>.is-dim</c> keeps AA contrast on white).
     /// </summary>
+    /// <summary>A time kept for a waiting client on the diary (ADR 0069): something the desk should notice.</summary>
+    public static string KeptTime => Warn;
+
     public static string DayTile(bool chosen, bool hasFreeTimes) => chosen ? "is-on" : hasFreeTimes ? "is-off" : "is-dim";
 
     /// <summary>The answer the desk gives most often is the primary button; the other is secondary.</summary>

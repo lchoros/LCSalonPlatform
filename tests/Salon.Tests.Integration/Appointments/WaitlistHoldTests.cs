@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,9 +14,11 @@ using Salon.Services.Appointments;
 using Salon.Services.Availability;
 using Salon.Services.Clients;
 using Salon.Services.Events;
+using Salon.Services.Formatting;
 using Salon.Services.Settings;
 using Salon.Tests.Integration.Clients;
 using Salon.Tests.Integration.Infrastructure;
+using Salon.Web.Features.Appointments.DayList;
 
 namespace Salon.Tests.Integration.Appointments;
 
@@ -505,6 +508,72 @@ public class WaitlistHoldTests(SalonWebApplicationFactory factory) : IAsyncLifet
         (await LoadAsync()).HoldFreedTimeMinutes.ShouldBe(0);
         (await PostAsync(owner, path, page, ("TellWhenFreed", "true"), ("HoldMinutes", "240"))).StatusCode.ShouldBe(HttpStatusCode.Redirect);
         (await LoadAsync()).HoldFreedTimeMinutes.ShouldBe(240);
+    }
+
+    [Fact]
+    public async Task The_diary_marks_a_kept_time_and_the_desk_lets_it_go_from_the_day()
+    {
+        await WaitAsync(_noah);
+        await OfferAsync(await CancelledAsync(At(11, 0)));
+        var offer = (await OffersAsync()).ShouldHaveSingleItem();
+        using var desk = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Receptionist);
+        var dayPath = $"/admin/appointments?date={Day.ToIso()}";
+
+        // Where the cancelled visit was, the day says whose the time is and until when, with the button to let it go.
+        var day = await GetAsync(desk, dayPath);
+        day.ShouldContain($"data-testid=\"kept-time\" data-offer-id=\"{offer.Id}\"");
+        day.ShouldContain("11:00–11:30");
+        day.ShouldContain("Kept for Noah Adams from the waitlist (Cut) until ");
+        day.ShouldContain("Nobody else can book it until then, here or online.");
+        var releasePath = $"/admin/appointments/waitlist/held/{offer.Id}/release";
+        day.ShouldContain($"action=\"{releasePath}\"");
+        day.ShouldContain($"name=\"day\" value=\"{Day.ToIso()}\"");
+        (await GetAsync(desk, $"/admin/appointments?date={Day.PlusDays(1).ToIso()}")).ShouldNotContain("data-testid=\"kept-time\"");
+
+        // The calendar places it on Anna's column, by day and by week, and sends the desk to that day's list.
+        var calendar = await GetAsync(desk, $"/admin/appointments/calendar?view=day&date={Day.ToIso()}");
+        calendar.ShouldContain("data-testid=\"calendar-kept\"");
+        calendar.ShouldContain($"data-offer-id=\"{offer.Id}\"");
+        calendar.ShouldContain("Kept for Noah");
+        calendar.ShouldContain($"href=\"/admin/appointments?date={Day.ToIso()}\"");
+        calendar.ShouldContain("data-testid=\"calendar-list-kept\"");
+        (await GetAsync(desk, $"/admin/appointments/calendar?view=week&date={Day.ToIso()}&staff={_anna}")).ShouldContain($"data-offer-id=\"{offer.Id}\"");
+
+        // Another salon's diary on the same day has nothing kept.
+        using var theirOwner = await factory.SignedInClientAsync(HostB, _polish.Id, Role.Owner);
+        (await GetAsync(theirOwner, dayPath)).ShouldNotContain("data-testid=\"kept-time\"");
+
+        // Let go from the day: back to the same day, which no longer shows it, and the time can be booked again.
+        var released = await PostAsync(desk, releasePath, day, ("day", Day.ToIso()));
+        released.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        released.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe(dayPath);
+        day = await GetAsync(desk, dayPath);
+        day.ShouldContain("The time is no longer kept. Anybody can book it now.");
+        day.ShouldNotContain("data-testid=\"kept-time\"");
+        (await SlotsAsync(_anna)).ShouldContain(At(11, 0));
+        (await OffersAsync()).ShouldHaveSingleItem().Outcome.ShouldBe(WaitlistOfferEnd.Released);
+
+        // A kept time whose minutes ran out is on the booking pages again, so the diary does not mark it either,
+        // even before the clock has passed it on (Noah has had today's one text, so this time goes to Mia). A day that
+        // is not a day sends the desk to the waitlist, not elsewhere.
+        await WaitAsync(_mia);
+        await OfferAsync(await CancelledAsync(At(12, 0)));
+        var second = (await OffersAsync()).Single(o => o.EndedAt is null);
+        (await GetAsync(desk, dayPath)).ShouldContain($"data-offer-id=\"{second.Id}\"");
+        await RunOutAsync(second.Id);
+        (await GetAsync(desk, dayPath)).ShouldNotContain("data-testid=\"kept-time\"");
+        (await GetAsync(desk, $"/admin/appointments/calendar?view=day&date={Day.ToIso()}")).ShouldNotContain("data-testid=\"calendar-kept\"");
+        var elsewhere = await PostAsync(desk, $"/admin/appointments/waitlist/held/{second.Id}/release", day, ("day", "//evil.example/admin"));
+        elsewhere.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe("/admin/appointments/waitlist");
+    }
+
+    [Fact]
+    public void A_hold_that_ends_on_another_day_than_today_says_which_day()
+    {
+        var culture = CultureInfo.GetCultureInfo("en-GB");
+        var kept = new DayKeptTime(Guid.NewGuid(), new LocalTime(9, 0), new LocalTime(9, 30), new LocalDateTime(2026, 11, 20, 15, 30), EndsToday: true, "Noah Adams", "Cut");
+        kept.Until(culture).ShouldBe("15:30");
+        (kept with { EndsToday = false }).Until(culture).ShouldBe("Fri 20 Nov, 15:30");
     }
 
     private static Instant Now() => SystemClock.Instance.GetCurrentInstant();

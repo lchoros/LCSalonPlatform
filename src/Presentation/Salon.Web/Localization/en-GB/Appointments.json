@@ -271,5 +271,8 @@
   "Appointments.Import.Result.ToDiary": "Go to the diary",
   "Appointments.Import.Preview.SpanOneDay": "Visits on {0}.",
   "Appointments.Import.Preview.RemindersNone": "Our reminders go out from now on. No visit to add starts before {0}, so none of them misses a reminder from us.",
-  "Appointments.Import.Result.RemindersNone": "From now on we send the reminders. No visit just added starts before {0}."
+  "Appointments.Import.Result.RemindersNone": "From now on we send the reminders. No visit just added starts before {0}.",
+  "Appointments.Day.Kept.Badge": "Kept",
+  "Appointments.Day.Kept": "Kept for {0} from the waitlist ({1}) until {2}. Nobody else can book it until then, here or online.",
+  "Appointments.Calendar.Kept": "Kept for {0}"
 }

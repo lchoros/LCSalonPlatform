@@ -16,6 +16,7 @@ namespace Salon.Web.Features.Appointments.DayList;
 public sealed class DayListHandler(
     SalonDbContext db,
     IBookingService booking,
+    IWaitlistOfferService waitlistOffers,
     ITenantContext tenantContext,
     ITenantLookup tenantLookup,
     IClock clock) : IRequestHandler<DayListQuery, DayBoard>
@@ -29,9 +30,13 @@ public sealed class DayListHandler(
         var tenant = await tenantLookup.FindByIdAsync(tenantId, cancellationToken)
             ?? throw new InvalidOperationException($"Tenant {tenantId} is in scope but has no row.");
         var zone = DateTimeZoneProviders.Tzdb[tenant.TimeZoneId];
-        var day = request.Date ?? clock.GetCurrentInstant().InZone(zone).Date;
+        var now = clock.GetCurrentInstant();
+        var today = now.InZone(zone).Date;
+        var day = request.Date ?? today;
 
         var appointments = await booking.GetDayAsync(day, cancellationToken);
+        var kept = await waitlistOffers.KeptBetweenAsync(
+            zone.AtStartOfDay(day).ToInstant(), zone.AtStartOfDay(day.PlusDays(1)).ToInstant(), now, cancellationToken);
         var staffWithVisits = appointments.Select(a => a.StaffMemberId).Distinct().ToArray();
         var staff = await db.StaffMembers.AsNoTracking()
             .Where(s => (s.IsActive && s.IsBookable) || staffWithVisits.Contains(s.Id))
@@ -39,12 +44,12 @@ public sealed class DayListHandler(
             .Select(s => new { s.Id, s.DisplayName, s.Colour })
             .ToListAsync(cancellationToken);
 
-        var clientIds = appointments.Select(a => a.ClientId).Distinct().ToArray();
+        var clientIds = appointments.Select(a => a.ClientId).Concat(kept.Select(k => k.ClientId)).Distinct().ToArray();
         var clients = await db.Clients.AsNoTracking()
             .Where(c => clientIds.Contains(c.Id))
             .Select(c => new { c.Id, c.FirstName, c.LastName })
             .ToDictionaryAsync(c => c.Id, c => $"{c.FirstName} {c.LastName}", cancellationToken);
-        var serviceIds = appointments.Select(a => a.ServiceId).Distinct().ToArray();
+        var serviceIds = appointments.Select(a => a.ServiceId).Concat(kept.Select(k => k.ServiceId)).Distinct().ToArray();
         var services = await db.Services.AsNoTracking()
             .Where(s => serviceIds.Contains(s.Id))
             .ToDictionaryAsync(s => s.Id, s => s.Name, cancellationToken);
@@ -62,6 +67,16 @@ public sealed class DayListHandler(
                         clients.GetValueOrDefault(a.ClientId, string.Empty),
                         services.GetValueOrDefault(a.ServiceId, string.Empty),
                         a.Status))
+                    .ToArray(),
+                kept.Where(k => k.StaffMemberId == s.Id)
+                    .Select(k => new DayKeptTime(
+                        k.OfferId,
+                        k.Start.InZone(zone).TimeOfDay,
+                        k.End.InZone(zone).TimeOfDay,
+                        k.HeldUntil.InZone(zone).LocalDateTime,
+                        k.HeldUntil.InZone(zone).Date == today,
+                        clients.GetValueOrDefault(k.ClientId, string.Empty),
+                        services.GetValueOrDefault(k.ServiceId, string.Empty)))
                     .ToArray()))
             .ToArray();
 

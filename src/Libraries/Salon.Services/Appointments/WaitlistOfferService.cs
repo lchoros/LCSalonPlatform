@@ -59,6 +59,12 @@ public sealed record HeldTime(
     string ClientFirstName,
     string? VisitToken);
 
+/// <summary>
+/// A time kept off the diary for a waiting client right now (ADR 0069): the desk sees it where the visit was, with
+/// whom it is kept for and until when. Instants, so each page puts them in the salon's zone itself.
+/// </summary>
+public sealed record KeptTime(Guid OfferId, Guid StaffMemberId, Guid ClientId, Guid ServiceId, Instant Start, Instant End, Instant HeldUntil);
+
 public enum TakeHeldTimeOutcome
 {
     /// <summary>The visit is booked.</summary>
@@ -97,6 +103,13 @@ public interface IWaitlistOfferService
 
     /// <summary>The desk lets a held time go: it is on the booking pages again and nobody else is told. False when no such offer stands.</summary>
     Task<bool> ReleaseAsync(Guid offerId, Guid? byUserId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// The times kept for waiting clients at <paramref name="now"/> that start in [<paramref name="windowStart"/>,
+    /// <paramref name="windowEnd"/>), in start order, for the diary (ADR 0069). An offer whose minutes ran out is not
+    /// kept, even before the clock has passed it on: the booking pages offer that time again.
+    /// </summary>
+    Task<IReadOnlyList<KeptTime>> KeptBetweenAsync(Instant windowStart, Instant windowEnd, Instant now, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Ends the offers whose hold ran out or whose client stopped waiting, and offers each time to the next client in
@@ -259,6 +272,14 @@ internal sealed class WaitlistOfferService(
 
         return released > 0;
     }
+
+    public async Task<IReadOnlyList<KeptTime>> KeptBetweenAsync(Instant windowStart, Instant windowEnd, Instant now, CancellationToken cancellationToken = default)
+        => await db.WaitlistOffers.AsNoTracking()
+            .Where(o => o.EndedAt == null && o.HeldUntil > now && o.Start >= windowStart && o.Start < windowEnd)
+            .Join(db.WaitlistEntries, o => o.WaitlistEntryId, e => e.Id, (o, e) => new { o, e.ClientId })
+            .OrderBy(x => x.o.Start)
+            .Select(x => new KeptTime(x.o.Id, x.o.StaffMemberId, x.ClientId, x.o.ServiceId, x.o.Start, x.o.End, x.o.HeldUntil))
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
 
     public async Task<int> PassOnDueAsync(Instant now, CancellationToken cancellationToken = default)
     {
