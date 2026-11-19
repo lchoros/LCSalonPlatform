@@ -82,7 +82,7 @@ public sealed class ChooseSlotHandler(
         var slots = await availability.GetSlotsAsync(service.Id, staffId, windowStart, last, cancellationToken);
         var byDay = slots.ToLookup(s => s.Start.InZone(zone).Date);
 
-        var days = Enumerable.Range(0, dayCount).Select(windowStart.PlusDays).Select(d => new DayOption(d, byDay[d].Any(), byDay[d].Count())).ToList();
+        var days = Enumerable.Range(0, dayCount).Select(windowStart.PlusDays).Select(d => new DayOption(d, byDay[d].Any())).ToList();
         var selected = request.Date is { } requested && requested >= windowStart && requested <= last
             ? requested
             : days.FirstOrDefault(d => d.HasSlots)?.Date ?? windowStart;

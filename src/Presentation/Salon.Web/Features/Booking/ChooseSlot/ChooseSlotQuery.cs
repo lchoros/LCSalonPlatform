@@ -45,8 +45,7 @@ public sealed record ChooseSlotResult(
     public string WaitlistPath => SelectedStaffId is { } staff ? $"/book/{ServiceId}/waitlist?staff={staff}" : $"/book/{ServiceId}/waitlist";
 }
 
-/// <param name="SlotCount">How many free starts the day has — the little badge on the day tile.</param>
-public sealed record DayOption(LocalDate Date, bool HasSlots, int SlotCount = 0);
+public sealed record DayOption(LocalDate Date, bool HasSlots);
 
 /// <summary>A part of the day on the slot list ("until 12:00", "12:00–16:00", "after 16:00"); only parts with free times appear.</summary>
 public sealed record SlotGroup(string LabelKey, IReadOnlyList<SlotOption> Slots);
