@@ -1,9 +1,12 @@
+using Salon.Core.Appointments;
+using Salon.Core.Import;
 using Salon.Core.Localization;
 using Salon.Core.Messaging;
 using Salon.Core.Payments;
 using Salon.Core.Products;
 using Salon.Core.Reports;
 using Salon.Services.Appointments;
+using Salon.Services.Appointments.Import;
 using Salon.Services.Localization;
 using Salon.Services.Payments;
 using Salon.Services.Products;
@@ -103,5 +106,23 @@ public partial class LocalizationResourceTests
         var known = Resources.Value[SupportedCultures.EnGb];
 
         Enum.GetNames<ReportPreset>().Select(name => $"Reports.Preset.{name}").Where(key => !known.ContainsKey(key)).ShouldBeEmpty();
+    }
+    [Fact]
+    public void Every_reason_and_word_the_diary_import_builds_from_an_enum_has_its_text()
+    {
+        var expected = new List<string>();
+        expected.AddRange(Enum.GetNames<AppointmentImportProblem>().Select(name => $"Appointments.Import.Problem.{name}"));
+        expected.AddRange(Enum.GetNames<AppointmentImportStatus>().Select(name => $"Appointments.Import.Status.{name}"));
+        expected.AddRange(Enum.GetNames<OldStatus>().Select(name => $"Appointments.Import.Reading.{name}"));
+        expected.AddRange(Enum.GetNames<ClientMatch>().Where(name => name != nameof(ClientMatch.Name)).Select(name => $"Appointments.Import.Client.By{name}"));
+        expected.AddRange(new[] { "Date", "Time", "Service", "Client" }.Select(column => $"Appointments.Import.Column.{column}"));
+        expected.AddRange(new[] { "Row", "Date", "Time", "Client", "Phone", "Email", "Service", "Staff", "Reason" }.Select(column => $"Appointments.Import.File.Column.{column}"));
+
+        // The visits file names how each visit was booked; one brought over from the old system is the third way.
+        expected.AddRange(Enum.GetNames<AppointmentSource>().Select(source => $"Reports.Export.BookedBy.{source}"));
+
+        var known = Resources.Value[SupportedCultures.EnGb];
+
+        expected.Where(key => !known.ContainsKey(key)).ShouldBeEmpty();
     }
 }

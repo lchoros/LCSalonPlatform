@@ -16,6 +16,8 @@
 
     <p class="text-stone-600">@T.Format("Clients.Import.Result.Skipped", Model.Result.Duplicates, Model.Result.Invalid)</p>
 
+    <p class="text-sm text-stone-600" data-testid="next-diary">@T["Clients.Import.Result.NextDiary"] <a href="/admin/appointments/import" class="font-medium underline underline-offset-2" data-testid="to-diary-import">@T["Clients.Import.Result.NextDiaryLink"]</a></p>
+
     <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
         <a href="/admin/clients/import" class="btn btn-compact btn-secondary">@T["Clients.Import.Result.Again"]</a>
         <a href="/admin/clients" data-testid="to-clients" class="btn btn-compact btn-primary">@T["Clients.Import.Result.ToClients"]</a>

@@ -1,4 +1,5 @@
 using Salon.Core.Appointments;
+using Salon.Services.Appointments.Import;
 using Salon.Services.Catalog.Import;
 using Salon.Services.Clients.Import;
 using Salon.Services.Payments;
@@ -66,6 +67,15 @@ public static class Badges
         ImportRowStatus.New => Good,
         ImportRowStatus.Duplicate => Done,
         _ => Bad,
+    };
+
+    /// <summary>A row of a diary file (ADR 0067): added, already there, cancelled, of earlier today, cancelled since and to look at, or not readable.</summary>
+    public static string AppointmentImportRow(AppointmentImportStatus status) => status switch
+    {
+        AppointmentImportStatus.New => Good,
+        AppointmentImportStatus.CancelledSince => Warn,
+        AppointmentImportStatus.Invalid => Bad,
+        _ => Done,
     };
 
     /// <summary>A row of a price list file (ADR 0066): added, changed, as it was, left out because it is said twice, or not readable.</summary>

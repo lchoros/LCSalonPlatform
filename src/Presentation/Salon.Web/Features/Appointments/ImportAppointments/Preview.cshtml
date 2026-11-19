@@ -1,0 +1,152 @@
+@using System.Globalization
+@using Salon.Core.Import
+@using Salon.Services.Appointments.Import
+@using Salon.Web.Features.Appointments.ImportAppointments
+@model PreviewAppointmentsViewModel
+@{
+    ViewData["Title"] = T["Appointments.Import.Preview.Title"];
+    var culture = CultureInfo.CurrentCulture;
+    var preview = Model.Preview;
+}
+<section class="space-y-6" data-testid="import-preview">
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Appointments.Import.Preview.Title"]</h1>
+        <p class="text-sm text-stone-600" data-testid="import-summary">@T.Format("Appointments.Import.Preview.Summary", preview.FileName, preview.Rows.Count)</p>
+        <p class="text-stone-600">@T["Appointments.Import.Preview.Lead"]</p>
+    </header>
+
+    <dl class="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
+        <div class="rounded-lg border border-green-200 bg-green-50 p-3">
+            <dt class="text-xs font-medium text-green-800">@T["Appointments.Import.Preview.New"]</dt>
+            <dd data-testid="count-new" class="text-2xl font-bold text-green-900">@preview.NewCount</dd>
+        </div>
+        <div class="rounded-lg border border-stone-200 bg-stone-100 p-3">
+            <dt class="text-xs font-medium text-stone-700">@T["Appointments.Import.Preview.AlreadyThere"]</dt>
+            <dd data-testid="count-already" class="text-2xl font-bold text-stone-900">@preview.AlreadyThereCount</dd>
+        </div>
+        <div class="rounded-lg border border-stone-200 bg-stone-100 p-3">
+            <dt class="text-xs font-medium text-stone-700">@T["Appointments.Import.Preview.Cancelled"]</dt>
+            <dd data-testid="count-cancelled" class="text-2xl font-bold text-stone-900">@preview.CancelledCount</dd>
+        </div>
+        <div class="rounded-lg border border-red-200 bg-red-50 p-3">
+            <dt class="text-xs font-medium text-red-800">@T["Appointments.Import.Preview.NotBrought"]</dt>
+            <dd data-testid="count-not-brought" class="text-2xl font-bold text-red-900">@preview.NotBroughtCount</dd>
+        </div>
+    </dl>
+
+    <div class="space-y-1 text-sm text-stone-700" data-testid="import-span">
+        @if (Model.FirstDay is { } first && Model.LastDay is { } last)
+        {
+            <p>@(first == last
+                ? T.Format("Appointments.Import.Preview.SpanOneDay", first.ToString("ddd d MMM yyyy", culture))
+                : T.Format("Appointments.Import.Preview.Span", first.ToString("ddd d MMM yyyy", culture), last.ToString("ddd d MMM yyyy", culture)))</p>
+        }
+        @if (preview.PastCount > 0)
+        {
+            <p data-testid="import-past">@T.Format("Appointments.Import.Preview.Past", preview.PastCount, AppointmentImportText.Days(preview.PastDays, culture))</p>
+        }
+    </div>
+
+    @if (preview.RemindersFrom is { } remindersFrom)
+    {
+        if (preview.NotFullyReminded > 0)
+        {
+            <p class="notice notice-warn" data-testid="import-reminders">@T.Format("Appointments.Import.Preview.Reminders", AppointmentImportText.Moment(remindersFrom, culture), preview.NotFullyReminded)</p>
+        }
+        else
+        {
+            <p class="text-sm text-stone-700" data-testid="import-reminders">@T.Format("Appointments.Import.Preview.RemindersNone", AppointmentImportText.Moment(remindersFrom, culture))</p>
+        }
+    }
+
+    @if (preview.UnknownServices.Count > 0 || preview.UnknownStaff.Count > 0 || preview.Statuses.Count > 0)
+    {
+        <section class="space-y-3 panel" data-testid="import-unrecognised">
+            <h2 class="text-lg font-semibold">@T["Appointments.Import.Unrecognised.Title"]</h2>
+            <p class="text-sm text-stone-600">@T["Appointments.Import.Unrecognised.Lead"]</p>
+            @if (preview.UnknownServices.Count > 0)
+            {
+                <h3 class="text-sm font-semibold">@T["Appointments.Import.Unrecognised.Services"]</h3>
+                <ul class="space-y-1 text-sm" data-testid="unknown-services">
+                    @foreach (var value in preview.UnknownServices)
+                    {
+                        <li data-testid="unknown-service">@T.Plural("Appointments.Import.Unrecognised.Rows", value.Rows, value.Value)@if (value.Suggestion is { } suggestion) { <text> · </text>@T.Format("Appointments.Import.Unrecognised.Suggestion", suggestion) }</li>
+                    }
+                </ul>
+            }
+            @if (preview.UnknownStaff.Count > 0)
+            {
+                <h3 class="text-sm font-semibold">@T["Appointments.Import.Unrecognised.Staff"]</h3>
+                <ul class="space-y-1 text-sm" data-testid="unknown-staff">
+                    @foreach (var value in preview.UnknownStaff)
+                    {
+                        <li>@T.Plural("Appointments.Import.Unrecognised.Rows", value.Rows, value.Value)@if (value.Suggestion is { } suggestion) { <text> · </text>@T.Format("Appointments.Import.Unrecognised.Suggestion", suggestion) }</li>
+                    }
+                </ul>
+            }
+            @if (preview.Statuses.Count > 0)
+            {
+                <h3 class="text-sm font-semibold">@T["Appointments.Import.Unrecognised.Statuses"]</h3>
+                <ul class="space-y-1 text-sm" data-testid="status-words">
+                    @foreach (var word in preview.Statuses)
+                    {
+                        <li>@T.Plural("Appointments.Import.Unrecognised.Rows", word.Rows, word.Word) · @T[$"Appointments.Import.Reading.{word.Reading}"]</li>
+                    }
+                </ul>
+            }
+        </section>
+    }
+
+    <ul class="list-card" aria-label="@T["Appointments.Import.Preview.Rows"]">
+        @foreach (var row in Model.Rows)
+        {
+            <li data-testid="import-row" data-status="@row.Status" class="flex flex-col gap-2 p-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                <div class="min-w-0 space-y-1">
+                    <p class="text-xs text-stone-600">@T["Appointments.Import.Preview.Row"] @row.Row.SourceRow</p>
+                    <p class="font-semibold tabular-nums" data-testid="import-row-when">@AppointmentImportText.When(row, culture)</p>
+                    <p class="break-words" data-testid="import-row-client">@AppointmentImportText.Client(T, row)</p>
+                    <p class="text-sm text-stone-700 break-words tabular-nums" data-testid="import-row-details">@AppointmentImportText.Details(T, row, preview.Currency, culture)</p>
+                    @if (row.Problems.Count > 0)
+                    {
+                        <ul class="space-y-0.5 text-sm text-red-700">
+                            @foreach (var problem in row.Problems)
+                            {
+                                <li>@AppointmentImportText.Problem(T, problem, row)</li>
+                            }
+                        </ul>
+                    }
+                </div>
+                <span class="inline-flex w-fit shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold @Badges.AppointmentImportRow(row.Status)">@AppointmentImportText.Status(T, row.Status)</span>
+            </li>
+        }
+    </ul>
+
+    @if (Model.HiddenCount > 0)
+    {
+        <p data-testid="import-more" class="text-sm text-stone-600">@T.Plural("Appointments.Import.Preview.More", Model.HiddenCount)</p>
+    }
+
+    <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row">
+            <a href="@ImportAppointmentsController.UploadPath" class="btn btn-compact btn-secondary">@T["Appointments.Import.Preview.Back"]</a>
+            @if (preview.NotBroughtCount > 0)
+            {
+                <a href="@ImportAppointmentsController.NotBroughtPath(Model.Token)" class="btn btn-compact btn-secondary" data-testid="download-not-brought">@T["Appointments.Import.NotBroughtFile"]</a>
+            }
+        </div>
+        @if (preview.NewCount > 0)
+        {
+            <form method="post" action="@ImportAppointmentsController.ConfirmPath(Model.Token)" asp-antiforgery="true" class="flex flex-col gap-2 sm:items-end">
+                @if (preview.NotBroughtCount > 0)
+                {
+                    <p class="text-sm font-medium text-red-800" data-testid="not-brought-warning">@T.Plural("Appointments.Import.Preview.NotBroughtWarning", preview.NotBroughtCount)</p>
+                }
+                <button type="submit" data-testid="import-confirm" class="btn btn-compact btn-primary w-full sm:w-auto">@T.Plural("Appointments.Import.Preview.Confirm", preview.NewCount)</button>
+            </form>
+        }
+        else
+        {
+            <p data-testid="nothing-to-do" class="empty-state p-3 text-sm">@T["Appointments.Import.Preview.NothingToDo"]</p>
+        }
+    </div>
+</section>

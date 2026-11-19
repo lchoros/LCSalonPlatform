@@ -112,7 +112,7 @@
   "Clients.Import.Intro": "Przenieś listę klientów z Booksy lub Versum. Wyeksportuj ją tam jako CSV, a następnie wgraj plik tutaj. Zanim cokolwiek się zmieni, zobaczysz, co zostanie dodane.",
   "Clients.Import.File": "Plik CSV",
   "Clients.Import.FileHint": "Maksymalnie {0} wierszy i {1} MB. Eksporty z Booksy i Versum są rozpoznawane po nagłówkach kolumn.",
-  "Clients.Import.NotImported": "Historia wizyt i informacje o zdrowiu nie są importowane; ogólne notatki trafiają do notatek klienta.",
+  "Clients.Import.NotImported": "Historia wizyt i informacje o zdrowiu nie są importowane; ogólne notatki trafiają do notatek klienta. Wizyty od dziś można potem przenieść z pliku terminarza.",
   "Clients.Import.Upload": "Sprawdź plik",
   "Clients.Import.Cancel": "Anuluj",
   "Clients.Import.Expired": "Podgląd wygasł. Wgraj plik ponownie.",
@@ -283,5 +283,7 @@
   "Clients.Data.Waitlist.Offer.Taken": "zarezerwowany",
   "Clients.Data.Waitlist.Offer.NotTaken": "niewykorzystany",
   "Clients.Data.Waitlist.Offer.Released": "zwolniony przez salon",
-  "Clients.Data.Waitlist.Offer.Gone": "nie dało się go już zarezerwować"
+  "Clients.Data.Waitlist.Offer.Gone": "nie dało się go już zarezerwować",
+  "Clients.Import.Result.NextDiary": "Dalej: nadchodzące tygodnie terminarza.",
+  "Clients.Import.Result.NextDiaryLink": "Przenieś terminarz z pliku"
 }
