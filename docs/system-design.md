@@ -312,7 +312,8 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   days one period earlier: total taken, completed visits, no-shows, the change in words (`ReportComparison`,
   `ReportRules.Compare`, ADR 0046). In the takings, each day of the period as a bar (ADR 0048): plain SVG shapes
   laid out by the pure `BarChart` (Core) and written by `TakingsCharts` beside the view; no script, no chart
-  library. Periods of 2 to 62 days (`ReportRules.ChartDays`).
+  library. Periods of 2 to 62 days (`ReportRules.ChartDays`); longer ones by Monday-to-Sunday week, cut at the
+  period's ends (`ReportRules.ChartWeeks`, `TakingsReport.Weekly`, ADR 0071).
 - `Booking/JoinWaitlist` — `/book/{serviceId}/waitlist`, `/book/waitlist/verify/{id}`, `/book/waitlist/done`
   (ADR 0055): a visitor who finds no time leaves a name and a number, proves the number with the booking's SMS code
   and is put on the desk's waitlist (ADR 0041) by `IPublicWaitlistService`. `PhoneVerification.Purpose` keeps a

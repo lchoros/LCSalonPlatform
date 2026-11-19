@@ -671,6 +671,14 @@ Needs the client import switched on (`Features:ClientImport`, on in Development)
 - [ ] AZ9. A file with a date such as 11/27/2026 is refused as month-first.
 - [ ] AZ10. A receptionist cannot open the page; a manager can.
 
+## BD. A longer period's takings, week by week (after the branch `agent/m3-51-weekly-chart` is merged too; no migration)
+- [ ] BD1. Reports, "Other dates": the first of January to the last of March. The takings card says "Takings each
+      week" and has one bar per week (14), the first from 1 January, the last ending on 31 March.
+- [ ] BD2. Point at a bar (or tap it): it says the week's dates and its takings. Under the chart, the best week is
+      named.
+- [ ] BD3. A period of exactly 62 days is still drawn day by day; 63 days are drawn by week.
+- [ ] BD4. On a phone the chart fits the card without a sideways scroll.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.
