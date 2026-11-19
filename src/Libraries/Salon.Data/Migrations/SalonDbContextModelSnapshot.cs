@@ -78,6 +78,10 @@ namespace Salon.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("end_at");
 
+                    b.Property<Guid?>("ImportBatchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("import_batch_id");
+
                     b.Property<string>("Notes")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
@@ -149,6 +153,10 @@ namespace Salon.Data.Migrations
 
                     b.HasIndex("TenantId", "ClientId")
                         .HasDatabaseName("ix_appointments_tenant_id_client_id");
+
+                    b.HasIndex("TenantId", "ImportBatchId")
+                        .HasDatabaseName("ix_appointments_tenant_id_import_batch_id")
+                        .HasFilter("import_batch_id IS NOT NULL");
 
                     b.HasIndex("TenantId", "StaffMemberId", "Start")
                         .HasDatabaseName("ix_appointments_tenant_id_staff_member_id_start_at");

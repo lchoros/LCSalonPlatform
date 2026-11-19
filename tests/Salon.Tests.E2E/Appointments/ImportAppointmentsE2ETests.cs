@@ -87,6 +87,21 @@ public class ImportAppointmentsE2ETests(KestrelAppFixture app) : IClassFixture<K
         await page.GotoAsync($"{app.TenantUrl(Slug)}/admin/appointments?date={day:yyyy-MM-dd}");
         await page.ReachAsync("**/admin/appointments?date=*");
         (await page.GetByText($"Wendy {lastName}").CountAsync()).ShouldBeGreaterThanOrEqualTo(1);
+
+        // 5. Read in by mistake: the file is taken out again (ADR 0074) and the visit is gone from the day.
+        await page.GotoAsync(app.TenantUrl(Slug) + "/admin/appointments/import");
+        await page.ReachAsync("**/admin/appointments/import");
+        await page.GetByTestId("undo-import-link").ClickAsync();
+        await page.ReachAsync("**/admin/appointments/import/undo");
+        var batch = page.GetByTestId("undo-batch").First;
+        (await batch.GetAttributeAsync("data-untouched")).ShouldBe("1", "this run's file is the newest read-in");
+        await CheckAndShootAsync(page, "diary-import-undo-mobile-390.png");
+        await batch.GetByTestId("undo-import").ClickAsync();
+        await page.ReachAsync("**/admin/appointments/import/undo");
+        (await page.GetByTestId("flash").TextContentAsync()).ShouldBe("The file is out of the diary: 1 visit removed, 0 kept.");
+        await page.GotoAsync($"{app.TenantUrl(Slug)}/admin/appointments?date={day:yyyy-MM-dd}");
+        await page.ReachAsync("**/admin/appointments?date=*");
+        (await page.GetByText($"Wendy {lastName}").CountAsync()).ShouldBe(0, "the visit went with the file");
     }
 
     private static async Task CheckAndShootAsync(IPage page, string fileName)

@@ -49,6 +49,9 @@ public sealed class ImportAppointmentsController(
     /// <summary>The price list from a file; the ImportServices slice owns the route.</summary>
     public const string ServiceImportPath = "/admin/services/import";
 
+    /// <summary>Where a read-in file is taken out again (ADR 0074); the UndoImport slice owns the route.</summary>
+    public const string UndoPath = "/admin/appointments/import/undo";
+
     /// <summary>Rows listed on the preview; the rest is a count, and the file of rows not brought over has them all.</summary>
     public const int PreviewRowLimit = 300;
 

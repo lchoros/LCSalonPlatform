@@ -23,6 +23,16 @@ public interface IAppointmentImportService
     /// so the command rolls back and nothing of the file is written.
     /// </summary>
     Task<AppointmentImportResult> CommitAsync(AppointmentImportPreview preview, Guid? byUserId, CancellationToken cancellationToken = default);
+
+    /// <summary>The files read in, latest first (ADR 0074): what each brought and what an undo would remove now.</summary>
+    Task<IReadOnlyList<DiaryImportBatch>> BatchesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Takes a read-in file out of the diary (ADR 0074): removes the visits it brought that are still exactly as it
+    /// left them (booked, never moved or taken money for), history and reminder rows with them. Must run inside a
+    /// command (one transaction). Null when the current salon has no such read-in: another salon's id looks the same.
+    /// </summary>
+    Task<DiaryImportUndo?> UndoAsync(Guid batchId, Guid? byUserId, CancellationToken cancellationToken = default);
 }
 
 /// <summary>What becomes of a row of the file.</summary>
@@ -165,6 +175,12 @@ public sealed record AppointmentImportResult(
 {
     public override string ToString() => $"{nameof(AppointmentImportResult)} {{ Added = {Added} }}";
 }
+
+/// <summary>One file read in (ADR 0074): when, how many visits it brought, and how many an undo would remove now.</summary>
+public sealed record DiaryImportBatch(Guid Id, Instant ReadAt, int Brought, int Untouched);
+
+/// <summary>What an undo removed, and what it kept because the desk has touched it since (ADR 0074).</summary>
+public sealed record DiaryImportUndo(int Removed, int Kept);
 
 /// <summary>The database refused a visit that clashes with one written since the file was checked: nothing was written.</summary>
 public sealed class AppointmentImportClashException : Exception
