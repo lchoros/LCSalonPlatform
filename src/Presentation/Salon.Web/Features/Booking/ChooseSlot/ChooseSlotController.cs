@@ -19,9 +19,9 @@ namespace Salon.Web.Features.Booking.ChooseSlot;
 public sealed class ChooseSlotController(IDispatcher dispatcher, ITenantContext tenantContext, ITenantLookup tenantLookup) : SalonControllerBase
 {
     [HttpGet("{serviceId:guid}")]
-    public async Task<IActionResult> Index(Guid serviceId, string? date, Guid? staff, CancellationToken cancellationToken)
+    public async Task<IActionResult> Index(Guid serviceId, string? date, Guid? staff, string? from, CancellationToken cancellationToken)
     {
-        var result = await dispatcher.SendAsync(new ChooseSlotQuery(serviceId, ParseDate(date), staff), cancellationToken);
+        var result = await dispatcher.SendAsync(new ChooseSlotQuery(serviceId, ParseDate(date), staff, ParseDate(from)), cancellationToken);
         if (result is null)
         {
             return NotFound();

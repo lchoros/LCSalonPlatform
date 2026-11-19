@@ -110,6 +110,47 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
     }
 
     [Fact]
+    public async Task The_date_strip_pages_towards_the_booking_horizon_and_back()
+    {
+        using var client = factory.ClientFor(HostA);
+        var today = SystemClock.Instance.GetCurrentInstant().InZone(London).Date;
+
+        // The first window starts today: no way back, a way forward (the default horizon is 60 days out).
+        var first = await GetAsync(client, $"/book/{_serviceId}");
+        first.ShouldNotContain("data-testid=\"earlier-days\"");
+        first.ShouldContain("data-testid=\"later-days\"");
+        first.ShouldContain($"from={Iso(today.PlusDays(14))}");
+
+        // The second window: fourteen later days, a way back to today, still a way forward.
+        var second = await GetAsync(client, $"/book/{_serviceId}?from={Iso(today.PlusDays(14))}");
+        DayCount(second).ShouldBe(14);
+        second.ShouldContain($"date={Iso(today.PlusDays(14))}");
+        second.ShouldContain("data-testid=\"earlier-days\"");
+        second.ShouldContain($"from={Iso(today)}");
+        second.ShouldContain("data-testid=\"later-days\"");
+
+        // A window asked beyond the horizon is clamped to it and pages only back.
+        var last = await GetAsync(client, $"/book/{_serviceId}?from={Iso(today.PlusDays(200))}");
+        DayCount(last).ShouldBe(1);
+        last.ShouldContain("data-testid=\"earlier-days\"");
+        last.ShouldNotContain("data-testid=\"later-days\"");
+    }
+
+    [Fact]
+    public async Task The_free_times_read_in_parts_of_the_day()
+    {
+        using var client = factory.ClientFor(HostA);
+
+        // Anna works 09:00–17:00: mornings, early afternoons and late starts all exist on the page.
+        var html = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}");
+
+        html.ShouldContain("data-testid=\"slot-group\"");
+        html.ShouldContain("Until 12:00");
+        html.ShouldContain("12:00–16:00");
+        html.ShouldContain("After 16:00");
+    }
+
+    [Fact]
     public async Task The_details_post_creates_a_verification_and_sends_one_six_digit_code_without_logging_it()
     {
         using var client = factory.ClientFor(HostA);

@@ -73,16 +73,19 @@ public sealed class ChooseSlotHandler(
             priceIsFrom = span.IsRange;
         }
 
+        // The strip is a window of up to two weeks that slides between today and the salon's booking horizon.
         var today = clock.GetCurrentInstant().InZone(zone).Date;
-        var dayCount = Math.Clamp(rules.MaxAdvanceDays + 1, 1, DaysShown);
-        var last = today.PlusDays(dayCount - 1);
-        var slots = await availability.GetSlotsAsync(service.Id, staffId, today, last, cancellationToken);
+        var horizon = today.PlusDays(Math.Max(rules.MaxAdvanceDays, 0));
+        var windowStart = request.From is { } from && from > today ? LocalDate.Min(from, horizon) : today;
+        var last = LocalDate.Min(windowStart.PlusDays(DaysShown - 1), horizon);
+        var dayCount = Period.DaysBetween(windowStart, last) + 1;
+        var slots = await availability.GetSlotsAsync(service.Id, staffId, windowStart, last, cancellationToken);
         var byDay = slots.ToLookup(s => s.Start.InZone(zone).Date);
 
-        var days = Enumerable.Range(0, dayCount).Select(today.PlusDays).Select(d => new DayOption(d, byDay[d].Any())).ToList();
-        var selected = request.Date is { } requested && requested >= today && requested <= last
+        var days = Enumerable.Range(0, dayCount).Select(windowStart.PlusDays).Select(d => new DayOption(d, byDay[d].Any(), byDay[d].Count())).ToList();
+        var selected = request.Date is { } requested && requested >= windowStart && requested <= last
             ? requested
-            : days.FirstOrDefault(d => d.HasSlots)?.Date ?? today;
+            : days.FirstOrDefault(d => d.HasSlots)?.Date ?? windowStart;
 
         return new ChooseSlotResult(
             service.Id,
@@ -98,6 +101,24 @@ public sealed class ChooseSlotHandler(
             zone)
         {
             WaitlistOffered = rules.PublicWaitlist,
+            EarlierFrom = windowStart > today ? LocalDate.Max(today, windowStart.PlusDays(-DaysShown)) : null,
+            LaterFrom = last < horizon ? last.PlusDays(1) : null,
+            Groups = Grouped(byDay[selected].Select(s => new SlotOption(s.Start, s.Start.InZone(zone).TimeOfDay, s.StaffMemberId)).ToList()),
         };
+    }
+
+    /// <summary>Splits one day's free times into parts of the day, so a long list scans by lunch and after work.</summary>
+    internal static IReadOnlyList<SlotGroup> Grouped(IReadOnlyList<SlotOption> slots)
+    {
+        var parts = new (string LabelKey, Func<LocalTime, bool> Holds)[]
+        {
+            ("Booking.Public.Slots.Morning", t => t.Hour < 12),
+            ("Booking.Public.Slots.Midday", t => t.Hour is >= 12 and < 16),
+            ("Booking.Public.Slots.Evening", t => t.Hour >= 16),
+        };
+        return parts
+            .Select(p => new SlotGroup(p.LabelKey, slots.Where(s => p.Holds(s.LocalStart)).ToList()))
+            .Where(g => g.Slots.Count > 0)
+            .ToList();
     }
 }

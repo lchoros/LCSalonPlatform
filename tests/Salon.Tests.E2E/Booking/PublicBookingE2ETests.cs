@@ -72,8 +72,16 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         (await page.GetByTestId("service-name").TextContentAsync()).ShouldBe("Cut & blow-dry");
         (await page.GetByTestId("staff-any").GetAttributeAsync("aria-current")).ShouldBe("true");
         (await page.GetByTestId("day").CountAsync()).ShouldBe(14);
+
+        // The strip pages to later days and back (ADR 0079): the horizon is further than two weeks.
+        await page.GetByTestId("later-days").TapAsync();
+        await Assertions.Expect(page.GetByTestId("earlier-days")).ToHaveCountAsync(1);
+        await page.GetByTestId("earlier-days").TapAsync();
+        await Assertions.Expect(page.GetByTestId("earlier-days")).ToHaveCountAsync(0);
+
         var slots = page.GetByTestId("slot");
         (await slots.CountAsync()).ShouldBeGreaterThan(0, "the demo rota has free times within two weeks");
+        (await page.GetByTestId("slot-group").CountAsync()).ShouldBeGreaterThan(0, "free times read in parts of the day");
         var chosenTime = (await slots.First.TextContentAsync())!.Trim();
         interaction.Stop();
         await CaptureAsync(page, "book-slots-mobile-390.png");

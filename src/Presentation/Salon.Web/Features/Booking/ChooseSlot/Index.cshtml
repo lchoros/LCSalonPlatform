@@ -41,17 +41,29 @@
         </nav>
     }
 
-    <nav aria-label="@T["Booking.Public.Day"]" data-testid="date-strip" class="scroll-row">
-        @foreach (var day in r.Days)
+    @{ var windowStart = (r.Days.Count > 0 ? r.Days[0].Date : r.SelectedDate).ToIso(); }
+    <div class="flex items-center gap-2">
+        @if (r.EarlierFrom is { } earlier)
         {
-            var on = day.Date == r.SelectedDate;
-            <a href="/book/@r.ServiceId?date=@day.Date.ToIso()@staffQuery" class="tile @Badges.DayTile(on, day.HasSlots)" aria-current="@(on ? "date" : null)" data-testid="day" data-has-slots="@day.HasSlots.ToString().ToLowerInvariant()">
-                <span class="text-[0.6875rem] font-semibold uppercase">@day.Date.ToString("ddd", culture)</span>
-                <span class="text-lg font-bold tabular-nums">@day.Date.Day</span>
-                <span class="text-[0.6875rem]">@day.Date.ToString("MMM", culture)</span>
-            </a>
+            <a href="/book/@r.ServiceId?from=@earlier.ToIso()@staffQuery" class="strip-arrow" data-testid="earlier-days" aria-label="@T["Booking.Public.EarlierDays"]"><span aria-hidden="true" class="text-xl font-bold">&lsaquo;</span></a>
         }
-    </nav>
+        <nav aria-label="@T["Booking.Public.Day"]" data-testid="date-strip" class="scroll-row mx-0 min-w-0 flex-1 px-0 pt-1 scroll-px-0">
+            @foreach (var day in r.Days)
+            {
+                var on = day.Date == r.SelectedDate;
+                <a href="/book/@r.ServiceId?date=@day.Date.ToIso()&from=@windowStart@staffQuery" class="tile @Badges.DayTile(on, day.HasSlots)" aria-current="@(on ? "date" : null)" data-testid="day" data-has-slots="@day.HasSlots.ToString().ToLowerInvariant()">
+                    <span class="tile-badge @(day.SlotCount == 0 ? "tile-badge-zero" : null)" aria-hidden="true">@day.SlotCount</span>
+                    <span class="text-[0.6875rem] font-semibold uppercase">@day.Date.ToString("ddd", culture)</span>
+                    <span class="text-lg font-bold tabular-nums">@day.Date.Day</span>
+                    <span class="text-[0.6875rem]">@day.Date.ToString("MMM", culture)</span>
+                </a>
+            }
+        </nav>
+        @if (r.LaterFrom is { } later)
+        {
+            <a href="/book/@r.ServiceId?from=@later.ToIso()@staffQuery" class="strip-arrow" data-testid="later-days" aria-label="@T["Booking.Public.LaterDays"]"><span aria-hidden="true" class="text-xl font-bold">&rsaquo;</span></a>
+        }
+    </div>
 
     <div class="space-y-3">
         <h2 class="text-lg font-semibold" data-testid="selected-day">@r.SelectedDate.ToString("dddd, d MMMM", culture)</h2>
@@ -63,14 +75,22 @@
         }
         else
         {
-            <ul class="grid grid-cols-3 gap-3 sm:grid-cols-4" data-testid="slot-list" aria-label="@T["Booking.Public.Times"]">
-                @foreach (var slot in r.Slots)
+            <div class="space-y-5" data-testid="slot-list" aria-label="@T["Booking.Public.Times"]">
+                @foreach (var group in r.Groups)
                 {
-                    <li>
-                        <a href="/book/@r.ServiceId/details?start=@Uri.EscapeDataString(slot.Start.ToIso())@staffQuery" data-testid="slot" class="slot">@slot.LocalStart.ToString("HH:mm", culture)</a>
-                    </li>
+                    <section class="space-y-2" data-testid="slot-group">
+                        <h3 class="text-xs font-semibold uppercase tracking-wide text-stone-600">@T[group.LabelKey]</h3>
+                        <ul class="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                            @foreach (var slot in group.Slots)
+                            {
+                                <li>
+                                    <a href="/book/@r.ServiceId/details?start=@Uri.EscapeDataString(slot.Start.ToIso())@staffQuery" data-testid="slot" class="slot">@slot.LocalStart.ToString("HH:mm", culture)</a>
+                                </li>
+                            }
+                        </ul>
+                    </section>
                 }
-            </ul>
+            </div>
         }
     </div>
 
