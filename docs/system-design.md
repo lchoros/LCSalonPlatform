@@ -219,6 +219,8 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   what is set up of the salon and what is left. `GettingStartedHandler` reads a handful of counts and settings
   through the tenant filter (main location, bookable staff and their hours, services, clients, coming visits,
   reminders, privacy notice, cancellation policy), so each step is done when the data says so; nothing is stored.
+  The rules live in `ISetupProgressService` in `Salon.Services` (ADR 0072), and the `SetupNote` view component
+  tells the owner on the day list and the calendar how far the set-up has come, until every required step is done.
 - `Payments/Receipt` — `/admin/payments/receipt/{appointmentId}` and `POST .../email`, behind `Payments.Record` and
   `Clients.View` (ADR 0070): the receipt of a paid visit. `IReceiptService.GetAsync` reads the bill through
   `IClientAccountService.GetBillAsync`; the pure `ReceiptRules` lists the products kept and the payments (deposit,

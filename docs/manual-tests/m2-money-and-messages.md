@@ -718,6 +718,15 @@ Needs the client import switched on (`Features:ClientImport`, on in Development)
 - [ ] BD3. A period of exactly 62 days is still drawn day by day; 63 days are drawn by week.
 - [ ] BD4. On a phone the chart fits the card without a sideways scroll.
 
+## BE. The note on the diary while set-up is unfinished (after the branch `agent/m3-52-setup-note` is merged too; no migration)
+- [ ] BE1. As the owner of a salon with steps left on "Getting started": the day list and the calendar carry a
+      yellow note "Your salon is not set up yet: N of 8 steps done." with a "Getting started" link that opens the
+      page, where the same count stands.
+- [ ] BE2. Sign in as a manager: no note on either page.
+- [ ] BE3. Finish every required step (the demo salon: save the privacy notice last): the note is gone from both
+      pages without anything to dismiss.
+- [ ] BE4. Undo one step (switch reminders off): the note is back with one step fewer done.
+
 ## Clean up
 The demo data is yours to keep or reset. To start again from a clean demo salon, drop and recreate `salon_dev`; the
 app seeds it on the next start. Set the four policy numbers back to 0 if you want the salon without a policy.

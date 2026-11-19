@@ -1,13 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using NodaTime;
-using Salon.Core.Appointments;
 using Salon.Core.Cqrs;
 using Salon.Core.Identity;
 using Salon.Core.Settings;
-using Salon.Data;
-using Salon.Services.Locations;
 using Salon.Services.Settings;
 using Salon.Web.Framework.Controllers;
 using Salon.Web.Framework.Infrastructure;
@@ -18,32 +13,22 @@ namespace Salon.Web.Features.Settings.GettingStarted;
 /// <summary>What is set up of a salon and what is left, from its own data (ADR 0068). A query: it reads, never writes.</summary>
 public sealed record GettingStartedQuery : IQuery<SetupChecklist>;
 
-/// <summary>A step of setting a salon up.</summary>
-public enum SetupStepKey
-{
-    SalonDetails = 1,
-    Team = 2,
-    Hours = 3,
-    PriceList = 4,
-    Clients = 5,
-    Diary = 6,
-    Reminders = 7,
-    Policy = 8,
-    PrivacyNotice = 9,
-}
-
-/// <param name="Done">What the salon's data says, not a box somebody ticked.</param>
-/// <param name="Optional">A step a salon may leave: it is not counted toward "all done".</param>
-/// <param name="Counts">The numbers the step's sentence names, in order.</param>
+/// <param name="State">The step as the salon's data says it stands.</param>
 /// <param name="Path">Where the step is done.</param>
 /// <param name="ImportPath">Where the same can come over from a file, when the salon may use it.</param>
-public sealed record SetupStep(SetupStepKey Key, bool Done, bool Optional, IReadOnlyList<int> Counts, string Path, string? ImportPath = null)
+public sealed record SetupStep(SetupStepState State, string Path, string? ImportPath = null)
 {
+    public SetupStepKey Key => State.Key;
+
+    public bool Done => State.Done;
+
+    public bool Optional => State.Optional;
+
     /// <summary>The resource key of the step's sentence for its state.</summary>
     public string SentenceKey => $"Settings.GettingStarted.{Key}.{(Done ? "Done" : "Todo")}";
 
     /// <summary>The counts as format arguments.</summary>
-    public object[] Arguments => [.. Counts.Cast<object>()];
+    public object[] Arguments => [.. State.Counts.Cast<object>()];
 }
 
 public sealed record SetupChecklist(IReadOnlyList<SetupStep> Steps)
@@ -56,51 +41,42 @@ public sealed record SetupChecklist(IReadOnlyList<SetupStep> Steps)
 }
 
 /// <summary>
-/// Reads through the tenant filter only: a handful of counts. Each step is "done" when the salon's data says so, so
-/// the list is never out of date and needs no box of its own.
+/// Reads through <see cref="ISetupProgressService"/> (the rules live there, shared with the diary's note, ADR 0072)
+/// and says where each step is done. The addresses are this slice's own concern.
 /// </summary>
 public sealed class GettingStartedHandler(
-    SalonDbContext db,
-    ILocationService locations,
-    ISettingService settings,
-    IOptionsMonitor<FeaturesOptions> features,
-    IClock clock) : IRequestHandler<GettingStartedQuery, SetupChecklist>
+    ISetupProgressService progress,
+    IOptionsMonitor<FeaturesOptions> features) : IRequestHandler<GettingStartedQuery, SetupChecklist>
 {
     public async Task<SetupChecklist> HandleAsync(GettingStartedQuery request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var location = await locations.GetMainAsync(cancellationToken);
-        var bookable = await db.StaffMembers.AsNoTracking()
-            .Where(s => s.IsActive && s.IsBookable)
-            .Select(s => new { s.Id, HasHours = db.WorkingHours.Any(w => w.StaffMemberId == s.Id) })
-            .ToListAsync(cancellationToken);
-        var services = await db.Services.CountAsync(s => s.IsActive, cancellationToken);
-        var clients = await db.Clients.CountAsync(c => c.IsActive && c.MergedIntoClientId == null && c.ErasedAt == null, cancellationToken);
-        var now = clock.GetCurrentInstant();
-        var active = AppointmentStateMachine.Active.ToArray();
-        var coming = await db.Appointments.CountAsync(a => active.Contains(a.Status) && a.Start >= now, cancellationToken);
-        var notifications = await settings.LoadAsync<NotificationSettings>(cancellationToken);
-        var policy = await settings.LoadAsync<CancellationPolicySettings>(cancellationToken);
-        var privacy = await settings.LoadAsync<PrivacyNoticeSettings>(cancellationToken);
+        var steps = (await progress.GetAsync(cancellationToken)).Steps;
         var imports = features.CurrentValue.ClientImport;
-
-        var withoutHours = bookable.Count(s => !s.HasHours);
-        return new SetupChecklist(
-        [
-            new(SetupStepKey.SalonDetails, location is { } main && (main.Phone is not null || main.Email is not null), false, [], GettingStartedController.SalonDetailsPath),
-            new(SetupStepKey.Team, bookable.Count > 0, false, [bookable.Count], GettingStartedController.StaffPath),
-            new(SetupStepKey.Hours, bookable.Count > 0 && withoutHours == 0, false, [withoutHours], GettingStartedController.StaffPath),
-            new(SetupStepKey.PriceList, services > 0, false, [services], GettingStartedController.ServicesPath, GettingStartedController.ServiceImportPath),
-            new(SetupStepKey.Clients, clients > 0, false, [clients], GettingStartedController.ClientsPath, imports ? GettingStartedController.ClientImportPath : null),
-            new(SetupStepKey.Diary, coming > 0, false, [coming], GettingStartedController.DiaryPath, imports ? GettingStartedController.DiaryImportPath : null),
-            new(SetupStepKey.Reminders, notifications.RemindersEnabled, false, [notifications.FirstReminderHours], GettingStartedController.NotificationsPath),
-            new(SetupStepKey.Policy, policy.NoShowFeePercent > 0m || policy.LateCancellationFeePercent > 0m || policy.FreeChangeHours > 0, true, [], GettingStartedController.PolicyPath),
-
-            // Saved once is read once: the date is set the first time the owner saves the page.
-            new(SetupStepKey.PrivacyNotice, privacy.UpdatedOn is not null, false, [], GettingStartedController.PrivacyPath),
-        ]);
+        return new SetupChecklist([.. steps.Select(s => new SetupStep(s, Path(s.Key), ImportPath(s.Key, imports)))]);
     }
+
+    private static string Path(SetupStepKey key) => key switch
+    {
+        SetupStepKey.SalonDetails => GettingStartedController.SalonDetailsPath,
+        SetupStepKey.Team or SetupStepKey.Hours => GettingStartedController.StaffPath,
+        SetupStepKey.PriceList => GettingStartedController.ServicesPath,
+        SetupStepKey.Clients => GettingStartedController.ClientsPath,
+        SetupStepKey.Diary => GettingStartedController.DiaryPath,
+        SetupStepKey.Reminders => GettingStartedController.NotificationsPath,
+        SetupStepKey.Policy => GettingStartedController.PolicyPath,
+        SetupStepKey.PrivacyNotice => GettingStartedController.PrivacyPath,
+        _ => throw new ArgumentOutOfRangeException(nameof(key), key, null),
+    };
+
+    private static string? ImportPath(SetupStepKey key, bool imports) => key switch
+    {
+        SetupStepKey.PriceList => GettingStartedController.ServiceImportPath,
+        SetupStepKey.Clients when imports => GettingStartedController.ClientImportPath,
+        SetupStepKey.Diary when imports => GettingStartedController.DiaryImportPath,
+        _ => null,
+    };
 }
 
 /// <summary>
