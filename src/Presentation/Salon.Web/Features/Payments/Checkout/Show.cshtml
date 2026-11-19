@@ -59,6 +59,10 @@
                 <dd class="text-right tabular-nums" data-testid="bill-paid">−@paid.Amount.ToDisplayString(culture)</dd>
             }
         </dl>
+        @if (bill.Payment is not null)
+        {
+            <a href="@CheckoutController.ReceiptPath(bill.AppointmentId)" data-testid="receipt-link" class="inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-2">@T["Payments.Checkout.Receipt"]</a>
+        }
         @if (bill.Products.Count > 0)
         {
             @* Products rung up on this bill (ADR 0037): an unpaid line can still be taken off, a paid one says how it was paid. *@

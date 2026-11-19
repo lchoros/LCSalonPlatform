@@ -125,4 +125,17 @@ public partial class LocalizationResourceTests
 
         expected.Where(key => !known.ContainsKey(key)).ShouldBeEmpty();
     }
+
+    [Fact]
+    public void Every_line_of_a_receipt_and_every_reason_it_was_not_sent_has_its_text()
+    {
+        var expected = Enum.GetNames<ReceiptPaymentKind>().Select(kind => $"Payments.Receipt.Paid.{kind}")
+            .Concat(new[] { ReceiptEmailOutcome.NoEmail, ReceiptEmailOutcome.EmailsOff }.Select(outcome => $"Payments.Receipt.NotSent.{outcome}"));
+
+        foreach (var culture in new[] { SupportedCultures.EnGb, SupportedCultures.PlPl })
+        {
+            var known = Resources.Value[culture];
+            expected.Where(key => !known.ContainsKey(key)).ShouldBeEmpty(culture);
+        }
+    }
 }

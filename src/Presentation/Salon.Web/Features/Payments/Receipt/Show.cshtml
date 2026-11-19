@@ -1,0 +1,84 @@
+@using System.Globalization
+@using Salon.Web.Features.Payments.Receipt
+@model ReceiptViewModel
+@{
+    var receipt = Model.Receipt;
+    var culture = CultureInfo.CurrentCulture;
+    ViewData["Title"] = T["Payments.Receipt.Title"];
+}
+<section class="mx-auto max-w-lg space-y-6">
+    <a href="@Model.CheckoutPath" data-testid="back" class="back-link screen-only">&larr; @T["Payments.Receipt.Back"]</a>
+    <h1 class="page-title screen-only">@T["Payments.Receipt.Title"]</h1>
+
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok screen-only">@flash</p>
+    }
+    @if (Model.Problem is { } problem)
+    {
+        <p role="alert" data-testid="problem" class="notice notice-error screen-only">@problem</p>
+    }
+
+    <article class="space-y-4 panel print:border-0 print:shadow-none" data-testid="receipt">
+        <header class="space-y-1">
+            <h2 class="text-lg font-semibold" data-testid="receipt-salon">@receipt.SalonName</h2>
+            @if (receipt.Location is { } location)
+            {
+                <p class="text-sm text-stone-600" data-testid="receipt-address">@location.Address</p>
+                @if (location.Phone is { } phone)
+                {
+                    <p class="text-sm text-stone-600">@phone</p>
+                }
+                @if (location.Email is { } salonEmail)
+                {
+                    <p class="text-sm text-stone-600">@salonEmail</p>
+                }
+            }
+        </header>
+
+        <div class="space-y-1 border-t border-stone-200 pt-3">
+            <p class="font-semibold">@T.Format("Payments.Receipt.Heading", receipt.PaidAt.Date.ToDayHeading(culture))</p>
+            <p data-testid="receipt-client">@receipt.ClientName</p>
+            <p class="text-sm text-stone-600" data-testid="receipt-visit">@T.Format("Payments.Receipt.Visit", receipt.Start.Date.ToDayHeading(culture), receipt.Start.TimeOfDay.ToShortTime(culture), receipt.StaffName)</p>
+        </div>
+
+        <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 border-t border-stone-200 pt-3">
+            <dt>@receipt.ServiceName</dt>
+            <dd class="text-right tabular-nums" data-testid="receipt-price">@receipt.Price.ToDisplayString(culture)</dd>
+            @foreach (var product in receipt.Products)
+            {
+                <dt data-testid="receipt-product">@T.Format("Payments.Receipt.ProductLine", product.Quantity, product.Name)</dt>
+                <dd class="text-right tabular-nums">@product.Total.ToDisplayString(culture)</dd>
+            }
+            <dt class="font-semibold">@T["Payments.Receipt.TotalLabel"]</dt>
+            <dd class="text-right font-semibold tabular-nums" data-testid="receipt-total">@receipt.Total.ToDisplayString(culture)</dd>
+        </dl>
+
+        <div class="space-y-2 border-t border-stone-200 pt-3">
+            <h3 class="font-semibold">@T["Payments.Receipt.PaidHeading"]</h3>
+            <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-2" data-testid="receipt-payments">
+                @foreach (var payment in receipt.Payments)
+                {
+                    <dt data-testid="receipt-payment" data-kind="@payment.Kind">@T.Format($"Payments.Receipt.Paid.{payment.Kind}", PaymentMethodNames.Name(T, payment.Method, payment.MethodName))</dt>
+                    <dd class="text-right tabular-nums">@payment.Amount.ToDisplayString(culture)</dd>
+                }
+            </dl>
+        </div>
+
+        <p class="border-t border-stone-200 pt-3 text-sm text-stone-600">@T["Payments.Receipt.Covers"]</p>
+    </article>
+
+    <section class="space-y-3 panel screen-only" data-testid="receipt-actions">
+        @if (receipt.ClientEmail is { } to)
+        {
+            <form method="post" action="@Model.EmailPath" asp-antiforgery="true">
+                <button type="submit" class="btn btn-compact btn-primary w-full sm:w-auto" data-testid="email-receipt">@T.Format("Payments.Receipt.Email", to)</button>
+            </form>
+        }
+        else
+        {
+            <p class="text-sm text-stone-600" data-testid="no-email">@T["Payments.Receipt.NotSent.NoEmail"]</p>
+        }
+        <p class="text-sm text-stone-600">@T["Payments.Receipt.PrintHint"]</p>
+    </section>
+</section>
