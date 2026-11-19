@@ -27,4 +27,10 @@ public interface IUserService
     Task SetRoleAsync(Guid userId, Role role, CancellationToken cancellationToken = default);
 
     Task DeactivateAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>Turns a login back on; the stamp rotates like every other security change.</summary>
+    Task ReactivateAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>Every login of the current tenant, active and not, owners first then by name.</summary>
+    Task<IReadOnlyList<User>> ListAsync(CancellationToken cancellationToken = default);
 }

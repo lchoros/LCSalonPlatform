@@ -1,0 +1,52 @@
+@using Salon.Core.Identity
+@using Salon.Web.Features.Identity.CreateLogin
+@model CreateLoginCommand
+@{
+    ViewData["Title"] = T["Identity.Team.Add"];
+    const string inputClass = "field field-compact";
+}
+<section class="mx-auto max-w-sm space-y-6">
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Identity.Team.Add"]</h1>
+        <p class="text-stone-600">@T["Identity.Team.Add.Lead"]</p>
+    </header>
+    <form method="post" asp-action="New" class="space-y-5" novalidate data-testid="create-login-form">
+        <div asp-validation-summary="ModelOnly" class="notice notice-error" role="alert"></div>
+
+        <div class="space-y-1">
+            <label asp-for="DisplayName" class="field-label">@T["Identity.Team.Name"]</label>
+            <input asp-for="DisplayName" autocomplete="off" aria-describedby="name-error" class="@inputClass" />
+            <span asp-validation-for="DisplayName" id="name-error" class="field-error"></span>
+        </div>
+
+        <div class="space-y-1">
+            <label asp-for="Email" class="field-label">@T["Identity.Team.Email"]</label>
+            <input asp-for="Email" type="email" inputmode="email" autocomplete="off" spellcheck="false" aria-describedby="email-error" class="@inputClass" />
+            <span asp-validation-for="Email" id="email-error" class="field-error"></span>
+        </div>
+
+        <fieldset class="space-y-1">
+            <legend class="field-label">@T["Identity.Team.Role"]</legend>
+            <p id="role-hint" class="text-sm text-stone-600">@T["Identity.Team.RoleHint"]</p>
+            <div class="flex flex-wrap gap-x-4" aria-describedby="role-hint">
+                @foreach (var role in Enum.GetValues<Role>())
+                {
+                    <label class="flex min-h-11 items-center gap-2"><input type="radio" asp-for="Role" value="@role" /> @T[$"Identity.Team.Role.{role}"]</label>
+                }
+            </div>
+            <span asp-validation-for="Role" class="field-error"></span>
+        </fieldset>
+
+        <div class="space-y-1">
+            <label asp-for="Password" class="field-label">@T["Identity.Team.StartingPassword"]</label>
+            <p id="password-hint" class="text-sm text-stone-600">@T["Identity.Team.StartingPasswordHint"]</p>
+            <input asp-for="Password" type="password" autocomplete="new-password" aria-describedby="password-hint password-error" class="@inputClass" />
+            <span asp-validation-for="Password" id="password-error" class="field-error"></span>
+        </div>
+
+        <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+            <a href="/admin/settings/team" class="btn btn-compact btn-secondary">@T["Identity.Team.Cancel"]</a>
+            <button type="submit" class="btn btn-compact btn-primary" data-testid="create-login-submit">@T["Identity.Team.Add"]</button>
+        </div>
+    </form>
+</section>

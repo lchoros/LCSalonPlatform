@@ -1,4 +1,5 @@
 using Salon.Core.Appointments;
+using Salon.Core.Identity;
 using Salon.Core.Import;
 using Salon.Core.Localization;
 using Salon.Core.Messaging;
@@ -125,6 +126,18 @@ public partial class LocalizationResourceTests
         var known = Resources.Value[SupportedCultures.EnGb];
 
         expected.Where(key => !known.ContainsKey(key)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Every_role_a_login_can_have_has_its_name_in_both_languages()
+    {
+        var expected = Enum.GetNames<Role>().Select(role => $"Identity.Team.Role.{role}");
+
+        foreach (var culture in new[] { SupportedCultures.EnGb, SupportedCultures.PlPl })
+        {
+            var known = Resources.Value[culture];
+            expected.Where(key => !known.ContainsKey(key)).ShouldBeEmpty(culture);
+        }
     }
 
     [Fact]

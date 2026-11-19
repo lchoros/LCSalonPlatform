@@ -1,0 +1,52 @@
+@using System.Globalization
+@using Salon.Services.Formatting
+@using Salon.Web.Features.Identity.TeamLogins
+@using Salon.Web.Framework.Ui
+@model TeamLoginsViewModel
+@{
+    var culture = CultureInfo.CurrentCulture;
+    ViewData["Title"] = T["Identity.Team.Title"];
+}
+<section class="mx-auto max-w-xl space-y-6">
+    <partial name="_SettingsNav" model="@("team")" />
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+    <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div class="space-y-2">
+            <h1 class="page-title">@T["Identity.Team.Title"]</h1>
+            <p class="text-stone-600">@T["Identity.Team.Lead"]</p>
+        </div>
+        <a href="/admin/settings/team/new" class="btn btn-compact btn-primary shrink-0" data-testid="add-login">@T["Identity.Team.Add"]</a>
+    </header>
+
+    <ol class="list-card" data-testid="team-logins">
+        @foreach (var login in Model.List.Logins)
+        {
+            <li class="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4" data-testid="team-login" data-active="@login.IsActive.ToString().ToLowerInvariant()">
+                <div class="min-w-0 space-y-1">
+                    <p class="font-semibold break-words">
+                        @login.DisplayName
+                        @if (login.Id == Model.CurrentUserId)
+                        {
+                            <span class="text-sm font-normal text-stone-600">· @T["Identity.Team.You"]</span>
+                        }
+                    </p>
+                    <p class="text-sm text-stone-700 break-words">@login.Email</p>
+                    <p class="text-sm text-stone-600" data-testid="team-login-last">
+                        @(login.LastSignIn is { } last
+                            ? T.Format("Identity.Team.LastSignIn", last.Date.ToDayHeading(culture), last.TimeOfDay.ToShortTime(culture))
+                            : T["Identity.Team.NeverSignedIn"])
+                    </p>
+                </div>
+                <div class="flex shrink-0 items-center gap-3">
+                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold @Badges.TeamLogin(login.IsActive)" data-testid="team-login-role">
+                        @T[$"Identity.Team.Role.{login.Role}"]@(login.IsActive ? null : $" · {T["Identity.Team.Off"]}")
+                    </span>
+                    <a href="@TeamLoginsController.EditPath(login.Id)" class="inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-2" data-testid="edit-login">@T["Identity.Team.Change"]</a>
+                </div>
+            </li>
+        }
+    </ol>
+</section>
