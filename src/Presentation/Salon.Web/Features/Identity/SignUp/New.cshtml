@@ -1,0 +1,59 @@
+@using Salon.Core.Tenancy
+@using Salon.Web.Features.Identity.SignUp
+@model SignUpCommand
+@{
+    ViewData["Title"] = T["Identity.SignUp.Title"];
+    const string inputClass = "field field-compact";
+}
+<section class="mx-auto max-w-sm space-y-6">
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Identity.SignUp.Title"]</h1>
+        <p class="text-stone-600">@T["Identity.SignUp.Lead"]</p>
+    </header>
+    <form method="post" asp-action="New" class="space-y-5" novalidate data-testid="signup-form">
+        <div asp-validation-summary="ModelOnly" data-testid="signup-error" class="notice notice-error" role="alert"></div>
+
+        <div class="space-y-1">
+            <label asp-for="SalonName" class="field-label">@T["Identity.SignUp.SalonName"]</label>
+            <input asp-for="SalonName" autocomplete="organization" aria-describedby="salon-name-error" class="@inputClass" />
+            <span asp-validation-for="SalonName" id="salon-name-error" class="field-error"></span>
+        </div>
+
+        <div class="space-y-1">
+            <label asp-for="Slug" class="field-label">@T["Identity.SignUp.Slug"]</label>
+            <input asp-for="Slug" autocomplete="off" spellcheck="false" placeholder="studio-20" aria-describedby="slug-hint slug-error" class="@inputClass" />
+            <p id="slug-hint" class="text-sm text-stone-600">@T.Format("Identity.SignUp.SlugHint", TenantSlugRules.MinLength, TenantSlugRules.MaxLength)</p>
+            <span asp-validation-for="Slug" id="slug-error" class="field-error"></span>
+        </div>
+
+        <fieldset class="space-y-1">
+            <legend class="field-label">@T["Identity.SignUp.Country"]</legend>
+            <p id="country-hint" class="text-sm text-stone-600">@T["Identity.SignUp.CountryHint"]</p>
+            <div class="flex gap-4" aria-describedby="country-hint">
+                <label class="flex min-h-11 items-center gap-2"><input type="radio" asp-for="Country" value="@SignUpCountry.England" /> @T["Identity.SignUp.Country.England"]</label>
+                <label class="flex min-h-11 items-center gap-2"><input type="radio" asp-for="Country" value="@SignUpCountry.Poland" /> @T["Identity.SignUp.Country.Poland"]</label>
+            </div>
+            <span asp-validation-for="Country" class="field-error"></span>
+        </fieldset>
+
+        <div class="space-y-1">
+            <label asp-for="DisplayName" class="field-label">@T["Identity.SignUp.DisplayName"]</label>
+            <input asp-for="DisplayName" autocomplete="name" aria-describedby="display-name-error" class="@inputClass" />
+            <span asp-validation-for="DisplayName" id="display-name-error" class="field-error"></span>
+        </div>
+
+        <div class="space-y-1">
+            <label asp-for="Email" class="field-label">@T["Identity.SignUp.Email"]</label>
+            <input asp-for="Email" type="email" inputmode="email" autocomplete="email" spellcheck="false" aria-describedby="email-error" class="@inputClass" />
+            <span asp-validation-for="Email" id="email-error" class="field-error"></span>
+        </div>
+
+        <div class="space-y-1">
+            <label asp-for="Password" class="field-label">@T["Identity.SignUp.Password"]</label>
+            <input asp-for="Password" type="password" autocomplete="new-password" aria-describedby="password-error" class="@inputClass" />
+            <span asp-validation-for="Password" id="password-error" class="field-error"></span>
+        </div>
+
+        <button type="submit" class="btn btn-compact btn-primary w-full" data-testid="signup-submit">@T["Identity.SignUp.Submit"]</button>
+    </form>
+</section>

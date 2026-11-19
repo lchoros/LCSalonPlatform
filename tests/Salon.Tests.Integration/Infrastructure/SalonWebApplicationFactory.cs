@@ -39,6 +39,7 @@ public sealed class SalonWebApplicationFactory : WebApplicationFactory<Program>,
         Environment.SetEnvironmentVariable("Auth__LoginRateLimit__PermitLimit", "100000");
         // Slices behind a flag (CLAUDE.md Tier 1) are on in the test host; the flag-off path has its own test with in-memory configuration.
         Environment.SetEnvironmentVariable("Features__ClientImport", "true");
+        Environment.SetEnvironmentVariable("Features__SignUp", "true");
         // Likewise for the public booking limits (ADR 0014); the per-phone limit is a domain rule and stays.
         Environment.SetEnvironmentVariable("PublicBooking__SmsCodeRateLimit__PermitLimit", "100000");
         Environment.SetEnvironmentVariable("PublicBooking__CodeVerifyRateLimit__PermitLimit", "100000");

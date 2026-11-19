@@ -8,7 +8,7 @@ namespace Salon.Services.Identity;
 internal sealed class UserService(SalonDbContext db, IPasswordService passwords, IClock clock) : IUserService
 {
     /// <summary>A floor, not a policy: the owner picks the password; M2 adds strength rules and reset by email.</summary>
-    public const int MinPasswordLength = 8;
+    public const int MinPasswordLength = IUserService.MinPasswordLength;
 
     public async Task<User> CreateAsync(string email, string displayName, string password, Role role, CancellationToken cancellationToken = default)
     {

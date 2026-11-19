@@ -8,6 +8,9 @@ namespace Salon.Services.Identity;
 /// </summary>
 public interface IUserService
 {
+    /// <summary>The shortest password a login may have, checked wherever one is set.</summary>
+    public const int MinPasswordLength = 8;
+
     /// <summary>
     /// Creates a user in the current tenant. The email is trimmed and lower-cased; a duplicate within the tenant throws
     /// <see cref="InvalidOperationException"/>, an invalid argument <see cref="ArgumentException"/>.

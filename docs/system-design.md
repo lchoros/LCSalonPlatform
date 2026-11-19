@@ -260,6 +260,11 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   Every commit stamps its visits with one `ImportBatchId`; `Appointments/UndoImport` — `/admin/appointments/import/undo`
   (ADR 0074) lists the read-ins and takes one out again: one `ExecuteDelete` of the visits still exactly as the file
   left them (booked, one history line, no money, no products), history and reminders by cascade, the rest kept.
+- `Identity/SignUp` — `/signup` on the bare base domain behind `Features:SignUp` (ADR 0075): a salon and its
+  owner's login in one form and one transaction. `TenantSlugRules` (Core) shapes the web address and keeps the
+  platform's names back; the country sets zone, language and currency; the command is `IPlatformRequest`, puts the
+  new tenant in scope and creates the owner through `IUserService`. The done page hands over the salon's own
+  sign-in address; the auth cookie stays host-scoped (ADR 0009).
 - `Clients/ImportClients` — `/admin/clients/import` behind `Clients.Manage` and `Features:ClientImport` (ADR 0019):
   upload a Booksy or Versum CSV, preview (new / duplicate / invalid), confirm. Parsing lives in the plugin
   `Salon.Plugin.Import`; the preview is kept server-side under a random token bound to the salon.
