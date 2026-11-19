@@ -159,8 +159,10 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `ServiceImportClassifier` calls each row new, changed (with the old and new time, price and deposit), unchanged,
   repeated or invalid by `ServiceRules`; `IServiceImportService.CommitAsync` classifies again against the services
   as they are then, adds the new ones under their categories and gives the others the file's numbers. Nothing is
-  removed. `Catalog/ExportServices` — `GET /admin/services/price-list.csv`: the same list as a file the import
-  reads back.
+  removed. An optional Variant column (ADR 0073) makes a row the service "Name · Variant", saved as a proper
+  variant (`VariantGroup`, `VariantLabel`), so it groups on the booking page. `Catalog/ExportServices` —
+  `GET /admin/services/price-list.csv`: the same list as a file the import reads back, variants split into the
+  two columns.
 - `Products/ExportProducts` — `GET /admin/products/stock.csv` behind `Catalog.Manage` (ADR 0047): every product with
   what is on the shelf today as a CSV file, under the headings the import reads, so the file of one salon is the
   product list of another. Written by `SalonControllerBase.CsvDownload` like the money file.

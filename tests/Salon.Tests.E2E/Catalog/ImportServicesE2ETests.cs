@@ -31,10 +31,11 @@ public class ImportServicesE2ETests(KestrelAppFixture app) : IClassFixture<Kestr
         var gel = $"Gel nails {suffix}";
         var heading = $"Nails {suffix}";
         var csv =
-            "Category,Service,Minutes,Price,Deposit %\n" +
-            ",Cut & blow-dry,45,47.50,\n" +
-            $"{heading},{gel},60,£30.00,10\n" +
-            $"{heading},Manicure {suffix},47,20,\n";
+            "Category,Service,Variant,Minutes,Price,Deposit %\n" +
+            ",Cut & blow-dry,,45,47.50,\n" +
+            $"{heading},{gel},,60,£30.00,10\n" +
+            $"{heading},Keratin {suffix},Long hair,120,150,\n" +
+            $"{heading},Manicure {suffix},,47,20,\n";
         await using var context = await app.Browser.NewContextAsync(new BrowserNewContextOptions
         {
             ViewportSize = new ViewportSize { Width = 390, Height = 844 },
@@ -50,7 +51,7 @@ public class ImportServicesE2ETests(KestrelAppFixture app) : IClassFixture<Kestr
         // 1. From the services page to the file; the page says what a file looks like and what will and will not change.
         await page.GetByTestId("import-services").ClickAsync();
         await page.ReachAsync("**/admin/services/import");
-        (await page.GetByTestId("import-columns").TextContentAsync()).ShouldNotBeNull().ShouldContain("Category,Service,Minutes,Price,Deposit %");
+        (await page.GetByTestId("import-columns").TextContentAsync()).ShouldNotBeNull().ShouldContain("Category,Service,Variant,Minutes,Price,Deposit %");
         (await page.GetByTestId("import-rules").TextContentAsync()).ShouldNotBeNull().ShouldContain("Nothing is removed.");
         await CheckAndShootAsync(page, "services-import-upload-mobile-390.png");
 
@@ -63,22 +64,26 @@ public class ImportServicesE2ETests(KestrelAppFixture app) : IClassFixture<Kestr
         });
         await page.GetByTestId("import-upload").ClickAsync();
         await page.ReachAsync(url => url.Contains("/admin/services/import/", StringComparison.Ordinal));
-        (await page.GetByTestId("count-new").TextContentAsync()).ShouldNotBeNull().Trim().ShouldBe("1");
+        (await page.GetByTestId("count-new").TextContentAsync()).ShouldNotBeNull().Trim().ShouldBe("2");
         (await page.GetByTestId("count-changed").TextContentAsync()).ShouldNotBeNull().Trim().ShouldBe("1");
         (await page.GetByTestId("count-unchanged").TextContentAsync()).ShouldNotBeNull().Trim().ShouldBe("0");
         (await page.GetByTestId("count-left-out").TextContentAsync()).ShouldNotBeNull().Trim().ShouldBe("1");
         var changed = page.Locator("[data-testid='import-row'][data-status='Changed']");
         (await changed.GetByTestId("import-row-details").TextContentAsync()).ShouldBe("£45.00 → £47.50");
-        var added = page.Locator("[data-testid='import-row'][data-status='New']");
+        var added = page.Locator("[data-testid='import-row'][data-status='New']").Filter(new LocatorFilterOptions { HasText = gel });
         (await added.GetByTestId("import-row-details").TextContentAsync()).ShouldBe($"{heading} · 60 min · £30.00 · deposit 10%");
+
+        // The variant row is the service "Name · Variant" (ADR 0073).
+        var variant = page.Locator("[data-testid='import-row'][data-status='New']").Filter(new LocatorFilterOptions { HasText = "Long hair" });
+        (await variant.GetByTestId("import-row-name").TextContentAsync()).ShouldBe($"Keratin {suffix} · Long hair");
         (await page.GetByText("The time must be whole minutes from 5 to 600, in steps of 5, such as 45.").CountAsync()).ShouldBe(1);
-        (await page.GetByTestId("import-confirm").TextContentAsync()).ShouldBe("Add 1 and change 1");
+        (await page.GetByTestId("import-confirm").TextContentAsync()).ShouldBe("Add 2 and change 1");
         await CheckAndShootAsync(page, "services-import-preview-mobile-390.png");
 
         // 3. Confirmed: one service added with its heading, one changed.
         await page.GetByTestId("import-confirm").ClickAsync();
         await page.WaitForSelectorAsync("[data-testid='import-result']");
-        (await page.GetByTestId("result-added").TextContentAsync()).ShouldNotBeNull().Trim().ShouldBe("1");
+        (await page.GetByTestId("result-added").TextContentAsync()).ShouldNotBeNull().Trim().ShouldBe("2");
         (await page.GetByTestId("result-updated").TextContentAsync()).ShouldNotBeNull().Trim().ShouldBe("1");
         (await page.GetByTestId("result-categories").TextContentAsync()).ShouldBe("1 category was added with them.");
         (await page.GetByTestId("result-rest").TextContentAsync()).ShouldBe("Stayed as they were: 0. Rows left out: 1.");
@@ -93,6 +98,8 @@ public class ImportServicesE2ETests(KestrelAppFixture app) : IClassFixture<Kestr
         (await nails.CountAsync()).ShouldBe(1);
         (await nails.GetByTestId("service-price").TextContentAsync()).ShouldNotBeNull().ShouldContain("£30.00");
         (await page.GetByTestId("group-heading").AllTextContentsAsync()).ShouldContain(h => h.Contains(heading, StringComparison.Ordinal));
+        var keratin = page.GetByTestId("service-card").Filter(new LocatorFilterOptions { HasText = "Long hair" });
+        (await keratin.GetByTestId("service-variant-of").TextContentAsync()).ShouldBe($"Variant of Keratin {suffix}");
     }
 
     private static async Task CheckAndShootAsync(IPage page, string fileName)

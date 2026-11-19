@@ -37,7 +37,7 @@
             <li data-testid="import-row" data-status="@row.Status" class="flex flex-col gap-2 p-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                 <div class="min-w-0 space-y-1">
                     <p class="text-xs text-stone-600">@T["Catalog.Import.Preview.Row"] @row.Row.SourceRow</p>
-                    <p class="font-semibold break-words" data-testid="import-row-name">@row.Row.Name.OrDash()</p>
+                    <p class="font-semibold break-words" data-testid="import-row-name">@row.Row.FullName.OrDash()</p>
                     <p class="text-sm text-stone-700 break-words tabular-nums" data-testid="import-row-details">@ServiceImportText.Details(T, row, Model.Currency, culture)</p>
                     @if (row.Problems.Count > 0)
                     {

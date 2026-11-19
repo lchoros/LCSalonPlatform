@@ -90,7 +90,11 @@ internal sealed class ServiceImportService(
                 var service = new Service
                 {
                     TenantId = tenantId,
-                    Name = ServiceRules.NormalizeName(row.Row.Name),
+                    Name = ServiceRules.NormalizeName(row.Row.FullName),
+
+                    // A row with a variant becomes a proper variant (ADR 0073), so it groups on the lists and the booking page.
+                    VariantGroup = row.Row.Variant is null ? null : ServiceRules.NormalizeName(row.Row.Name),
+                    VariantLabel = ServiceRules.NormalizeVariant(row.Row.Variant),
                     Duration = Duration.FromMinutes(row.Row.Minutes!.Value),
                     Price = row.Row.Price!.Value,
                     DepositPercent = row.Row.DepositPercent,

@@ -76,7 +76,7 @@ public partial class ImportServicesTests(SalonWebApplicationFactory factory) : I
 
         var form = await GetOkAsync(client, ImportPath);
         form.ShouldContain("Price list from a file");
-        form.ShouldContain("Category,Service,Minutes,Price,Deposit %");
+        form.ShouldContain("Category,Service,Variant,Minutes,Price,Deposit %");
         form.ShouldContain("A service you already have (the same name) gets the time, the price and the deposit from the file.");
         form.ShouldContain("Nothing is removed.");
         form.ShouldContain("Visits already booked keep the price they were booked at.");
@@ -213,17 +213,17 @@ public partial class ImportServicesTests(SalonWebApplicationFactory factory) : I
         var text = Encoding.UTF8.GetString(bytes, 3, bytes.Length - 3);
         text.Split("\r\n").ShouldBe(
         [
-            "Category,Service,Minutes,Price,Deposit %,In use",
-            "Hair,Cut,45,45.00,,Yes",
-            "Hair,Colour,120,80.00,20,Yes",
-            ",Old perm,90,60.00,,No",
+            "Category,Service,Variant,Minutes,Price,Deposit %,In use",
+            "Hair,Cut,,45,45.00,,Yes",
+            "Hair,Colour,,120,80.00,20,Yes",
+            ",Old perm,,90,60.00,,No",
             string.Empty,
         ]);
 
         // Read back as it is: nothing to do. With a price rise typed into it: one service changes.
         var same = await GetOkAsync(manager, (await UploadAsync(manager, bytes, "price-list.csv")).Headers.Location!.OriginalString);
         (Count(same, "count-new"), Count(same, "count-changed"), Count(same, "count-unchanged"), Count(same, "count-left-out")).ShouldBe(("0", "0", "3", "0"));
-        var edited = Encoding.UTF8.GetBytes(text.Replace("Hair,Colour,120,80.00,20,Yes", "Hair,Colour,135,84.00,25,Yes", StringComparison.Ordinal));
+        var edited = Encoding.UTF8.GetBytes(text.Replace("Hair,Colour,,120,80.00,20,Yes", "Hair,Colour,,135,84.00,25,Yes", StringComparison.Ordinal));
         var previewPath = (await UploadAsync(manager, edited, "price-list.csv")).Headers.Location!.OriginalString;
         var preview = await GetOkAsync(manager, previewPath);
         (Count(preview, "count-new"), Count(preview, "count-changed"), Count(preview, "count-unchanged")).ShouldBe(("0", "1", "2"));
@@ -233,6 +233,36 @@ public partial class ImportServicesTests(SalonWebApplicationFactory factory) : I
         var colour = (await ServicesAsync(_studio.Id)).Single(s => s.Name == "Colour");
         ((int)colour.Duration.TotalMinutes, colour.Price, colour.DepositPercent, colour.IsActive).ShouldBe((135, 84m, 25m, true));
         (await ServicesAsync(_studio.Id)).Single(s => s.Name == "Old perm").IsActive.ShouldBeFalse("the file does not bring a service back into use");
+    }
+
+    [Fact]
+    public async Task A_variant_column_reads_in_proper_variants_and_the_salons_file_writes_them_back_split()
+    {
+        using var manager = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Manager);
+
+        // One name, two variants: two services, not a repeated row (ADR 0073).
+        var csv = Encoding.UTF8.GetBytes(
+            "Category,Service,Variant,Minutes,Price\n" +
+            "Hair,Keratin,Long hair,120,150\n" +
+            "Hair,Keratin,Short hair,90,110\n");
+        var previewPath = (await UploadAsync(manager, csv, FileName)).Headers.Location!.OriginalString;
+        var preview = await GetOkAsync(manager, previewPath);
+        preview.ShouldContain("Keratin · Long hair");
+        (Count(preview, "count-new"), Count(preview, "count-changed"), Count(preview, "count-left-out")).ShouldBe(("2", "0", "0"));
+        await ConfirmAsync(manager, previewPath);
+
+        var services = await ServicesAsync(_studio.Id);
+        var longHair = services.Single(s => s.Name == "Keratin · Long hair");
+        (longHair.VariantGroup, longHair.VariantLabel).ShouldBe(("Keratin", "Long hair"));
+        services.Single(s => s.Name == "Keratin · Short hair").VariantLabel.ShouldBe("Short hair");
+
+        // The salon's own file splits them into the two columns, and read back it has nothing to do.
+        var bytes = await (await manager.GetAsync(new Uri(FilePath, UriKind.Relative))).Content.ReadAsByteArrayAsync();
+        var text = Encoding.UTF8.GetString(bytes, 3, bytes.Length - 3);
+        text.ShouldContain("Hair,Keratin,Long hair,120,150.00,,Yes");
+        text.ShouldContain("Hair,Keratin,Short hair,90,110.00,,Yes");
+        var same = await GetOkAsync(manager, (await UploadAsync(manager, bytes, "price-list.csv")).Headers.Location!.OriginalString);
+        (Count(same, "count-new"), Count(same, "count-changed"), Count(same, "count-unchanged")).ShouldBe(("0", "0", "5"));
     }
 
     [Fact]
@@ -260,9 +290,9 @@ public partial class ImportServicesTests(SalonWebApplicationFactory factory) : I
         var bytes = await (await owner.GetAsync(new Uri(FilePath, UriKind.Relative))).Content.ReadAsByteArrayAsync();
         Encoding.UTF8.GetString(bytes, 3, bytes.Length - 3).Split("\r\n", StringSplitOptions.RemoveEmptyEntries).ShouldBe(
         [
-            "Kategoria;Usługa;Minuty;Cena;Zadatek %;W użyciu",
-            "Włosy;Strzyżenie;45;120,50;;Tak",
-            "Włosy;Koloryzacja;120;350,00;20;Tak",
+            "Kategoria;Usługa;Wariant;Minuty;Cena;Zadatek %;W użyciu",
+            "Włosy;Strzyżenie;;45;120,50;;Tak",
+            "Włosy;Koloryzacja;;120;350,00;20;Tak",
         ]);
         var back = await GetOkAsync(owner, (await UploadAsync(owner, bytes, "cennik.csv")).Headers.Location!.OriginalString);
         (Count(back, "count-new"), Count(back, "count-changed"), Count(back, "count-unchanged"), Count(back, "count-left-out")).ShouldBe(("0", "0", "2", "0"));

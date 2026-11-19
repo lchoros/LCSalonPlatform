@@ -177,6 +177,47 @@ public class ServiceImportTests
         tooShort.Problems.ShouldBe([ServiceImportProblem.InvalidMinutes]);
     }
 
+    [Fact]
+    public void A_variant_column_makes_the_full_name_and_two_variants_of_one_group_are_two_services()
+    {
+        var result = Parse("Service,Variant,Minutes,Price\nKeratin,Long hair,120,150\nKeratin,Short hair,90,110\nFringe trim,,15,8\n");
+
+        result.IsSuccess.ShouldBeTrue();
+        (result.Rows[0].Name, result.Rows[0].Variant, result.Rows[0].FullName).ShouldBe(("Keratin", "Long hair", "Keratin · Long hair"));
+        (result.Rows[2].Variant, result.Rows[2].FullName).ShouldBe((null, "Fringe trim"));
+
+        var rows = ServiceImportClassifier.Classify(result.Rows, Nothing);
+        rows.Select(r => r.Status).ShouldBe([ServiceImportStatus.New, ServiceImportStatus.New, ServiceImportStatus.New], "one group, two variants: not a repeat");
+    }
+
+    [Fact]
+    public void A_variant_service_the_salon_has_is_matched_by_its_full_name_and_polish_wariant_is_understood()
+    {
+        var keratin = new ExistingService(Guid.NewGuid(), "Keratin · Long hair", 120, 150m, null);
+
+        var rows = Classify("Usługa;Wariant;Czas;Cena\nKeratin;Long hair;120;160\n", Existing(keratin));
+
+        var row = rows.ShouldHaveSingleItem();
+        row.Status.ShouldBe(ServiceImportStatus.Changed);
+        row.Change.ShouldBe(new ServiceChange(keratin.Id, 120, 120, 150m, 160m, null, null));
+    }
+
+    [Fact]
+    public void A_variant_too_long_or_making_the_name_too_long_is_invalid()
+    {
+        var csv = "Service,Variant,Minutes,Price\n"
+            + $"Keratin,{new string('v', 101)},60,100\n"
+            + $"{new string('g', 151)},Long,60,100\n"
+            + $"{new string('n', 150)},{new string('v', 60)},60,100\n";
+
+        var rows = Classify(csv, Nothing);
+
+        rows.Select(r => r.Status).ShouldBe([ServiceImportStatus.Invalid, ServiceImportStatus.Invalid, ServiceImportStatus.Invalid]);
+        rows[0].Problems.ShouldBe([ServiceImportProblem.VariantTooLong]);
+        rows[1].Problems.ShouldBe([ServiceImportProblem.VariantTooLong], "a group fits 150 where a plain name fits 200");
+        rows[2].Problems.ShouldBe([ServiceImportProblem.NameTooLong], "the group and the variant fit, together they are over the name cap");
+    }
+
     private static Dictionary<string, ExistingService> Existing(params ExistingService[] services)
         => services.ToDictionary(s => ServiceImportClassifier.NameKey(s.Name), StringComparer.Ordinal);
 

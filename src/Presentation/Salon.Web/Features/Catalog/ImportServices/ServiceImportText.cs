@@ -26,6 +26,7 @@ public static class ServiceImportText
         {
             ServiceImportProblem.NameTooLong => localizer.Format("Catalog.Import.Problem.NameTooLong", ServiceRules.NameMaxLength),
             ServiceImportProblem.CategoryTooLong => localizer.Format("Catalog.Import.Problem.CategoryTooLong", ServiceRules.CategoryNameMaxLength),
+            ServiceImportProblem.VariantTooLong => localizer.Format("Catalog.Import.Problem.VariantTooLong", ServiceRules.VariantLabelMaxLength, ServiceRules.VariantGroupMaxLength),
             ServiceImportProblem.InvalidMinutes => localizer.Format("Catalog.Import.Problem.InvalidMinutes", ServiceRules.MinDurationMinutes, ServiceRules.MaxDurationMinutes, ServiceRules.StepMinutes),
             _ => localizer[$"Catalog.Import.Problem.{problem}"],
         };
