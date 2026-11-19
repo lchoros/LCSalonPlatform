@@ -84,6 +84,21 @@ internal sealed class UserService(SalonDbContext db, IPasswordService passwords,
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task ReactivateAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var user = await RequireAsync(userId, cancellationToken).ConfigureAwait(false);
+        user.IsActive = true;
+        user.SecurityStamp = User.NewSecurityStamp();
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyList<User>> ListAsync(CancellationToken cancellationToken = default)
+        => await db.Users.AsNoTracking()
+            .OrderBy(u => u.Role)
+            .ThenBy(u => u.DisplayName)
+            .ThenBy(u => u.Id)
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+
     private static string NormalizeEmail(string email)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(email);

@@ -38,6 +38,7 @@
   "Settings.Notifications.EmailEnabled": "Also email clients",
   "Settings.Notifications.EmailHint": "Confirmations, reminders and messages about a cancelled or moved visit also go to the email address on the client card. Texts are sent either way.",
   "Settings.Nav.SalonDetails": "Salon details",
+  "Settings.Nav.Team": "Team logins",
   "Settings.SalonDetails.Title": "Salon details",
   "Settings.SalonDetails.Lead": "Where clients find you and how they reach you. They see this when they book and at the end of their emails.",
   "Settings.SalonDetails.AddressLine1": "Address",

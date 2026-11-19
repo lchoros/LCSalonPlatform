@@ -1,0 +1,56 @@
+@using Salon.Core.Identity
+@using Salon.Web.Features.Identity.EditLogin
+@model EditLoginViewModel
+@{
+    ViewData["Title"] = T["Identity.Team.Change"];
+    const string inputClass = "field field-compact";
+}
+<section class="mx-auto max-w-sm space-y-6">
+    <header class="space-y-2">
+        <h1 class="page-title">@Model.DisplayName</h1>
+        <p class="text-stone-600" data-testid="edit-login-email">@Model.Email</p>
+        @if (Model.LastOwner)
+        {
+            <p class="notice notice-warn" data-testid="last-owner-note">@T["Identity.Team.LastOwnerNote"]</p>
+        }
+    </header>
+    <form method="post" asp-action="Edit" class="space-y-5" novalidate data-testid="edit-login-form">
+        <div asp-validation-summary="ModelOnly" class="notice notice-error" role="alert"></div>
+        <input type="hidden" asp-for="UserId" />
+
+        <fieldset class="space-y-1">
+            <legend class="field-label">@T["Identity.Team.Role"]</legend>
+            <div class="flex flex-wrap gap-x-4">
+                @foreach (var role in Enum.GetValues<Role>())
+                {
+                    <label class="flex min-h-11 items-center gap-2"><input type="radio" asp-for="Role" value="@role" disabled="@(Model.LastOwner && role != Role.Owner)" /> @T[$"Identity.Team.Role.{role}"]</label>
+                }
+            </div>
+            <span asp-validation-for="Role" class="field-error"></span>
+        </fieldset>
+
+        <div class="space-y-1">
+            <label asp-for="Password" class="field-label">@T["Identity.Team.NewPassword"]</label>
+            <p id="password-hint" class="text-sm text-stone-600">@T["Identity.Team.NewPasswordHint"]</p>
+            <input asp-for="Password" type="password" autocomplete="new-password" aria-describedby="password-hint password-error" class="@inputClass" />
+            <span asp-validation-for="Password" id="password-error" class="field-error"></span>
+        </div>
+
+        @if (!Model.LastOwner)
+        {
+            <label class="flex min-h-11 items-center gap-2">
+                <input type="checkbox" asp-for="IsActive" data-testid="login-active" />
+                @T["Identity.Team.Active"]
+            </label>
+        }
+        else
+        {
+            <input type="hidden" asp-for="IsActive" />
+        }
+
+        <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+            <a href="/admin/settings/team" class="btn btn-compact btn-secondary">@T["Identity.Team.Cancel"]</a>
+            <button type="submit" class="btn btn-compact btn-primary" data-testid="edit-login-submit">@T["Identity.Team.Save"]</button>
+        </div>
+    </form>
+</section>
