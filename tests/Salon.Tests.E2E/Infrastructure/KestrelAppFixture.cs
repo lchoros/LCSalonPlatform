@@ -499,6 +499,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
             Environment.SetEnvironmentVariable("Jobs__Enabled", "false");
             // Slices behind a flag (CLAUDE.md Tier 1) are on in the E2E host.
             Environment.SetEnvironmentVariable("Features__ClientImport", "true");
+            Environment.SetEnvironmentVariable("Features__SignUp", "true");
         }
 
         // UseStaticWebAssets maps the build-time content roots (including the pre-compressed css/app.css.gz under obj/);

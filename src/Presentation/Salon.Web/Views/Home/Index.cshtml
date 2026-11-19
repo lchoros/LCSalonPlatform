@@ -17,6 +17,10 @@
     {
         <h1 class="page-title">@T["Layout.Brand"]</h1>
         <p class="max-w-prose text-stone-600">@T["Home.PlatformTagline"]</p>
+        @if (Model.SignUpAvailable)
+        {
+            <p><a href="/signup" data-testid="start-signup" class="btn btn-primary">@T["Home.StartSalon"]</a></p>
+        }
     }
     <widget-zone name="@WidgetZones.PublicHomeBottom" />
 </section>

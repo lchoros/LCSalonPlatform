@@ -15,4 +15,7 @@ public sealed class FeaturesOptions
 
     /// <summary>Client CSV import from Booksy/Versum at /admin/clients/import (ADR 0019).</summary>
     public bool ClientImport { get; set; }
+
+    /// <summary>The public sign-up page at /signup on the base domain (ADR 0075): off until the owner opens the door.</summary>
+    public bool SignUp { get; set; }
 }

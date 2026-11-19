@@ -1,0 +1,12 @@
+@using Salon.Web.Features.Identity.SignUp
+@model SignUpDoneViewModel
+@{
+    ViewData["Title"] = T["Identity.SignUp.Done.Title"];
+}
+<section class="mx-auto max-w-sm space-y-6">
+    <header class="space-y-2">
+        <h1 class="page-title" data-testid="signup-done">@T.Format("Identity.SignUp.Done.Heading", Model.SalonName)</h1>
+        <p class="text-stone-600">@T["Identity.SignUp.Done.Lead"]</p>
+    </header>
+    <p><a href="@Model.SignInUrl" class="btn btn-primary w-full" data-testid="signup-sign-in">@T["Identity.SignUp.Done.SignIn"]</a></p>
+</section>
