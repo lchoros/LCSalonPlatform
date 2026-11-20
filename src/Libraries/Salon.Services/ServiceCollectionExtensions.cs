@@ -52,6 +52,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISetupProgressService, SetupProgressService>();
         services.AddScoped<IWaitlistService, WaitlistService>();
         services.AddScoped<IWaitlistOfferService, WaitlistOfferService>();
+        services.AddScoped<Staff.IStaffPhotoService, Staff.StaffPhotoService>();
         // Needs IClientService (registered by the host next to the field encryptor) and IPublicUrlBuilder (Web.Framework) at resolve time.
         services.AddScoped<IPublicBookingService, PublicBookingService>();
         services.AddScoped<IPublicWaitlistService, PublicWaitlistService>();

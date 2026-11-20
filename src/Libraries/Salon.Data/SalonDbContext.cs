@@ -55,6 +55,9 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     /// <summary>Planned absences per staff member: local dates and an optional daily time range (ADR 0015).</summary>
     public DbSet<StaffTimeOff> StaffTimeOff => Set<StaffTimeOff>();
 
+    /// <summary>One profile picture per staff member, bytes and all (ADR 0088); never joined into a list of staff.</summary>
+    public DbSet<StaffPhoto> StaffPhotos => Set<StaffPhoto>();
+
     /// <summary>Booked visits (ADR 0012); Postgres refuses overlapping active appointments of one staff member.</summary>
     public DbSet<Appointment> Appointments => Set<Appointment>();
 
