@@ -371,6 +371,9 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         var page = await GetAsync(client, cancelPath);
         page.ShouldContain("data-testid=\"cancel-form\"");
         page.ShouldContain("Cut");
+        // The button in a browser posts where the form says, not where a test chooses to (found 2026-11-20: the
+        // form pointed at an address that is no route, so the confirm button did nothing for a real client).
+        page.ShouldContain($"action=\"{cancelPath}\"", Case.Sensitive, "the cancel form posts back to its own address");
 
         var cancelled = await PostAsync(client, cancelPath, [], page);
         cancelled.StatusCode.ShouldBe(HttpStatusCode.OK);
