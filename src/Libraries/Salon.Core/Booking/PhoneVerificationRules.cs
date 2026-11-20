@@ -83,6 +83,23 @@ public static class PhoneVerificationRules
         return true;
     }
 
+    /// <summary>
+    /// The service a booking or waitlist row carries. Those rows always have one (the database says so); a row that only
+    /// proves a number (ADR 0083) has none and must never be read as a booking.
+    /// </summary>
+    public static Guid ServiceOf(PhoneVerification verification)
+    {
+        ArgumentNullException.ThrowIfNull(verification);
+        return verification.ServiceId
+            ?? throw new InvalidOperationException($"Verification {verification.Id} ({verification.Purpose}) carries no service.");
+    }
+
+    /// <summary>
+    /// What is hashed instead of a code on a row nobody may ever prove (ADR 0083: a number the salon does not know).
+    /// It is never six digits, so <see cref="Verify"/> cannot match it, yet the row costs and counts like a real one.
+    /// </summary>
+    public static string GenerateUnmatchableSecret() => GenerateSalt();
+
     public static bool IsDead(PhoneVerification verification)
     {
         ArgumentNullException.ThrowIfNull(verification);

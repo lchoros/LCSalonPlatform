@@ -44,7 +44,12 @@ public class PhoneVerification : BaseEntity, ITenantEntity
     public Guid? AppointmentId { get; set; }
 
     // The pending booking.
-    public Guid ServiceId { get; set; }
+
+    /// <summary>
+    /// The service being booked or waited for. Null only on a row that proves a number and carries nothing else
+    /// (<see cref="PhoneVerificationPurpose.ClientPortal"/>, ADR 0083); the database refuses null for the other purposes.
+    /// </summary>
+    public Guid? ServiceId { get; set; }
 
     /// <summary>Null means "anyone available": the staff member is chosen when the booking is made.</summary>
     public Guid? StaffMemberId { get; set; }
@@ -86,4 +91,10 @@ public enum PhoneVerificationPurpose
 
     /// <summary>The row carries a request to be told when a time comes up (ADR 0055).</summary>
     Waitlist = 2,
+
+    /// <summary>
+    /// The row carries nothing: it only proves the number, so a client can see their own upcoming visits (ADR 0083).
+    /// No service and no names; <see cref="PhoneVerification.Start"/> is the moment it was asked.
+    /// </summary>
+    ClientPortal = 3,
 }

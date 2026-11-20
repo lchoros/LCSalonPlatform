@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Claims;
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NodaTime;
 using NodaTime.Text;
@@ -41,11 +42,11 @@ public sealed class CalendarController(IDispatcher dispatcher, ILocalizationServ
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> Card(Guid id, Guid? staffId, string? date, CancellationToken cancellationToken)
+    public async Task<IActionResult> Card(Guid id, Guid? staffId, string? date, string? start, CancellationToken cancellationToken)
     {
         try
         {
-            var card = await dispatcher.SendAsync(new AppointmentCardQuery(id, staffId, ParseDate(date)), cancellationToken);
+            var card = await dispatcher.SendAsync(new AppointmentCardQuery(id, staffId, ParseDate(date), ParseStart(start)), cancellationToken);
             return View(new AppointmentCardViewModel(card, null));
         }
         catch (AppointmentNotFoundException)
@@ -97,6 +98,59 @@ public sealed class CalendarController(IDispatcher dispatcher, ILocalizationServ
             result.StaffName));
         return Redirect(Path(CalendarView.Day, result.Start.Date, result.StaffMemberId));
     }
+
+    /// <summary>
+    /// The drop of a dragged block (ADR 0086): 204 with the confirmation queued for the reload, or 409 with one
+    /// localized sentence the script shows while the block slides back. The same command and the same checks as the
+    /// card's move — the browser only proposes, the booking service decides.
+    /// </summary>
+    [HttpPost("{id:guid}/drop")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Drop(Guid id, Guid? staffMemberId, string? date, int? minute, CancellationToken cancellationToken)
+    {
+        if (minute is null)
+        {
+            return Refused(localizer["Appointments.Calendar.Move.Validation.StartInvalid"]);
+        }
+
+        MoveAppointmentResult result;
+        try
+        {
+            result = await dispatcher.SendAsync(new MoveAppointmentCommand(id, staffMemberId, null, date, CurrentUserId(), minute), cancellationToken);
+        }
+        catch (ValidationException ex)
+        {
+            return Refused(ex.Errors.FirstOrDefault()?.ErrorMessage ?? localizer["Appointments.Calendar.Move.Unavailable"]);
+        }
+        catch (AppointmentNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (AppointmentNotActiveException)
+        {
+            return Refused(localizer["Appointments.Calendar.Move.NotActive"]);
+        }
+        catch (SlotNoLongerAvailableException)
+        {
+            return Refused(localizer["Appointments.Calendar.Drag.NotFree"]);
+        }
+        catch (InvalidOperationException)
+        {
+            return Refused(localizer["Appointments.Calendar.Move.Unavailable"]);
+        }
+
+        var culture = CultureInfo.CurrentCulture;
+        SetFlash(localizer.Format(
+            "Appointments.Calendar.Move.Moved",
+            result.ClientName,
+            result.Start.Date.ToString("d", culture),
+            result.Start.TimeOfDay.ToString("t", culture),
+            result.StaffName));
+        return NoContent();
+    }
+
+    private static ContentResult Refused(string message)
+        => new() { StatusCode = StatusCodes.Status409Conflict, Content = message, ContentType = "text/plain; charset=utf-8" };
 
     /// <summary>The calendar for <paramref name="view"/> on <paramref name="day"/>; <paramref name="staff"/> null is "All" (day) or the first person (week).</summary>
     public static string Path(CalendarView view, LocalDate day, Guid? staff)
@@ -156,6 +210,18 @@ public sealed class CalendarController(IDispatcher dispatcher, ILocalizationServ
         }
 
         var result = LocalDatePattern.Iso.Parse(iso.Trim());
+        return result.Success ? result.Value : null;
+    }
+
+    /// <summary>The free time tapped on the card; anything unparsable simply selects nothing.</summary>
+    private static Instant? ParseStart(string? iso)
+    {
+        if (string.IsNullOrWhiteSpace(iso))
+        {
+            return null;
+        }
+
+        var result = InstantPattern.ExtendedIso.Parse(iso.Trim());
         return result.Success ? result.Value : null;
     }
 

@@ -102,6 +102,7 @@ public sealed class AppointmentCardHandler(
             deposit?.Deposit is { IsHeld: true } held ? held.Amount : null)
         {
             Today = clock.GetCurrentInstant().InZone(zone).Date,
+            Chosen = request.MoveStart is { } tapped ? slots.FirstOrDefault(s => s.Start == tapped) : null,
         };
     }
 }

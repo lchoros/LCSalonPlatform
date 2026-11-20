@@ -11,7 +11,7 @@ namespace Salon.Web.Features.Appointments.Calendar;
 /// appointment's own person and day), the time it holds now left out. A query: no transaction, tenant required. Throws
 /// <see cref="Salon.Services.Appointments.AppointmentNotFoundException"/> when the salon has no such appointment.
 /// </summary>
-public sealed record AppointmentCardQuery(Guid AppointmentId, Guid? MoveStaffId, LocalDate? MoveDate) : IQuery<AppointmentCard>;
+public sealed record AppointmentCardQuery(Guid AppointmentId, Guid? MoveStaffId, LocalDate? MoveDate, Instant? MoveStart = null) : IQuery<AppointmentCard>;
 
 /// <param name="Day">The appointment's local day, for the back link.</param>
 /// <param name="Actions">The status buttons, in order; empty for a finished or cancelled visit.</param>
@@ -47,6 +47,9 @@ public sealed record AppointmentCard(
 {
     /// <summary>Today in the salon's zone: the earliest day the move form offers (a past day never has free times).</summary>
     public LocalDate Today { get; init; }
+
+    /// <summary>The free time the desk tapped, when it is one of <see cref="Slots"/>: the move happens only on the confirm button (ADR 0086).</summary>
+    public MoveSlot? Chosen { get; init; }
 }
 
 /// <summary>A status button: the URL segment of the day list's <c>POST admin/appointments/{id}/{segment}</c> route and the label key.</summary>

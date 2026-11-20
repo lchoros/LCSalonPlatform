@@ -205,7 +205,7 @@ internal sealed class PublicWaitlistService(
 
         var now = clock.GetCurrentInstant();
         var usable = row.VerifiedAt is null && !PhoneVerificationRules.IsDead(row) && !PhoneVerificationRules.IsExpired(row, now);
-        return new PendingVerification(row.Id, row.PhoneE164, row.ServiceId, null, usable, PhoneVerificationRules.AttemptsLeft(row));
+        return new PendingVerification(row.Id, row.PhoneE164, PhoneVerificationRules.ServiceOf(row), null, usable, PhoneVerificationRules.AttemptsLeft(row));
     }
 
     public async Task<PublicWaitlistVerification> VerifyAndJoinAsync(Guid verificationId, string? code, CancellationToken cancellationToken = default)
@@ -263,7 +263,7 @@ internal sealed class PublicWaitlistService(
         }
 
         var added = await waitlist.AddAsync(
-            new WaitlistRequest(clientId, pending.ServiceId, pending.StaffMemberId, pending.WaitNotBefore, pending.WaitNotAfter, pending.WaitNote),
+            new WaitlistRequest(clientId, PhoneVerificationRules.ServiceOf(pending), pending.StaffMemberId, pending.WaitNotBefore, pending.WaitNotAfter, pending.WaitNote),
             byUserId: null,
             cancellationToken).ConfigureAwait(false);
         if (added is WaitlistAddOutcome.Added or WaitlistAddOutcome.Updated)

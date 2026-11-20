@@ -1,5 +1,6 @@
 {
   "Identity.Login.Title": "Sign in",
+  "Identity.Login.Lead": "For the salon’s team. Clients book without an account.",
   "Identity.Login.Email": "Email",
   "Identity.Login.Password": "Password",
   "Identity.Login.Submit": "Sign in",
@@ -74,5 +75,19 @@
   "Identity.Team.Validation.RoleRequired": "Choose a role.",
   "Identity.Team.Validation.PasswordTooShort": "Use at least {0} characters.",
   "Identity.Team.Validation.PasswordTooLong": "Use at most {0} characters.",
-  "Identity.Team.Validation.LastOwner": "The salon must keep at least one active owner login. Add another owner first."
+  "Identity.Team.Validation.LastOwner": "The salon must keep at least one active owner login. Add another owner first.",
+  "Identity.Password.Title": "Your password",
+  "Identity.Password.Lead": "Your login, your password. Changing it signs you out on every other device; this one stays signed in.",
+  "Identity.Password.Current": "Current password",
+  "Identity.Password.New": "New password",
+  "Identity.Password.NewHint": "At least {0} characters.",
+  "Identity.Password.Confirm": "New password again",
+  "Identity.Password.Submit": "Change password",
+  "Identity.Password.Changed": "Your password has been changed. Every other device was signed out.",
+  "Identity.Password.Validation.CurrentRequired": "Enter your current password.",
+  "Identity.Password.Validation.CurrentWrong": "That is not your current password.",
+  "Identity.Password.Validation.NewTooShort": "Use at least {0} characters.",
+  "Identity.Password.Validation.NewTooLong": "Use at most {0} characters.",
+  "Identity.Password.Validation.SameAsCurrent": "The new password is the same as the current one.",
+  "Identity.Password.Validation.ConfirmMismatch": "The two new passwords do not match."
 }

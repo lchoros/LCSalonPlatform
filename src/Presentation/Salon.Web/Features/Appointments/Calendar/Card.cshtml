@@ -124,19 +124,26 @@
             }
             else
             {
+                @* A tap only chooses (ADR 0086, the owner found the one-tap move jumpy); the button below does the move. *@
                 <ul class="grid grid-cols-3 gap-2 sm:grid-cols-4" data-testid="move-slot-list">
                     @foreach (var slot in card.Slots)
                     {
+                        var chosen = slot.Start == card.Chosen?.Start;
                         <li>
-                            <form method="post" action="@(CalendarController.CalendarPath)/@card.Id/move" asp-antiforgery="true">
-                                <input type="hidden" name="staffMemberId" value="@card.MoveStaffId" />
-                                <input type="hidden" name="start" value="@slot.Start.ToIso()" />
-                                <input type="hidden" name="date" value="@moveDay" />
-                                <button type="submit" data-testid="move-slot" class="flex min-h-11 w-full items-center justify-center rounded-md border border-stone-300 px-2 py-2 text-base font-semibold tabular-nums hover:bg-stone-100">@slot.LocalStart.ToShortTime(culture)</button>
-                            </form>
+                            <a href="@(CalendarController.CardPath(card.Id, card.MoveStaffId, card.MoveDate))&start=@Uri.EscapeDataString(slot.Start.ToIso())#move-confirm" data-testid="move-slot" aria-current="@(chosen ? "true" : null)" class="slot @(chosen ? "is-chosen" : null)">@slot.LocalStart.ToShortTime(culture)</a>
                         </li>
                     }
                 </ul>
+                @if (card.Chosen is { } picked)
+                {
+                    <form method="post" action="@(CalendarController.CalendarPath)/@card.Id/move" asp-antiforgery="true" id="move-confirm" class="sticky bottom-20 flex items-center justify-between gap-3 rounded-xl border border-brand-edge bg-white p-3 shadow-lg lg:bottom-4" data-testid="move-confirm-bar">
+                        <input type="hidden" name="staffMemberId" value="@card.MoveStaffId" />
+                        <input type="hidden" name="start" value="@picked.Start.ToIso()" />
+                        <input type="hidden" name="date" value="@moveDay" />
+                        <p class="min-w-0 truncate text-sm text-stone-700">@T.Format("Appointments.Calendar.Move.Chosen", card.MoveDate.ToDayHeading(culture), picked.LocalStart.ToShortTime(culture))</p>
+                        <button type="submit" data-testid="move-confirm" class="btn btn-compact btn-primary shrink-0">@T["Appointments.Calendar.Move.Confirm"]</button>
+                    </form>
+                }
             }
         </section>
     }

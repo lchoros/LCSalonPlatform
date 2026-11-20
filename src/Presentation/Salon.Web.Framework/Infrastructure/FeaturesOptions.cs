@@ -24,4 +24,7 @@ public sealed class FeaturesOptions
     /// return address and the webhook. Off everywhere unless the owner turns it on; the Stripe plugin reads the same key.
     /// </summary>
     public bool StripeDeposits { get; set; }
+
+    /// <summary>A client's own pages at /my-bookings on a salon's host (ADR 0083): sign-in by text message code, upcoming visits. Off until the owner says.</summary>
+    public bool ClientPortal { get; set; }
 }

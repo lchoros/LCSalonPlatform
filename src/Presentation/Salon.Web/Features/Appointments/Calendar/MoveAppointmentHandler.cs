@@ -29,7 +29,11 @@ public sealed class MoveAppointmentHandler(
         var tenant = await tenantLookup.FindByIdAsync(tenantId, cancellationToken)
             ?? throw new InvalidOperationException($"Tenant {tenantId} is in scope but has no row.");
         var zone = DateTimeZoneProviders.Tzdb[tenant.TimeZoneId];
-        var start = InstantPattern.ExtendedIso.Parse(request.Start!.Trim()).GetValueOrThrow();
+        // A drop names a row of the salon's own clock (ADR 0086); a card button posts the instant itself. A local time
+        // skipped by a clock change resolves leniently and the booking service then refuses it as not a free slot.
+        var start = request.Minute is { } minute
+            ? LocalDatePattern.Iso.Parse(request.Date!.Trim()).GetValueOrThrow().At(LocalTime.FromMinutesSinceMidnight(minute)).InZoneLeniently(zone).ToInstant()
+            : InstantPattern.ExtendedIso.Parse(request.Start!.Trim()).GetValueOrThrow();
 
         var appointment = await booking.MoveAsync(request.AppointmentId, request.StaffMemberId!.Value, start, request.ByUserId, cancellationToken);
 
