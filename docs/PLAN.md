@@ -41,6 +41,11 @@ Gate: the pilot salon pays; then 3 paying salons before scaling up.
   dashboard shell: left side menu on desktop; on mobile a slim bottom bar with the everyday destinations plus the
   full menu as a drawer, and Versum-style section tabs inside a module; a dashboard landing page; the Booksy-style
   centred sign-in card. Shell first, then the palette swap through the shared classes.
+- [~] Mobile apps for the team (ADR 0081, owner 2026-11-20, spec in `docs/mobile/SPEC.md`): staged — Stage 0 a PWA
+  manifest and icon so the portal installs on a home screen (done; PNG icons for iOS to follow), Stage 1 a .NET MAUI
+  shell in `src/Mobile/` hosting the portal with native push for a new or cancelled booking ("New booking 14:00",
+  never a name) and a login hand-off (the MAUI workload is a new runtime dependency — Tier 2, owner starts it),
+  Stage 2 native diary and checkout screens behind the future Tier 2 `/api/v1`. No marketplace, no client app
 - [!] First hosting: Dockerfile, staging + prod, deploy job (Tier 2)
 - [!] Stripe Connect plugin: onboarding, online deposits, card on file, refunds (Tier 2)
 - [!] Real SMS/email plugins: Twilio (UK), SMSAPI.pl (PL), Postmark/SES (Tier 2)

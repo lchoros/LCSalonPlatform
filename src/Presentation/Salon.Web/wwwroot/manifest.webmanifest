@@ -1,0 +1,17 @@
+{
+  "name": "Salon Platform",
+  "short_name": "Salon",
+  "description": "The salon's own appointment portal: the diary, clients and the till in your pocket.",
+  "start_url": "/admin/appointments",
+  "display": "standalone",
+  "background_color": "#fafaf9",
+  "theme_color": "#6d28d9",
+  "icons": [
+    {
+      "src": "/icons/app.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
