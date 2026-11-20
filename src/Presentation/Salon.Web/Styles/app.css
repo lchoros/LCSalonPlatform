@@ -3,6 +3,19 @@
 @import "tailwindcss";
 @source "../**/*.cshtml";
 
+/* The theme in one place (ADR 0080): the brand is Cinolla-like purple, and every component below speaks these names,
+   never raw violet-* utilities — so a re-skin (or the dark layer, when it comes) changes this block and nothing else. */
+@theme {
+  --color-brand: #6d28d9; /* brand: primary surfaces, chosen states */
+  --color-brand-strong: #5b21b6; /* brand-strong: primary hover */
+  --color-brand-bright: #7c3aed; /* brand-bright: progress, smaller marks */
+  --color-brand-deep: #4c1d95; /* brand-deep: text on soft brand surfaces */
+  --color-brand-line: #a78bfa; /* brand-line: warmed borders */
+  --color-brand-edge: #c4b5fd; /* brand-edge: resting borders */
+  --color-brand-soft: #ede9fe; /* brand-soft: filled chips, circles */
+  --color-brand-mist: #f5f3ff; /* brand-mist: hover washes */
+}
+
 /* MVC marks a field whose ModelState has errors with this class; style it like the red message under it. */
 .input-validation-error {
   @apply border-red-500;
@@ -17,7 +30,7 @@
   }
 
   .btn-primary {
-    @apply bg-stone-900 text-white hover:bg-stone-700;
+    @apply bg-brand text-white hover:bg-brand-strong;
   }
 
   .btn-secondary {
@@ -35,7 +48,15 @@
 
   /* Form fields: 48 px tall, 16 px text so iOS does not zoom, ring on focus, red border when MVC flags an error. */
   .field {
-    @apply block min-h-12 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 shadow-sm focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-900/20;
+    @apply block min-h-12 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 shadow-sm transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20;
+  }
+
+  /* A dropdown dressed like every other field: its own chevron, the native arrow retired (ADR 0080). */
+  select.field {
+    @apply cursor-pointer appearance-none bg-no-repeat pr-10;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2357534e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    background-position: right 0.75rem center;
+    background-size: 1.1rem;
   }
 
   .field-label {
@@ -75,7 +96,28 @@
 
   /* Tappable card (a service): the whole surface is the link; it lifts on hover, the ring shows on focus. */
   .choice-card {
-    @apply flex min-h-14 flex-col gap-1 rounded-xl p-4 transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+    @apply flex min-h-14 items-center gap-3 rounded-xl p-3 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+  }
+
+  /* Calm hover (ADR 0080): the neutral border warms to the brand purple instead of the card jumping. */
+  .choice-card:hover,
+  .variant-card:hover {
+    --accent-from: var(--color-brand-line);
+    --accent-to: var(--color-brand-line);
+  }
+
+  /* The letter circle standing in for a service photo until photos exist (ADR 0080). */
+  .service-dot {
+    @apply flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-soft text-base font-bold text-brand;
+  }
+
+  /* Reports flow down two balanced columns from lg, so a tall card never leaves a hole beside a short one. */
+  .report-columns {
+    @apply space-y-6 lg:columns-2 lg:gap-6 lg:space-y-0;
+  }
+
+  .report-columns > section {
+    @apply break-inside-avoid lg:mb-6;
   }
 
   /* A service with variants: the same card, opened by its summary; each variant inside is a link of its own. */
@@ -169,9 +211,9 @@
     @apply inline-flex min-h-11 shrink-0 snap-start items-center justify-center rounded-full border px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
   }
 
-  /* A day: a 64 px square with the weekday, the day of the month, the month and a free-times counter in the corner. */
+  /* A day: a tall rectangle (the shape Booksy uses too) with the weekday, the day of the month and the month. */
   .tile {
-    @apply relative inline-flex size-16 shrink-0 snap-start flex-col items-center justify-center gap-0.5 rounded-xl border px-1.5 py-1 leading-none transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+    @apply relative inline-flex h-16 w-14 shrink-0 snap-start flex-col items-center justify-center gap-0.5 rounded-xl border px-1.5 py-1 leading-none transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
   }
 
   /* The round "earlier / later days" paddles beside the strip. */
@@ -192,18 +234,18 @@
     @apply border-dashed border-stone-300 bg-white text-stone-600 hover:bg-stone-50;
   }
 
-  /* A day or time with something free carries the green of an open door; tiles and slots only, people stay stone. */
+  /* A day or time with something free carries the green of an open door; the chosen day wears the brand purple. */
   .tile.is-on {
-    @apply border-emerald-700 bg-emerald-700 text-white;
+    @apply border-brand bg-brand text-white;
   }
 
   .tile.is-off {
     @apply border-emerald-300 bg-white hover:border-emerald-500 hover:bg-emerald-50;
   }
 
-  /* The chosen person matches the chosen day: the flow speaks one accent. */
+  /* Chosen states wear the brand purple (ADR 0080); emerald stays the colour of availability. */
   .pill.is-on {
-    @apply border-emerald-700 bg-emerald-700 text-white;
+    @apply border-brand bg-brand text-white;
   }
 
   /* A day with nothing free stays calm grey — only the date wears the red strike (a phone has no hover, the strike
@@ -226,17 +268,30 @@
     @apply flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white py-2 pr-2 pl-4 shadow-sm;
   }
 
-  /* Three progress segments under the "Step n of 3" row. */
+  /* Three labelled progress segments under the "Step n of 3" row (the owner's ask, 2026-11-20). */
   .steps {
-    @apply flex gap-1.5;
+    @apply m-0 flex list-none gap-1.5 p-0 text-[0.6875rem] font-medium text-stone-500;
   }
 
-  .steps > span {
-    @apply h-1.5 flex-1 rounded-full bg-stone-200;
+  .steps > li {
+    @apply flex-1 space-y-1;
   }
 
-  .steps > .is-done {
-    @apply bg-emerald-600;
+  .steps-bar {
+    @apply block h-1.5 rounded-full bg-stone-200;
+  }
+
+  .steps > li.is-done {
+    @apply text-brand;
+  }
+
+  .steps > li.is-done .steps-bar {
+    @apply bg-brand-bright;
+  }
+
+  /* The tapped time, waiting for Continue. */
+  .slot.is-chosen {
+    @apply border-brand bg-brand text-white hover:border-brand hover:bg-brand hover:text-white;
   }
 
   /* Outcome notices: colour plus text, so colour alone never carries the meaning. */
@@ -302,11 +357,33 @@
 
   /* The admin menu: the area you are in is the dark one. */
   .nav-link {
-    @apply inline-flex min-h-11 items-center rounded-lg px-3 py-2 font-medium text-stone-800 transition-colors hover:bg-stone-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900;
+    @apply flex min-h-11 w-full items-center rounded-lg px-3 py-2 font-medium text-stone-700 transition-colors hover:bg-brand-mist hover:text-brand-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-brand;
   }
 
   .nav-link[aria-current="true"] {
-    @apply bg-stone-900 text-white hover:bg-stone-900;
+    @apply bg-brand text-white hover:bg-brand hover:text-white;
+  }
+
+  /* The dashboard shell (ADR 0080): one menu, a fixed sidebar from lg up and a checkbox-driven drawer below it. */
+  .sidebar {
+    @apply fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 -translate-x-full flex-col bg-white shadow-xl transition-transform duration-200 peer-checked:translate-x-0 lg:static lg:translate-x-0 lg:border-r lg:border-stone-200 lg:shadow-none;
+  }
+
+  .drawer-overlay {
+    @apply fixed inset-0 z-30 hidden bg-stone-900/40 peer-checked:block lg:peer-checked:hidden;
+  }
+
+  /* The everyday places under the thumb on a phone (ADR 0080); the drawer holds the rest. */
+  .bottom-bar {
+    @apply fixed inset-x-0 bottom-0 z-20 flex border-t border-stone-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden;
+  }
+
+  .bottom-link {
+    @apply flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-[0.6875rem] font-medium text-stone-600 transition-colors hover:text-brand-strong focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand;
+  }
+
+  .bottom-link[aria-current="true"] {
+    @apply font-semibold text-brand;
   }
 
   /* A section of a page: a white surface with the thin border and glow; give it an accent to make it stand out. */

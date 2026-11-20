@@ -1,6 +1,6 @@
 # 0080. The look we are growing towards: purple, a side menu, a dashboard
 
-Status: Decided by the owner — direction only, nothing built yet
+Status: Decided by the owner — the shell and palette are being built from 2026-11-20 (the friend likes the MVP)
 Date: 2026-11-20
 Issue: the owner tested the live pilot against Booksy and Cinolla and set the visual direction
 
@@ -23,11 +23,28 @@ recorded direction instead of each PR guessing.
   Products / Sales / Usage / Deliveries / Orders / Stocktaking) instead of burying sections in the main menu.
   A proper dashboard landing (today's bookings, takings, occupancy at a glance) belongs to this shell.
 - **The sign-in page keeps the Booksy-style card as its future shape**: one centred card, a Login / Sign up toggle
-  (once sign-up is public), one strong primary button. No social sign-in — email and password only, as decided in
-  ADR 0075/0076.
+  (once sign-up is public), one strong primary button. Later the same day the owner asked to "keep in mind Google
+  sign-in as Booksy" — so the card is designed with room for a "Continue with Google" button, and Google sign-in
+  itself is a Tier 2 feature for when the owner orders it; until then email and password only (ADR 0075/0076).
+- **Staff profile photos** belong to this direction (the owner, 2026-11-20): the Booksy diary and staff picker lean
+  on faces. A photo on the staff member — diary columns, the public "who with" picker, the team page — is its own
+  slice later (file upload and storage are new ground); the shell leaves room for the avatars.
+- **The salon's portal is the product, not a marketplace** (the owner, 2026-11-20): the platform-level public
+  website and open sign-up stay completely off — too few salons for a marketplace to mean anything, and the focus
+  is the appointment portal (this web app and, next, the mobile apps). `Features:SignUp` stays false and the
+  platform pages stay dark.
 - **The public booking flow keeps its own meaning-colours.** The emerald "free time" accent of ADR 0079 stays a
   semantic colour (free/available); when the purple theme lands, purple takes the chrome (buttons, steps, selected
   person) and emerald keeps meaning availability — unless the owner, seeing it, decides purple swallows it all.
+- **Booking steps are labelled and nothing advances without Continue** (the owner, 2026-11-20, after walking the
+  live flow twice): each progress bar carries its name (Service · Time · Your details), and tapping a time selects
+  it on the page — the Continue button is what moves to the details form. This supersedes the three-tap instant
+  advance of ADR 0079.
+- **A light and a dark theme may both be needed later** (the owner, 2026-11-20): every colour stays in the shared
+  component classes of `app.css`, never as per-view literals, so a dark variant can land as one stylesheet layer.
+- **What the platform-level web ever needs** (the owner, 2026-11-20): only a sign-in page for customers and for
+  salons, and later the place where a salon buys its subscription (the SaaS billing of the M3 plan). First, in the
+  owner's words, "get admin and staffing calendars tip top".
 
 ## Consequences
 

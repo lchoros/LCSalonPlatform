@@ -16,6 +16,8 @@
         : null;
     // The calendar lives under the appointments address, so the list is the current area only when the calendar is not.
     var onCalendar = Context.Request.Current("/admin/appointments/calendar") is not null;
+    var canDiary = User.HasClaim(UserClaimTypes.Permission, Permissions.BookingsManage) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView);
+    var canTill = User.HasClaim(UserClaimTypes.Permission, Permissions.PaymentsRecord) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView);
 }
 <html lang="@lang" class="h-full bg-stone-50">
 <head>
@@ -24,41 +26,32 @@
     <title>@ViewData["Title"] · @(salonName ?? T["Layout.Brand"])</title>
     <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
 </head>
-<body class="min-h-full flex flex-col text-stone-900 antialiased">
-    <header class="brand-line border-b border-stone-200 bg-white screen-only">
-        <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2">
-            @if (salonName is not null)
-            {
-                <a href="/" data-testid="header-salon-name" class="inline-flex min-h-11 items-center text-lg font-semibold tracking-tight">@salonName</a>
-            }
-            else
-            {
-                <a class="inline-flex min-h-11 items-center text-lg font-semibold tracking-tight" asp-area="" asp-controller="Home" asp-action="Index">@T["Layout.Brand"]</a>
-            }
-            @if (signedIn)
-            {
-                <form method="post" action="/account/logout" asp-antiforgery="true" class="flex items-center gap-3 text-sm">
-                    <span class="truncate max-w-40 sm:max-w-xs" data-testid="user-name">@User.Identity!.Name</span>
-                    <button type="submit" data-testid="sign-out" class="btn btn-compact btn-secondary px-3">@T["Layout.SignOut"]</button>
-                </form>
-                @* Admin nav: one link per area the signed-in role may open (ADR 0009); wraps under the brand on a phone. *@
-                <nav aria-label="@T["Layout.Nav.Admin"]" data-testid="admin-nav" class="-mx-3 flex w-full flex-wrap gap-1 text-sm sm:order-none sm:mx-0 sm:w-auto">
-                    @if (User.HasClaim(UserClaimTypes.Permission, Permissions.CatalogManage))
+<body class="min-h-full text-stone-900 antialiased">
+    @if (signedIn)
+    {
+        @* The dashboard shell (ADR 0080): one menu that is the fixed sidebar on a desktop and, on a phone, a
+           drawer driven by this checkbox (no script, CSP untouched) beside a slim bottom bar of everyday places. *@
+        <div class="flex min-h-screen">
+            <input type="checkbox" id="nav-drawer" class="peer sr-only" aria-hidden="true" tabindex="-1" />
+            <aside data-testid="sidebar" class="sidebar screen-only">
+                <a class="brand-line flex min-h-14 items-center border-b border-stone-200 px-4 text-lg font-semibold tracking-tight" asp-area="" asp-controller="Home" asp-action="Index">@T["Layout.Brand"]</a>
+                <nav aria-label="@T["Layout.Nav.Admin"]" data-testid="admin-nav" class="flex flex-1 flex-col gap-1 overflow-y-auto p-3 text-sm">
+                    @if (canDiary)
                     {
-                        <a href="/admin/services" data-testid="nav-services" aria-current="@Context.Request.Current("/admin/services")" class="nav-link">@T["Layout.Nav.Services"]</a>
+                        <a href="/admin/appointments" data-testid="nav-appointments" aria-current="@(onCalendar ? null : Context.Request.Current("/admin/appointments"))" class="nav-link">@T["Layout.Nav.Appointments"]</a>
+                        <a href="/admin/appointments/calendar" data-testid="nav-calendar" aria-current="@Context.Request.Current("/admin/appointments/calendar")" class="nav-link">@T["Layout.Nav.Calendar"]</a>
                     }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView))
                     {
                         <a href="/admin/clients" data-testid="nav-clients" aria-current="@Context.Request.Current("/admin/clients")" class="nav-link">@T["Layout.Nav.Clients"]</a>
                     }
-                    @if (User.HasClaim(UserClaimTypes.Permission, Permissions.BookingsManage) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView))
-                    {
-                        <a href="/admin/appointments" data-testid="nav-appointments" aria-current="@(onCalendar ? null : Context.Request.Current("/admin/appointments"))" class="nav-link">@T["Layout.Nav.Appointments"]</a>
-                        <a href="/admin/appointments/calendar" data-testid="nav-calendar" aria-current="@Context.Request.Current("/admin/appointments/calendar")" class="nav-link">@T["Layout.Nav.Calendar"]</a>
-                    }
-                    @if (User.HasClaim(UserClaimTypes.Permission, Permissions.PaymentsRecord) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView))
+                    @if (canTill)
                     {
                         <a href="/admin/payments/cash-up" data-testid="nav-cash-up" aria-current="@Context.Request.Current("/admin/payments/cash-up")" class="nav-link">@T["Layout.Nav.CashUp"]</a>
+                    }
+                    @if (User.HasClaim(UserClaimTypes.Permission, Permissions.CatalogManage))
+                    {
+                        <a href="/admin/services" data-testid="nav-services" aria-current="@Context.Request.Current("/admin/services")" class="nav-link">@T["Layout.Nav.Services"]</a>
                     }
                     @if (User.HasClaim(UserClaimTypes.Permission, Permissions.BookingsManage))
                     {
@@ -82,20 +75,72 @@
                         <a href="/admin/settings/messages" data-testid="nav-settings" aria-current="@Context.Request.Current("/admin/settings")" class="nav-link">@T["Layout.Nav.Settings"]</a>
                     }
                 </nav>
-            }
+                <form method="post" action="/account/logout" asp-antiforgery="true" class="flex items-center justify-between gap-3 border-t border-stone-200 p-3 text-sm">
+                    <span class="min-w-0 truncate" data-testid="user-name">@User.Identity!.Name</span>
+                    <button type="submit" data-testid="sign-out" class="btn btn-compact btn-secondary shrink-0 px-3">@T["Layout.SignOut"]</button>
+                </form>
+            </aside>
+            <label for="nav-drawer" class="drawer-overlay" aria-hidden="true"></label>
+            <div class="flex min-h-screen w-full min-w-0 flex-1 flex-col">
+                <header role="banner" class="brand-line flex min-h-14 items-center gap-3 border-b border-stone-200 bg-white px-4 screen-only lg:hidden">
+                    <label for="nav-drawer" data-testid="open-menu" class="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-lg text-stone-700 hover:bg-stone-100">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+                        <span class="sr-only">@T["Layout.Nav.Menu"]</span>
+                    </label>
+                    <span class="truncate text-lg font-semibold tracking-tight">@T["Layout.Brand"]</span>
+                </header>
+                <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-24 lg:pb-6">
+                    @RenderBody()
+                </main>
+                <footer class="hidden border-t border-stone-200 py-4 text-center text-sm text-stone-600 screen-only lg:block">
+                    &copy; @DateTime.UtcNow.Year @T["Layout.Brand"]
+                </footer>
+                <nav aria-label="@T["Layout.Nav.Menu"]" data-testid="bottom-bar" class="bottom-bar screen-only">
+                    @if (canDiary)
+                    {
+                        <a href="/admin/appointments" aria-current="@(onCalendar ? null : Context.Request.Current("/admin/appointments"))" class="bottom-link" data-testid="bottom-appointments">@T["Layout.Nav.Appointments"]</a>
+                    }
+                    @if (User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView))
+                    {
+                        <a href="/admin/clients" aria-current="@Context.Request.Current("/admin/clients")" class="bottom-link" data-testid="bottom-clients">@T["Layout.Nav.Clients"]</a>
+                    }
+                    @if (canTill)
+                    {
+                        <a href="/admin/payments/cash-up" aria-current="@Context.Request.Current("/admin/payments/cash-up")" class="bottom-link" data-testid="bottom-cash-up">@T["Layout.Nav.CashUp"]</a>
+                    }
+                    <label for="nav-drawer" class="bottom-link cursor-pointer" data-testid="bottom-menu">@T["Layout.Nav.Menu"]</label>
+                </nav>
+            </div>
         </div>
-    </header>
-    <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
-        @RenderBody()
-    </main>
-    <footer class="border-t border-stone-200 py-4 text-center text-sm text-stone-600 screen-only">
-        &copy; @DateTime.UtcNow.Year @T["Layout.Brand"]
-        @if (salonName is not null)
-        {
-            @* A client on a salon's pages can always read what the salon does with their details (ADR 0063). *@
-            <text> · </text><a href="/privacy" class="underline underline-offset-2" data-testid="footer-privacy">@T["Layout.Privacy"]</a>
-        }
-    </footer>
+    }
+    else
+    {
+        <div class="flex min-h-screen flex-col">
+            <header class="brand-line border-b border-stone-200 bg-white screen-only">
+                <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2">
+                    @if (salonName is not null)
+                    {
+                        <a href="/" data-testid="header-salon-name" class="inline-flex min-h-11 items-center text-lg font-semibold tracking-tight">@salonName</a>
+                    }
+                    else
+                    {
+                        <a class="inline-flex min-h-11 items-center text-lg font-semibold tracking-tight" asp-area="" asp-controller="Home" asp-action="Index">@T["Layout.Brand"]</a>
+                    }
+                </div>
+            </header>
+            <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
+                @RenderBody()
+            </main>
+            <footer class="border-t border-stone-200 py-4 text-center text-sm text-stone-600 screen-only">
+                &copy; @DateTime.UtcNow.Year @T["Layout.Brand"]
+                @if (salonName is not null)
+                {
+                    @* A client on a salon's pages can always read what the salon does with their details (ADR 0063). *@
+                    <text> · </text><a href="/privacy" class="underline underline-offset-2" data-testid="footer-privacy">@T["Layout.Privacy"]</a>
+                }
+            </footer>
+        </div>
+    }
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

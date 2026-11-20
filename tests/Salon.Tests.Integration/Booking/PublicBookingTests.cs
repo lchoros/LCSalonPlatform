@@ -69,7 +69,7 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         html.ShouldContain("Studio 20");
         html.ShouldContain($"href=\"/book/{_serviceId}\"");
         html.ShouldContain("Cut");
-        html.ShouldNotContain("Hidden");
+        html.ShouldNotContain(">Hidden<", customMessage: "an inactive service is not on the page (aria-hidden markup contains the word)");
         html.ShouldContain("£20.00");
         html.ShouldContain("30 min");
 
@@ -148,6 +148,28 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         html.ShouldContain("Until 12:00");
         html.ShouldContain("12:00–16:00");
         html.ShouldContain("After 16:00");
+    }
+
+    [Fact]
+    public async Task A_tapped_time_is_only_chosen_and_Continue_carries_it_to_the_details()
+    {
+        using var client = factory.ClientFor(HostA);
+        var start = (await SlotStartsAsync(_studio.Id, _annaId)).First();
+        var encoded = Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(start));
+
+        // Without a start nothing is chosen and there is no Continue.
+        var bare = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}");
+        bare.ShouldNotContain("data-testid=\"continue\"");
+
+        // The tap marks the time and brings out the Continue bar pointing at the details form.
+        var picked = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&start={encoded}");
+        picked.ShouldContain("is-chosen");
+        picked.ShouldContain("data-testid=\"continue-bar\"");
+        picked.ShouldContain($"/book/{_serviceId}/details?start={encoded}");
+
+        // A start that is not free (or plain rubbish) quietly deselects instead of failing.
+        var stale = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&start=rubbish");
+        stale.ShouldNotContain("data-testid=\"continue\"");
     }
 
     [Fact]
@@ -573,13 +595,15 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
 
     private static int DayCount(string html) => DayLinkPattern().Count(html);
 
+    /// <summary>A slot link selects the time on the page itself; only Continue goes to the details (ADR 0080).</summary>
     private async Task<List<string>> ExpectedSlotHrefsAsync(Guid? staffId)
     {
         await using var scope = factory.CreateTenantScope(_studio.Id);
         var slots = await scope.ServiceProvider.GetRequiredService<IAvailabilityService>().GetSlotsAsync(_serviceId, staffId, _day, _day);
         slots.ShouldNotBeEmpty();
         var suffix = staffId is { } s ? $"&staff={s}" : string.Empty;
-        return slots.Select(slot => $"/book/{_serviceId}/details?start={Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(slot.Start))}{suffix}").ToList();
+        var today = SystemClock.Instance.GetCurrentInstant().InZone(London).Date;
+        return slots.Select(slot => $"/book/{_serviceId}?date={Iso(_day)}&from={Iso(today)}&start={Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(slot.Start))}{suffix}").ToList();
     }
 
     private async Task<List<Instant>> SlotStartsAsync(Guid tenantId, Guid staffId)
@@ -666,7 +690,7 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         return (anna.Id, tom.Id, cut.Id);
     }
 
-    [GeneratedRegex("href=\"(?<href>/book/[^\"]+/details\\?[^\"]+)\" data-testid=\"slot\"")]
+    [GeneratedRegex("href=\"(?<href>/book/[^\"]+)\" data-testid=\"slot\"")]
     private static partial Regex SlotLinkPattern();
 
     [GeneratedRegex("data-testid=\"day\"")]

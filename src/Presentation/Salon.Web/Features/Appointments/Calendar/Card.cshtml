@@ -112,14 +112,15 @@
                 </div>
                 <div class="space-y-1">
                     <label for="date" class="field-label">@T["Appointments.Calendar.Move.Date"]</label>
-                    <input id="date" name="date" type="date" value="@moveDay" data-testid="move-date" class="@inputClass" />
+                    <input id="date" name="date" type="date" value="@moveDay" min="@card.Today.ToIso()" data-testid="move-date" class="@inputClass" />
                 </div>
                 <button type="submit" data-testid="move-show-slots" class="@secondaryClass w-full sm:w-auto">@T["Appointments.Calendar.Move.ShowSlots"]</button>
             </form>
             <h3 class="text-base font-semibold">@T["Appointments.Calendar.Move.Slots"]</h3>
             @if (card.Slots.Count == 0)
             {
-                <p class="text-sm text-stone-600" data-testid="move-no-slots">@T["Appointments.Calendar.Move.NoSlots"]</p>
+                @* A past day never has free times; saying so beats a puzzled "nothing happened" (owner, 2026-11-20). *@
+                <p class="text-sm text-stone-600" data-testid="move-no-slots">@(card.MoveDate < card.Today ? T["Appointments.Calendar.Move.PastDay"] : T["Appointments.Calendar.Move.NoSlots"])</p>
             }
             else
             {

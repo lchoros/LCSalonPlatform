@@ -80,6 +80,7 @@
   "Appointments.Calendar.Move.ShowSlots": "Show times",
   "Appointments.Calendar.Move.Slots": "Free times",
   "Appointments.Calendar.Move.NoSlots": "No free times for this person on this day. Try another date or staff member.",
+  "Appointments.Calendar.Move.PastDay": "That day is already over. Pick today or a later day.",
   "Appointments.Calendar.Move.NotActive": "Only booked, confirmed or arrived appointments can be moved.",
   "Appointments.Calendar.Move.SlotTaken": "That time is already taken. Pick another one below.",
   "Appointments.Calendar.Move.Unavailable": "This service or staff member can no longer be booked.",

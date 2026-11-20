@@ -44,7 +44,8 @@ public sealed class ChooseServiceController(IDispatcher dispatcher, ITenantConte
     private FilterTilesModel Filter(ServiceChoice choice)
     {
         var tiles = new List<FilterTile> { new("all", localizer["Booking.Public.AllCategories"], ListAddress(null, choice.Search), choice.CategoryId is null) };
-        tiles.AddRange(choice.Categories.Select(c => new FilterTile(c.Id.ToString(), c.Name, ListAddress(c.Id, choice.Search), c.Id == choice.CategoryId, c.Accent)));
+        // Calm over carnival (ADR 0080): the public page stopped wearing the five category accents.
+        tiles.AddRange(choice.Categories.Select(c => new FilterTile(c.Id.ToString(), c.Name, ListAddress(c.Id, choice.Search), c.Id == choice.CategoryId)));
         return new FilterTilesModel(localizer["Booking.Public.Categories"], tiles);
     }
 

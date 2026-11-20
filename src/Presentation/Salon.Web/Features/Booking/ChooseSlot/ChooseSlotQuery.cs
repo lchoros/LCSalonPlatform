@@ -9,9 +9,10 @@ namespace Salon.Web.Features.Booking.ChooseSlot;
 /// anyone. <paramref name="Date"/> picks the day to list; null (or a day outside the strip) means today or the first
 /// day with a free time. <paramref name="StaffMemberId"/> null means "anyone available". <paramref name="From"/> slides
 /// the date strip's window towards the salon's booking horizon; null, the past or beyond the horizon means today.
-/// A query: tenant required.
+/// <paramref name="Start"/> is the tapped time: it marks the slot chosen and brings out the Continue button, and only
+/// a start that is genuinely free right now counts (a stale link quietly deselects). A query: tenant required.
 /// </summary>
-public sealed record ChooseSlotQuery(Guid ServiceId, LocalDate? Date, Guid? StaffMemberId, LocalDate? From = null) : IQuery<ChooseSlotResult?>;
+public sealed record ChooseSlotQuery(Guid ServiceId, LocalDate? Date, Guid? StaffMemberId, LocalDate? From = null, Instant? Start = null) : IQuery<ChooseSlotResult?>;
 
 /// <param name="Days">The date strip, in order; <see cref="DayOption.HasSlots"/> marks days worth tapping.</param>
 /// <param name="Slots">Free starts on <see cref="SelectedDate"/>, in order; for "anyone" one per start.</param>
@@ -40,6 +41,9 @@ public sealed record ChooseSlotResult(
 
     /// <summary>The day's free times in parts of the day, in order; empty parts are left out.</summary>
     public IReadOnlyList<SlotGroup> Groups { get; init; } = [];
+
+    /// <summary>The tapped time, when it is one of <see cref="Slots"/>; the Continue button appears with it.</summary>
+    public SlotOption? Chosen { get; init; }
 
     /// <summary>Where that form is, with the chosen person carried along; the JoinWaitlist slice owns the route.</summary>
     public string WaitlistPath => SelectedStaffId is { } staff ? $"/book/{ServiceId}/waitlist?staff={staff}" : $"/book/{ServiceId}/waitlist";
