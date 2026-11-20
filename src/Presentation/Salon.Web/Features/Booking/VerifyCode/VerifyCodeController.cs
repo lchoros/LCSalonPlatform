@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Salon.Core.Cqrs;
+using Salon.Core.Payments;
 using Salon.Services.Booking;
 using Salon.Services.Clients;
 using Salon.Services.Localization;
@@ -18,7 +19,7 @@ namespace Salon.Web.Features.Booking.VerifyCode;
 /// </summary>
 [RequireTenant]
 [Route("book/verify")]
-public sealed class VerifyCodeController(IDispatcher dispatcher, ILocalizationService localizer) : SalonControllerBase
+public sealed class VerifyCodeController(IDispatcher dispatcher, ILocalizationService localizer, IOnlineDepositCheckout deposits) : SalonControllerBase
 {
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Verify(Guid id, CancellationToken cancellationToken)
@@ -63,7 +64,8 @@ public sealed class VerifyCodeController(IDispatcher dispatcher, ILocalizationSe
         switch (result.Outcome)
         {
             case PublicBookingVerificationOutcome.Booked:
-                return Redirect($"/book/done/{result.AppointmentId}");
+                // With a payment gateway on (ADR 0082) the pay step comes first; it passes straight on when no deposit is due.
+                return Redirect(result.AppointmentId is { } booked && deposits.IsAvailable ? PublicBookingDefaults.PayDepositPath(booked) : $"/book/done/{result.AppointmentId}");
             case PublicBookingVerificationOutcome.WrongCode:
                 ModelState.AddModelError(nameof(VerifyCodeForm.Code), localizer.Plural("Booking.Public.Verify.Wrong", result.AttemptsLeft));
                 return View(ViewModelFor(pending, VerifyState.Open));

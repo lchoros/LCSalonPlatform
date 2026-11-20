@@ -10,9 +10,10 @@ public class PluginStartupTests(SalonWebApplicationFactory factory)
     [Fact]
     public void Host_loads_the_phase_1_plugins_with_descriptors()
     {
+        // The Stripe plugin is always loaded and does nothing until its flag is on (ADR 0082).
         var manager = factory.Services.GetRequiredService<IPluginManager>();
 
-        manager.Plugins.Select(p => p.Descriptor.SystemName).Order().ShouldBe(["Import.Csv", "Payments.Manual", "Sms.Log"]);
+        manager.Plugins.Select(p => p.Descriptor.SystemName).Order().ShouldBe(["Import.Csv", "Payments.Manual", "Payments.Stripe", "Sms.Log"]);
         manager.Plugins.ShouldAllBe(p => p.Descriptor.Version == "0.1.0");
     }
 }

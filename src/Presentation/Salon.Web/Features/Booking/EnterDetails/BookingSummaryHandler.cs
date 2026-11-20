@@ -19,7 +19,8 @@ public sealed class BookingSummaryHandler(
     ITenantLookup tenantLookup,
     ISettingService settings,
     IServiceOfferingResolver offerings,
-    ILocalizationService localizer) : IRequestHandler<BookingSummaryQuery, BookingSummary?>
+    ILocalizationService localizer,
+    IOnlineDepositCheckout onlineDeposits) : IRequestHandler<BookingSummaryQuery, BookingSummary?>
 {
     public async Task<BookingSummary?> HandleAsync(BookingSummaryQuery request, CancellationToken cancellationToken)
     {
@@ -88,6 +89,9 @@ public sealed class BookingSummaryHandler(
             StartBookingHandler.ConsentWording(localizer, tenant.Name),
             rules.RequireSmsVerification,
             await settings.LoadAsync<CancellationPolicySettings>(cancellationToken),
-            deposit > 0m ? price with { Amount = deposit } : null);
+            deposit > 0m ? price with { Amount = deposit } : null)
+        {
+            DepositPaidOnline = onlineDeposits.IsAvailable,
+        };
     }
 }

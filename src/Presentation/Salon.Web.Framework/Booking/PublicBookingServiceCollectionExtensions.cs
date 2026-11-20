@@ -43,6 +43,7 @@ public static class PublicBookingServiceCollectionExtensions
             };
             limiter.AddPolicy(PublicBookingDefaults.SmsCodeRateLimitPolicy, httpContext => PerAddress(httpContext, o => o.SmsCodeRateLimit));
             limiter.AddPolicy(PublicBookingDefaults.CodeVerifyRateLimitPolicy, httpContext => PerAddress(httpContext, o => o.CodeVerifyRateLimit));
+            limiter.AddPolicy(PublicBookingDefaults.DepositPayRateLimitPolicy, httpContext => PerAddress(httpContext, o => o.DepositPayRateLimit));
         });
 
         return services;

@@ -21,9 +21,22 @@ using Salon.Services.Settings;
 namespace Salon.Tests.E2E.Infrastructure;
 
 /// <summary>Starts Salon.Web on a real Kestrel port and a headless Chromium so Playwright can drive the pages.</summary>
-public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
+public class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
 {
-    private readonly WebApplicationFactory<Program> _factory = new HostFactory();
+    private readonly WebApplicationFactory<Program> _factory;
+
+    public KestrelAppFixture() => _factory = new HostFactory(ConfigureHost);
+
+    /// <summary>
+    /// What a fixture for one feature adds to the host before it starts: a flag that is off for every other class, a
+    /// pretend gateway in place of a real one. Nothing by default.
+    /// </summary>
+    protected virtual void ConfigureHost(IWebHostBuilder builder)
+    {
+    }
+
+    /// <summary>The host's services, for a derived fixture that arranges its own givens.</summary>
+    protected IServiceProvider HostServices => _factory.Services;
     private IPlaywright? _playwright;
 
     public IBrowser Browser { get; private set; } = null!;
@@ -485,11 +498,17 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         await _factory.DisposeAsync();
     }
 
-    async ValueTask IAsyncDisposable.DisposeAsync() => await DisposeAsync();
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await DisposeAsync();
+        GC.SuppressFinalize(this);
+    }
 
     private sealed class HostFactory : WebApplicationFactory<Program>
     {
-        public HostFactory()
+        private readonly Action<IWebHostBuilder> _configureHost;
+
+        public HostFactory(Action<IWebHostBuilder> configureHost)
         {
             Environment.SetEnvironmentVariable(
                 "ConnectionStrings__Default",
@@ -500,6 +519,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
             // Slices behind a flag (CLAUDE.md Tier 1) are on in the E2E host.
             Environment.SetEnvironmentVariable("Features__ClientImport", "true");
             Environment.SetEnvironmentVariable("Features__SignUp", "true");
+            _configureHost = configureHost;
         }
 
         // UseStaticWebAssets maps the build-time content roots (including the pre-compressed css/app.css.gz under obj/);
@@ -517,6 +537,9 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
                 services.AddSingleton<RecordingEmailSender>();
                 services.AddSingleton<IEmailSender>(sp => sp.GetRequiredService<RecordingEmailSender>());
             });
+
+            // Last, so a fixture for one feature has the final word (ADR 0082: the Stripe flag and its pretend gateway).
+            _configureHost(builder);
         }
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using NodaTime;
 using NodaTime.Text;
 using Salon.Core.Cqrs;
+using Salon.Core.Payments;
 using Salon.Core.Tenancy;
 using Salon.Services.Appointments;
 using Salon.Services.Booking;
@@ -25,7 +26,8 @@ public sealed class EnterDetailsController(
     IDispatcher dispatcher,
     ILocalizationService localizer,
     ITenantContext tenantContext,
-    IReturningClientCookie returning) : SalonControllerBase
+    IReturningClientCookie returning,
+    IOnlineDepositCheckout deposits) : SalonControllerBase
 {
     [HttpGet("{serviceId:guid}/details")]
     public async Task<IActionResult> Details(Guid serviceId, string? start, Guid? staff, bool forget, CancellationToken cancellationToken)
@@ -111,9 +113,13 @@ public sealed class EnterDetailsController(
             returning.Write(Response, new ReturningClient(tenantId, command.FirstName ?? string.Empty, command.LastName ?? string.Empty, command.Phone ?? string.Empty, command.Email));
         }
 
-        return result.RequiresVerification
-            ? Redirect($"/book/verify/{result.VerificationId}")
-            : Redirect($"/book/done/{result.AppointmentId}");
+        if (result.RequiresVerification)
+        {
+            return Redirect($"/book/verify/{result.VerificationId}");
+        }
+
+        // Booked at once. With a payment gateway on (ADR 0082) the pay step comes first; it passes straight on when no deposit is due.
+        return Redirect(result.AppointmentId is { } booked && deposits.IsAvailable ? PublicBookingDefaults.PayDepositPath(booked) : $"/book/done/{result.AppointmentId}");
     }
 
     private static Instant? ParseStart(string? start)

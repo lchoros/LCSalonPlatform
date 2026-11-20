@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Salon.Data;
 using Salon.Plugin.Import;
 using Salon.Plugin.Payments.Manual;
+using Salon.Plugin.Payments.Stripe;
 using Salon.Plugin.Sms.Log;
 using Salon.Services.Seeding;
 using Salon.Web.Framework.Identity;
@@ -19,6 +20,9 @@ builder.Services.AddSalonAuthentication(builder.Configuration);
 
 // Phase 1 plugins: record-only payments, log + Mailpit SMS, CSV client import. Real gateways arrive at M3 behind the same interfaces.
 builder.Services.AddManualPaymentProvider();
+// Stripe in test mode, for the deposit of an online booking only (ADR 0082). Inert unless Features:StripeDeposits is on
+// and a test-mode key is configured; money taken on the floor stays with the manual provider above.
+builder.Services.AddStripeDeposits();
 builder.Services.AddLogSmsProvider();
 builder.Services.AddCsvClientImport();
 builder.Services.AddCsvProductImport();
