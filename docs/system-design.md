@@ -37,12 +37,13 @@ slice, on a tenant-owned entity without `ITenantEntity`, and on any type outside
    holds no code of its own (ADR 0043): numbers come from the model, addresses from the controller, times and dates
    from `Salon.Services.Formatting`, status colours from `Salon.Web.Framework.Ui.Badges`.
 
-## 3. Tenant isolation (ADR 0002)
+## 3. Tenant isolation (ADR 0002, ADR 0090)
 - Every tenant-owned entity implements `ITenantEntity`; `SalonDbContext` applies a named global filter on
   `TenantId == current tenant` and refuses to save a row that belongs to another tenant (`TenantViolationException`).
-- `TenantConnectionInterceptor` runs `set_config('app.tenant_id', …)` when a connection opens; every tenant table has a
-  **forced** Postgres row-level-security policy keyed on that setting, so a non-superuser role cannot read across tenants
-  even with raw SQL. Startup refuses connection strings that disable the pool reset (`No Reset On Close`, `Multiplexing`).
+- `TenantCommandInterceptor` sends `set_config('app.tenant_id', …, true)` with every statement — transaction-local,
+  never session state, so it holds behind a pooler (ADR 0090); every tenant table has a **forced** Postgres
+  row-level-security policy keyed on that setting, so a non-superuser role cannot read across tenants even with raw SQL.
+  Startup still refuses connection strings that disable the pool reset (`No Reset On Close`, `Multiplexing`).
 - Background work uses `ITenantScopeRunner` (fresh DI scope with the tenant set before any connection opens).
 - Deliberate exception (ADR 0007, Tier 2): `outbox_messages` is platform-level with a nullable `tenant_id`, because
   the dispatcher reads across tenants; consumers still run inside the message's tenant scope.

@@ -59,11 +59,11 @@ public static class SalonFrameworkServiceCollectionExtensions
                     o.BaseDomains.Add(TenancyOptions.DefaultBaseDomain);
                 }
             });
-        services.AddScoped<TenantConnectionInterceptor>();
+        services.AddScoped<TenantCommandInterceptor>();
         services.AddDbContext<SalonDbContext>((provider, options) =>
             options.UseNpgsql(connectionString, npgsql => npgsql.UseNodaTime())
                    .UseSnakeCaseNamingConvention()
-                   .AddInterceptors(provider.GetRequiredService<TenantConnectionInterceptor>()));
+                   .AddInterceptors(provider.GetRequiredService<TenantCommandInterceptor>()));
 
         services.AddHttpContextAccessor();
         services.AddSalonPipeline(sliceAssemblies);
@@ -89,8 +89,9 @@ public static class SalonFrameworkServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Tenant isolation (ADR 0002) relies on Npgsql resetting the session setting app.tenant_id when a pooled connection is
-    /// returned. "No Reset On Close" and "Multiplexing" would let tenant A's setting leak into tenant B's request, so refuse them.
+    /// The tenant setting no longer lives in the session (ADR 0090), so a connection handed on carries nothing of a tenant.
+    /// The refusal of "No Reset On Close" and "Multiplexing" from ADR 0002 stays all the same, as a second guard: a
+    /// connection that keeps any session state of its previous user is not something isolation should have to survive.
     /// </summary>
     internal static void EnsureTenantSafeConnectionString(string connectionString)
     {
