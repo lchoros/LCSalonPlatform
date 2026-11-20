@@ -1,5 +1,15 @@
 {
   "Error.Title": "Something went wrong",
   "Error.Description": "Sorry, something on our side did not work. Please try again in a moment.",
-  "Error.RequestId": "Request ID"
+  "Error.RequestId": "If you tell us about it, this number helps us find it",
+  "Error.Home": "Back to the start",
+  "Error.Admin": "Back to the diary",
+  "Error.NotFound.Title": "We can't find that page",
+  "Error.NotFound.Description": "The address may have changed, or the link is an old one. Nothing is broken — the page just isn't here.",
+  "Error.Forbidden.Title": "This page isn't yours to open",
+  "Error.Forbidden.Description": "Your login doesn't reach this part of the salon. If you need it, ask the salon's owner.",
+  "Error.TooMany.Title": "Just a moment",
+  "Error.TooMany.Description": "That was a lot of tries in a short time. Please wait a minute and try again.",
+  "Error.Other.Title": "That didn't work",
+  "Error.Other.Description": "The request could not be completed. Please go back and try again."
 }

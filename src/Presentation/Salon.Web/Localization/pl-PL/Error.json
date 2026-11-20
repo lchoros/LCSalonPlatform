@@ -1,5 +1,15 @@
 {
   "Error.Title": "Coś poszło nie tak",
   "Error.Description": "Przepraszamy, coś po naszej stronie nie zadziałało. Spróbuj ponownie za chwilę.",
-  "Error.RequestId": "Identyfikator żądania"
+  "Error.RequestId": "Jeśli nam o tym napiszesz, ten numer pomoże nam to znaleźć",
+  "Error.Home": "Wróć na początek",
+  "Error.Admin": "Wróć do terminarza",
+  "Error.NotFound.Title": "Nie możemy znaleźć tej strony",
+  "Error.NotFound.Description": "Adres mógł się zmienić albo link jest stary. Nic się nie zepsuło — tej strony po prostu tu nie ma.",
+  "Error.Forbidden.Title": "Tej strony nie możesz otworzyć",
+  "Error.Forbidden.Description": "Twoje konto nie obejmuje tej części salonu. Jeśli jej potrzebujesz, poproś właściciela salonu.",
+  "Error.TooMany.Title": "Chwileczkę",
+  "Error.TooMany.Description": "To było dużo prób w krótkim czasie. Odczekaj minutę i spróbuj ponownie.",
+  "Error.Other.Title": "To się nie udało",
+  "Error.Other.Description": "Nie udało się wykonać tej operacji. Wróć i spróbuj ponownie."
 }

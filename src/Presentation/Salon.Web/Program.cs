@@ -49,6 +49,10 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// An empty 404, 403 or 429 becomes a page with a sentence and a way on (ADR 0087); the status itself is kept, and a
+// caller that did not ask for HTML still gets the bare status.
+app.UseStatusCodePagesWithReExecute("/Home/Status/{0}");
+
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseRateLimiter();

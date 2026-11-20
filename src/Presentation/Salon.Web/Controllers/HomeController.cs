@@ -23,4 +23,21 @@ public sealed class HomeController(ITenantContext tenantContext, ITenantLookup t
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
         => View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+
+    /// <summary>
+    /// The page behind an empty error status (ADR 0087): the pipeline re-executes here for a 404, 403, 429 and the
+    /// like, the status stays what it was, and a person reads a sentence instead of a blank screen. A caller that
+    /// did not ask for HTML (fetch, htmx, a script) keeps the bare status it can act on.
+    /// </summary>
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult Status(int id)
+    {
+        if (!Request.Headers.Accept.Any(value => value?.Contains("text/html", StringComparison.OrdinalIgnoreCase) == true))
+        {
+            return StatusCode(id);
+        }
+
+        Response.StatusCode = id;
+        return View(new StatusViewModel(StatusViewModel.KindOf(id), User.Identity?.IsAuthenticated == true));
+    }
 }

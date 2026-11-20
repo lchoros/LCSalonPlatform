@@ -100,7 +100,7 @@
         <section class="@cardClass" data-testid="move-step">
             <h2 class="text-lg font-semibold">@T["Appointments.Calendar.Move.Title"]</h2>
             <p class="text-sm text-stone-600">@T["Appointments.Calendar.Move.Hint"]</p>
-            <form method="get" action="@CalendarController.CardPath(card.Id)" class="space-y-3" data-testid="move-form">
+            <form method="get" action="@CalendarController.CardPath(card.Id)" class="space-y-3" data-testid="move-form" data-auto-submit>
                 <div class="space-y-1">
                     <label for="staffId" class="field-label">@T["Appointments.Calendar.Move.Staff"]</label>
                     <select id="staffId" name="staffId" data-testid="move-staff" class="@inputClass">
@@ -114,7 +114,7 @@
                     <label for="date" class="field-label">@T["Appointments.Calendar.Move.Date"]</label>
                     <input id="date" name="date" type="date" value="@moveDay" min="@card.Today.ToIso()" data-testid="move-date" class="@inputClass" />
                 </div>
-                <button type="submit" data-testid="move-show-slots" class="@secondaryClass w-full sm:w-auto">@T["Appointments.Calendar.Move.ShowSlots"]</button>
+                <button type="submit" data-testid="move-show-slots" data-auto-submit-fallback class="@secondaryClass w-full sm:w-auto">@T["Appointments.Calendar.Move.ShowSlots"]</button>
             </form>
             <h3 class="text-base font-semibold">@T["Appointments.Calendar.Move.Slots"]</h3>
             @if (card.Slots.Count == 0)
@@ -148,3 +148,6 @@
         </section>
     }
 </section>
+@section Scripts {
+    <script type="module" src="~/js/auto-submit.js" asp-append-version="true"></script>
+}
