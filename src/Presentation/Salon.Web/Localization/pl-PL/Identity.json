@@ -1,5 +1,6 @@
 {
   "Identity.Login.Title": "Zaloguj się",
+  "Identity.Login.Lead": "Dla zespołu salonu. Klienci rezerwują bez konta.",
   "Identity.Login.Email": "E-mail",
   "Identity.Login.Password": "Hasło",
   "Identity.Login.Submit": "Zaloguj się",
@@ -74,5 +75,19 @@
   "Identity.Team.Validation.RoleRequired": "Wybierz rolę.",
   "Identity.Team.Validation.PasswordTooShort": "Hasło musi mieć co najmniej {0} znaków.",
   "Identity.Team.Validation.PasswordTooLong": "Hasło może mieć najwyżej {0} znaków.",
-  "Identity.Team.Validation.LastOwner": "Salon musi mieć co najmniej jedno włączone konto właściciela. Najpierw dodaj drugiego właściciela."
+  "Identity.Team.Validation.LastOwner": "Salon musi mieć co najmniej jedno włączone konto właściciela. Najpierw dodaj drugiego właściciela.",
+  "Identity.Password.Title": "Twoje hasło",
+  "Identity.Password.Lead": "Twoje konto, Twoje hasło. Zmiana wylogowuje Cię na wszystkich innych urządzeniach; to zostaje zalogowane.",
+  "Identity.Password.Current": "Obecne hasło",
+  "Identity.Password.New": "Nowe hasło",
+  "Identity.Password.NewHint": "Co najmniej {0} znaków.",
+  "Identity.Password.Confirm": "Powtórz nowe hasło",
+  "Identity.Password.Submit": "Zmień hasło",
+  "Identity.Password.Changed": "Hasło zostało zmienione. Wszystkie inne urządzenia zostały wylogowane.",
+  "Identity.Password.Validation.CurrentRequired": "Podaj obecne hasło.",
+  "Identity.Password.Validation.CurrentWrong": "To nie jest Twoje obecne hasło.",
+  "Identity.Password.Validation.NewTooShort": "Hasło musi mieć co najmniej {0} znaków.",
+  "Identity.Password.Validation.NewTooLong": "Hasło może mieć najwyżej {0} znaków.",
+  "Identity.Password.Validation.SameAsCurrent": "Nowe hasło jest takie samo jak obecne.",
+  "Identity.Password.Validation.ConfirmMismatch": "Nowe hasła nie są takie same."
 }
