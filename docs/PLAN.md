@@ -56,6 +56,11 @@ Gate: the pilot salon pays; then 3 paying salons before scaling up.
   its deposit due. Test-mode keys only, on the platform's own account; keys live in user-secrets and host config
   only, never the repo. New runtime dependency: Stripe.net. Not built: Connect (still parked), refunds through
   Stripe, anything that charges besides the deposit
+- [~] Mobile apps for the team (ADR 0081, owner 2026-11-20 — ON HOLD by the owner the same evening, web first; spec in `docs/mobile/SPEC.md`): staged — Stage 0 a PWA
+  manifest and icon so the portal installs on a home screen (done; PNG icons for iOS to follow), Stage 1 a .NET MAUI
+  shell in `src/Mobile/` hosting the portal with native push for a new or cancelled booking ("New booking 14:00",
+  never a name) and a login hand-off (the MAUI workload is a new runtime dependency — Tier 2, owner starts it),
+  Stage 2 native diary and checkout screens behind the future Tier 2 `/api/v1`. No marketplace, no client app
 - [!] First hosting: Dockerfile, staging + prod, deploy job (Tier 2)
 - [!] Stripe Connect plugin: onboarding, online deposits, card on file, refunds (Tier 2)
 - [!] Real SMS/email plugins: Twilio (UK), SMSAPI.pl (PL), Postmark/SES (Tier 2)
