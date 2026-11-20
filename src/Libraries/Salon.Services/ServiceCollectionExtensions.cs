@@ -55,6 +55,8 @@ public static class ServiceCollectionExtensions
         // Needs IClientService (registered by the host next to the field encryptor) and IPublicUrlBuilder (Web.Framework) at resolve time.
         services.AddScoped<IPublicBookingService, PublicBookingService>();
         services.AddScoped<IPublicWaitlistService, PublicWaitlistService>();
+        // "My bookings" for a client (ADR 0083): the same code, proving a number instead of carrying a booking.
+        services.AddScoped<ClientPortal.IClientPortalService, ClientPortal.ClientPortalService>();
         services.AddOptions<DemoOptions>().BindConfiguration(DemoOptions.SectionName);
         services.AddSingleton<EmbeddedMessageTemplateDefaults>();
         services.AddScoped<IMessageTemplateService, MessageTemplateService>();

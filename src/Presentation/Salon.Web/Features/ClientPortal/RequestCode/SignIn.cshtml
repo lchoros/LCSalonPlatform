@@ -1,0 +1,29 @@
+@using Salon.Web.Features.ClientPortal.RequestCode
+@model RequestCodeViewModel
+@{
+    ViewData["Title"] = T["ClientPortal.SignIn.Title"];
+}
+<section class="mx-auto max-w-sm space-y-6">
+    <header class="space-y-2">
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["ClientPortal.SignIn.Title"]</h1>
+        <p class="text-stone-700">@T["ClientPortal.SignIn.Lead"]</p>
+    </header>
+
+    @if (Model.Flash is not null)
+    {
+        <p role="status" data-testid="portal-flash" class="notice notice-ok">@Model.Flash</p>
+    }
+
+    <form method="post" asp-action="SignIn" class="space-y-5" novalidate data-testid="portal-sign-in-form">
+        <div asp-validation-summary="ModelOnly" class="notice notice-error" role="alert"></div>
+        <div class="space-y-1.5">
+            <label for="Phone" class="field-label">@T["ClientPortal.SignIn.Phone"]</label>
+            <input id="Phone" name="Phone" value="@Model.Phone" type="tel" inputmode="tel" maxlength="30" autocomplete="tel" aria-describedby="phone-hint phone-error" class="field tabular-nums @ViewData.ModelState.InvalidClass("Phone")" data-testid="portal-phone" autofocus />
+            <p id="phone-hint" class="field-hint">@T["ClientPortal.SignIn.PhoneHint"]</p>
+            <span data-valmsg-for="Phone" id="phone-error" class="field-error" data-testid="portal-phone-error">@string.Join(" ", ViewData.ModelState.ErrorsFor("Phone"))</span>
+        </div>
+        <button type="submit" data-testid="portal-send-code" class="btn btn-primary w-full">@T["ClientPortal.SignIn.Submit"]</button>
+    </form>
+
+    <p class="text-sm text-stone-700">@T["ClientPortal.SignIn.NoBooking"] <a href="@Model.BookPath" data-testid="portal-book" class="font-medium underline underline-offset-2">@T["ClientPortal.SignIn.Book"]</a></p>
+</section>

@@ -13,6 +13,9 @@ public static class PublicBookingDefaults
 
     public static string CancelPath(string publicToken) => $"{BookPath}/cancel/{Uri.EscapeDataString(publicToken)}";
 
+    /// <summary>The page where the client behind the link picks another time (ADR 0021).</summary>
+    public static string ChangePath(string publicToken) => $"{BookPath}/change/{Uri.EscapeDataString(publicToken)}";
+
     /// <summary>Prefix of the short address that messages carry (ADR 0031): <c>/v/{token}</c>, "v" for visit.</summary>
     public const string ShortLinkPrefix = "/v";
 

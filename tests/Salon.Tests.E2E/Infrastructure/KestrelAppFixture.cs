@@ -327,7 +327,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
     /// from now on, so a time ahead may be taken at some hours of the day: the visit is then moved further away, in
     /// the same direction, until the person is free. A test that needs "a visit coming up" gets one whatever the hour.
     /// </summary>
-    public async Task<(Guid AppointmentId, Guid ClientId, decimal Price)> AddVisitAsync(Guid tenantId, string firstName, string lastName, Duration fromNow, decimal deposit, string? email = null)
+    public async Task<(Guid AppointmentId, Guid ClientId, decimal Price)> AddVisitAsync(Guid tenantId, string firstName, string lastName, Duration fromNow, decimal deposit, string? email = null, string? phoneE164 = null)
     {
         using var scope = _factory.Services.CreateScope();
         scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
@@ -335,7 +335,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         var now = SystemClock.Instance.GetCurrentInstant();
         var service = await db.Services.AsNoTracking().Where(s => s.IsActive).OrderBy(s => s.Name).FirstAsync();
         var staffId = await db.StaffMembers.AsNoTracking().Where(s => s.IsActive && s.IsBookable).OrderBy(s => s.SortOrder).Select(s => s.Id).FirstAsync();
-        var client = new Core.Clients.Client { FirstName = firstName, LastName = lastName, Email = email, CreatedAt = now, UpdatedAt = now };
+        var client = new Core.Clients.Client { FirstName = firstName, LastName = lastName, Email = email, Phone = phoneE164, CreatedAt = now, UpdatedAt = now };
         var start = now + fromNow;
 
         // The same statuses, and the same range, as the exclusion constraint on a person's time.
@@ -367,6 +367,8 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
             Currency = service.Currency,
             DurationMinutes = (int)service.Duration.TotalMinutes,
             CreatedAt = start - Duration.FromDays(1),
+            // A client with a number gets the link of their own that every booking has (ADR 0029), for "My bookings" (ADR 0083).
+            PublicToken = phoneE164 is null ? null : Core.Booking.PublicBookingToken.Generate(),
         };
         db.Clients.Add(client);
         db.Appointments.Add(appointment);
@@ -500,6 +502,7 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
             // Slices behind a flag (CLAUDE.md Tier 1) are on in the E2E host.
             Environment.SetEnvironmentVariable("Features__ClientImport", "true");
             Environment.SetEnvironmentVariable("Features__SignUp", "true");
+            Environment.SetEnvironmentVariable("Features__ClientPortal", "true");
         }
 
         // UseStaticWebAssets maps the build-time content roots (including the pre-compressed css/app.css.gz under obj/);
