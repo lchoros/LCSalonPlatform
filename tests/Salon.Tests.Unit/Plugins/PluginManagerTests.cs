@@ -10,7 +10,7 @@ namespace Salon.Tests.Unit.Plugins;
 public class PluginManagerTests
 {
     private static readonly ManualPaymentProvider Manual = new(NullLogger<ManualPaymentProvider>.Instance);
-    private static readonly LogSmsProvider LogSms = new(NSubstitute.Substitute.For<Salon.Core.Messaging.IEmailSender>(), NullLogger<LogSmsProvider>.Instance);
+    private static readonly LogSmsProvider LogSms = new(NSubstitute.Substitute.For<Salon.Core.Messaging.IEmailSender>(), Microsoft.Extensions.Options.Options.Create(new SmsMirrorOptions()), NullLogger<LogSmsProvider>.Instance);
 
     [Fact]
     public void Loads_descriptors_of_the_shipped_plugins()
