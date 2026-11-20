@@ -3,17 +3,19 @@
 @import "tailwindcss";
 @source "../**/*.cshtml";
 
-/* The theme in one place (ADR 0080): the brand is Cinolla-like purple, and every component below speaks these names,
-   never raw violet-* utilities — so a re-skin (or the dark layer, when it comes) changes this block and nothing else. */
+/* The theme in one place (ADR 0080): every component below speaks these names, never raw colour utilities — so a
+   re-skin (or the dark layer, when it comes) changes this block and nothing else. The brand sits between our first
+   violet (#6d28d9) and Cinolla's indigo (#4f46e5), the owner's pick of 2026-11-20; brand-deep is Cinolla's own
+   night indigo. White on brand and brand-deep on brand-mist both keep WCAG AA. */
 @theme {
-  --color-brand: #6d28d9; /* brand: primary surfaces, chosen states */
-  --color-brand-strong: #5b21b6; /* brand-strong: primary hover */
-  --color-brand-bright: #7c3aed; /* brand-bright: progress, smaller marks */
-  --color-brand-deep: #4c1d95; /* brand-deep: text on soft brand surfaces */
-  --color-brand-line: #a78bfa; /* brand-line: warmed borders */
-  --color-brand-edge: #c4b5fd; /* brand-edge: resting borders */
-  --color-brand-soft: #ede9fe; /* brand-soft: filled chips, circles */
-  --color-brand-mist: #f5f3ff; /* brand-mist: hover washes */
+  --color-brand: #5b3fe0; /* primary surfaces, chosen states */
+  --color-brand-strong: #4a30c4; /* primary hover */
+  --color-brand-bright: #6f57ea; /* progress, smaller marks */
+  --color-brand-deep: #241f6b; /* text on soft brand surfaces */
+  --color-brand-line: #a19af3; /* warmed borders */
+  --color-brand-edge: #c6c1f9; /* resting borders */
+  --color-brand-soft: #e7e5fd; /* filled chips, circles */
+  --color-brand-mist: #f4f3fe; /* hover washes */
 }
 
 /* MVC marks a field whose ModelState has errors with this class; style it like the red message under it. */
@@ -150,8 +152,54 @@
   }
 
   .filter-tile.is-on {
-    background: var(--color-stone-900);
-    @apply border-stone-900 text-white shadow-none;
+    background: var(--color-brand);
+    @apply border-brand text-white shadow-none;
+  }
+
+  /* A visit on the calendar (ADR 0086): the fill is a shade of the brand that deepens as the visit progresses, the
+     left edge keeps the staff member's own colour, and done or missed visits step back out of the purple. */
+  .cal-block {
+    @apply relative z-10 flex min-w-0 flex-col overflow-hidden rounded border-l-4 bg-brand-mist px-1 py-0.5 text-[11px] leading-tight text-brand-deep focus:outline-none focus:ring-2 focus:ring-brand;
+    transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+  }
+
+  .cal-block:hover {
+    @apply ring-2 ring-brand-line;
+  }
+
+  .cal-block[data-status="Confirmed"] {
+    @apply bg-brand-soft;
+  }
+
+  .cal-block[data-status="Arrived"] {
+    @apply bg-brand-edge;
+  }
+
+  .cal-block[data-status="Completed"] {
+    @apply bg-stone-100 text-stone-600;
+  }
+
+  .cal-block[data-status="NoShow"] {
+    @apply bg-red-50 text-red-800;
+  }
+
+  /* Dragging (the calendar's one script): the block lifts under the pointer, a dashed outline shows where it lands. */
+  .cal-block.is-draggable {
+    @apply cursor-grab select-none;
+    -webkit-touch-callout: none;
+  }
+
+  .cal-block.is-dragging {
+    @apply z-50 cursor-grabbing opacity-90 shadow-xl ring-2 ring-brand;
+    transition: none;
+  }
+
+  .cal-drop-hint {
+    @apply pointer-events-none z-40 rounded border-2 border-dashed border-brand bg-brand-soft/70;
+  }
+
+  .cal-drop-hint.is-refused {
+    @apply border-red-400 bg-red-50/80;
   }
 
   /* Search: one field and one button on a line, 48 px tall. */

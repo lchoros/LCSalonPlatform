@@ -125,12 +125,40 @@ public partial class CalendarE2ETests(KestrelAppFixture app) : IClassFixture<Kes
 
             var chosenTime = (await slots.First.TextContentAsync()).ShouldNotBeNull().Trim();
             await slots.First.ClickAsync();
+
+            // The tap only chooses; the button does the move (ADR 0086).
+            await page.GetByTestId("move-confirm").ClickAsync();
             await page.ReachAsync("**/admin/appointments/calendar?view=day&date=*");
 
             (await page.GetByTestId("flash").TextContentAsync()).ShouldNotBeNull().ShouldContain(chosenTime[..5]);
             var moved = page.Locator($"[data-testid='calendar-block'][data-appointment-id='{appointmentId}']").First;
             (await moved.CountAsync()).ShouldBe(1);
             (await moved.TextContentAsync()).ShouldNotBeNull().ShouldContain(chosenTime[..5]);
+
+            if (width >= 1024)
+            {
+                // Dragging the block an hour down with the mouse: the script posts the drop and the SERVER decides
+                // (ADR 0086). Either answer proves the wiring end to end — a confirmation after the reload, or the
+                // refusal in the server's own words — and the visit is on the grid exactly once either way.
+                await page.GotoAsync(page.Url);
+                await page.ReachAsync("**/admin/appointments/calendar?view=day&date=*");
+                (await page.GetByTestId("flash").CountAsync()).ShouldBe(0, "the earlier confirmation was shown once");
+                var dragged = page.Locator($"[data-testid='calendar-block'][data-appointment-id='{appointmentId}']").First;
+                await Assertions.Expect(dragged).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("is-draggable"));
+                var box = (await dragged.BoundingBoxAsync()).ShouldNotBeNull();
+                var x = box.X + (box.Width / 2);
+                var y = box.Y + Math.Min(box.Height / 2, 6);
+                await page.Mouse.MoveAsync(x, y);
+                await page.Mouse.DownAsync();
+                await page.Mouse.MoveAsync(x, y + 32, new MouseMoveOptions { Steps = 8 });
+                await page.Mouse.MoveAsync(x, y + 64, new MouseMoveOptions { Steps = 8 });
+                await page.Mouse.UpAsync();
+
+                var outcome = page.Locator("[data-testid='flash'], [data-testid='drag-message']").First;
+                await Assertions.Expect(outcome).ToBeVisibleAsync();
+                (await outcome.TextContentAsync()).ShouldNotBeNullOrWhiteSpace();
+                (await page.Locator($"[data-testid='calendar-block'][data-appointment-id='{appointmentId}']").CountAsync()).ShouldBe(1);
+            }
         }
         finally
         {
