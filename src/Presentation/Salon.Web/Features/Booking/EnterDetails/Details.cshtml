@@ -34,7 +34,8 @@
                 <dd class="font-medium" data-testid="summary-staff">@(s.StaffName ?? T["Booking.Public.Anyone"])</dd>
             </div>
         </dl>
-        <a href="/book/@Model.Form.ServiceId" class="btn-link ml-auto">@T["Booking.Public.ChangeTime"]</a>
+        @* Back to step 2 on the same day and strip window, with the same person (a mis-tapped time costs one tap). *@
+        <a href="/book/@Model.Form.ServiceId?date=@local.Date.ToIso()&from=@local.Date.ToIso()@(Model.Form.StaffMemberId is { } backSid ? $"&staff={backSid}" : string.Empty)" class="btn btn-compact btn-secondary ml-auto shrink-0" data-testid="change-time">@T["Booking.Public.ChangeTime"]</a>
     </div>
 
     @if (s.Deposit is { } depositDue)
