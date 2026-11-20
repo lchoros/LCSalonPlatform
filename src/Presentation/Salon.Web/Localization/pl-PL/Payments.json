@@ -266,6 +266,7 @@
   "Payments.Vouchers.Refused.AlreadyOnThisBill": "Ten bon jest już na tym rachunku.",
   "Payments.Vouchers.Refused.NotRefundable": "Pieniądze można zwrócić tylko za bon, którego nikt nie użył.",
   "Payments.Method.Other": "Inny",
+  "Payments.Method.OnlineCard": "Karta online (Stripe)",
   "Payments.Fee.Refused.MethodNotOffered": "Salon nie przyjmuje już płatności w ten sposób. Wybierz inny sposób płatności.",
   "Payments.CounterSale.Refused.MethodNotOffered": "Salon nie przyjmuje już płatności w ten sposób. Wybierz inny sposób płatności.",
   "Payments.Kind.PartPayment": "Wizyta opłacona w części",

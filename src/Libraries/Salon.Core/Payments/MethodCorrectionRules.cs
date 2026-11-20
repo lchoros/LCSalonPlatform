@@ -13,6 +13,13 @@ public static class MethodCorrectionRules
         => TillRules.Direction(kind) != 0 && !ClientAccountRules.IsMethodCorrection(kind);
 
     /// <summary>
+    /// Whether a line recorded under <paramref name="method"/> can be put right. A line a payment gateway wrote
+    /// (ADR 0082) cannot: its method is what the gateway did, not a button somebody pressed.
+    /// </summary>
+    public static bool CanCorrect(ClientAccountEntryKind kind, PaymentMethod? method)
+        => method is { } recorded && !SalonPaymentMethodRules.IsGatewayOnly(recorded) && CanCorrect(kind);
+
+    /// <summary>
     /// The kinds of the two lines that correct a line of <paramref name="original"/> kind: <c>Undo</c> carries the
     /// method the money was recorded under and cancels it, <c>Restate</c> carries the method it was paid by.
     /// </summary>

@@ -266,6 +266,7 @@
   "Payments.Vouchers.Refused.AlreadyOnThisBill": "This voucher is already on this bill.",
   "Payments.Vouchers.Refused.NotRefundable": "The money can only be given back for a voucher nobody has used.",
   "Payments.Method.Other": "Other",
+  "Payments.Method.OnlineCard": "Card online (Stripe)",
   "Payments.Fee.Refused.MethodNotOffered": "The salon does not take money that way any more. Choose another way of paying.",
   "Payments.CounterSale.Refused.MethodNotOffered": "The salon does not take money that way any more. Choose another way of paying.",
   "Payments.Kind.PartPayment": "Visit paid in part",

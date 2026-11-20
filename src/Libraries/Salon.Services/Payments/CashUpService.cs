@@ -122,7 +122,7 @@ internal sealed class CashUpService(
             {
                 MethodName = r.MethodName,
                 EntryId = r.Id,
-                CanCorrect = day == today && MethodCorrectionRules.CanCorrect(r.Kind),
+                CanCorrect = day == today && MethodCorrectionRules.CanCorrect(r.Kind, r.Method),
                 CorrectedTo = standsAt.GetValueOrDefault(r.Id),
             })
             .ToArray();

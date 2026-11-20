@@ -195,6 +195,92 @@ internal sealed class ClientAccountService(
         return await RequireDepositAsync(appointmentId, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<OnlineDepositOutcome> RecordOnlineDepositAsync(OnlineDepositPayment payment, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(payment);
+        var tenantId = RequireTenant();
+        if (payment.TenantId != tenantId)
+        {
+            // A session of another salon never writes here, whatever address it came back to.
+            logger.LogWarning("Online deposit for appointment {AppointmentId} names tenant {PaymentTenantId}, not the tenant in scope {TenantId}; nothing recorded", payment.AppointmentId, payment.TenantId, tenantId);
+            return OnlineDepositOutcome.NotFound;
+        }
+
+        // Its own transaction when the caller has none, so the lock below holds until the line is written.
+        var own = db.Database.CurrentTransaction is null ? await db.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false) : null;
+        try
+        {
+            // The client's browser coming back and the gateway's webhook can arrive together: one after the other.
+            if (await LockVisitAsync(payment.AppointmentId, cancellationToken).ConfigureAwait(false) == 0)
+            {
+                return OnlineDepositOutcome.NotFound;
+            }
+
+            var visit = await GetDepositAsync(payment.AppointmentId, cancellationToken).ConfigureAwait(false);
+            if (visit is null)
+            {
+                return OnlineDepositOutcome.NotFound;
+            }
+
+            var outcome = OnlineDepositRules.Decide(payment, visit.Due, visit.Deposit is not null, visit.Deposit?.ProviderReference);
+            if (outcome != OnlineDepositOutcome.Recorded)
+            {
+                if (outcome != OnlineDepositOutcome.AlreadyRecorded)
+                {
+                    // The gateway holds money the ledger does not take: a person has to look. Ids and numbers only.
+                    logger.LogError("Online deposit of {Amount} for appointment {AppointmentId} was not recorded: {Outcome}", payment.Amount.Amount, payment.AppointmentId, outcome);
+                }
+
+                return outcome;
+            }
+
+            var entry = new ClientAccountEntry
+            {
+                TenantId = tenantId,
+                ClientId = visit.ClientId,
+                AppointmentId = payment.AppointmentId,
+                Kind = ClientAccountEntryKind.DepositPaid,
+                Amount = payment.Amount.Amount,
+                Currency = payment.Amount.Currency,
+                Method = PaymentMethod.OnlineCard,
+                ProviderSystemName = payment.ProviderSystemName,
+                ProviderReference = payment.Reference,
+            };
+            try
+            {
+                await InsertAsync(entry, ClientAccountRefusal.DepositAlreadyRecorded, cancellationToken).ConfigureAwait(false);
+            }
+            catch (ClientAccountException)
+            {
+                // The desk recorded a deposit for this visit in the same instant (it takes no lock). The transaction is
+                // lost with the refused line; whoever asked reads the ledger again.
+                logger.LogWarning("Online deposit for appointment {AppointmentId} met another deposit being recorded; nothing written", payment.AppointmentId);
+                return OnlineDepositOutcome.BeingRecorded;
+            }
+
+            if (own is not null)
+            {
+                await own.CommitAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            if (!visit.IsActive)
+            {
+                // Paid after the visit was cancelled or finished: the salon holds it, so it is on the ledger to be given back.
+                logger.LogWarning("Online deposit recorded for appointment {AppointmentId} whose status is {Status}", payment.AppointmentId, visit.Status);
+            }
+
+            logger.LogInformation("Deposit of {Amount} for appointment {AppointmentId} received by {Method}, recorded from the gateway", payment.Amount.Amount, payment.AppointmentId, PaymentMethod.OnlineCard);
+            return OnlineDepositOutcome.Recorded;
+        }
+        finally
+        {
+            if (own is not null)
+            {
+                await own.DisposeAsync().ConfigureAwait(false);
+            }
+        }
+    }
+
     public async Task<DepositLine> ReturnDepositAsync(Guid appointmentId, PaymentChoice method, Guid? byUserId, CancellationToken cancellationToken = default)
     {
         var paid = await RequireMethodAsync(method, cancellationToken).ConfigureAwait(false);

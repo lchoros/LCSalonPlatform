@@ -51,6 +51,17 @@ public interface IClientAccountService
     /// </summary>
     Task<DepositLine> RecordDepositAsync(Guid appointmentId, decimal? amount, PaymentChoice method, Guid? byUserId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Records a deposit that a payment gateway took online (ADR 0082) as held, by
+    /// <see cref="PaymentMethod.OnlineCard"/>, naming the gateway and its reference. Nothing is charged here and the
+    /// salon's <see cref="IPaymentProvider"/> is not involved: the gateway already has the money. The same reference
+    /// any number of times is one line, and two requests at once write one. Only exactly the amount the booking asks
+    /// for is recorded (<see cref="OnlineDepositRules"/>); a visit that was cancelled meanwhile still gets its line,
+    /// because the salon does hold the money and has to be able to give it back. Never throws for a refusal: the
+    /// outcome says what happened.
+    /// </summary>
+    Task<OnlineDepositOutcome> RecordOnlineDepositAsync(OnlineDepositPayment payment, CancellationToken cancellationToken = default);
+
     /// <summary>Records that the visit's deposit went back to the client, in full. Throws <see cref="ClientAccountException"/> when there is none to return.</summary>
     Task<DepositLine> ReturnDepositAsync(Guid appointmentId, PaymentChoice method, Guid? byUserId, CancellationToken cancellationToken = default);
 
