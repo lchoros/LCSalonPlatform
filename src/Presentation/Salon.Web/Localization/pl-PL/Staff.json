@@ -116,5 +116,17 @@
   "Staff.Commission.SeeReport": "Zobacz w raporcie",
   "Staff.Commission.Saved": "Stawki zostały zapisane.",
   "Staff.Commission.Unchanged": "Nic się nie zmieniło.",
-  "Staff.Commission.Validation.Rate": "Podaj procent od 0 do 100, najwyżej z dwoma miejscami po przecinku, albo zostaw puste."
+  "Staff.Commission.Validation.Rate": "Podaj procent od 0 do 100, najwyżej z dwoma miejscami po przecinku, albo zostaw puste.",
+  "Staff.Photo.Title": "Zdjęcie",
+  "Staff.Photo.Lead": "Klienci widzą tę twarz, gdy wybierają, do kogo się umówić.",
+  "Staff.Photo.None": "Nie ma jeszcze zdjęcia. Dopóki go nie dodasz, klienci widzą pierwszą literę imienia.",
+  "Staff.Photo.File": "Wybierz zdjęcie",
+  "Staff.Photo.FileHint": "Zdjęcie JPEG, PNG lub WebP, najwyżej {0} KB. Jest pokazywane w kółku, więc najlepiej sprawdza się kwadratowe zdjęcie twarzy.",
+  "Staff.Photo.Upload": "Prześlij zdjęcie",
+  "Staff.Photo.Remove": "Usuń zdjęcie",
+  "Staff.Photo.Saved": "Zdjęcie zapisane.",
+  "Staff.Photo.Removed": "Zdjęcie usunięte.",
+  "Staff.Photo.Problem.Empty": "Najpierw wybierz zdjęcie.",
+  "Staff.Photo.Problem.TooLarge": "To zdjęcie ma więcej niż {0} KB. Wybierz mniejsze: przycięta kopia albo zrzut ekranu zwykle wystarcza.",
+  "Staff.Photo.Problem.NotAPicture": "Ten plik nie jest zdjęciem JPEG, PNG ani WebP."
 }

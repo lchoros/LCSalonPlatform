@@ -2030,6 +2030,49 @@ namespace Salon.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Salon.Core.Staff.StaffPhoto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<byte[]>("Bytes")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("bytes");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("content_type");
+
+                    b.Property<Guid>("StaffMemberId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("staff_member_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<Instant>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_staff_photos");
+
+                    b.HasIndex("StaffMemberId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_staff_photos_staff_member_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_staff_photos_tenant_id");
+
+                    b.ToTable("staff_photos", "salon");
+                });
+
             modelBuilder.Entity("Salon.Core.Staff.StaffTimeOff", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2646,6 +2689,23 @@ namespace Salon.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_staff_members_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Salon.Core.Staff.StaffPhoto", b =>
+                {
+                    b.HasOne("Salon.Core.Staff.StaffMember", null)
+                        .WithMany()
+                        .HasForeignKey("StaffMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_staff_photos_staff_members_staff_member_id");
+
+                    b.HasOne("Salon.Core.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_staff_photos_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("Salon.Core.Staff.StaffTimeOff", b =>

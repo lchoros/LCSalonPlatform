@@ -104,6 +104,14 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   `Staff/CalendarFeedFile` — `GET /calendar/{token}.ics`, tenant only and without a sign-in: the person's live and
   past visits (30 days back, a year ahead) written by the pure `CalendarFeedWriter` (RFC 5545), the client as first
   name and initial only, `Cache-Control: private`.
+- `Staff/SetPhoto` — `POST /admin/staff/{id}/photo` and `…/photo/remove` (ADR 0088, `Staff.Manage`): a staff member's
+  profile photo, a JPEG, PNG or WebP of at most 512 KB told by its first bytes (`StaffPhotoRules`), kept in the
+  database (`StaffPhoto`, table `staff_photos`, one per person, cascade from the staff member) through
+  `IStaffPhotoService`. Its form sits on the staff edit page as the `StaffPhotoForm` view component.
+  `Staff/ShowPhoto` — `GET /staff-photo/{staffMemberId}?v={version}`, tenant only and without a sign-in: active staff
+  for visitors, `nosniff`, immutable caching under the current version (`StaffPhotoAddress`). Every face is the
+  `<avatar>` tag helper: the picture in a circle, or the first letter of the name; on the staff list, the staff
+  edit page and the person pills of `Booking/ChooseSlot`.
 - `Clients/SearchClients`, `Clients/CreateClient`, `Clients/EditClient`, `Clients/ClientCard` — `/admin/clients`,
   `/admin/clients/new`, `/admin/clients/{id}/edit`, `/admin/clients/{id}`, behind `Clients.View` (ADR 0011); the card
   and the edit form are the only read paths that decrypt health notes.

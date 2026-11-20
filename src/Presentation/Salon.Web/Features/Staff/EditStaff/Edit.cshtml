@@ -6,6 +6,8 @@
 }
 <section class="mx-auto max-w-lg space-y-6">
     <h1 class="page-title">@T["Staff.Edit.Title"]</h1>
+    @* The face has its own form and its own slice (ADR 0088): it cannot sit inside the details form below. *@
+    @await Component.InvokeAsync("StaffPhotoForm", new { staffMemberId = Model.Id, name = Model.DisplayName })
     <form method="post" asp-action="Edit" class="space-y-5" novalidate data-testid="edit-staff-form">
         <div asp-validation-summary="ModelOnly" class="notice notice-error" role="alert"></div>
 

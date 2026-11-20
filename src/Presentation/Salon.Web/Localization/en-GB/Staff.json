@@ -116,5 +116,17 @@
   "Staff.Commission.SeeReport": "See it in the report",
   "Staff.Commission.Saved": "The rates are saved.",
   "Staff.Commission.Unchanged": "Nothing changed.",
-  "Staff.Commission.Validation.Rate": "Enter a percent from 0 to 100, with at most two decimals, or leave it empty."
+  "Staff.Commission.Validation.Rate": "Enter a percent from 0 to 100, with at most two decimals, or leave it empty.",
+  "Staff.Photo.Title": "Photo",
+  "Staff.Photo.Lead": "Clients see this face when they choose who to book with.",
+  "Staff.Photo.None": "No photo yet. Clients see the first letter of the name until you add one.",
+  "Staff.Photo.File": "Choose a picture",
+  "Staff.Photo.FileHint": "A JPEG, PNG or WebP picture of at most {0} KB. It is shown in a circle, so a square picture of the face works best.",
+  "Staff.Photo.Upload": "Upload photo",
+  "Staff.Photo.Remove": "Remove photo",
+  "Staff.Photo.Saved": "Photo saved.",
+  "Staff.Photo.Removed": "Photo removed.",
+  "Staff.Photo.Problem.Empty": "Choose a picture first.",
+  "Staff.Photo.Problem.TooLarge": "That picture is larger than {0} KB. Choose a smaller one: a cropped copy or a screenshot of it is usually small enough.",
+  "Staff.Photo.Problem.NotAPicture": "That file is not a JPEG, PNG or WebP picture."
 }
