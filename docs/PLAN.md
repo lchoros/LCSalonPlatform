@@ -36,6 +36,11 @@ Gate: deposits, no-show fees and the cash-up add up with the Manual payment prov
 
 ## M3 Pilot (weeks 10–12)
 Gate: the pilot salon pays; then 3 paying salons before scaling up.
+- [ ] Admin look (ADR 0080, owner's direction 2026-11-20, Tier 1 when started): purple brand colour throughout
+  (Cinolla-like violet/indigo primary on light surfaces — buttons, active nav, calendar, steps), a Booksy-style
+  dashboard shell: left side menu on desktop; on mobile a slim bottom bar with the everyday destinations plus the
+  full menu as a drawer, and Versum-style section tabs inside a module; a dashboard landing page; the Booksy-style
+  centred sign-in card. Shell first, then the palette swap through the shared classes.
 - [!] First hosting: Dockerfile, staging + prod, deploy job (Tier 2)
 - [!] Stripe Connect plugin: onboarding, online deposits, card on file, refunds (Tier 2)
 - [!] Real SMS/email plugins: Twilio (UK), SMSAPI.pl (PL), Postmark/SES (Tier 2)
