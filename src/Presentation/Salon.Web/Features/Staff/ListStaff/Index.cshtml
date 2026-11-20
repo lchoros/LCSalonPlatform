@@ -37,6 +37,7 @@
             {
                 <li class="flex flex-col gap-3 panel @(person.IsActive ? "" : "opacity-60")" data-testid="staff-card" data-active="@person.IsActive.ToString().ToLowerInvariant()">
                     <div class="flex items-start gap-3">
+                        <avatar name="@person.DisplayName" photo="@person.PhotoPath" />
                         <span class="mt-1.5 size-3 shrink-0 rounded-full" style="background-color: @person.Colour" aria-hidden="true"></span>
                         <div class="min-w-0 flex-1 space-y-1">
                             <h2 class="text-lg font-semibold leading-snug" data-testid="staff-name">@person.DisplayName</h2>

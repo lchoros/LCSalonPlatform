@@ -57,7 +57,11 @@ public sealed record DayOption(LocalDate Date, bool HasSlots);
 /// <summary>A part of the day on the slot list ("until 12:00", "12:00–16:00", "after 16:00"); only parts with free times appear.</summary>
 public sealed record SlotGroup(string LabelKey, IReadOnlyList<SlotOption> Slots);
 
-public sealed record StaffOption(Guid Id, string DisplayName);
+public sealed record StaffOption(Guid Id, string DisplayName)
+{
+    /// <summary>The address of the person's picture (ADR 0088); null shows the first letter of the name.</summary>
+    public string? PhotoPath { get; init; }
+}
 
 /// <param name="StaffMemberId">The person the engine would give this start to; informational for "anyone", the booking picks again.</param>
 public sealed record SlotOption(Instant Start, LocalTime LocalStart, Guid StaffMemberId);

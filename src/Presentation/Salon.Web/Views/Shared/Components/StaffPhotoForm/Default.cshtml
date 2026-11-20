@@ -1,0 +1,33 @@
+@model Salon.Web.Components.StaffPhotoFormModel
+@* The two addresses belong to the SetPhoto slice; a shared view may only post to them (ADR 0088). *@
+<section class="panel space-y-4" aria-labelledby="staff-photo-title" data-testid="staff-photo">
+    <div class="flex items-center gap-4">
+        <avatar name="@Model.Name" photo="@Model.PhotoPath" size="Large" />
+        <div class="min-w-0 space-y-1">
+            <h2 id="staff-photo-title" class="text-lg font-semibold">@T["Staff.Photo.Title"]</h2>
+            <p class="text-sm text-stone-600">@(Model.HasPhoto ? T["Staff.Photo.Lead"] : T["Staff.Photo.None"])</p>
+        </div>
+    </div>
+    @if (Model.Flash is { } flash)
+    {
+        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
+    }
+    @if (Model.Problem is { } problem)
+    {
+        <p role="alert" data-testid="staff-photo-problem" class="notice notice-error">@problem</p>
+    }
+    <form method="post" action="@Model.UploadPath" enctype="multipart/form-data" asp-antiforgery="true" class="space-y-3" data-testid="staff-photo-form">
+        <div class="space-y-1">
+            <label for="staff-photo-file" class="field-label">@T["Staff.Photo.File"]</label>
+            <input id="staff-photo-file" name="photo" type="file" accept="@Model.Accept" required aria-describedby="staff-photo-hint" class="block w-full text-sm text-stone-700 file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-lg file:border file:border-solid file:border-brand-edge file:bg-brand-mist file:px-3 file:py-2 file:text-sm file:font-semibold file:text-brand-deep hover:file:border-brand-line hover:file:bg-brand-soft" data-testid="staff-photo-file" />
+            <p id="staff-photo-hint" class="text-sm text-stone-500">@T.Format("Staff.Photo.FileHint", Model.MaxKilobytes)</p>
+        </div>
+        <button type="submit" class="btn btn-compact btn-secondary w-full sm:w-auto" data-testid="staff-photo-upload">@T["Staff.Photo.Upload"]</button>
+    </form>
+    @if (Model.HasPhoto)
+    {
+        <form method="post" action="@Model.RemovePath" asp-antiforgery="true">
+            <button type="submit" class="btn btn-compact btn-danger w-full sm:w-auto" data-testid="staff-photo-remove">@T["Staff.Photo.Remove"]</button>
+        </form>
+    }
+</section>

@@ -36,7 +36,7 @@
             @foreach (var person in r.Staff)
             {
                 var on = person.Id == r.SelectedStaffId;
-                <a href="/book/@r.ServiceId?date=@r.SelectedDate.ToIso()&staff=@person.Id" class="pill @Badges.DayTile(on, true)" aria-current="@(on ? "true" : null)" data-testid="staff-option">@person.DisplayName</a>
+                <a href="/book/@r.ServiceId?date=@r.SelectedDate.ToIso()&staff=@person.Id" class="pill gap-2 pl-2 @Badges.DayTile(on, true)" aria-current="@(on ? "true" : null)" data-testid="staff-option"><avatar name="@person.DisplayName" photo="@person.PhotoPath" size="Small" />@person.DisplayName</a>
             }
         </nav>
     }

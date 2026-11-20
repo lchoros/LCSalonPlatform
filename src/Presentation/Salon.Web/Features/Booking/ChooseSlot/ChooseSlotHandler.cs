@@ -8,7 +8,9 @@ using Salon.Data;
 using Salon.Services.Availability;
 using Salon.Services.Catalog;
 using Salon.Services.Settings;
+using Salon.Services.Staff;
 using Salon.Services.Tenancy;
+using Salon.Web.Framework.Ui;
 
 namespace Salon.Web.Features.Booking.ChooseSlot;
 
@@ -23,6 +25,7 @@ public sealed class ChooseSlotHandler(
     ISettingService settings,
     IAvailabilityService availability,
     IServiceOfferingResolver offerings,
+    IStaffPhotoService photos,
     IClock clock) : IRequestHandler<ChooseSlotQuery, ChooseSlotResult?>
 {
     public const int DaysShown = 14;
@@ -53,7 +56,9 @@ public sealed class ChooseSlotHandler(
             .ToListAsync(cancellationToken);
         // Someone who does not offer this service is not on the picker at all (ADR 0018); the engine skips them too.
         var offered = await offerings.ResolveAsync(service.Id, bookable.Select(s => s.Id).ToArray(), cancellationToken);
-        var staff = bookable.Where(s => offered[s.Id].Offers).ToList();
+        // Faces on the picker (ADR 0088): who has a picture and in which version; the pictures themselves are fetched by the browser.
+        var photoVersions = await photos.VersionsAsync(cancellationToken);
+        var staff = bookable.Where(s => offered[s.Id].Offers).Select(s => s with { PhotoPath = StaffPhotoAddress.For(s.Id, photoVersions) }).ToList();
         // A person who is no longer bookable (or no longer offers it) falls back to "anyone" instead of an empty page.
         var staffId = request.StaffMemberId is { } wanted && staff.Any(s => s.Id == wanted) ? request.StaffMemberId : null;
 
