@@ -492,7 +492,7 @@ namespace Salon.Data.Migrations
                         .HasDefaultValue(1)
                         .HasColumnName("purpose");
 
-                    b.Property<Guid>("ServiceId")
+                    b.Property<Guid?>("ServiceId")
                         .HasColumnType("uuid")
                         .HasColumnName("service_id");
 
@@ -537,7 +537,10 @@ namespace Salon.Data.Migrations
                     b.HasIndex("TenantId", "PhoneE164", "CreatedAt")
                         .HasDatabaseName("ix_phone_verifications_tenant_id_phone_e164_created_at");
 
-                    b.ToTable("phone_verifications", "salon");
+                    b.ToTable("phone_verifications", "salon", t =>
+                        {
+                            t.HasCheckConstraint("ck_phone_verifications_service_unless_client_portal", "service_id IS NOT NULL OR purpose = 3");
+                        });
                 });
 
             modelBuilder.Entity("Salon.Core.Catalog.Service", b =>
@@ -2317,7 +2320,6 @@ namespace Salon.Data.Migrations
                         .WithMany()
                         .HasForeignKey("ServiceId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_phone_verifications_services_service_id");
 
                     b.HasOne("Salon.Core.Tenancy.Tenant", null)

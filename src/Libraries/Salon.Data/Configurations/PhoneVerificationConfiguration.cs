@@ -9,7 +9,9 @@ internal sealed class PhoneVerificationConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<PhoneVerification> builder)
     {
-        builder.ToTable("phone_verifications");
+        // A booking or a waitlist request always names its service; only a row that proves a number for the client's
+        // own pages (purpose 3, ADR 0083) carries none.
+        builder.ToTable("phone_verifications", t => t.HasCheckConstraint("ck_phone_verifications_service_unless_client_portal", "service_id IS NOT NULL OR purpose = 3"));
         builder.HasKey(v => v.Id);
         builder.Property(v => v.PhoneE164).HasMaxLength(PhoneVerification.PhoneMaxLength).IsRequired();
         builder.Property(v => v.CodeSalt).HasMaxLength(PhoneVerification.HashMaxLength).IsRequired();

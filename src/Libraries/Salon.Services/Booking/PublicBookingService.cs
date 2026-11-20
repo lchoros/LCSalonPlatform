@@ -123,7 +123,7 @@ internal sealed class PublicBookingService(
 
         var now = clock.GetCurrentInstant();
         var usable = row.VerifiedAt is null && !PhoneVerificationRules.IsDead(row) && !PhoneVerificationRules.IsExpired(row, now);
-        return new PendingVerification(row.Id, row.PhoneE164, row.ServiceId, row.AppointmentId, usable, PhoneVerificationRules.AttemptsLeft(row));
+        return new PendingVerification(row.Id, row.PhoneE164, PhoneVerificationRules.ServiceOf(row), row.AppointmentId, usable, PhoneVerificationRules.AttemptsLeft(row));
     }
 
     public async Task<PublicBookingVerification> VerifyAndBookAsync(Guid verificationId, string? code, CancellationToken cancellationToken = default)
@@ -271,13 +271,13 @@ internal sealed class PublicBookingService(
         {
             var zone = await ZoneAsync(cancellationToken).ConfigureAwait(false);
             var day = pending.Start.InZone(zone).Date;
-            var slots = await availability.GetSlotsAsync(pending.ServiceId, null, day, day, cancellationToken).ConfigureAwait(false);
+            var slots = await availability.GetSlotsAsync(PhoneVerificationRules.ServiceOf(pending), null, day, day, cancellationToken).ConfigureAwait(false);
             staffMemberId = slots.FirstOrDefault(s => s.Start == pending.Start)?.StaffMemberId
                 ?? throw new SlotNoLongerAvailableException();
         }
 
         return await booking.BookAsync(
-            new BookAppointmentRequest(clientId, staffMemberId.Value, pending.ServiceId, pending.Start, AppointmentSource.Online),
+            new BookAppointmentRequest(clientId, staffMemberId.Value, PhoneVerificationRules.ServiceOf(pending), pending.Start, AppointmentSource.Online),
             cancellationToken).ConfigureAwait(false);
     }
 
