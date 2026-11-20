@@ -13,11 +13,11 @@
 <section class="mx-auto max-w-2xl space-y-6">
     <header class="space-y-3">
         <p class="text-sm font-medium text-stone-600" data-testid="step">@T.Format("Booking.Public.Step", 2, 3)</p>
-        <div class="steps">
-            <span class="is-done"></span>
-            <span class="is-done"></span>
-            <span></span>
-        </div>
+        <ol class="steps">
+            <li class="is-done"><span class="steps-bar"></span>@T["Booking.Public.StepService"]</li>
+            <li class="is-done"><span class="steps-bar"></span>@T["Booking.Public.StepTime"]</li>
+            <li><span class="steps-bar"></span>@T["Booking.Public.StepDetails"]</li>
+        </ol>
         <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Booking.Public.ChooseTime"]</h1>
     </header>
 
@@ -82,8 +82,10 @@
                         <ul class="grid grid-cols-3 gap-2 sm:grid-cols-4">
                             @foreach (var slot in group.Slots)
                             {
+                                var chosen = slot.Start == r.Chosen?.Start;
                                 <li>
-                                    <a href="/book/@r.ServiceId/details?start=@Uri.EscapeDataString(slot.Start.ToIso())@staffQuery" data-testid="slot" class="slot">@slot.LocalStart.ToString("HH:mm", culture)</a>
+                                    @* Tapping selects on this page; Continue below carries the time on (owner's call, 2026-11-20). *@
+                                    <a href="/book/@r.ServiceId?date=@r.SelectedDate.ToIso()&from=@windowStart&start=@Uri.EscapeDataString(slot.Start.ToIso())@staffQuery" data-testid="slot" aria-current="@(chosen ? "true" : null)" class="slot @(chosen ? "is-chosen" : null)">@slot.LocalStart.ToString("HH:mm", culture)</a>
                                 </li>
                             }
                         </ul>
@@ -92,6 +94,14 @@
             </div>
         }
     </div>
+
+    @if (r.Chosen is { } picked)
+    {
+        <div class="sticky bottom-4 flex items-center justify-between gap-3 rounded-xl border border-brand-edge bg-white p-3 shadow-lg" data-testid="continue-bar">
+            <p class="min-w-0 truncate text-sm text-stone-700">@r.SelectedDate.ToString("dddd, d MMMM", culture) · <span class="font-semibold tabular-nums">@picked.LocalStart.ToString("HH:mm", culture)</span></p>
+            <a href="/book/@r.ServiceId/details?start=@Uri.EscapeDataString(picked.Start.ToIso())@staffQuery" class="btn btn-primary shrink-0" data-testid="continue">@T["Booking.Public.Continue"]</a>
+        </div>
+    }
 
     @if (r.WaitlistOffered)
     {

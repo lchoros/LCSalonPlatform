@@ -22,7 +22,8 @@ public sealed class AppointmentCardHandler(
     IAvailabilityService availability,
     IClientAccountService accounts,
     ITenantContext tenantContext,
-    ITenantLookup tenantLookup) : IRequestHandler<AppointmentCardQuery, AppointmentCard>
+    ITenantLookup tenantLookup,
+    IClock clock) : IRequestHandler<AppointmentCardQuery, AppointmentCard>
 {
     public async Task<AppointmentCard> HandleAsync(AppointmentCardQuery request, CancellationToken cancellationToken)
     {
@@ -98,6 +99,9 @@ public sealed class AppointmentCardHandler(
             appointment.ClientId,
             (await accounts.GetAccountAsync(appointment.ClientId, cancellationToken)).Owed,
             deposit?.Due,
-            deposit?.Deposit is { IsHeld: true } held ? held.Amount : null);
+            deposit?.Deposit is { IsHeld: true } held ? held.Amount : null)
+        {
+            Today = clock.GetCurrentInstant().InZone(zone).Date,
+        };
     }
 }

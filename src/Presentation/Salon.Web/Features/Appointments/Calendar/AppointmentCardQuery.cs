@@ -43,7 +43,11 @@ public sealed record AppointmentCard(
     Guid ClientId = default,
     Money? ClientOwes = null,
     Money? DepositDue = null,
-    Money? DepositHeld = null);
+    Money? DepositHeld = null)
+{
+    /// <summary>Today in the salon's zone: the earliest day the move form offers (a past day never has free times).</summary>
+    public LocalDate Today { get; init; }
+}
 
 /// <summary>A status button: the URL segment of the day list's <c>POST admin/appointments/{id}/{segment}</c> route and the label key.</summary>
 public sealed record CardAction(string Segment, AppointmentStatus Target, string LabelKey);

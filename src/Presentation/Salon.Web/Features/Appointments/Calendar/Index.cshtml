@@ -132,9 +132,18 @@
                                        class="relative z-10 flex min-w-0 flex-col overflow-hidden rounded border-l-4 px-1 py-0.5 text-[11px] leading-tight text-stone-900 hover:ring-2 hover:ring-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900"
                                        style="@CalendarBlockStyle.For(block, column.Staff.Colour)"
                                        title="@block.Start.ToShortTime(culture)–@block.End.ToShortTime(culture) @block.ClientFirstName · @block.ServiceName">
-                                        <span class="truncate"><span class="font-semibold tabular-nums">@block.Start.ToShortTime(culture)</span> @block.ClientFirstName</span>
-                                        <span class="truncate">@block.ServiceName</span>
-                                        <span class="mt-auto self-start rounded px-1 text-[10px] font-medium @Badges.AppointmentInList(block.Status)" data-testid="status-badge">@T[$"Appointments.Status.{block.Status}"]</span>
+                                        @* The block only shows what its height can hold (the owner's bug report, 2026-11-20): one line
+                                           when it spans a single row, the service on the second, the badge from the third; the title
+                                           attribute and the card behind the tap always carry the whole story. *@
+                                        <span class="truncate"><span class="font-semibold tabular-nums">@block.Start.ToShortTime(culture)</span> @block.ClientFirstName@(block.Span <= 1 ? $" · {block.ServiceName}" : string.Empty)</span>
+                                        @if (block.Span >= 2)
+                                        {
+                                            <span class="truncate">@block.ServiceName</span>
+                                        }
+                                        @if (block.Span >= 3)
+                                        {
+                                            <span class="mt-auto self-start rounded px-1 text-[10px] font-medium @Badges.AppointmentInList(block.Status)" data-testid="status-badge">@T[$"Appointments.Status.{block.Status}"]</span>
+                                        }
                                     </a>
                                 }
                                 @foreach (var kept in column.Kept)

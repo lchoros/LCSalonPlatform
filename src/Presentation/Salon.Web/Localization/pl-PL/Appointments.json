@@ -80,6 +80,7 @@
   "Appointments.Calendar.Move.ShowSlots": "Pokaż godziny",
   "Appointments.Calendar.Move.Slots": "Wolne godziny",
   "Appointments.Calendar.Move.NoSlots": "Brak wolnych godzin u tej osoby w tym dniu. Wybierz inną datę lub pracownika.",
+  "Appointments.Calendar.Move.PastDay": "Ten dzień już minął. Wybierz dzisiejszy lub późniejszy.",
   "Appointments.Calendar.Move.NotActive": "Przenieść można tylko wizyty zarezerwowane, potwierdzone lub z klientem na miejscu.",
   "Appointments.Calendar.Move.SlotTaken": "Ten termin jest już zajęty. Wybierz inny poniżej.",
   "Appointments.Calendar.Move.Unavailable": "Tej usługi lub tego pracownika nie można już zarezerwować.",

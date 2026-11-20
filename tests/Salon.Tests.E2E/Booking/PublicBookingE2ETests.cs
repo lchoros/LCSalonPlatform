@@ -88,6 +88,9 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await CaptureDesktopAsync(page.Url, "book-slots-desktop-1280.png");
         interaction.Start();
         await slots.First.TapAsync();
+
+        // The tap only selects; the Continue bar carries the time to the details (ADR 0080).
+        await page.GetByTestId("continue").TapAsync();
         await page.ReachAsync("**/details?*");
 
         // Step 3: details.
@@ -150,6 +153,7 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await page.GetByTestId("book-service").First.TapAsync();
         await page.ReachAsync(url => url.Contains("/book/", StringComparison.Ordinal) && !url.EndsWith("/book", StringComparison.Ordinal));
         await page.GetByTestId("slot").First.TapAsync();
+        await page.GetByTestId("continue").TapAsync();
         await page.ReachAsync("**/details?*");
         (await page.GetByTestId("prefilled").TextContentAsync()).ShouldNotBeNull().ShouldContain("Welcome back, Olivia");
         (await page.GetByLabel("First name", new PageGetByLabelOptions { Exact = true }).InputValueAsync()).ShouldBe("Olivia");

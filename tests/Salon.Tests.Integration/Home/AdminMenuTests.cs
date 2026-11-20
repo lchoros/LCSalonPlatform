@@ -65,7 +65,8 @@ public partial class AdminMenuTests(SalonWebApplicationFactory factory) : IAsync
 
         var html = await GetAsync(client, "/admin/staff");
 
-        html.ShouldContain("<header class=\"brand-line ");
+        html.ShouldContain("data-testid=\"sidebar\"", customMessage: "signed-in pages live in the dashboard shell (ADR 0080)");
+        html.ShouldContain("class=\"brand-line ");
         MenuLinkPattern().Count(html).ShouldBe(9, "an owner sees nine areas, products among them (ADR 0036)");
         html.ShouldContain("<h1 class=\"page-title\">");
     }
