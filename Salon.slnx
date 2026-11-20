@@ -19,6 +19,7 @@
   <Folder Name="/src/Plugins/">
     <Project Path="src/Plugins/Salon.Plugin.Import/Salon.Plugin.Import.csproj" />
     <Project Path="src/Plugins/Salon.Plugin.Payments.Manual/Salon.Plugin.Payments.Manual.csproj" />
+    <Project Path="src/Plugins/Salon.Plugin.Payments.Stripe/Salon.Plugin.Payments.Stripe.csproj" />
     <Project Path="src/Plugins/Salon.Plugin.Sms.Log/Salon.Plugin.Sms.Log.csproj" />
   </Folder>
   <Folder Name="/tests/">

@@ -85,7 +85,7 @@ public static class GiftVoucherRules
     /// The built-in ways money changes hands for a voucher: every one but "voucher", which is not how one is bought or
     /// given back. The salon's own methods (ADR 0060) can pay for one too; see <see cref="CanBePaidWith"/>.
     /// </summary>
-    public static IReadOnlyList<PaymentMethod> PaymentMethods { get; } = [.. Enum.GetValues<PaymentMethod>().Where(m => m != PaymentMethod.Voucher && m != PaymentMethod.Other)];
+    public static IReadOnlyList<PaymentMethod> PaymentMethods { get; } = [.. Enum.GetValues<PaymentMethod>().Where(m => m != PaymentMethod.Voucher && m != PaymentMethod.Other && !SalonPaymentMethodRules.IsGatewayOnly(m))];
 
     /// <summary>A voucher is bought, and its money given back, by any method but another voucher.</summary>
     public static bool CanBePaidWith(PaymentChoice choice) => choice.IsWellFormed && choice.Method != PaymentMethod.Voucher;

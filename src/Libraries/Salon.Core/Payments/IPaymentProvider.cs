@@ -37,6 +37,14 @@ public enum PaymentMethod
     /// says which one (<see cref="ClientAccountEntry.CustomMethodId"/>).
     /// </summary>
     Other = 4,
+
+    /// <summary>
+    /// A card charged online on a payment gateway's own hosted page (ADR 0082: Stripe in test mode, the deposit of an
+    /// online booking). Only a gateway writes it: it is never offered at the desk and never accepted from a form
+    /// (<see cref="SalonPaymentMethodRules.IsGatewayOnly"/>). The line names the gateway
+    /// (<see cref="ClientAccountEntry.ProviderSystemName"/>) and carries its reference.
+    /// </summary>
+    OnlineCard = 5,
 }
 
 public sealed record PaymentRequest(

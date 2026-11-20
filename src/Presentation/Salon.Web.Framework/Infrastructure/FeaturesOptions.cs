@@ -19,6 +19,12 @@ public sealed class FeaturesOptions
     /// <summary>The public sign-up page at /signup on the base domain (ADR 0075): off until the owner opens the door.</summary>
     public bool SignUp { get; set; }
 
+    /// <summary>
+    /// Stripe in test mode for the deposit of an online booking (ADR 0082, Tier 2): the pay step after the code, its
+    /// return address and the webhook. Off everywhere unless the owner turns it on; the Stripe plugin reads the same key.
+    /// </summary>
+    public bool StripeDeposits { get; set; }
+
     /// <summary>A client's own pages at /my-bookings on a salon's host (ADR 0083): sign-in by text message code, upcoming visits. Off until the owner says.</summary>
     public bool ClientPortal { get; set; }
 }

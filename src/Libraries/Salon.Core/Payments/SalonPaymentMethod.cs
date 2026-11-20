@@ -85,6 +85,12 @@ public static class SalonPaymentMethodRules
             _ => false,
         };
     }
+
+    /// <summary>
+    /// A method only a payment gateway writes (ADR 0082): money a card paid online on the gateway's own page. The desk
+    /// never chooses it, so a form that posts it is refused like a method that does not exist.
+    /// </summary>
+    public static bool IsGatewayOnly(PaymentMethod method) => method == PaymentMethod.OnlineCard;
 }
 
 /// <summary>
@@ -96,10 +102,13 @@ public static class SalonPaymentMethodRules
 [TypeConverter(typeof(PaymentChoiceConverter))]
 public readonly record struct PaymentChoice(PaymentMethod Method, Guid? CustomMethodId = null)
 {
-    /// <summary>True for a shape that can be recorded: a built-in method without an id, or "other" with one.</summary>
+    /// <summary>
+    /// True for a shape the desk can record: a built-in method without an id, or "other" with one. A method only a
+    /// gateway writes (ADR 0082) is never one.
+    /// </summary>
     public bool IsWellFormed => Method == PaymentMethod.Other
         ? CustomMethodId is not null
-        : Enum.IsDefined(Method) && CustomMethodId is null;
+        : Enum.IsDefined(Method) && !SalonPaymentMethodRules.IsGatewayOnly(Method) && CustomMethodId is null;
 
     /// <summary>What the form posts: the built-in method's name, or the id of the salon's own.</summary>
     public string Value => CustomMethodId is { } id ? id.ToString() : Method.ToString();

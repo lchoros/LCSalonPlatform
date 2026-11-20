@@ -15,6 +15,9 @@ public sealed class PublicBookingOptions
     /// <summary>Code attempts per remote address.</summary>
     public FixedWindowLimit CodeVerifyRateLimit { get; set; } = new() { PermitLimit = 20, Window = TimeSpan.FromHours(1) };
 
+    /// <summary>Pay-step requests per remote address (ADR 0082); each opens a session at the payment gateway.</summary>
+    public FixedWindowLimit DepositPayRateLimit { get; set; } = new() { PermitLimit = 20, Window = TimeSpan.FromHours(1) };
+
     /// <summary>
     /// How long a <c>phone_verifications</c> row is kept after it was created before <see cref="PhoneVerificationCleanupTask"/>
     /// deletes it (ADR 0017). Never less than the code lifetime; a day by default.

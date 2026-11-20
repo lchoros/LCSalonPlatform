@@ -27,4 +27,17 @@ public sealed record BookingSummary(
     string ConsentWording,
     bool RequireSmsVerification,
     CancellationPolicySettings Policy,
-    Money? Deposit = null);
+    Money? Deposit = null)
+{
+    /// <summary>True when a payment gateway takes the deposit by card straight after the booking (ADR 0082), instead of the salon asking for it later.</summary>
+    public bool DepositPaidOnline { get; init; }
+
+    /// <summary>The sentence that says the deposit before the client commits: how much, and how it will be paid.</summary>
+    public string DepositTermsKey => (PriceIsFrom, DepositPaidOnline) switch
+    {
+        (false, false) => "Booking.Public.Deposit.Due",
+        (true, false) => "Booking.Public.Deposit.DueFrom",
+        (false, true) => "Booking.Public.Deposit.DueOnline",
+        (true, true) => "Booking.Public.Deposit.DueFromOnline",
+    };
+}

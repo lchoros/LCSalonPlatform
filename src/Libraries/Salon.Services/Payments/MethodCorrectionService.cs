@@ -96,7 +96,7 @@ internal sealed class MethodCorrectionService(
     {
         var zone = await ZoneAsync(cancellationToken).ConfigureAwait(false);
         var line = await db.ClientAccountEntries.AsNoTracking().FirstOrDefaultAsync(e => e.Id == entryId, cancellationToken).ConfigureAwait(false);
-        if (line?.Method is not { } recorded || !MethodCorrectionRules.CanCorrect(line.Kind))
+        if (line?.Method is not { } recorded || !MethodCorrectionRules.CanCorrect(line.Kind, recorded))
         {
             return null;
         }
@@ -137,7 +137,7 @@ internal sealed class MethodCorrectionService(
             var day = line.At.InZone(zone).Date;
             MethodCorrectionResult Refused(MethodCorrectionOutcome outcome) => new(outcome, day, null);
 
-            if (line.Method is not { } recorded || !MethodCorrectionRules.CanCorrect(line.Kind))
+            if (line.Method is not { } recorded || !MethodCorrectionRules.CanCorrect(line.Kind, recorded))
             {
                 return Refused(MethodCorrectionOutcome.NotCorrectable);
             }

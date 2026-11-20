@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using NodaTime;
 using Salon.Core.Messaging;
+using Salon.Core.Payments;
 using Salon.Core.Tasks;
 using Salon.Core.Tenancy;
 using Salon.Services.Appointments;
@@ -71,6 +73,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IScheduleTask, DailySummaryTask>();
         // The client account (ADR 0022): needs the payment plugin the host registers, at resolve time.
         services.AddScoped<IClientAccountService, ClientAccountService>();
+        // No online gateway unless a plugin replaces this (ADR 0082): the booking flow then takes no money, as before.
+        services.TryAddSingleton<IOnlineDepositCheckout, NoOnlineDepositCheckout>();
         services.AddScoped<IReceiptService, ReceiptService>();
         services.AddScoped<ICashUpService, CashUpService>();
         services.AddScoped<IMethodCorrectionService, MethodCorrectionService>();
