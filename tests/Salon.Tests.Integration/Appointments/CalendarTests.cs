@@ -86,8 +86,10 @@ public partial class CalendarTests(SalonWebApplicationFactory factory) : IAsyncL
         html.ShouldContain("data-working=\"false\"", Case.Sensitive, "Tom's 09:00 row is outside his hours");
         html.ShouldContain("data-working=\"true\"");
         Count(html, "data-testid=\"calendar-list-item\"").ShouldBe(3, "the phone list mirrors the grid");
-        html.ShouldContain("data-testid=\"staff-chip-all\" aria-current=\"page\"");
-        Count(html, "data-testid=\"staff-chip\"").ShouldBe(2);
+        html.ShouldContain("data-testid=\"staff-select\"", customMessage: "whose calendar is a dropdown (ADR 0087)");
+        html.ShouldContain("<option value=\"\" selected=\"selected\">All</option>", customMessage: "everybody is the day view's default");
+        html.ShouldContain($"<option value=\"{_annaId}\">");
+        html.ShouldContain($"<option value=\"{_tomId}\">");
         html.ShouldContain($"href=\"{DayPath(_day.PlusDays(-1), null)}\"");
         html.ShouldContain($"href=\"{DayPath(_day.PlusDays(1), null)}\"");
         html.ShouldContain($"href=\"/admin/appointments/new?date={Iso(_day)}\"");
@@ -127,8 +129,8 @@ public partial class CalendarTests(SalonWebApplicationFactory factory) : IAsyncL
 
         var blocks = Blocks(html);
         blocks.ShouldHaveSingleItem().Id.ShouldBe(annas.Id, "the first bookable person's week by default");
-        html.ShouldContain($"data-testid=\"staff-chip\" data-staff-id=\"{_annaId}\" aria-current=\"page\"");
-        html.ShouldNotContain("data-testid=\"staff-chip-all\"", Case.Sensitive, "a week always belongs to one person");
+        html.ShouldContain($"<option value=\"{_annaId}\" selected=\"selected\">");
+        html.ShouldNotContain("<option value=\"\"", Case.Sensitive, "a week always belongs to one person");
         html.ShouldContain($"href=\"{CalendarPath}?view=week&date={Iso(_day.PlusDays(-7))}&staff={_annaId}\"");
         html.ShouldContain($"href=\"{CalendarPath}?view=week&date={Iso(_day.PlusDays(7))}&staff={_annaId}\"");
         html.ShouldContain("data-testid=\"view-week\" aria-current=\"page\"");

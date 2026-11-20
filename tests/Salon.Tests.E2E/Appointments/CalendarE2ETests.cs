@@ -70,7 +70,7 @@ public partial class CalendarE2ETests(KestrelAppFixture app) : IClassFixture<Kes
             dayAxe.Violations.ShouldBeEmpty(string.Join("; ", dayAxe.Violations.Select(v => $"{v.Id}: {v.Help}")));
 
             // One person's day is a grid on every screen size.
-            await page.Locator($"[data-testid='staff-chip'][data-staff-id='{staffId}']").ClickAsync();
+            await page.GetByTestId("staff-select").SelectOptionAsync(staffId.ToString()); // auto-submit.js sends the form on change (ADR 0087)
             await page.ReachAsync($"**/admin/appointments/calendar?view=day&date={day}&staff={staffId}");
             var block = page.Locator($"[data-testid='calendar-block'][data-appointment-id='{appointmentId}']").First;
             (await block.IsVisibleAsync()).ShouldBeTrue();
@@ -108,8 +108,7 @@ public partial class CalendarE2ETests(KestrelAppFixture app) : IClassFixture<Kes
             var today = SystemClock.Instance.GetCurrentInstant().InZone(London).Date;
             for (var offset = 1; offset <= 7 && await slots.CountAsync() == 0; offset++)
             {
-                await page.GetByTestId("move-date").FillAsync(LocalDatePattern.Iso.Format(today.PlusDays(offset)));
-                await page.GetByTestId("move-show-slots").ClickAsync();
+                await page.GetByTestId("move-date").FillAsync(LocalDatePattern.Iso.Format(today.PlusDays(offset))); // the change submits the form (auto-submit.js)
                 await page.ReachAsync($"**/admin/appointments/calendar/{appointmentId}?*date=*");
             }
 

@@ -16,9 +16,6 @@
     ViewData["Title"] = T["Appointments.Calendar.Title"];
     const string buttonClass = "btn btn-compact btn-primary";
     const string navClass = "btn btn-compact btn-secondary min-w-11 px-3";
-    const string chipClass = "filter-tile accent-0 gap-2";
-    const string chipOn = "is-on";
-    const string chipOff = "";
     var rowsStyle = $"grid-template-rows: repeat({grid.RowCount}, 1rem)";
 }
 <section class="space-y-4">
@@ -65,20 +62,26 @@
     }
     else
     {
-        <nav aria-label="@T["Appointments.Calendar.StaffFilter"]" class="flex flex-wrap gap-2" data-testid="staff-chips">
-            @if (!isWeek)
-            {
-                <a href="@CalendarController.Path(board.View, board.Day, null)" data-testid="staff-chip-all" aria-current="@(allStaffDay ? "page" : null)" class="@chipClass @(allStaffDay ? chipOn : chipOff)">@T["Appointments.Calendar.All"]</a>
-            }
-            @foreach (var person in board.Staff)
-            {
-                var on = person.Id == board.SelectedStaffId;
-                <a href="@CalendarController.Path(board.View, board.Day, person.Id)" data-testid="staff-chip" data-staff-id="@person.Id" aria-current="@(on ? "page" : null)" class="@chipClass @(on ? chipOn : chipOff)">
-                    <span class="size-3 shrink-0 rounded-full" style="background-color: @person.Colour" aria-hidden="true"></span>
-                    @person.DisplayName
-                </a>
-            }
-        </nav>
+        @* Whose calendar: a dropdown, so a team of eight takes the room of a team of two (the owner, 2026-11-20).
+           It is a plain GET form; with script it submits on change (auto-submit.js), without, the button does. *@
+        <form method="get" action="@CalendarController.CalendarPath" class="flex flex-wrap items-end gap-2" data-testid="staff-filter" data-auto-submit>
+            <input type="hidden" name="view" value="@CalendarController.ViewSegment(board.View)" />
+            <input type="hidden" name="date" value="@isoDay" />
+            <div class="min-w-48 space-y-1">
+                <label for="staff" class="field-label">@T["Appointments.Calendar.StaffFilter"]</label>
+                <select id="staff" name="staff" class="field field-compact" data-testid="staff-select">
+                    @if (!isWeek)
+                    {
+                        <option value="" selected="@allStaffDay">@T["Appointments.Calendar.All"]</option>
+                    }
+                    @foreach (var person in board.Staff)
+                    {
+                        <option value="@person.Id" selected="@(person.Id == board.SelectedStaffId)">@person.DisplayName</option>
+                    }
+                </select>
+            </div>
+            <button type="submit" class="btn btn-compact btn-secondary" data-testid="staff-filter-submit" data-auto-submit-fallback>@T["Appointments.Calendar.ShowStaff"]</button>
+        </form>
 
         @* The timetable. Week view scrolls sideways inside this box only; the day view with every person is replaced by a list on a phone. *@
         <div data-testid="calendar-grid" data-view="@CalendarController.ViewSegment(board.View)" data-drop-path="@CalendarController.CalendarPath" data-refused="@T["Appointments.Calendar.Drag.Refused"]" class="rounded-xl border border-stone-200 bg-white shadow-sm @(isWeek ? "overflow-x-auto" : string.Empty) @(allStaffDay ? "hidden sm:block" : string.Empty)">
@@ -227,4 +230,5 @@
 </section>
 @section Scripts {
     <script type="module" src="~/js/calendar-drag.js" asp-append-version="true"></script>
+    <script type="module" src="~/js/auto-submit.js" asp-append-version="true"></script>
 }

@@ -30,7 +30,7 @@
             {
                 <p role="status" data-testid="late-cancel-warning" class="notice notice-warn">@T.Format("Booking.Public.Cancel.LateFee", lateFee.ToDisplayString(culture))</p>
             }
-            <form method="post" asp-action="CancelConfirmed" class="flex flex-col gap-3" data-testid="cancel-form">
+            <form method="post" asp-action="CancelConfirmed" asp-route-token="@Model.Appointment!.PublicToken" class="flex flex-col gap-3" data-testid="cancel-form">
                 <button type="submit" data-testid="confirm-cancel" class="btn btn-danger w-full">@T["Booking.Public.Cancel.Confirm"]</button>
                 @if (!Model.InsideNotice)
                 {

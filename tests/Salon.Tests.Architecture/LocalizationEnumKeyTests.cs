@@ -163,4 +163,18 @@ public partial class LocalizationResourceTests
             expected.Where(key => !known.ContainsKey(key)).ShouldBeEmpty(culture);
         }
     }
+
+    [Fact]
+    public void Every_voice_of_the_friendly_status_page_has_its_title_and_sentence_in_both_languages()
+    {
+        var expected = Enum.GetNames<Salon.Web.Models.StatusKind>()
+            .SelectMany(kind => new[] { $"Error.{kind}.Title", $"Error.{kind}.Description" })
+            .Concat(["Error.Home", "Error.Admin"]);
+
+        foreach (var culture in new[] { SupportedCultures.EnGb, SupportedCultures.PlPl })
+        {
+            var known = Resources.Value[culture];
+            expected.Where(key => !known.ContainsKey(key)).ShouldBeEmpty(culture);
+        }
+    }
 }
