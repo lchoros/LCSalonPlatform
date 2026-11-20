@@ -122,7 +122,8 @@ public partial class ListStaffTests(SalonWebApplicationFactory factory) : IAsync
         using var receptionist = await factory.SignedInClientAsync("studio-20.localhost", _studio.Id, Role.Receptionist, "desk-nav@studio-20.localhost");
 
         var ownerHtml = await GetListAsync(owner);
-        var receptionistHome = await receptionist.GetAsync(new Uri("/services", UriKind.Relative));
+        // The menu lives in the admin shell (ADR 0080), so the receptionist's view of it comes from an admin page.
+        var receptionistHome = await receptionist.GetAsync(new Uri("/admin/appointments", UriKind.Relative));
         var receptionistHtml = await receptionistHome.Content.ReadAsStringAsync();
 
         ownerHtml.ShouldContain("data-testid=\"admin-nav\"");

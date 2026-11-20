@@ -38,7 +38,7 @@ public class SalonDetailsE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
         await page.ReachAsync("**/admin/appointments");
 
         // 1. Settings, then the "Salon details" tab.
-        await page.GetByTestId("nav-settings").ClickAsync();
+        await page.OpenNavAsync("nav-settings");
         await page.ReachAsync("**/admin/settings/notifications");
         await page.GetByTestId("settings-nav-salon-details").ClickAsync();
         await page.ReachAsync("**/admin/settings/salon-details");

@@ -50,8 +50,8 @@
         </div>
         <div class="flex flex-wrap items-center gap-2">
             <nav aria-label="@T["Appointments.Calendar.ViewSwitch"]" class="inline-flex rounded-lg border border-stone-300 bg-white" data-testid="view-switch">
-                <a href="@CalendarController.Path(CalendarView.Day, board.Day, board.SelectedStaffId)" data-testid="view-day" aria-current="@(isWeek ? null : "page")" class="inline-flex min-h-11 items-center px-4 py-2 text-sm font-medium @(isWeek ? "hover:bg-stone-100" : "bg-stone-900 text-white") rounded-l-lg">@T["Appointments.Calendar.Day"]</a>
-                <a href="@CalendarController.Path(CalendarView.Week, board.Day, board.SelectedStaffId)" data-testid="view-week" aria-current="@(isWeek ? "page" : null)" class="inline-flex min-h-11 items-center px-4 py-2 text-sm font-medium @(isWeek ? "bg-stone-900 text-white" : "hover:bg-stone-100") rounded-r-lg">@T["Appointments.Calendar.Week"]</a>
+                <a href="@CalendarController.Path(CalendarView.Day, board.Day, board.SelectedStaffId)" data-testid="view-day" aria-current="@(isWeek ? null : "page")" class="inline-flex min-h-11 items-center px-4 py-2 text-sm font-medium @(isWeek ? "hover:bg-stone-100" : "bg-brand text-white") rounded-l-lg">@T["Appointments.Calendar.Day"]</a>
+                <a href="@CalendarController.Path(CalendarView.Week, board.Day, board.SelectedStaffId)" data-testid="view-week" aria-current="@(isWeek ? "page" : null)" class="inline-flex min-h-11 items-center px-4 py-2 text-sm font-medium @(isWeek ? "bg-brand text-white" : "hover:bg-stone-100") rounded-r-lg">@T["Appointments.Calendar.Week"]</a>
             </nav>
             <a href="@(CalendarController.DayListPath)?date=@isoDay" data-testid="day-list" class="@navClass">@T["Appointments.Calendar.DayList"]</a>
             @await Component.InvokeAsync("WaitlistLink")

@@ -74,11 +74,27 @@
         }
         else
         {
-            <div class="space-y-5" data-testid="slot-list" aria-label="@T["Booking.Public.Times"]">
-                @foreach (var group in r.Groups)
+            <div class="slot-parts" data-testid="slot-list" aria-label="@T["Booking.Public.Times"]">
+                @* On a phone the parts of the day are tabs (the Booksy pattern the owner chose), driven by these
+                   radios without a line of script; from sm every part shows at once under its own heading. *@
+                @for (var i = 0; i < r.Groups.Count; i++)
                 {
-                    <section class="space-y-2" data-testid="slot-group">
-                        <h3 class="text-xs font-semibold uppercase tracking-wide text-stone-600">@T[group.LabelKey]</h3>
+                    <input type="radio" name="slot-part" id="slot-part-@i" class="sr-only" checked="@(i == r.ChosenGroup)" aria-hidden="true" tabindex="-1" />
+                }
+                @if (r.Groups.Count > 1)
+                {
+                    <div class="slot-part-tabs sm:hidden" data-testid="slot-part-tabs">
+                        @for (var i = 0; i < r.Groups.Count; i++)
+                        {
+                            <label for="slot-part-@i" class="slot-part-tab">@T[r.Groups[i].LabelKey]</label>
+                        }
+                    </div>
+                }
+                @for (var i = 0; i < r.Groups.Count; i++)
+                {
+                    var group = r.Groups[i];
+                    <section class="slot-group space-y-2" data-part="@i" data-testid="slot-group">
+                        <h3 class="hidden text-xs font-semibold uppercase tracking-wide text-stone-600 sm:block">@T[group.LabelKey]</h3>
                         <ul class="grid grid-cols-3 gap-2 sm:grid-cols-4">
                             @foreach (var slot in group.Slots)
                             {

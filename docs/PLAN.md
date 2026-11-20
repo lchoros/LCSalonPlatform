@@ -36,11 +36,21 @@ Gate: deposits, no-show fees and the cash-up add up with the Manual payment prov
 
 ## M3 Pilot (weeks 10–12)
 Gate: the pilot salon pays; then 3 paying salons before scaling up.
-- [ ] Admin look (ADR 0080, owner's direction 2026-11-20, Tier 1 when started): purple brand colour throughout
-  (Cinolla-like violet/indigo primary on light surfaces — buttons, active nav, calendar, steps), a Booksy-style
-  dashboard shell: left side menu on desktop; on mobile a slim bottom bar with the everyday destinations plus the
-  full menu as a drawer, and Versum-style section tabs inside a module; a dashboard landing page; the Booksy-style
-  centred sign-in card. Shell first, then the palette swap through the shared classes.
+- [~] Admin look (ADR 0080, owner's direction 2026-11-20, Tier 1): purple brand colour throughout via one `@theme`
+  token block, a Booksy-style dashboard shell (sidebar on desktop; bottom bar + drawer on mobile, `/admin` only),
+  labelled booking steps with a Continue bar, Cinolla-flat availability in brand shades, part-of-day tabs on the
+  phone's time picker — shell and palette built in #131. Still open: a dashboard landing page, Versum-style section
+  tabs inside modules, the Booksy-style centred sign-in card, and the improvements queue (purple icon set, friendly
+  error messages, staff filter as a dropdown once the first page script exists, loading indicators only where truly
+  slow, staff profile photos, birthday and name-day wish templates)
+- [ ] Interactive calendar (owner 2026-11-20, Tier 1): drag-and-drop moving on the admin calendar the way Booksy
+  does it — their diary is a full JavaScript calendar; ours stays server-rendered with a small ES-module drag layer
+  (or FullCalendar, already in the approved stack) posting to the existing MoveAppointment endpoint, CSP intact.
+  The appointment card's move form stays as the no-script fallback
+- [ ] Customer login (owner 2026-11-20, Tier 2): passwordless client area — phone number + SMS code (the booking
+  code machinery), showing upcoming visits with their change/cancel links; no passwords, no account to create
+- [ ] Stripe in test mode (owner 2026-11-20, Tier 2): Salon.Plugin.Payments.Stripe behind a flag, deposits at
+  online booking through Checkout in test mode; keys live in user-secrets and host config only, never the repo
 - [!] First hosting: Dockerfile, staging + prod, deploy job (Tier 2)
 - [!] Stripe Connect plugin: onboarding, online deposits, card on file, refunds (Tier 2)
 - [!] Real SMS/email plugins: Twilio (UK), SMSAPI.pl (PL), Postmark/SES (Tier 2)

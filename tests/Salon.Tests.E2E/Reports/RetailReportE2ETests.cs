@@ -45,7 +45,7 @@ public class RetailReportE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
         var styled = await StylesheetLoadedAsync(page);
 
         // 1. Before anything is sold the reports do not talk about products.
-        await page.GetByTestId("nav-reports").ClickAsync();
+        await page.OpenNavAsync("nav-reports");
         await page.ReachAsync("**/admin/reports");
         (await page.GetByTestId("retail").CountAsync()).ShouldBe(0);
 
@@ -65,7 +65,7 @@ public class RetailReportE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
         await Assertions.Expect(page.GetByTestId("flash")).ToHaveTextAsync("The payment has been recorded.");
 
         // 3. The reports of this month: £36 of products beside the £45 visit, two units on one bill, and the product by name.
-        await page.GetByTestId("nav-reports").ClickAsync();
+        await page.OpenNavAsync("nav-reports");
         await page.ReachAsync("**/admin/reports");
         (await page.GetByTestId("retail-sold").TextContentAsync()).ShouldBe("£36.00");
         (await page.GetByTestId("retail-net").TextContentAsync()).ShouldBe("£36.00");

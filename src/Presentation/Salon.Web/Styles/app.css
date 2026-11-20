@@ -111,15 +111,6 @@
     @apply flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-soft text-base font-bold text-brand;
   }
 
-  /* Reports flow down two balanced columns from lg, so a tall card never leaves a hole beside a short one. */
-  .report-columns {
-    @apply space-y-6 lg:columns-2 lg:gap-6 lg:space-y-0;
-  }
-
-  .report-columns > section {
-    @apply break-inside-avoid lg:mb-6;
-  }
-
   /* A service with variants: the same card, opened by its summary; each variant inside is a link of its own. */
   .variant-card {
     @apply rounded-xl;
@@ -213,16 +204,16 @@
 
   /* A day: a tall rectangle (the shape Booksy uses too) with the weekday, the day of the month and the month. */
   .tile {
-    @apply relative inline-flex h-16 w-14 shrink-0 snap-start flex-col items-center justify-center gap-0.5 rounded-xl border px-1.5 py-1 leading-none transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+    @apply relative inline-flex h-14 w-12 shrink-0 snap-start sm:h-16 sm:w-14 flex-col items-center justify-center gap-0.5 rounded-xl border px-1.5 py-1 leading-none transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
   }
 
   /* The round "earlier / later days" paddles beside the strip. */
   .strip-arrow {
-    @apply inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-emerald-300 bg-white text-emerald-700 transition-colors hover:border-emerald-500 hover:bg-emerald-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+    @apply mb-2 inline-flex size-9 shrink-0 items-center justify-center self-center rounded-full border border-brand-edge bg-white text-brand transition-colors hover:border-brand-line hover:bg-brand-mist sm:size-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
   }
 
   .is-on {
-    @apply border-stone-900 bg-stone-900 text-white;
+    @apply border-brand bg-brand text-white;
   }
 
   .is-off {
@@ -234,33 +225,65 @@
     @apply border-dashed border-stone-300 bg-white text-stone-600 hover:bg-stone-50;
   }
 
-  /* A day or time with something free carries the green of an open door; the chosen day wears the brand purple. */
+  /* Availability speaks in shades of the brand purple, the Cinolla way (the owner, 2026-11-20): free days wear a
+     light brand edge, the chosen day fills solid. */
   .tile.is-on {
     @apply border-brand bg-brand text-white;
   }
 
   .tile.is-off {
-    @apply border-emerald-300 bg-white hover:border-emerald-500 hover:bg-emerald-50;
+    @apply border-brand-edge bg-white hover:border-brand-line hover:bg-brand-mist;
   }
 
-  /* Chosen states wear the brand purple (ADR 0080); emerald stays the colour of availability. */
+  /* Chosen states wear the brand purple (ADR 0080); availability speaks in its lighter shades (owner, day 3). */
   .pill.is-on {
     @apply border-brand bg-brand text-white;
   }
 
-  /* A day with nothing free stays calm grey — only the date wears the red strike (a phone has no hover, the strike
-     alone must carry it); desktop hover tints the whole tile red as confirmation. stone-500 keeps AA on white. */
+  /* A day with nothing free: a red dashed border and the date struck through in red (the owner, 2026-11-20 — a
+     phone has no hover, so the border and strike alone must carry it). stone-500 keeps AA on white. */
   .tile.is-dim {
-    @apply border-dashed border-stone-200 bg-stone-50 text-stone-500 hover:border-red-300 hover:bg-red-50 hover:text-red-700;
+    @apply border-dashed border-red-300 bg-white text-stone-500 hover:bg-red-50 hover:text-red-700;
   }
 
   .tile.is-dim .tile-date {
     @apply line-through decoration-red-500 decoration-2;
   }
 
-  /* A free time: a soft pill that lifts and fills green under the finger, large tabular digits. */
+  /* A free time: a flat Cinolla-style chip in the brand's lightest shade; no lift, no pill theatrics (the owner,
+     2026-11-20). brand-deep on brand-mist keeps AA. */
   .slot {
-    @apply flex min-h-11 items-center justify-center rounded-full border border-emerald-300 bg-white px-3 py-2 text-base font-semibold tabular-nums text-emerald-900 transition-all hover:-translate-y-0.5 hover:border-emerald-700 hover:bg-emerald-700 hover:text-white hover:shadow-md hover:shadow-emerald-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+    @apply flex min-h-11 items-center justify-center rounded-lg border border-brand-edge bg-brand-mist px-2 py-2 text-base font-semibold tabular-nums text-brand-deep transition-colors hover:border-brand hover:bg-brand-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+  }
+
+  /* On a phone the day's parts are tabs so times fit without a long scroll (the owner, 2026-11-20); from sm the
+     radios do nothing and every part shows under its own heading. */
+  .slot-parts {
+    @apply space-y-3 sm:space-y-5;
+  }
+
+  .slot-part-tabs {
+    @apply flex gap-1.5;
+  }
+
+  .slot-part-tab {
+    @apply flex min-h-10 flex-1 cursor-pointer items-center justify-center rounded-lg border border-stone-200 bg-white px-2 text-center text-xs font-semibold text-stone-600 transition-colors;
+  }
+
+  .slot-parts > .slot-group {
+    @apply hidden sm:block;
+  }
+
+  #slot-part-0:checked ~ [data-part="0"],
+  #slot-part-1:checked ~ [data-part="1"],
+  #slot-part-2:checked ~ [data-part="2"] {
+    @apply block;
+  }
+
+  #slot-part-0:checked ~ .slot-part-tabs > [for="slot-part-0"],
+  #slot-part-1:checked ~ .slot-part-tabs > [for="slot-part-1"],
+  #slot-part-2:checked ~ .slot-part-tabs > [for="slot-part-2"] {
+    @apply border-brand bg-brand text-white;
   }
 
   /* The compact "what you chose" bar shown on every step after the first. */

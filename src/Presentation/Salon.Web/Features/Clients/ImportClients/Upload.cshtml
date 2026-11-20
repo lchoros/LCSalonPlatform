@@ -23,7 +23,7 @@
         <div class="space-y-1">
             <label for="File" class="field-label">@T["Clients.Import.File"]</label>
             <input id="File" name="File" type="file" accept=".csv,.txt,text/csv,text/plain" aria-describedby="file-hint"
-                   class="block w-full min-h-11 rounded-md border border-stone-300 bg-white px-3 py-2 text-base shadow-sm file:mr-3 file:rounded file:border-0 file:bg-stone-900 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white focus:border-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900" />
+                   class="block w-full min-h-11 rounded-md border border-stone-300 bg-white px-3 py-2 text-base shadow-sm file:mr-3 file:rounded file:border-0 file:bg-brand file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand" />
             <p id="file-hint" class="text-sm text-stone-500">@T.Format("Clients.Import.FileHint", ClientImportLimits.MaxRows, ImportClientsController.MaxMegabytes)</p>
         </div>
 

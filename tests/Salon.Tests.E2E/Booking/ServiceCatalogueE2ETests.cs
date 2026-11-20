@@ -81,8 +81,8 @@ public class ServiceCatalogueE2ETests(KestrelAppFixture app) : IClassFixture<Kes
             if (styled)
             {
                 var day = (await page.GetByTestId("day").First.BoundingBoxAsync()).ShouldNotBeNull();
-                Math.Abs(day.Width - day.Height).ShouldBeLessThanOrEqualTo(1, "a day is a square");
-                day.Height.ShouldBeInRange(44, 60);
+                day.Height.ShouldBeGreaterThan(day.Width, "a day is a tall rectangle, the Booksy shape the owner chose (ADR 0080)");
+                day.Height.ShouldBeInRange(44, 68);
             }
 
             await CheckPageAsync(page, styled, "day", "book-square-days-mobile-390.png");

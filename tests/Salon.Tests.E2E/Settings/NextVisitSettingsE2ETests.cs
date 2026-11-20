@@ -44,7 +44,7 @@ public class NextVisitSettingsE2ETests(KestrelAppFixture app) : IClassFixture<Ke
             await page.ReachAsync("**/admin/appointments");
 
             // 1. Settings, then the "Next visit" tab: four, six and eight weeks to begin with.
-            await page.GetByTestId("nav-settings").ClickAsync();
+            await page.OpenNavAsync("nav-settings");
             await page.ReachAsync("**/admin/settings/notifications");
             await page.GetByTestId("settings-nav-next-visit").ClickAsync();
             await page.ReachAsync("**/admin/settings/next-visit");

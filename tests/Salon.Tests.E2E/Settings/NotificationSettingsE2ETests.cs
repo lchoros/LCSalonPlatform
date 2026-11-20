@@ -33,7 +33,7 @@ public class NotificationSettingsE2ETests(KestrelAppFixture app) : IClassFixture
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Sign in" }).ClickAsync();
         await page.ReachAsync("**/admin/appointments");
 
-        await page.GetByTestId("nav-settings").ClickAsync();
+        await page.OpenNavAsync("nav-settings");
         await page.ReachAsync("**/admin/settings/notifications");
         var styled = await StylesheetLoadedAsync(page);
 

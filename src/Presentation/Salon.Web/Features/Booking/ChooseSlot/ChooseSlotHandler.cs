@@ -88,6 +88,10 @@ public sealed class ChooseSlotHandler(
             : days.FirstOrDefault(d => d.HasSlots)?.Date ?? windowStart;
 
         var daySlots = byDay[selected].Select(s => new SlotOption(s.Start, s.Start.InZone(zone).TimeOfDay, s.StaffMemberId)).ToList();
+        var groups = Grouped(daySlots);
+        // Only a start that is genuinely free right now counts; a stale or foreign one quietly deselects.
+        var chosenSlot = request.Start is { } wantedStart ? daySlots.FirstOrDefault(s => s.Start == wantedStart) : null;
+        var chosenPart = chosenSlot is null ? 0 : Math.Max(0, groups.ToList().FindIndex(g => g.Slots.Contains(chosenSlot)));
         return new ChooseSlotResult(
             service.Id,
             service.Name,
@@ -104,9 +108,9 @@ public sealed class ChooseSlotHandler(
             WaitlistOffered = rules.PublicWaitlist,
             EarlierFrom = windowStart > today ? LocalDate.Max(today, windowStart.PlusDays(-DaysShown)) : null,
             LaterFrom = last < horizon ? last.PlusDays(1) : null,
-            Groups = Grouped(daySlots),
-            // Only a start that is genuinely free right now counts; a stale or foreign one quietly deselects.
-            Chosen = request.Start is { } wantedStart ? daySlots.FirstOrDefault(s => s.Start == wantedStart) : null,
+            Groups = groups,
+            Chosen = chosenSlot,
+            ChosenGroup = chosenPart,
         };
     }
 

@@ -50,10 +50,11 @@ public class AdminLookE2ETests(KestrelAppFixture app) : IClassFixture<KestrelApp
         await page.ReachAsync("**" + Areas[0].Path);
         var styled = await StylesheetLoadedAsync(page);
 
-        // 1. Every area: one marked link, the right one, reached by tapping the menu.
+        // 1. Every area: one marked link, the right one, reached the way a person does — on a phone the menu
+        //    lives in the drawer behind the hamburger (ADR 0080).
         foreach (var (path, link, screenshot) in Areas)
         {
-            await page.GetByTestId(link).ClickAsync();
+            await page.OpenNavAsync(link);
             await page.ReachAsync(url => new Uri(url).AbsolutePath == path);
             var current = page.GetByTestId("admin-nav").Locator("[aria-current=true]");
             (await current.CountAsync()).ShouldBe(1, path);

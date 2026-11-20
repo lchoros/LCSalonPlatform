@@ -39,7 +39,7 @@ public class DailySummaryE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
             await page.ReachAsync("**/admin/appointments");
 
             // 1. Settings, then the "Daily summary" tab: off, at eight in the evening, with today's numbers on the page.
-            await page.GetByTestId("nav-settings").ClickAsync();
+            await page.OpenNavAsync("nav-settings");
             await page.ReachAsync("**/admin/settings/notifications");
             await page.GetByTestId("settings-nav-daily-summary").ClickAsync();
             await page.ReachAsync("**/admin/settings/daily-summary");

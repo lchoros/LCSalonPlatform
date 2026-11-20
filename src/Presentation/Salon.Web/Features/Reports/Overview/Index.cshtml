@@ -108,7 +108,8 @@
         </section>
     }
 
-    <div class="report-columns">
+    <div class="grid items-start gap-6 lg:grid-cols-2">
+    <div class="min-w-0 space-y-6">
     <section class="@cardClass" data-testid="takings">
         <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="text-lg font-semibold">@T["Reports.Takings.Title"]</h2>
@@ -177,6 +178,94 @@
         }
     </section>
 
+    <section class="@cardClass" data-testid="unpaid">
+        <h2 class="text-lg font-semibold">@T["Reports.Unpaid.Title"]</h2>
+        @if (Model.UnpaidCount == 0)
+        {
+            <p class="text-sm text-stone-600" data-testid="no-unpaid">@T["Reports.Unpaid.None"]</p>
+        }
+        else
+        {
+            <p role="status" class="notice notice-warn" data-testid="unpaid-summary">@T.Format("Reports.Unpaid.Summary", Model.UnpaidCount, Model.UnpaidTotal.ToDisplayString(culture))</p>
+            <ul class="list-card" data-testid="unpaid-list">
+                @foreach (var visit in Model.Unpaid)
+                {
+                    <li class="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between" data-testid="unpaid-visit">
+                        <span class="flex flex-col gap-0.5">
+                            <span class="font-medium">@visit.ClientName</span>
+                            <span class="text-sm text-stone-600">@visit.Start.Date.ToString("d", culture) @visit.Start.TimeOfDay.ToShortTime(culture) · @visit.ServiceName</span>
+                        </span>
+                        <span class="flex items-center justify-between gap-3">
+                            <span class="tabular-nums font-medium" data-testid="unpaid-amount">@visit.Outstanding.ToDisplayString(culture)</span>
+                            <a href="@(ReportsController.CheckoutPath + visit.AppointmentId)" data-testid="unpaid-checkout" class="btn btn-compact btn-secondary px-3">@T["Reports.Unpaid.Checkout"]<span class="sr-only">: @visit.ClientName, @visit.Start.Date.ToString("d", culture)</span></a>
+                        </span>
+                    </li>
+                }
+            </ul>
+            @if (Model.UnpaidCount > Model.Unpaid.Count)
+            {
+                <p class="text-sm text-stone-600" data-testid="unpaid-more">@T.Format("Reports.Unpaid.More", Model.Unpaid.Count)</p>
+            }
+        }
+    </section>
+    <section class="@cardClass" data-testid="staff">
+        <h2 class="text-lg font-semibold">@T["Reports.Staff.Title"]</h2>
+        <p class="text-sm text-stone-600">@T["Reports.Staff.Hint"]</p>
+        @if (Model.Staff.Count == 0)
+        {
+            <p class="text-sm text-stone-600">@T["Reports.Staff.None"]</p>
+        }
+        else
+        {
+            <ul class="list-card">
+                @foreach (var person in Model.Staff)
+                {
+                    <li class="space-y-2 p-3" data-testid="staff-line">
+                        <div class="flex items-center justify-between gap-4">
+                            <span class="flex min-w-0 flex-col gap-0.5">
+                                <span class="font-medium">@person.Name</span>
+                                <span class="text-sm text-stone-600">@T.Format("Reports.Services.Visits", person.Visits)</span>
+                            </span>
+                            <span class="tabular-nums font-medium">@person.Value.ToDisplayString(culture)</span>
+                        </div>
+                        @if (person.HasRetail || person.HasCommission)
+                        {
+                            @* Products sold on the person's visits and their commission (ADR 0059). *@
+                            <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm" data-testid="staff-pay">
+                                @if (person.HasRetail)
+                                {
+                                    <dt>@T["Reports.Staff.Retail"]</dt>
+                                    <dd class="text-right tabular-nums" data-testid="staff-retail">@person.Retail!.Value.ToDisplayString(culture)</dd>
+                                }
+                                @if (person.Commission is { } commission)
+                                {
+                                    <dt>@ReportText.CommissionLabel(T, person, culture)</dt>
+                                    <dd class="text-right tabular-nums" data-testid="staff-commission">@commission.ToDisplayString(culture)</dd>
+                                    <dt class="font-semibold">@T["Reports.Staff.AfterCommission"]</dt>
+                                    <dd class="text-right font-semibold tabular-nums" data-testid="staff-after-commission">@person.AfterCommission!.Value.ToDisplayString(culture)</dd>
+                                }
+                            </dl>
+                        }
+                        @if (person.Utilisation is { } used)
+                        {
+                            <div class="flex items-center justify-between gap-4 text-sm">
+                                <span>@T["Reports.Staff.Utilisation"]</span>
+                                <span class="font-semibold tabular-nums" data-testid="utilisation">@ReportText.Percent(T, used, culture)</span>
+                            </div>
+                            <meter class="block h-3 w-full" min="0" max="100" value="@Math.Min(100m, used).ToString(CultureInfo.InvariantCulture)" aria-label="@T["Reports.Staff.Utilisation"]: @person.Name">@ReportText.Percent(T, used, culture)</meter>
+                            <p class="text-sm text-stone-600" data-testid="staff-hours">@T.Format("Reports.Staff.Booked", ClockFormatter.MinutesAsHours(person.BookedMinutes, culture), ClockFormatter.MinutesAsHours(person.WorkingMinutes, culture))</p>
+                        }
+                        else
+                        {
+                            <p class="text-sm text-stone-600" data-testid="staff-hours">@T.Format("Reports.Staff.NoHours", ClockFormatter.MinutesAsHours(person.BookedMinutes, culture))</p>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+    </div>
+    <div class="min-w-0 space-y-6">
     <section class="@cardClass" data-testid="visits">
         <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="text-lg font-semibold">@T["Reports.Visits.Title"]</h2>
@@ -225,38 +314,6 @@
             </dl>
         </section>
     }
-
-    <section class="@cardClass" data-testid="unpaid">
-        <h2 class="text-lg font-semibold">@T["Reports.Unpaid.Title"]</h2>
-        @if (Model.UnpaidCount == 0)
-        {
-            <p class="text-sm text-stone-600" data-testid="no-unpaid">@T["Reports.Unpaid.None"]</p>
-        }
-        else
-        {
-            <p role="status" class="notice notice-warn" data-testid="unpaid-summary">@T.Format("Reports.Unpaid.Summary", Model.UnpaidCount, Model.UnpaidTotal.ToDisplayString(culture))</p>
-            <ul class="list-card" data-testid="unpaid-list">
-                @foreach (var visit in Model.Unpaid)
-                {
-                    <li class="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between" data-testid="unpaid-visit">
-                        <span class="flex flex-col gap-0.5">
-                            <span class="font-medium">@visit.ClientName</span>
-                            <span class="text-sm text-stone-600">@visit.Start.Date.ToString("d", culture) @visit.Start.TimeOfDay.ToShortTime(culture) · @visit.ServiceName</span>
-                        </span>
-                        <span class="flex items-center justify-between gap-3">
-                            <span class="tabular-nums font-medium" data-testid="unpaid-amount">@visit.Outstanding.ToDisplayString(culture)</span>
-                            <a href="@(ReportsController.CheckoutPath + visit.AppointmentId)" data-testid="unpaid-checkout" class="btn btn-compact btn-secondary px-3">@T["Reports.Unpaid.Checkout"]<span class="sr-only">: @visit.ClientName, @visit.Start.Date.ToString("d", culture)</span></a>
-                        </span>
-                    </li>
-                }
-            </ul>
-            @if (Model.UnpaidCount > Model.Unpaid.Count)
-            {
-                <p class="text-sm text-stone-600" data-testid="unpaid-more">@T.Format("Reports.Unpaid.More", Model.Unpaid.Count)</p>
-            }
-        }
-    </section>
-
     <section class="@cardClass" data-testid="top-services">
         <h2 class="text-lg font-semibold">@T["Reports.Services.Title"]</h2>
         @if (Model.TopServices.Count == 0)
@@ -352,62 +409,6 @@
             }
         </section>
     }
-
-    <section class="@cardClass" data-testid="staff">
-        <h2 class="text-lg font-semibold">@T["Reports.Staff.Title"]</h2>
-        <p class="text-sm text-stone-600">@T["Reports.Staff.Hint"]</p>
-        @if (Model.Staff.Count == 0)
-        {
-            <p class="text-sm text-stone-600">@T["Reports.Staff.None"]</p>
-        }
-        else
-        {
-            <ul class="list-card">
-                @foreach (var person in Model.Staff)
-                {
-                    <li class="space-y-2 p-3" data-testid="staff-line">
-                        <div class="flex items-center justify-between gap-4">
-                            <span class="flex min-w-0 flex-col gap-0.5">
-                                <span class="font-medium">@person.Name</span>
-                                <span class="text-sm text-stone-600">@T.Format("Reports.Services.Visits", person.Visits)</span>
-                            </span>
-                            <span class="tabular-nums font-medium">@person.Value.ToDisplayString(culture)</span>
-                        </div>
-                        @if (person.HasRetail || person.HasCommission)
-                        {
-                            @* Products sold on the person's visits and their commission (ADR 0059). *@
-                            <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm" data-testid="staff-pay">
-                                @if (person.HasRetail)
-                                {
-                                    <dt>@T["Reports.Staff.Retail"]</dt>
-                                    <dd class="text-right tabular-nums" data-testid="staff-retail">@person.Retail!.Value.ToDisplayString(culture)</dd>
-                                }
-                                @if (person.Commission is { } commission)
-                                {
-                                    <dt>@ReportText.CommissionLabel(T, person, culture)</dt>
-                                    <dd class="text-right tabular-nums" data-testid="staff-commission">@commission.ToDisplayString(culture)</dd>
-                                    <dt class="font-semibold">@T["Reports.Staff.AfterCommission"]</dt>
-                                    <dd class="text-right font-semibold tabular-nums" data-testid="staff-after-commission">@person.AfterCommission!.Value.ToDisplayString(culture)</dd>
-                                }
-                            </dl>
-                        }
-                        @if (person.Utilisation is { } used)
-                        {
-                            <div class="flex items-center justify-between gap-4 text-sm">
-                                <span>@T["Reports.Staff.Utilisation"]</span>
-                                <span class="font-semibold tabular-nums" data-testid="utilisation">@ReportText.Percent(T, used, culture)</span>
-                            </div>
-                            <meter class="block h-3 w-full" min="0" max="100" value="@Math.Min(100m, used).ToString(CultureInfo.InvariantCulture)" aria-label="@T["Reports.Staff.Utilisation"]: @person.Name">@ReportText.Percent(T, used, culture)</meter>
-                            <p class="text-sm text-stone-600" data-testid="staff-hours">@T.Format("Reports.Staff.Booked", ClockFormatter.MinutesAsHours(person.BookedMinutes, culture), ClockFormatter.MinutesAsHours(person.WorkingMinutes, culture))</p>
-                        }
-                        else
-                        {
-                            <p class="text-sm text-stone-600" data-testid="staff-hours">@T.Format("Reports.Staff.NoHours", ClockFormatter.MinutesAsHours(person.BookedMinutes, culture))</p>
-                        }
-                    </li>
-                }
-            </ul>
-        }
-    </section>
+    </div>
     </div>
 </section>
