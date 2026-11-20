@@ -2,6 +2,8 @@
 
 Status: Decided — owner may veto
 Date: 2026-11-11
+Amended 2026-11-20 by ADR 0090: the setting is no longer made when a connection opens and kept in the session; it is
+sent with every statement, transaction-local. The filter, the policies and everything else below stand.
 
 ## Context
 Every salon's data lives in one PostgreSQL database. CLAUDE.md rule 4 says every tenant-owned entity implements
