@@ -378,6 +378,52 @@ public sealed class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
     }
 
     /// <summary>
+    /// A booked visit of a new client that began a minute ago and is still on, with the first person who takes
+    /// bookings and is free for it, written straight to the tables. "Somebody is due right now" whatever the hour the
+    /// test runs at: a time later today does not exist late in the evening, and <see cref="AddVisitAsync"/> moves a
+    /// visit away from now when the first person is busy. Call after <see cref="EnsureDemoStaffAsync"/>.
+    /// </summary>
+    public async Task<(Guid AppointmentId, string StaffName, string ServiceName, decimal Price)> AddVisitDueNowAsync(Guid tenantId, string firstName, string lastName)
+    {
+        using var scope = _factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<IMutableTenantContext>().SetTenant(tenantId);
+        var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+        var now = SystemClock.Instance.GetCurrentInstant();
+        var service = await db.Services.AsNoTracking().Where(s => s.IsActive).OrderBy(s => s.Name).FirstAsync();
+        var start = now - Duration.FromMinutes(1);
+        var end = start + service.Duration;
+
+        // The same statuses, and the same range, as the exclusion constraint on a person's time.
+        var holding = AppointmentStateMachine.Active.ToArray();
+        var person = await db.StaffMembers.AsNoTracking()
+            .Where(s => s.IsActive && s.IsBookable && !db.Appointments.Any(a => a.StaffMemberId == s.Id && holding.Contains(a.Status) && a.Start < end && a.End > start))
+            .OrderBy(s => s.SortOrder)
+            .Select(s => new { s.Id, s.DisplayName })
+            .FirstAsync();
+        var client = new Core.Clients.Client { FirstName = firstName, LastName = lastName, CreatedAt = now, UpdatedAt = now };
+        var appointment = new Appointment
+        {
+            TenantId = tenantId,
+            ClientId = client.Id,
+            StaffMemberId = person.Id,
+            ServiceId = service.Id,
+            Start = start,
+            End = end,
+            Status = AppointmentStatus.Booked,
+            Source = AppointmentSource.Admin,
+            PriceAmount = service.Price,
+            Currency = service.Currency,
+            DurationMinutes = (int)service.Duration.TotalMinutes,
+            CreatedAt = start - Duration.FromDays(1),
+        };
+        db.Clients.Add(client);
+        db.Appointments.Add(appointment);
+        db.AppointmentStatusChanges.Add(new AppointmentStatusChange { TenantId = tenantId, AppointmentId = appointment.Id, To = AppointmentStatus.Booked, At = appointment.CreatedAt });
+        await db.SaveChangesAsync();
+        return (appointment.Id, person.DisplayName, service.Name, service.Price);
+    }
+
+    /// <summary>
     /// A freed time kept for a waiting client (ADR 0065), as a given: the salon texts its waiting clients at any hour
     /// and keeps freed times for them; the client is on the waitlist for the first service; somebody else's visit, at
     /// the first time that can be booked from the day after tomorrow, was cancelled; and the service that offers

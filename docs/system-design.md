@@ -342,6 +342,14 @@ start in Development) and `salon_test` (tests, reset by Respawn). The demo salon
   laid out by the pure `BarChart` (Core) and written by `TakingsCharts` beside the view; no script, no chart
   library. Periods of 2 to 62 days (`ReportRules.ChartDays`); longer ones by Monday-to-Sunday week, cut at the
   period's ends (`ReportRules.ChartWeeks`, `TakingsReport.Weekly`, ADR 0071).
+- `Dashboard/Today` — `/admin` behind `Bookings.Manage` (ADR 0084), read only: today at a glance and the page staff
+  land on after signing in. `ITodayService` reads the visits that start today, the next five still to come, and
+  each bookable person's booked time over today's rota less time off; the money is the day's ledger lines by the
+  till's rule (`TillRules`) and the unpaid completed visits come from `ReportSums`, the sums the report shares, so the
+  three never disagree. First names and links to a visit's card need `Clients.View`; the money needs what the till
+  needs (`Payments.Record` + `Clients.View`); the link into the reports needs `Reports.View`. A salon with nobody
+  to book and nothing booked gets an empty state, and its owner the way to getting started
+  (`ISetupProgressService`). "Dashboard" is first in the sidebar and the bottom bar.
 - `Booking/JoinWaitlist` — `/book/{serviceId}/waitlist`, `/book/waitlist/verify/{id}`, `/book/waitlist/done`
   (ADR 0055): a visitor who finds no time leaves a name and a number, proves the number with the booking's SMS code
   and is put on the desk's waitlist (ADR 0041) by `IPublicWaitlistService`. `PhoneVerification.Purpose` keeps a

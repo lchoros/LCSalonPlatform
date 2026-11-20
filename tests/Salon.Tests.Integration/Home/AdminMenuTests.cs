@@ -25,6 +25,7 @@ public partial class AdminMenuTests(SalonWebApplicationFactory factory) : IAsync
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Theory]
+    [InlineData("/admin", "nav-dashboard")]
     [InlineData("/admin/services", "nav-services")]
     [InlineData("/admin/services/new", "nav-services")]
     [InlineData("/admin/clients", "nav-clients")]
@@ -70,8 +71,30 @@ public partial class AdminMenuTests(SalonWebApplicationFactory factory) : IAsync
 
         html.ShouldContain("data-testid=\"sidebar\"", customMessage: "signed-in pages live in the dashboard shell (ADR 0080)");
         html.ShouldContain("class=\"brand-line ");
-        MenuLinkPattern().Count(html).ShouldBe(9, "an owner sees nine areas, products among them (ADR 0036)");
+        MenuLinkPattern().Count(html).ShouldBe(10, "an owner sees the dashboard and nine areas, products among them (ADR 0036, ADR 0084)");
         html.ShouldContain("<h1 class=\"page-title\">");
+    }
+
+    [Fact]
+    public async Task The_dashboard_is_the_first_place_in_the_menu_and_the_bottom_bar_and_the_brand_leads_to_it()
+    {
+        using var client = await factory.SignedInClientAsync("studio-20.localhost", _studio.Id, Role.Owner);
+
+        var html = await GetAsync(client, "/admin/staff");
+
+        // Today at a glance is where the desk starts (ADR 0084): first in the sidebar, first under the thumb.
+        MenuLinkPattern().Match(html).Value.ShouldContain("data-testid=\"nav-dashboard\"");
+        html.ShouldContain("<a href=\"/admin\" data-testid=\"nav-dashboard\" class=\"nav-link\">Dashboard</a>");
+        html.ShouldContain("href=\"/admin\" data-testid=\"brand-link\"");
+        html.IndexOf("data-testid=\"bottom-dashboard\"", StringComparison.Ordinal).ShouldBeGreaterThan(0);
+        html.IndexOf("data-testid=\"bottom-dashboard\"", StringComparison.Ordinal)
+            .ShouldBeLessThan(html.IndexOf("data-testid=\"bottom-appointments\"", StringComparison.Ordinal));
+
+        // On the dashboard itself both links say so; one address deeper neither does.
+        var dashboard = await GetAsync(client, "/admin");
+        dashboard.ShouldContain("data-testid=\"nav-dashboard\" aria-current=\"true\" class=\"nav-link\"");
+        dashboard.ShouldContain("aria-current=\"true\" class=\"bottom-link\" data-testid=\"bottom-dashboard\"");
+        html.ShouldNotContain("aria-current=\"true\" class=\"bottom-link\" data-testid=\"bottom-dashboard\"");
     }
 
     private static async Task<string> GetAsync(HttpClient client, string path)

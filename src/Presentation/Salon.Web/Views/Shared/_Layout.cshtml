@@ -22,6 +22,9 @@
         : null;
     // The calendar lives under the appointments address, so the list is the current area only when the calendar is not.
     var onCalendar = Context.Request.Current("/admin/appointments/calendar") is not null;
+    // Every admin address lies under the dashboard's own (ADR 0084), so it is the current place only at exactly that address.
+    var onDashboard = string.Equals(Context.Request.Path.Value?.TrimEnd('/'), "/admin", StringComparison.OrdinalIgnoreCase) ? "true" : null;
+    var canDashboard = User.HasClaim(UserClaimTypes.Permission, Permissions.BookingsManage);
     var canDiary = User.HasClaim(UserClaimTypes.Permission, Permissions.BookingsManage) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView);
     var canTill = User.HasClaim(UserClaimTypes.Permission, Permissions.PaymentsRecord) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView);
     var myBookings = Features.CurrentValue.ClientPortal && TenantContext.TenantId is not null;
@@ -41,8 +44,12 @@
         <div class="flex min-h-screen">
             <input type="checkbox" id="nav-drawer" class="peer sr-only" aria-hidden="true" tabindex="-1" />
             <aside data-testid="sidebar" class="sidebar screen-only">
-                <a class="brand-line flex min-h-14 items-center border-b border-stone-200 px-4 text-lg font-semibold tracking-tight" asp-area="" asp-controller="Home" asp-action="Index">@T["Layout.Brand"]</a>
+                <a href="/admin" data-testid="brand-link" class="brand-line flex min-h-14 items-center border-b border-stone-200 px-4 text-lg font-semibold tracking-tight">@T["Layout.Brand"]</a>
                 <nav aria-label="@T["Layout.Nav.Admin"]" data-testid="admin-nav" class="flex flex-1 flex-col gap-1 overflow-y-auto p-3 text-sm">
+                    @if (canDashboard)
+                    {
+                        <a href="/admin" data-testid="nav-dashboard" aria-current="@onDashboard" class="nav-link">@T["Layout.Nav.Dashboard"]</a>
+                    }
                     @if (canDiary)
                     {
                         <a href="/admin/appointments" data-testid="nav-appointments" aria-current="@(onCalendar ? null : Context.Request.Current("/admin/appointments"))" class="nav-link">@T["Layout.Nav.Appointments"]</a>
@@ -104,6 +111,10 @@
                     &copy; @DateTime.UtcNow.Year @T["Layout.Brand"]
                 </footer>
                 <nav aria-label="@T["Layout.Nav.Menu"]" data-testid="bottom-bar" class="bottom-bar screen-only">
+                    @if (canDashboard)
+                    {
+                        <a href="/admin" aria-current="@onDashboard" class="bottom-link" data-testid="bottom-dashboard">@T["Layout.Nav.Dashboard"]</a>
+                    }
                     @if (canDiary)
                     {
                         <a href="/admin/appointments" aria-current="@(onCalendar ? null : Context.Request.Current("/admin/appointments"))" class="bottom-link" data-testid="bottom-appointments">@T["Layout.Nav.Appointments"]</a>

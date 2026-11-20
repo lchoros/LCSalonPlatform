@@ -15,14 +15,18 @@ namespace Salon.Web.Features.Identity.Login;
 
 /// <summary>
 /// Sign-in form at <c>/account/login</c> on a salon's own host (ADR 0009); the platform domain has no login. A valid post
-/// issues the cookie and follows a <em>local</em> return URL, otherwise lands on the public price list. A failed post
+/// issues the cookie and follows a <em>local</em> return URL, otherwise lands on the dashboard (ADR 0084). A failed post
 /// re-renders with one generic message; only a lockout reads differently. The POST is rate-limited per address.
 /// </summary>
 [RequireTenant]
 [Route("account")]
 public sealed class LoginController(IDispatcher dispatcher, ITenantContext tenantContext, ILocalizationService localizer) : SalonControllerBase
 {
-    private const string DefaultLanding = "/services";
+    /// <summary>
+    /// Today at a glance, which every role may open; the Dashboard slice owns the route. Only staff sign in here, so
+    /// the public price list a client reads is not where their day starts.
+    /// </summary>
+    private const string DefaultLanding = "/admin";
 
     [HttpGet("login")]
     public IActionResult Login(string? returnUrl)

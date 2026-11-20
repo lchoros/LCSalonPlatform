@@ -1,0 +1,281 @@
+@using System.Globalization
+@using Salon.Web.Features.Dashboard.Today
+@model DashboardModel
+@{
+    var culture = CultureInfo.CurrentCulture;
+    ViewData["Title"] = T["Dashboard.Title"];
+    const string cardClass = "space-y-3 panel";
+    const string statClass = "panel stat";
+    const string headingClass = "text-lg font-semibold";
+    const string subheadClass = "pt-1 text-sm font-semibold text-stone-700";
+    const string quietLinkClass = "inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-2";
+    const string cellClass = "flex flex-col-reverse rounded-lg bg-stone-50 p-2 text-center";
+    const string cellLabelClass = "text-xs text-stone-600";
+    const string cellValueClass = "text-xl font-semibold tabular-nums";
+    const string trackClass = "h-2 overflow-hidden rounded-full bg-brand-soft";
+    const string fillClass = "h-full rounded-full bg-brand-bright";
+}
+@* Today at a glance (ADR 0084): the first page after staff sign in. Every number is worked out by the handler and
+   Salon.Services; the view only lays them out, and shows nothing the role may not open. *@
+<section class="space-y-6" data-testid="dashboard" data-day="@Model.Day.ToIso()">
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Dashboard.Heading"]</h1>
+        <p class="text-stone-600"><time datetime="@Model.Day.ToIso()" data-testid="day">@Model.Day.ToDayHeading(culture)</time></p>
+    </header>
+    @if (Model.DayListPath is not null)
+    {
+        @await Component.InvokeAsync("VisitsWithoutOutcome")
+    }
+    <widget-zone name="@WidgetZones.AdminDashboardTop" />
+
+    @if (Model.IsNewSalon)
+    {
+        <div class="empty-state space-y-2" data-testid="new-salon">
+            <h2 class="text-lg font-semibold text-stone-900">@T["Dashboard.New.Title"]</h2>
+            @if (Model.Setup is null)
+            {
+                <p>@T["Dashboard.New.Other"]</p>
+            }
+            else
+            {
+                <p>@T["Dashboard.New.Owner"]</p>
+            }
+        </div>
+        @if (Model.Setup is { } firstSteps)
+        {
+            <partial name="_Setup" model="firstSteps" />
+        }
+    }
+    else
+    {
+        @if (Model.Actions.Count > 0)
+        {
+            <nav aria-label="@T["Dashboard.Actions.Title"]" class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap" data-testid="quick-actions">
+                @foreach (var action in Model.Actions)
+                {
+                    <a href="@action.Path" data-testid="action-@action.Name" class="@action.ButtonClass">@T[action.LabelKey]</a>
+                }
+            </nav>
+        }
+
+        @* The numbers the desk looks for first, each in a tile of its own; the detail follows underneath. *@
+        <dl class="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="headlines">
+            <div class="@statClass accent-4">
+                <dt class="stat-label">@T["Dashboard.Headline.Visits"]</dt>
+                <dd class="stat-value" data-testid="headline-visits">@Model.Visits.Total</dd>
+            </div>
+            <div class="@statClass accent-2">
+                <dt class="stat-label">@T["Dashboard.Headline.ToCome"]</dt>
+                <dd class="stat-value" data-testid="headline-to-come">@Model.StillToCome</dd>
+            </div>
+            @if (Model.Money is null)
+            {
+                <div class="@statClass accent-3">
+                    <dt class="stat-label">@T["Dashboard.Headline.Completed"]</dt>
+                    <dd class="stat-value" data-testid="headline-completed">@Model.Visits.Completed</dd>
+                </div>
+            }
+            <div class="@statClass accent-5">
+                <dt class="stat-label">@T["Dashboard.Headline.Occupancy"]</dt>
+                <dd class="stat-value" data-testid="headline-occupancy">@DashboardText.Percent(T, Model.Occupancy, culture)</dd>
+            </div>
+            @if (Model.Money is { } taken)
+            {
+                <div class="@statClass accent-3">
+                    <dt class="stat-label">@T["Dashboard.Headline.Takings"]</dt>
+                    <dd class="stat-value" data-testid="headline-takings">@taken.Takings.ToDisplayString(culture)</dd>
+                </div>
+            }
+        </dl>
+
+        <div class="grid items-start gap-6 lg:grid-cols-2">
+            <div class="min-w-0 space-y-6">
+                <section class="@cardClass" data-testid="next">
+                    <h2 class="@headingClass">@T["Dashboard.Next.Title"]</h2>
+                    @if (Model.Next.Count == 0)
+                    {
+                        @if (Model.NothingBooked)
+                        {
+                            <p class="text-sm text-stone-600" data-testid="no-next-visits">@T["Dashboard.Next.NothingBooked"]</p>
+                        }
+                        else
+                        {
+                            <p class="text-sm text-stone-600" data-testid="no-next-visits">@T["Dashboard.Next.AllDone"]</p>
+                        }
+                    }
+                    else
+                    {
+                        <ul class="list-card" data-testid="next-visits">
+                            @foreach (var visit in Model.Next)
+                            {
+                                @* The whole row is the way to the visit's card; without the address it is plain text. *@
+                                <li data-testid="next-visit" data-visit-id="@visit.Id" data-status="@visit.Status">
+                                    <a href="@visit.CardPath" data-testid="next-visit-link" class="flex min-h-14 items-center gap-3 p-3 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand [&[href]]:hover:bg-brand-mist">
+                                        <span class="w-12 shrink-0 font-semibold tabular-nums" data-testid="next-visit-time">@visit.Start.ToShortTime(culture)</span>
+                                        <span class="flex min-w-0 flex-1 flex-col gap-0.5">
+                                            @if (visit.ClientFirstName is { } firstName)
+                                            {
+                                                <span class="truncate font-medium" data-testid="next-visit-client">@firstName</span>
+                                            }
+                                            <span class="truncate text-sm text-stone-600" data-testid="next-visit-service">@visit.ServiceName</span>
+                                            <span class="flex min-w-0 items-center gap-1.5 text-sm text-stone-600">
+                                                <span class="size-2.5 shrink-0 rounded-full" style="background-color: @visit.StaffColour" aria-hidden="true"></span>
+                                                <span class="truncate" data-testid="next-visit-staff">@visit.StaffName</span>
+                                            </span>
+                                        </span>
+                                        <span class="shrink-0 rounded px-1.5 py-0.5 text-xs font-medium @Badges.AppointmentInList(visit.Status)" data-testid="status-badge">@T[$"Appointments.Status.{visit.Status}"]</span>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                        @if (Model.MoreToCome > 0)
+                        {
+                            <p class="text-sm text-stone-600" data-testid="next-more">
+                                @if (Model.DayListPath is { } dayList)
+                                {
+                                    <a href="@dayList" class="@quietLinkClass">@T.Plural("Dashboard.Next.More", Model.MoreToCome)</a>
+                                }
+                                else
+                                {
+                                    @T.Plural("Dashboard.Next.More", Model.MoreToCome)
+                                }
+                            </p>
+                        }
+                    }
+                </section>
+
+                <section class="@cardClass" data-testid="visits">
+                    <h2 class="@headingClass">@T["Dashboard.Visits.Title"]</h2>
+                    <dl class="grid grid-cols-3 gap-2">
+                        <div class="@cellClass">
+                            <dt class="@cellLabelClass">@T["Appointments.Status.Booked"]</dt>
+                            <dd class="@cellValueClass" data-testid="status-Booked">@Model.Visits.Booked</dd>
+                        </div>
+                        <div class="@cellClass">
+                            <dt class="@cellLabelClass">@T["Appointments.Status.Confirmed"]</dt>
+                            <dd class="@cellValueClass" data-testid="status-Confirmed">@Model.Visits.Confirmed</dd>
+                        </div>
+                        <div class="@cellClass">
+                            <dt class="@cellLabelClass">@T["Appointments.Status.Arrived"]</dt>
+                            <dd class="@cellValueClass" data-testid="status-Arrived">@Model.Visits.Arrived</dd>
+                        </div>
+                        <div class="@cellClass">
+                            <dt class="@cellLabelClass">@T["Appointments.Status.Completed"]</dt>
+                            <dd class="@cellValueClass" data-testid="status-Completed">@Model.Visits.Completed</dd>
+                        </div>
+                        <div class="@cellClass">
+                            <dt class="@cellLabelClass">@T["Appointments.Status.NoShow"]</dt>
+                            <dd class="@cellValueClass" data-testid="status-NoShow">@Model.Visits.NoShows</dd>
+                        </div>
+                        <div class="@cellClass">
+                            <dt class="@cellLabelClass">@T["Dashboard.Visits.Cancelled"]</dt>
+                            <dd class="@cellValueClass" data-testid="status-Cancelled">@Model.Visits.Cancelled</dd>
+                        </div>
+                    </dl>
+                </section>
+            </div>
+
+            <div class="min-w-0 space-y-6">
+                @if (Model.Money is { } money)
+                {
+                    @* The money of the day as the till has it (ADR 0024), and the completed visits nobody took payment for. *@
+                    <section class="@cardClass" data-testid="money">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <h2 class="@headingClass">@T["Dashboard.Money.Title"]</h2>
+                            <a href="@money.TillPath" data-testid="open-till" class="btn btn-compact btn-secondary">@T["Dashboard.Money.OpenTill"]</a>
+                        </div>
+                        <p class="flex items-baseline justify-between gap-4 rounded-md bg-stone-50 p-3">
+                            <span class="text-sm text-stone-700">@T["Dashboard.Headline.Takings"]</span>
+                            <span class="text-xl font-bold tabular-nums" data-testid="takings-total">@money.Takings.ToDisplayString(culture)</span>
+                        </p>
+                        @if (money.ByMethod.Count == 0)
+                        {
+                            <p class="text-sm text-stone-600" data-testid="no-takings">@T["Dashboard.Money.None"]</p>
+                        }
+                        else
+                        {
+                            <h3 class="@subheadClass">@T["Dashboard.Money.ByMethod"]</h3>
+                            <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 text-base">
+                                @foreach (var total in money.ByMethod)
+                                {
+                                    <dt>@PaymentMethodNames.Name(T, total.Method, total.MethodName)</dt>
+                                    <dd class="text-right tabular-nums" data-testid="method-@total.Method">@total.Amount.ToDisplayString(culture)</dd>
+                                }
+                            </dl>
+                        }
+                        <h3 class="@subheadClass">@T["Dashboard.Unpaid.Title"]</h3>
+                        @if (money.UnpaidCount == 0)
+                        {
+                            <p class="text-sm text-stone-600" data-testid="no-unpaid">@T["Dashboard.Unpaid.None"]</p>
+                        }
+                        else
+                        {
+                            <p role="status" class="notice notice-warn" data-testid="unpaid-summary">@T.Format("Dashboard.Unpaid.Summary", money.UnpaidCount, money.UnpaidTotal.ToDisplayString(culture))</p>
+                            <ul class="list-card" data-testid="unpaid-list">
+                                @foreach (var visit in money.Unpaid)
+                                {
+                                    <li class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 p-3" data-testid="unpaid-visit">
+                                        <span class="flex min-w-0 flex-col gap-0.5">
+                                            <span class="truncate font-medium">@visit.ClientFirstName</span>
+                                            <span class="text-sm text-stone-600"><span class="tabular-nums">@visit.Start.ToShortTime(culture)</span> · @visit.ServiceName</span>
+                                        </span>
+                                        <span class="flex shrink-0 items-center gap-3">
+                                            <span class="font-medium tabular-nums" data-testid="unpaid-amount">@visit.Outstanding.ToDisplayString(culture)</span>
+                                            <a href="@visit.CheckoutPath" data-testid="unpaid-checkout" class="btn btn-compact btn-secondary px-3">@T["Dashboard.Unpaid.Checkout"]<span class="sr-only">: @visit.ClientFirstName, @visit.Start.ToShortTime(culture)</span></a>
+                                        </span>
+                                    </li>
+                                }
+                            </ul>
+                            @if (money.HasMoreUnpaid)
+                            {
+                                <p class="text-sm text-stone-600" data-testid="unpaid-more">@T.Format("Dashboard.Unpaid.More", money.Unpaid.Count)</p>
+                            }
+                            @if (money.ReportsPath is { } reports)
+                            {
+                                <a href="@reports" data-testid="unpaid-reports" class="@quietLinkClass">@T["Dashboard.Unpaid.Reports"]</a>
+                            }
+                        }
+                    </section>
+                }
+
+                @if (Model.Staff.Count > 0)
+                {
+                    <section class="@cardClass" data-testid="occupancy">
+                        <div class="space-y-0.5">
+                            <h2 class="@headingClass">@T["Dashboard.Occupancy.Title"]</h2>
+                            <p class="text-sm text-stone-600">@T["Dashboard.Occupancy.Hint"]</p>
+                        </div>
+                        <ul class="space-y-4">
+                            @foreach (var person in Model.Staff)
+                            {
+                                <li class="space-y-1.5" data-testid="occupancy-row" data-staff-id="@person.StaffMemberId">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <span class="flex min-w-0 items-center gap-2 font-medium">
+                                            <span class="size-3 shrink-0 rounded-full" style="background-color: @person.Colour" aria-hidden="true"></span>
+                                            <span class="truncate" data-testid="occupancy-name">@person.Name</span>
+                                        </span>
+                                        @if (person.IsIn)
+                                        {
+                                            <span class="shrink-0 text-sm font-semibold tabular-nums" data-testid="occupancy-percent">@DashboardText.Percent(T, person.Percent, culture)</span>
+                                        }
+                                    </div>
+                                    @if (person.IsIn)
+                                    {
+                                        <div class="@trackClass" role="progressbar" aria-label="@T.Format("Dashboard.Occupancy.Label", person.Name)" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@person.BarWidth" data-testid="occupancy-bar">
+                                            <div class="@fillClass" style="width: @(person.BarWidth)%"></div>
+                                        </div>
+                                    }
+                                    <p class="text-sm text-stone-600" data-testid="occupancy-hours">@DashboardText.Hours(T, person, culture)</p>
+                                </li>
+                            }
+                        </ul>
+                    </section>
+                }
+            </div>
+        </div>
+        @if (Model.Setup is { } leftToDo)
+        {
+            <partial name="_Setup" model="leftToDo" />
+        }
+    }
+</section>

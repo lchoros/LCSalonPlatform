@@ -387,9 +387,9 @@ internal sealed class ReportService(
         {
             var own = visits.Where(v => v.StaffMemberId == person.Id).ToArray();
             var done = own.Where(v => v.Status == AppointmentStatus.Completed).ToArray();
-            var booked = own.Where(v => v.Status == AppointmentStatus.Completed || AppointmentStateMachine.Active.Contains(v.Status)).Sum(v => v.Minutes);
+            var booked = own.Where(v => ReportSums.FillsTime(v.Status)).Sum(v => v.Minutes);
             var working = person.Works
-                ? WorkingMinutes(period, hours.Where(h => h.StaffMemberId == person.Id).ToArray(), timeOff.Where(t => t.StaffMemberId == person.Id).ToArray())
+                ? ReportSums.WorkingMinutes(period, hours.Where(h => h.StaffMemberId == person.Id).ToArray(), timeOff.Where(t => t.StaffMemberId == person.Id).ToArray())
                 : 0;
             var lines = retail[person.Id]
                 .Select(s => (Amount: ProductSaleRules.LineTotal(Math.Max(0, s.Kept), s.UnitPrice), Rate: CommissionRules.RateFor(s.CommissionRatesKept, s.ProductCommissionPercent, person.ProductCommissionPercent)))
@@ -437,33 +437,9 @@ internal sealed class ReportService(
         };
     }
 
-    /// <summary>The rota applied to every day of the period, less the absences that touch it.</summary>
-    private static int WorkingMinutes(ReportPeriod period, WorkingHours[] hours, StaffTimeOff[] timeOff)
-    {
-        if (hours.Length == 0)
-        {
-            return 0;
-        }
-
-        var rota = hours.ToLookup(h => h.Day, h => h.Range);
-        var minutes = 0;
-        for (var day = period.From; day <= period.To; day = day.PlusDays(1))
-        {
-            var away = timeOff.Where(t => t.FromDate <= day && t.ToDate >= day).ToArray();
-            if (away.Any(t => t.IsWholeDay))
-            {
-                continue;
-            }
-
-            minutes += ReportRules.WorkingMinutes(rota[day.DayOfWeek], away.Where(t => t.Range is not null).Select(t => t.Range!.Value));
-        }
-
-        return minutes;
-    }
-
     /// <summary>
-    /// Completed visits nobody took payment for: no payment line and a price the deposit held does not cover. The first
-    /// <see cref="SalonReport.MaxUnpaidListed"/> are named; the count and the sum cover them all.
+    /// Completed visits nobody took payment for (<see cref="ReportSums.UnpaidAsync"/>, the rule today's glance shares,
+    /// ADR 0084). The first <see cref="SalonReport.MaxUnpaidListed"/> are named; the count and the sum cover them all.
     /// </summary>
     private async Task<(IReadOnlyList<UnpaidVisit> Listed, int Count, decimal Total)> UnpaidAsync(
         VisitRow[] completed,
@@ -478,34 +454,10 @@ internal sealed class ReportService(
             return ([], 0, 0m);
         }
 
-        var paid = await db.ClientAccountEntries.AsNoTracking()
-            .Where(e => e.AppointmentId != null
-                && (e.Kind == ClientAccountEntryKind.VisitPayment || e.Kind == ClientAccountEntryKind.DepositPaid || e.Kind == ClientAccountEntryKind.DepositReturned
-                    || e.Kind == ClientAccountEntryKind.VoucherRedeemed || e.Kind == ClientAccountEntryKind.PartPayment)
-                && db.Appointments.Any(a => a.Id == e.AppointmentId && a.Start >= start && a.Start < end && a.Status == AppointmentStatus.Completed))
-            .Select(e => new { AppointmentId = e.AppointmentId!.Value, e.Kind, e.Amount })
-            .ToListAsync(cancellationToken).ConfigureAwait(false);
-        var byVisit = paid.ToLookup(p => p.AppointmentId);
-
-        var open = new List<(VisitRow Visit, decimal Outstanding)>();
-        foreach (var visit in completed)
-        {
-            var own = byVisit[visit.Id].ToArray();
-            if (own.Any(m => m.Kind == ClientAccountEntryKind.VisitPayment))
-            {
-                continue;
-            }
-
-            // A deposit is returned in full (ADR 0023), so what is held is what came in less what went back. A gift
-            // voucher used toward the visit counts the same way (ADR 0057), and so does a part paid before the rest
-            // (ADR 0061): a completed visit with a part paid owes what is left, not its whole price.
-            var held = own.Sum(m => m.Kind == ClientAccountEntryKind.DepositReturned ? -m.Amount : m.Amount);
-            var outstanding = TillRules.Outstanding(visit.Price, held);
-            if (outstanding > 0m)
-            {
-                open.Add((visit, outstanding));
-            }
-        }
+        var visits = completed.ToDictionary(v => v.Id);
+        var open = (await ReportSums.UnpaidAsync(db, [.. completed.Select(v => (v.Id, v.Price))], start, end, cancellationToken).ConfigureAwait(false))
+            .Select(o => (Visit: visits[o.VisitId], o.Outstanding))
+            .ToArray();
 
         var listed = open.Take(SalonReport.MaxUnpaidListed).ToArray();
         var clientIds = listed.Select(o => o.Visit.ClientId).Distinct().ToArray();
@@ -524,7 +476,7 @@ internal sealed class ReportService(
                 clients.TryGetValue(o.Visit.ClientId, out var client) ? client : string.Empty,
                 services.TryGetValue(o.Visit.ServiceId, out var service) ? service : string.Empty,
                 money(o.Outstanding))).ToArray(),
-            open.Count,
+            open.Length,
             open.Sum(o => o.Outstanding));
     }
 

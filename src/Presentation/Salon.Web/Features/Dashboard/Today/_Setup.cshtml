@@ -1,0 +1,16 @@
+@using Salon.Web.Features.Dashboard.Today
+@model SetupNudge
+@* The owner's way to the getting started page while a step is left (ADR 0068); the address is that slice's. It leads
+   the page of a salon with no day to show yet and follows the day of one that is already working (ADR 0084). *@
+<section class="space-y-3 panel accent-4" data-testid="dashboard-setup" data-done="@Model.Done" data-required="@Model.Required">
+    <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <div class="min-w-0 space-y-0.5">
+            <h2 class="text-lg font-semibold">@T["Dashboard.Setup.Title"]</h2>
+            <p class="text-sm text-stone-600">@T.Format("Dashboard.Setup.Progress", Model.Done, Model.Required)</p>
+        </div>
+        <a href="@Model.Path" data-testid="dashboard-setup-link" class="@Model.ButtonClass">@T["Dashboard.Setup.Link"]</a>
+    </div>
+    <div class="h-2 overflow-hidden rounded-full bg-brand-soft" role="progressbar" aria-label="@T["Dashboard.Setup.Label"]" aria-valuemin="0" aria-valuemax="@Model.Required" aria-valuenow="@Model.Done">
+        <div class="h-full rounded-full bg-brand-bright" style="width: @(Model.BarWidth)%"></div>
+    </div>
+</section>

@@ -77,6 +77,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICounterSaleService, CounterSaleService>();
         services.AddScoped<IGiftVoucherService, GiftVoucherService>();
         services.AddScoped<IReportService, ReportService>();
+        services.AddScoped<ITodayService, TodayService>();
         services.AddScoped<ILocationService, LocationService>();
         services.AddScoped<Privacy.IPrivacyNoticeService, Privacy.PrivacyNoticeService>();
         services.AddScoped<IStockService, StockService>();

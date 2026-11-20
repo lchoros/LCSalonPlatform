@@ -74,6 +74,21 @@ public partial class LoginTests(SalonWebApplicationFactory factory) : IAsyncLife
     }
 
     [Fact]
+    public async Task A_sign_in_without_a_return_url_lands_on_the_dashboard()
+    {
+        using var client = factory.ClientFor(Host);
+
+        var response = await IdentityTestClient.LoginAsync(client, Email, IdentityTestClient.Password);
+
+        // Staff start their day on today at a glance (ADR 0084), not on the price list a client reads.
+        response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        response.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe("/admin");
+        var landing = await client.GetAsync(new Uri("/admin", UriKind.Relative));
+        landing.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await landing.Content.ReadAsStringAsync()).ShouldContain("data-testid=\"dashboard\"");
+    }
+
+    [Fact]
     public async Task Email_is_matched_case_insensitively_and_last_login_is_recorded()
     {
         using var client = factory.ClientFor(Host);
@@ -95,7 +110,7 @@ public partial class LoginTests(SalonWebApplicationFactory factory) : IAsyncLife
         var response = await IdentityTestClient.LoginAsync(client, Email, IdentityTestClient.Password, returnUrl);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-        response.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe("/services");
+        response.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe("/admin");
     }
 
     [Fact]
@@ -200,7 +215,7 @@ public partial class LoginTests(SalonWebApplicationFactory factory) : IAsyncLife
         var response = await client.GetAsync(new Uri("/account/login", UriKind.Relative));
 
         response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-        response.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe("/services");
+        response.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe("/admin");
     }
 
     [Fact]
