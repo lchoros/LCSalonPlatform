@@ -56,7 +56,7 @@ public class ReportsE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppFi
         await page.ReachAsync("**/admin/appointments?date=*");
 
         // 2. Reports from the menu open on this month.
-        await page.GetByTestId("nav-reports").ClickAsync();
+        await page.OpenNavAsync("nav-reports");
         await page.ReachAsync("**/admin/reports");
         (await page.GetByTestId("preset-ThisMonth").GetAttributeAsync("aria-current")).ShouldBe("page");
 

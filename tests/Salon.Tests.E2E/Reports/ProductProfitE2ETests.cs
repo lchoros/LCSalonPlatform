@@ -59,7 +59,7 @@ public class ProductProfitE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await Assertions.Expect(page.GetByTestId("flash")).ToHaveTextAsync("The payment has been recorded.");
 
         // 2. The reports say what the salon kept: on this product, twice £6.50.
-        await page.GetByTestId("nav-reports").ClickAsync();
+        await page.OpenNavAsync("nav-reports");
         await page.ReachAsync("**/admin/reports");
         var line = page.GetByTestId("top-product").Filter(new LocatorFilterOptions { HasText = productName });
         (await line.GetByTestId("top-product-profit").TextContentAsync()).ShouldBe("Profit: £13.00");

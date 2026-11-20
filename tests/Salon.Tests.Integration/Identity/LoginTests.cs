@@ -64,11 +64,13 @@ public partial class LoginTests(SalonWebApplicationFactory factory) : IAsyncLife
         cookie.ShouldContain("samesite=lax", Case.Insensitive);
         cookie.ShouldNotContain("domain=", Case.Insensitive);
 
-        var home = await client.GetAsync(new Uri("/", UriKind.Relative));
-        var html = await home.Content.ReadAsStringAsync();
+        // The shell (and with it the signed-in chrome) lives on /admin only (ADR 0080); a public page shows a way back.
+        var desk = await client.GetAsync(new Uri("/admin/appointments", UriKind.Relative));
+        var html = await desk.Content.ReadAsStringAsync();
         html.ShouldContain("data-testid=\"user-name\"");
         html.ShouldContain("Olivia Owner");
         html.ShouldContain("data-testid=\"sign-out\"");
+        (await (await client.GetAsync(new Uri("/", UriKind.Relative))).Content.ReadAsStringAsync()).ShouldContain("data-testid=\"back-to-admin\"");
     }
 
     [Fact]
@@ -176,7 +178,8 @@ public partial class LoginTests(SalonWebApplicationFactory factory) : IAsyncLife
     {
         using var client = factory.ClientFor(Host);
         (await IdentityTestClient.LoginAsync(client, Email, IdentityTestClient.Password)).StatusCode.ShouldBe(HttpStatusCode.Redirect);
-        var home = await (await client.GetAsync(new Uri("/", UriKind.Relative))).Content.ReadAsStringAsync();
+        // The sign-out form lives in the admin shell (ADR 0080), so the token comes from an admin page.
+        var home = await (await client.GetAsync(new Uri("/admin/appointments", UriKind.Relative))).Content.ReadAsStringAsync();
 
         var response = await client.PostAsync(
             new Uri("/account/logout", UriKind.Relative),
@@ -185,7 +188,7 @@ public partial class LoginTests(SalonWebApplicationFactory factory) : IAsyncLife
         response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
         response.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe("/");
         response.Headers.GetValues("Set-Cookie").ShouldContain(v => v.StartsWith("salon.auth=;", StringComparison.Ordinal) || v.Contains("salon.auth=; expires", StringComparison.OrdinalIgnoreCase));
-        (await (await client.GetAsync(new Uri("/", UriKind.Relative))).Content.ReadAsStringAsync()).ShouldNotContain("data-testid=\"user-name\"");
+        (await (await client.GetAsync(new Uri("/", UriKind.Relative))).Content.ReadAsStringAsync()).ShouldNotContain("data-testid=\"back-to-admin\"");
     }
 
     [Fact]

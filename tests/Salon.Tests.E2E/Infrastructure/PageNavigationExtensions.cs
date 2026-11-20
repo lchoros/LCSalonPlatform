@@ -71,4 +71,19 @@ public static class PageNavigationExtensions
         // Evaluated inside the page, and re-evaluated by Playwright if a navigation replaces the document meanwhile.
         await page.WaitForFunctionAsync("() => document.readyState === 'complete'");
     }
+
+    /// <summary>
+    /// Opens an admin menu destination the way a person does (ADR 0080): on a phone the menu lives in the drawer
+    /// behind the hamburger, on a desk the sidebar is simply there.
+    /// </summary>
+    public static async Task OpenNavAsync(this IPage page, string navTestId)
+    {
+        var hamburger = page.GetByTestId("open-menu");
+        if (await hamburger.IsVisibleAsync())
+        {
+            await hamburger.ClickAsync();
+        }
+
+        await page.GetByTestId(navTestId).ClickAsync();
+    }
 }

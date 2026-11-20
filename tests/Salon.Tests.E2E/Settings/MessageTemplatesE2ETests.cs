@@ -39,7 +39,7 @@ public class MessageTemplatesE2ETests(KestrelAppFixture app) : IClassFixture<Kes
         await page.ReachAsync("**/admin/appointments");
 
         // 1. Settings, the Messages tab, the confirmation text.
-        await page.GetByTestId("nav-settings").ClickAsync();
+        await page.OpenNavAsync("nav-settings");
         await page.ReachAsync("**/admin/settings/notifications");
         await page.GetByTestId("settings-nav-messages").ClickAsync();
         await page.ReachAsync("**/admin/settings/messages");

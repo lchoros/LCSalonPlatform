@@ -44,7 +44,7 @@ public class VisitFeeE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppF
             await page.ReachAsync("**/admin/appointments");
 
             // 1. The policy: free until a day before, half the price for a late cancellation, all of it for a no-show.
-            await page.GetByTestId("nav-settings").ClickAsync();
+            await page.OpenNavAsync("nav-settings");
             await page.ReachAsync("**/admin/settings/notifications");
             await page.GetByTestId("settings-nav-cancellation-policy").ClickAsync();
             await page.ReachAsync("**/admin/settings/cancellation-policy");

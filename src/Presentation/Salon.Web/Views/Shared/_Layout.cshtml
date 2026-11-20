@@ -9,6 +9,9 @@
     var uiCulture = System.Globalization.CultureInfo.CurrentUICulture.Name;
     var lang = string.IsNullOrEmpty(uiCulture) ? SupportedCultures.Default : uiCulture;
     var signedIn = User.Identity?.IsAuthenticated == true;
+    // The dashboard shell belongs to the salon's back office only (the owner, 2026-11-20): a signed-in person on the
+    // public pages sees them exactly as a client does, plus one quiet way back into the admin.
+    var adminShell = signedIn && Context.Request.Path.StartsWithSegments("/admin");
     // A client on a salon's host sees the salon's name where staff see the platform brand (ADR 0014: trust first).
     // The lookup is cached per tenant, so this costs nothing on a hot path.
     var salonName = !signedIn && TenantContext.TenantId is { } tenantId
@@ -27,7 +30,7 @@
     <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
 </head>
 <body class="min-h-full text-stone-900 antialiased">
-    @if (signedIn)
+    @if (adminShell)
     {
         @* The dashboard shell (ADR 0080): one menu that is the fixed sidebar on a desktop and, on a phone, a
            drawer driven by this checkbox (no script, CSP untouched) beside a slim bottom bar of everyday places. *@
@@ -84,7 +87,7 @@
             <div class="flex min-h-screen w-full min-w-0 flex-1 flex-col">
                 <header role="banner" class="brand-line flex min-h-14 items-center gap-3 border-b border-stone-200 bg-white px-4 screen-only lg:hidden">
                     <label for="nav-drawer" data-testid="open-menu" class="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-lg text-stone-700 hover:bg-stone-100">
-                        <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+                        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
                         <span class="sr-only">@T["Layout.Nav.Menu"]</span>
                     </label>
                     <span class="truncate text-lg font-semibold tracking-tight">@T["Layout.Brand"]</span>
@@ -125,6 +128,11 @@
                     else
                     {
                         <a class="inline-flex min-h-11 items-center text-lg font-semibold tracking-tight" asp-area="" asp-controller="Home" asp-action="Index">@T["Layout.Brand"]</a>
+                    }
+                    @if (signedIn)
+                    {
+                        @* Staff looking at the client's pages: one quiet way back to the desk. *@
+                        <a href="/admin/appointments" data-testid="back-to-admin" class="btn btn-compact btn-secondary px-3 text-sm">@T["Layout.Nav.Admin"]</a>
                     }
                 </div>
             </header>

@@ -96,7 +96,7 @@ public class ServiceCatalogueListTests(SalonWebApplicationFactory factory) : IAs
         page.ShouldContain("data-testid=\"search-input\"");
         Count(page, "data-testid=\"filter-tile\"").ShouldBe(3, "All, Hair and Brows");
         page.ShouldContain("aria-current=\"true\" data-testid=\"filter-tile\" data-key=\"all\">All<");
-        page.ShouldContain($"href=\"/book?category={_hairId}\" class=\"filter-tile accent-1 \" data-testid=\"filter-tile\" data-key=\"{_hairId}\">Hair<");
+        page.ShouldContain($"href=\"/book?category={_hairId}\" class=\"filter-tile accent-0 \" data-testid=\"filter-tile\" data-key=\"{_hairId}\">Hair<");
         Count(page, "data-testid=\"book-service\"").ShouldBe(11, "nine hair services and two of the three brow services");
         Count(page, "data-testid=\"variant-group\"").ShouldBe(1);
         page.ShouldContain(">Hair 01<");
@@ -169,7 +169,7 @@ public class ServiceCatalogueListTests(SalonWebApplicationFactory factory) : IAs
 
         var page = await GetAsync(client, $"/book?category={_hairId}");
 
-        page.ShouldContain("class=\"variant-card accent-1\" data-testid=\"variant-group\">", Case.Sensitive, "closed until tapped");
+        page.ShouldContain("class=\"variant-card accent-0\" data-testid=\"variant-group\">", Case.Sensitive, "closed until tapped");
         page.ShouldContain("data-testid=\"variant-title\">Keratin<");
         page.ShouldContain("data-testid=\"variant-prices\">£70.00 – £85.00<");
         page.ShouldContain("Options: 3");

@@ -45,6 +45,9 @@ public sealed record ChooseSlotResult(
     /// <summary>The tapped time, when it is one of <see cref="Slots"/>; the Continue button appears with it.</summary>
     public SlotOption? Chosen { get; init; }
 
+    /// <summary>Which of <see cref="Groups"/> holds the chosen time (0 when none): the part-of-day tab a phone opens on.</summary>
+    public int ChosenGroup { get; init; }
+
     /// <summary>Where that form is, with the chosen person carried along; the JoinWaitlist slice owns the route.</summary>
     public string WaitlistPath => SelectedStaffId is { } staff ? $"/book/{ServiceId}/waitlist?staff={staff}" : $"/book/{ServiceId}/waitlist";
 }

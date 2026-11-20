@@ -43,7 +43,7 @@ public class YourDataE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppF
         await page.ReachAsync("**/admin/appointments");
 
         // 1. Settings, then "Your data": what there is, and a file for each part of it.
-        await page.GetByTestId("nav-settings").ClickAsync();
+        await page.OpenNavAsync("nav-settings");
         await page.ReachAsync("**/admin/settings/notifications");
         await page.GetByTestId("settings-nav-your-data").ClickAsync();
         await page.ReachAsync("**/admin/settings/your-data");

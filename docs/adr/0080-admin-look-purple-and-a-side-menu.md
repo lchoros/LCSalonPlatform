@@ -46,6 +46,21 @@ recorded direction instead of each PR guessing.
   salons, and later the place where a salon buys its subscription (the SaaS billing of the M3 plan). First, in the
   owner's words, "get admin and staffing calendars tip top".
 
+### Day-3 refinements (the owner on the live phone, 2026-11-20 evening)
+
+- **Availability speaks in shades of the brand purple**, the Cinolla way: free days and times wear the light edge
+  (brand-mist / brand-edge), the chosen one fills solid. The emerald of ADR 0079 is retired — one colour family.
+  No "fancy Bulma buttons": flat chips, no lifts or pill shapes on the slot grid. A day with nothing free wears a
+  red dashed border with the date struck through in red.
+- **The shell belongs to `/admin` only.** Signed-in staff on the public pages see them exactly as a client does,
+  plus one "Salon admin" button back to the desk — the drawer, bottom bar and sidebar never wrap the booking flow.
+- **Mobile time picker**: parts of the day are tabs (radio-driven, no script) so times fit a phone without a long
+  scroll; day tiles are narrower on a phone so more days show; the strip paddles align with the tiles.
+- **Improvements queue, recorded not built**: a purple icon set for the sidebar, drawer and bottom bar; friendly,
+  human error messages everywhere; the admin calendar's staff filter as a dropdown once the first page script
+  exists (CSP allows module files, not inline); loading indicators only where something is genuinely slow —
+  prefer making it fast; staff profile photos (above); Google sign-in (above).
+
 ## Consequences
 
 - This is Tier 1 work when it starts, screen by screen: first a shared layout shell (sidebar + drawer), then the

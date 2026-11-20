@@ -48,13 +48,16 @@ public partial class AdminMenuTests(SalonWebApplicationFactory factory) : IAsync
     }
 
     [Fact]
-    public async Task A_page_outside_every_area_marks_no_link()
+    public async Task A_public_page_shows_no_shell_to_signed_in_staff_only_a_way_back_to_the_desk()
     {
         using var client = await factory.SignedInClientAsync("studio-20.localhost", _studio.Id, Role.Owner);
 
         var html = await GetAsync(client, "/");
 
-        html.ShouldContain("data-testid=\"admin-nav\"");
+        // The dashboard shell belongs to /admin only (ADR 0080): staff see the client's page as the client does.
+        html.ShouldNotContain("data-testid=\"admin-nav\"");
+        html.ShouldNotContain("data-testid=\"bottom-bar\"");
+        html.ShouldContain("data-testid=\"back-to-admin\"");
         CurrentLinks(html).ShouldBeEmpty();
     }
 
