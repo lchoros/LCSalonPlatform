@@ -9,6 +9,7 @@
     const string linkClass = "btn btn-compact btn-secondary";
 }
 <section class="space-y-6">
+    <partial name="_SectionTabs" model="@AdminSections.Staff("list")" />
     @if (Model.Flash is { } flash)
     {
         <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>

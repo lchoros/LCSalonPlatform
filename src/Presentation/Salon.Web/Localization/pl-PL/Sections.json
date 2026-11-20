@@ -1,0 +1,15 @@
+{
+  "Sections.Import": "Import",
+  "Sections.Appointments.Day": "Lista dnia",
+  "Sections.Appointments.Calendar": "Kalendarz",
+  "Sections.Appointments.Waitlist": "Lista oczekujących",
+  "Sections.Clients.List": "Wszyscy klienci",
+  "Sections.Till.CashUp": "Rozliczenie kasy",
+  "Sections.Till.Sale": "Sprzedaż przy ladzie",
+  "Sections.Till.Vouchers": "Bony",
+  "Sections.Services.List": "Cennik",
+  "Sections.Services.Categories": "Kategorie",
+  "Sections.Products.List": "Wszystkie produkty",
+  "Sections.Staff.List": "Zespół",
+  "Sections.Staff.Commission": "Prowizje"
+}

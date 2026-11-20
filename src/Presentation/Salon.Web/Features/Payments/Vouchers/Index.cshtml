@@ -7,6 +7,7 @@
     var list = Model.List;
 }
 <section class="space-y-6">
+    <partial name="_SectionTabs" model="@AdminSections.Till("vouchers")" />
     @if (Model.Flash is { } flash)
     {
         <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>

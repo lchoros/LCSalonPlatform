@@ -19,6 +19,7 @@
     var rowsStyle = $"grid-template-rows: repeat({grid.RowCount}, 1rem)";
 }
 <section class="space-y-4">
+    <partial name="_SectionTabs" model="@AdminSections.Appointments("calendar")" />
     @if (Model.Flash is { } flash)
     {
         <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>

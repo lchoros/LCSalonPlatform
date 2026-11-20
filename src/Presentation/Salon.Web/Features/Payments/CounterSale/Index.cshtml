@@ -11,6 +11,7 @@
     const string secondaryClass = "btn btn-compact btn-secondary w-full sm:w-auto";
 }
 <section class="mx-auto max-w-xl space-y-6">
+    <partial name="_SectionTabs" model="@AdminSections.Till("sale")" />
     <header class="space-y-2">
         <h1 class="page-title">@T["Payments.CounterSale.Title"]</h1>
         <p class="text-stone-600">@T["Payments.CounterSale.Lead"]</p>
