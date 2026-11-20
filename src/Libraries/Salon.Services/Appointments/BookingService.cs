@@ -201,6 +201,7 @@ internal sealed class BookingService(
 
         var now = clock.GetCurrentInstant();
         var oldStart = appointment.Start;
+        var oldStaffMemberId = appointment.StaffMemberId;
         appointment.Start = newStart;
         appointment.End = newStart.Plus(Duration.FromMinutes(appointment.DurationMinutes));
         appointment.StaffMemberId = staffMemberId;
@@ -213,6 +214,10 @@ internal sealed class BookingService(
             At = now,
             ByUserId = byUserId,
             Reason = IBookingService.MoveReason,
+            MovedFromStart = oldStart,
+            MovedToStart = newStart,
+            MovedFromStaffMemberId = oldStaffMemberId,
+            MovedToStaffMemberId = staffMemberId,
         });
         try
         {

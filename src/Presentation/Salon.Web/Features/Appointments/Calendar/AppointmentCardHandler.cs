@@ -103,6 +103,56 @@ public sealed class AppointmentCardHandler(
         {
             Today = clock.GetCurrentInstant().InZone(zone).Date,
             Chosen = request.MoveStart is { } tapped ? slots.FirstOrDefault(s => s.Start == tapped) : null,
+            History = await HistoryAsync(appointment, staff, zone, cancellationToken),
         };
+    }
+
+    /// <summary>
+    /// The rows the diary keeps for every booking, move and change of status (ADR 0012), oldest first, read as lines a
+    /// person can follow (ADR 0091): what happened, when in the salon's time, and which login did it — nobody named when
+    /// the client did it online or a job did.
+    /// </summary>
+    private async Task<IReadOnlyList<VisitHistoryLine>> HistoryAsync(Appointment appointment, List<CalendarStaff> staff, DateTimeZone zone, CancellationToken cancellationToken)
+    {
+        var changes = await db.AppointmentStatusChanges.AsNoTracking()
+            .Where(c => c.AppointmentId == appointment.Id)
+            .OrderBy(c => c.At).ThenBy(c => c.Id)
+            .ToListAsync(cancellationToken);
+
+        var userIds = changes.Where(c => c.ByUserId != null).Select(c => c.ByUserId!.Value).Distinct().ToList();
+        var users = userIds.Count == 0
+            ? []
+            : await db.Users.AsNoTracking().Where(u => userIds.Contains(u.Id)).ToDictionaryAsync(u => u.Id, u => u.DisplayName, cancellationToken);
+
+        // A person a visit was moved from may no longer be bookable, so the list of the move form does not always hold them.
+        var names = staff.ToDictionary(s => s.Id, s => s.DisplayName);
+        var missing = changes
+            .SelectMany(c => new[] { c.MovedFromStaffMemberId, c.MovedToStaffMemberId })
+            .Where(id => id != null && !names.ContainsKey(id.Value))
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
+        if (missing.Count > 0)
+        {
+            foreach (var person in await db.StaffMembers.AsNoTracking().Where(s => missing.Contains(s.Id)).Select(s => new { s.Id, s.DisplayName }).ToListAsync(cancellationToken))
+            {
+                names[person.Id] = person.DisplayName;
+            }
+        }
+
+        return [.. changes.Select(change =>
+        {
+            var kind = VisitHistoryRules.KindOf(change.From, change.To, appointment.Source);
+            return new VisitHistoryLine(
+                change.At.InZone(zone).LocalDateTime,
+                kind,
+                change.ByUserId is { } by ? users.GetValueOrDefault(by) : null,
+                VisitHistoryRules.ShowsReason(kind) ? change.Reason : null,
+                Place(change.MovedFromStart, change.MovedFromStaffMemberId),
+                Place(change.MovedToStart, change.MovedToStaffMemberId));
+        })];
+
+        VisitPlace? Place(Instant? start, Guid? staffMemberId)
+            => start is { } at ? new VisitPlace(at.InZone(zone).LocalDateTime, staffMemberId is { } id ? names.GetValueOrDefault(id) : null) : null;
     }
 }
