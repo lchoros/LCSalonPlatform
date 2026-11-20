@@ -396,6 +396,53 @@
     @apply border-red-200 bg-red-50 text-red-700;
   }
 
+  /* Answers that float (ADR 0091): above the phone's bottom bar, bottom centre of the page on a desk — over the page,
+     never in its flow, so nothing moves under the pointer and no control at the top is covered. Without script the
+     stack falls back into the flow, where a message that nothing takes away does no harm. */
+  .toast-stack {
+    @apply pointer-events-none fixed inset-x-0 bottom-20 z-40 flex flex-col items-center gap-2 px-4 lg:bottom-6 lg:left-64;
+  }
+
+  /* A visit's history on its card (ADR 0091): a quiet timeline, newest at the bottom like a diary page. */
+  .history {
+    @apply space-y-3 border-l-2 border-brand-soft pl-4;
+  }
+
+  .history-line {
+    @apply relative text-sm;
+  }
+
+  .history-line::before {
+    content: "";
+    @apply absolute top-1.5 -left-[1.3125rem] size-2 rounded-full bg-brand;
+  }
+
+  .history-what {
+    @apply font-medium text-stone-900;
+  }
+
+  .history-when,
+  .history-detail {
+    @apply text-stone-600;
+  }
+
+  .toast {
+    @apply pointer-events-auto max-w-md cursor-pointer shadow-lg;
+    animation: toast-in 200ms ease-out;
+  }
+
+  @media (scripting: none) {
+    .toast-stack {
+      @apply static px-0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toast {
+      animation: none;
+    }
+  }
+
   /* Label/value rows of a booking (details, confirmation, cancel). */
   .facts {
     @apply grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-xl border border-stone-200 bg-white p-4 shadow-sm;
@@ -593,5 +640,18 @@
     .screen-only {
       display: none;
     }
+  }
+}
+
+/* A floating answer rises into place (ADR 0091). */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
   }
 }

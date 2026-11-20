@@ -147,6 +147,29 @@
             }
         </section>
     }
+    @if (card.History.Count > 0)
+    {
+        <section class="@cardClass" data-testid="card-history" aria-labelledby="history-title">
+            <h2 id="history-title" class="text-base font-semibold">@T["Appointments.Calendar.History.Title"]</h2>
+            <ol class="history">
+                @foreach (var line in card.History)
+                {
+                    <li class="history-line" data-testid="history-line" data-kind="@line.Kind">
+                        <p class="history-what">@VisitHistoryText.What(T, line)</p>
+                        <p class="history-when tabular-nums">@VisitHistoryText.When(line.At, culture)</p>
+                        @if (VisitHistoryText.Move(T, line, culture) is { } move)
+                        {
+                            <p class="history-detail" data-testid="history-move">@move</p>
+                        }
+                        @if (line.Reason is { Length: > 0 } reason)
+                        {
+                            <p class="history-detail" data-testid="history-reason">@T.Format("Appointments.Calendar.History.Reason", reason)</p>
+                        }
+                    </li>
+                }
+            </ol>
+        </section>
+    }
 </section>
 @section Scripts {
     <script type="module" src="~/js/auto-submit.js" asp-append-version="true"></script>

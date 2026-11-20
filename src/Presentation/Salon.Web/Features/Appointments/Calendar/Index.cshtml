@@ -20,10 +20,14 @@
 }
 <section class="space-y-4">
     <partial name="_SectionTabs" model="@AdminSections.Appointments("calendar")" />
-    @if (Model.Flash is { } flash)
-    {
-        <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
-    }
+    @* The diary's answers float above the page (ADR 0091): a message in the flow would push the grid down under the
+       pointer. The drag script puts its refusals here too and clears the answer before it. *@
+    <div class="toast-stack" data-testid="toasts" data-dismiss-label="@T["Appointments.Calendar.Drag.Dismiss"]">
+        @if (Model.Flash is { } flash)
+        {
+            <p role="status" data-testid="flash" class="notice notice-ok toast">@flash</p>
+        }
+    </div>
     @await Component.InvokeAsync("VisitsWithoutOutcome")
     @await Component.InvokeAsync("SetupNote")
     <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">

@@ -50,7 +50,20 @@ public sealed record AppointmentCard(
 
     /// <summary>The free time the desk tapped, when it is one of <see cref="Slots"/>: the move happens only on the confirm button (ADR 0086).</summary>
     public MoveSlot? Chosen { get; init; }
+
+    /// <summary>Everything that happened to the visit, oldest first (ADR 0091).</summary>
+    public IReadOnlyList<VisitHistoryLine> History { get; init; } = [];
 }
+
+/// <summary>One line of a visit's history, in the salon's time.</summary>
+/// <param name="By">The login that did it; null when the client did it online or a job did.</param>
+/// <param name="Reason">The words given with a cancellation; null otherwise.</param>
+/// <param name="From">For a move recorded since ADR 0091: where the visit was.</param>
+/// <param name="To">For a move recorded since ADR 0091: where it went.</param>
+public sealed record VisitHistoryLine(LocalDateTime At, VisitHistoryKind Kind, string? By, string? Reason, VisitPlace? From, VisitPlace? To);
+
+/// <summary>A time and the person it was with; the name is null when that person is no longer on record.</summary>
+public sealed record VisitPlace(LocalDateTime At, string? StaffName);
 
 /// <summary>A status button: the URL segment of the day list's <c>POST admin/appointments/{id}/{segment}</c> route and the label key.</summary>
 public sealed record CardAction(string Segment, AppointmentStatus Target, string LabelKey);

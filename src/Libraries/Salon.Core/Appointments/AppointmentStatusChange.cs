@@ -27,4 +27,16 @@ public class AppointmentStatusChange : BaseEntity, ITenantEntity
     public Guid? ByUserId { get; set; }
 
     public string? Reason { get; set; }
+
+    /// <summary>
+    /// For a move (ADR 0091): where the visit was and where it went, so the card's history can say so. Null on every
+    /// other row, and on moves recorded before these columns existed.
+    /// </summary>
+    public Instant? MovedFromStart { get; set; }
+
+    public Instant? MovedToStart { get; set; }
+
+    public Guid? MovedFromStaffMemberId { get; set; }
+
+    public Guid? MovedToStaffMemberId { get; set; }
 }

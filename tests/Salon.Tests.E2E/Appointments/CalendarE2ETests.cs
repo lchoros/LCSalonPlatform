@@ -118,6 +118,10 @@ public partial class CalendarE2ETests(KestrelAppFixture app) : IClassFixture<Kes
                 (await slots.First.BoundingBoxAsync()).ShouldNotBeNull().Height.ShouldBeGreaterThanOrEqualTo(44);
             }
 
+            // The card tells the story of the visit so far (ADR 0091): at least the booking.
+            (await page.GetByTestId("card-history").GetByTestId("history-line").CountAsync()).ShouldBeGreaterThanOrEqualTo(1);
+            await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(KestrelAppFixture.ScreenshotDirectory, $"calendar-card-history-{label}-{width}.png"), FullPage = true });
+
             await AssertNoInlineScriptAsync(page);
             var cardAxe = await page.RunAxe();
             cardAxe.Violations.ShouldBeEmpty(string.Join("; ", cardAxe.Violations.Select(v => $"{v.Id}: {v.Help}")));
@@ -130,6 +134,15 @@ public partial class CalendarE2ETests(KestrelAppFixture app) : IClassFixture<Kes
             await page.ReachAsync("**/admin/appointments/calendar?view=day&date=*");
 
             (await page.GetByTestId("flash").TextContentAsync()).ShouldNotBeNull().ShouldContain(chosenTime[..5]);
+
+            // The answer floats above the page instead of pushing the grid down under the pointer (ADR 0091).
+            (await page.GetByTestId("toasts").GetByTestId("flash").CountAsync()).ShouldBe(1);
+            await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(KestrelAppFixture.ScreenshotDirectory, $"calendar-moved-toast-{label}-{width}.png") });
+            if (styled)
+            {
+                (await page.GetByTestId("toasts").EvaluateAsync<string>("e => getComputedStyle(e).position")).ShouldBe("fixed");
+            }
+
             var moved = page.Locator($"[data-testid='calendar-block'][data-appointment-id='{appointmentId}']").First;
             (await moved.CountAsync()).ShouldBe(1);
             (await moved.TextContentAsync()).ShouldNotBeNull().ShouldContain(chosenTime[..5]);
@@ -156,6 +169,8 @@ public partial class CalendarE2ETests(KestrelAppFixture app) : IClassFixture<Kes
                 var outcome = page.Locator("[data-testid='flash'], [data-testid='drag-message']").First;
                 await Assertions.Expect(outcome).ToBeVisibleAsync();
                 (await outcome.TextContentAsync()).ShouldNotBeNullOrWhiteSpace();
+                (await page.GetByTestId("toasts").Locator("[data-testid='flash'], [data-testid='drag-message']").CountAsync())
+                    .ShouldBe(1, "one answer at a time, in the floating stack: never \"moved\" and \"not free\" together");
                 (await page.Locator($"[data-testid='calendar-block'][data-appointment-id='{appointmentId}']").CountAsync()).ShouldBe(1);
             }
         }

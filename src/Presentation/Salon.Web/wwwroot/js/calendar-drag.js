@@ -130,6 +130,7 @@ function start(grid) {
 
         drag.active = true;
         drag.block.classList.add('is-dragging');
+        clearToasts(); // the answer to the last move has been read once a new one begins
         try {
             drag.block.setPointerCapture(drag.pointerId);
         } catch {
@@ -231,14 +232,40 @@ function start(grid) {
         drag = null;
     }
 
+    // Answers float in the toast stack (ADR 0091): one at a time, never in the flow of the page, where they would
+    // push the grid down under the pointer. A new answer replaces the one before it, so "moved" and "not free" are
+    // never both on the screen.
+    const toasts = document.querySelector('[data-testid="toasts"]');
+    const TOAST_LIFE = 7000;
+    for (const toast of toasts ? toasts.querySelectorAll('.toast') : []) {
+        dismissable(toast);
+    }
+
+    function clearToasts() {
+        for (const toast of toasts ? toasts.querySelectorAll('.toast') : []) {
+            toast.remove();
+        }
+    }
+
+    function dismissable(toast) {
+        toast.title = toasts.dataset.dismissLabel || '';
+        toast.addEventListener('click', () => toast.remove());
+        setTimeout(() => toast.remove(), TOAST_LIFE);
+    }
+
     function say(message) {
-        document.querySelector('[data-testid="drag-message"]')?.remove();
+        clearToasts();
         const note = document.createElement('p');
-        note.className = 'notice notice-error';
+        note.className = 'notice notice-error toast';
         note.setAttribute('role', 'alert');
         note.dataset.testid = 'drag-message';
         note.textContent = message;
-        grid.before(note);
-        setTimeout(() => note.remove(), 8000);
+        if (toasts) {
+            toasts.append(note);
+            dismissable(note);
+        } else {
+            grid.before(note);
+            setTimeout(() => note.remove(), TOAST_LIFE);
+        }
     }
 }

@@ -187,6 +187,22 @@ namespace Salon.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("from");
 
+                    b.Property<Guid?>("MovedFromStaffMemberId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("moved_from_staff_member_id");
+
+                    b.Property<Instant?>("MovedFromStart")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("moved_from_start");
+
+                    b.Property<Guid?>("MovedToStaffMemberId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("moved_to_staff_member_id");
+
+                    b.Property<Instant?>("MovedToStart")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("moved_to_start");
+
                     b.Property<string>("Reason")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
