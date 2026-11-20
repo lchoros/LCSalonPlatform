@@ -2,7 +2,7 @@ using Salon.Web.Framework.Infrastructure;
 
 namespace Salon.Tests.Unit.Tenancy;
 
-/// <summary>ADR 0002: app.tenant_id is a session setting, so the Npgsql pool reset must stay on.</summary>
+/// <summary>ADR 0002: the Npgsql pool reset must stay on. Since ADR 0090 the tenant setting is no session state, so this is a second guard.</summary>
 public class ConnectionStringGuardTests
 {
     private const string Base = "Host=localhost;Database=salon_test;Username=postgres;Password=postgres";

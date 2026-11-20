@@ -21,14 +21,27 @@ namespace Salon.Data;
 /// <summary>
 /// Single DbContext for the platform. Every <see cref="ITenantEntity"/> gets the named query filter
 /// <see cref="TenantFilterName"/> on TenantId, and SaveChanges refuses writes outside the current tenant.
-/// Postgres row-level security backs both (see Tenancy/TenantConnectionInterceptor and Migrations/RowLevelSecurity).
+/// Postgres row-level security backs both (see Tenancy/TenantCommandInterceptor and Migrations/RowLevelSecurity).
 /// </summary>
-public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantContext tenantContext) : DbContext(options)
+public class SalonDbContext : DbContext
 {
     public const string TenantFilterName = "Tenant";
 
     private static readonly MethodInfo BuildTenantFilterMethod =
         typeof(SalonDbContext).GetMethod(nameof(BuildTenantFilter), BindingFlags.Instance | BindingFlags.NonPublic)!;
+
+    private readonly ITenantContext _tenantContext;
+
+    public SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantContext tenantContext)
+        : base(options)
+    {
+        ArgumentNullException.ThrowIfNull(tenantContext);
+        _tenantContext = tenantContext;
+
+        // Every save gets a transaction, a single row too: the tenant setting that row-level security reads lives only
+        // inside one (ADR 0090), and TenantCommandInterceptor refuses a save that arrives without.
+        Database.AutoTransactionBehavior = AutoTransactionBehavior.Always;
+    }
 
     public DbSet<Tenant> Tenants => Set<Tenant>();
 
@@ -113,7 +126,7 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     /// <summary>Read inside the query filter; EF turns it into a query parameter evaluated per execution.</summary>
-    private Guid? CurrentTenantId => tenantContext.TenantId;
+    private Guid? CurrentTenantId => _tenantContext.TenantId;
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
@@ -152,7 +165,7 @@ public class SalonDbContext(DbContextOptions<SalonDbContext> options, ITenantCon
 
     private void EnforceTenantOwnership()
     {
-        var current = tenantContext.TenantId;
+        var current = _tenantContext.TenantId;
 
         foreach (var entry in ChangeTracker.Entries<ITenantEntity>())
         {

@@ -254,7 +254,7 @@ public class TenantSettingBehindPoolerTests(SalonWebApplicationFactory factory) 
         => new DbContextOptionsBuilder<SalonDbContext>()
             .UseNpgsql(AppRole.ConnectionString, npgsql => npgsql.UseNodaTime())
             .UseSnakeCaseNamingConvention()
-            .AddInterceptors(new TenantConnectionInterceptor(tenantContext))
+            .AddInterceptors(new TenantCommandInterceptor(tenantContext))
             .AddInterceptors(pooler?.Interceptors ?? [])
             .Options;
 

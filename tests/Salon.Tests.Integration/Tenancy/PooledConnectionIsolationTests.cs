@@ -10,8 +10,8 @@ using Salon.Tests.Integration.Infrastructure;
 namespace Salon.Tests.Integration.Tenancy;
 
 /// <summary>
-/// The EF path end to end as the app role: interceptor sets app.tenant_id on a pooled connection, the connection returns
-/// to the pool, the next scope reuses it for another tenant. Proves the pool reset ADR 0002 relies on, with the EF filter
+/// The EF path end to end as the app role: the interceptor sends app.tenant_id with each statement, the connection returns
+/// to the pool, the next scope reuses it for another tenant. Nothing of the first tenant stays on it (ADR 0090); the EF filter is
 /// deliberately ignored so only Postgres row-level security stands between the tenants.
 /// </summary>
 [Collection(SharedDatabase.Name)]
@@ -41,7 +41,7 @@ public class PooledConnectionIsolationTests(SalonWebApplicationFactory factory) 
         var options = new DbContextOptionsBuilder<SalonDbContext>()
             .UseNpgsql(AppRole.ConnectionString, npgsql => npgsql.UseNodaTime())
             .UseSnakeCaseNamingConvention()
-            .AddInterceptors(new TenantConnectionInterceptor(tenantContext))
+            .AddInterceptors(new TenantCommandInterceptor(tenantContext))
             .Options;
 
         tenantContext.SetTenant(_tenantA.Id);
