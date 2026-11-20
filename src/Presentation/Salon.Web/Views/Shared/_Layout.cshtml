@@ -2,8 +2,11 @@
 @using Salon.Core.Identity
 @using Salon.Core.Tenancy
 @using Salon.Services.Tenancy
+@using Salon.Web.Framework.ClientPortal
+@using Salon.Web.Framework.Infrastructure
 @inject ITenantContext TenantContext
 @inject ITenantLookup TenantLookup
+@inject Microsoft.Extensions.Options.IOptionsMonitor<FeaturesOptions> Features
 @{
     // Invariant culture (e.g. a CI runner with no locale) has an empty name; the page must still declare a language.
     var uiCulture = System.Globalization.CultureInfo.CurrentUICulture.Name;
@@ -21,6 +24,7 @@
     var onCalendar = Context.Request.Current("/admin/appointments/calendar") is not null;
     var canDiary = User.HasClaim(UserClaimTypes.Permission, Permissions.BookingsManage) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView);
     var canTill = User.HasClaim(UserClaimTypes.Permission, Permissions.PaymentsRecord) && User.HasClaim(UserClaimTypes.Permission, Permissions.ClientsView);
+    var myBookings = Features.CurrentValue.ClientPortal && TenantContext.TenantId is not null;
 }
 <html lang="@lang" class="h-full bg-stone-50">
 <head>
@@ -128,6 +132,11 @@
                     else
                     {
                         <a class="inline-flex min-h-11 items-center text-lg font-semibold tracking-tight" asp-area="" asp-controller="Home" asp-action="Index">@T["Layout.Brand"]</a>
+                    }
+                    @if (myBookings)
+                    {
+                        @* A client's way to their own visits (ADR 0083), on a salon's pages and only while the flag is on. *@
+                        <a href="@ClientPortalDefaults.VisitsPath" data-testid="my-bookings-link" class="btn btn-compact btn-secondary px-3 text-sm">@T["Layout.MyBookings"]</a>
                     }
                     @if (signedIn)
                     {

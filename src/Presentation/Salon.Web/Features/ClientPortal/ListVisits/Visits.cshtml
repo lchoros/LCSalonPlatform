@@ -1,0 +1,52 @@
+@using Salon.Web.Features.ClientPortal.ListVisits
+@model ListVisitsViewModel
+@{
+    ViewData["Title"] = T["ClientPortal.Visits.Title"];
+}
+<section class="mx-auto max-w-lg space-y-6">
+    <header class="space-y-2">
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["ClientPortal.Visits.Title"]</h1>
+        <p class="text-stone-700" data-testid="portal-lead">@T.Format("ClientPortal.Visits.Lead", Model.SalonName)</p>
+    </header>
+
+    @if (Model.Visits.Count == 0)
+    {
+        <p class="empty-state" data-testid="portal-no-visits">@T["ClientPortal.Visits.None"]</p>
+    }
+    else
+    {
+        <ul class="list-card" data-testid="portal-visits">
+            @foreach (var visit in Model.Visits)
+            {
+                <li class="space-y-3 p-4" data-testid="portal-visit">
+                    <div class="space-y-1">
+                        <p class="font-semibold" data-testid="portal-visit-service">@visit.ServiceName</p>
+                        <p class="text-sm text-stone-700">
+                            <time datetime="@visit.StartIso" class="tabular-nums" data-testid="portal-visit-when">@visit.Day, @visit.Time</time>
+                            <span data-testid="portal-visit-staff">· @T.Format("ClientPortal.Visits.With", visit.StaffName)</span>
+                        </p>
+                    </div>
+                    @if (visit.ChangePath is not null && visit.CancelPath is not null)
+                    {
+                        <div class="flex flex-wrap gap-2">
+                            <a href="@visit.ChangePath" data-testid="portal-visit-change" class="btn btn-compact btn-secondary px-3">@T["ClientPortal.Visits.Change"]<span class="sr-only">: @visit.ServiceName, @visit.Day, @visit.Time</span></a>
+                            <a href="@visit.CancelPath" data-testid="portal-visit-cancel" class="btn btn-compact btn-secondary px-3">@T["ClientPortal.Visits.Cancel"]<span class="sr-only">: @visit.ServiceName, @visit.Day, @visit.Time</span></a>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-sm text-stone-700" data-testid="portal-visit-ask">@T["ClientPortal.Visits.AskSalon"]</p>
+                    }
+                </li>
+            }
+        </ul>
+    }
+
+    <div class="flex flex-col gap-3">
+        <a href="@Model.BookPath" data-testid="portal-book-another" class="btn btn-primary w-full">@T["ClientPortal.Visits.BookAnother"]</a>
+        <form method="post" action="@Model.SignOutPath" asp-antiforgery="true">
+            <button type="submit" data-testid="portal-sign-out" class="btn btn-secondary w-full">@T["ClientPortal.Visits.SignOut"]</button>
+        </form>
+    </div>
+    @await Component.InvokeAsync("SalonContact")
+</section>
