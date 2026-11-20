@@ -1,0 +1,16 @@
+{
+  "Sections.Pages": "{0}: pages",
+  "Sections.Import": "Import",
+  "Sections.Appointments.Day": "Day list",
+  "Sections.Appointments.Calendar": "Calendar",
+  "Sections.Appointments.Waitlist": "Waitlist",
+  "Sections.Clients.List": "All clients",
+  "Sections.Till.CashUp": "Cash up",
+  "Sections.Till.Sale": "Counter sale",
+  "Sections.Till.Vouchers": "Vouchers",
+  "Sections.Services.List": "Price list",
+  "Sections.Services.Categories": "Categories",
+  "Sections.Products.List": "All products",
+  "Sections.Staff.List": "Team",
+  "Sections.Staff.Commission": "Commission"
+}

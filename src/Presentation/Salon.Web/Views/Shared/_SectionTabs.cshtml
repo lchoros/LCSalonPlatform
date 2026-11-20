@@ -1,0 +1,17 @@
+@using Salon.Core.Identity
+@using Salon.Web.Framework.Ui
+@model SectionTabsModel
+@* A module's pages as one row of tabs (ADR 0089). A tab shows only to a role that may open its page; a row that
+   would hold a single tab is not drawn at all — one page needs no tabs. *@
+@{
+    var open = Model.Tabs.Where(tab => tab.Permissions.All(permission => User.HasClaim(UserClaimTypes.Permission, permission))).ToList();
+}
+@if (open.Count > 1)
+{
+    <nav aria-label="@T.Format("Sections.Pages", T[Model.LabelKey])" data-testid="section-tabs-@Model.Name" class="section-tabs screen-only">
+        @foreach (var tab in open)
+        {
+            <a href="@tab.Url" data-testid="section-tab-@tab.Key" aria-current="@(tab.Key == Model.CurrentKey ? "page" : null)" class="section-tab">@T[tab.LabelKey]</a>
+        }
+    </nav>
+}

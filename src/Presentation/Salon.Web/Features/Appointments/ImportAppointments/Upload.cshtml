@@ -5,6 +5,7 @@
     ViewData["Title"] = T["Appointments.Import.Title"];
 }
 <section class="mx-auto max-w-lg space-y-6">
+    <partial name="_SectionTabs" model="@AdminSections.Appointments("import")" />
     @if (Model.Flash is { } flash)
     {
         <p role="status" data-testid="flash" class="notice notice-warn">@flash</p>

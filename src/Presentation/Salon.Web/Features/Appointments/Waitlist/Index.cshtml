@@ -7,6 +7,7 @@
     var waiting = Model.Waiting;
 }
 <section class="space-y-6">
+    <partial name="_SectionTabs" model="@AdminSections.Appointments("waitlist")" />
     <a href="@WaitlistController.DayListPath" class="back-link" data-testid="back">&larr; @T["Appointments.Outcome.Back"]</a>
     @if (Model.Flash is { } flash)
     {

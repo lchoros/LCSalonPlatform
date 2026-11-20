@@ -5,6 +5,7 @@
     const string inputClass = "field field-compact";
 }
 <section class="space-y-6">
+    <partial name="_SectionTabs" model="@AdminSections.Clients("list")" />
     @if (Model.Flash is { } flash)
     {
         <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>

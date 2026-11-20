@@ -7,6 +7,7 @@
     const string inputClass = "field field-compact tabular-nums w-24";
 }
 <section class="mx-auto max-w-2xl space-y-6">
+    <partial name="_SectionTabs" model="@AdminSections.Staff("commission")" />
     @if (Model.Flash is { } flash)
     {
         <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>

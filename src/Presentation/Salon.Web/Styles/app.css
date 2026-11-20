@@ -156,6 +156,20 @@
     @apply border-brand text-white shadow-none;
   }
 
+  /* A module's pages as one row of tabs (ADR 0089): underlined in the brand, scrolling sideways inside its own box on a
+     phone instead of wrapping into a wall. */
+  .section-tabs {
+    @apply -mx-4 flex gap-1 overflow-x-auto overscroll-x-contain border-b border-stone-200 px-4 [scrollbar-width:none] sm:mx-0 sm:px-0;
+  }
+
+  .section-tab {
+    @apply -mb-px inline-flex min-h-11 shrink-0 items-center border-b-2 border-transparent px-3 text-sm font-semibold text-stone-600 transition-colors hover:border-brand-edge hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand;
+  }
+
+  .section-tab[aria-current="page"] {
+    @apply border-brand text-brand;
+  }
+
   /* A visit on the calendar (ADR 0086): the fill is a shade of the brand that deepens as the visit progresses, the
      left edge keeps the staff member's own colour, and done or missed visits step back out of the purple. */
   .cal-block {
