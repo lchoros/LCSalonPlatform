@@ -79,7 +79,8 @@
                     }
                 </nav>
                 <form method="post" action="/account/logout" asp-antiforgery="true" class="flex items-center justify-between gap-3 border-t border-stone-200 p-3 text-sm">
-                    <span class="min-w-0 truncate" data-testid="user-name">@User.Identity!.Name</span>
+                    @* The person's own name opens their own login: today that is the password page (ADR 0077). *@
+                    <a href="/account/password" data-testid="user-name" class="min-w-0 truncate underline-offset-2 hover:text-brand hover:underline">@User.Identity!.Name</a>
                     <button type="submit" data-testid="sign-out" class="btn btn-compact btn-secondary shrink-0 px-3">@T["Layout.SignOut"]</button>
                 </form>
             </aside>

@@ -2,26 +2,33 @@
 @model LoginForm
 @{
     ViewData["Title"] = T["Identity.Login.Title"];
-    const string inputClass = "field field-compact";
+    const string inputClass = "field";
 }
-<section class="mx-auto max-w-sm space-y-6">
-    <h1 class="page-title">@T["Identity.Login.Title"]</h1>
-    <form method="post" asp-action="Login" class="space-y-5" novalidate data-testid="login-form">
-        <div asp-validation-summary="ModelOnly" data-testid="login-error" class="notice notice-error" role="alert"></div>
-        <input type="hidden" asp-for="ReturnUrl" />
+@* The sign-in card (ADR 0080): one centred card, one strong button. Room is kept under the form for a
+   "Continue with Google" button when the owner orders it (Tier 2); until then email and password only. *@
+<section class="mx-auto flex min-h-[60vh] max-w-sm flex-col justify-center">
+    <div class="space-y-6 rounded-2xl border border-stone-200 bg-white p-6 shadow-lg sm:p-8" data-testid="login-card">
+        <header class="space-y-1 text-center">
+            <h1 class="text-2xl font-bold tracking-tight">@T["Identity.Login.Title"]</h1>
+            <p class="text-sm text-stone-600">@T["Identity.Login.Lead"]</p>
+        </header>
+        <form method="post" asp-action="Login" class="space-y-5" novalidate data-testid="login-form">
+            <div asp-validation-summary="ModelOnly" data-testid="login-error" class="notice notice-error" role="alert"></div>
+            <input type="hidden" asp-for="ReturnUrl" />
 
-        <div class="space-y-1">
-            <label asp-for="Email" class="field-label">@T["Identity.Login.Email"]</label>
-            <input asp-for="Email" type="email" inputmode="email" autocomplete="username" spellcheck="false" aria-describedby="email-error" class="@inputClass" />
-            <span asp-validation-for="Email" id="email-error" class="field-error"></span>
-        </div>
+            <div class="space-y-1">
+                <label asp-for="Email" class="field-label">@T["Identity.Login.Email"]</label>
+                <input asp-for="Email" type="email" inputmode="email" autocomplete="username" spellcheck="false" aria-describedby="email-error" class="@inputClass" />
+                <span asp-validation-for="Email" id="email-error" class="field-error"></span>
+            </div>
 
-        <div class="space-y-1">
-            <label asp-for="Password" class="field-label">@T["Identity.Login.Password"]</label>
-            <input asp-for="Password" type="password" autocomplete="current-password" aria-describedby="password-error" class="@inputClass" />
-            <span asp-validation-for="Password" id="password-error" class="field-error"></span>
-        </div>
+            <div class="space-y-1">
+                <label asp-for="Password" class="field-label">@T["Identity.Login.Password"]</label>
+                <input asp-for="Password" type="password" autocomplete="current-password" aria-describedby="password-error" class="@inputClass" />
+                <span asp-validation-for="Password" id="password-error" class="field-error"></span>
+            </div>
 
-        <button type="submit" class="btn btn-compact btn-primary w-full">@T["Identity.Login.Submit"]</button>
-    </form>
+            <button type="submit" class="btn btn-primary w-full">@T["Identity.Login.Submit"]</button>
+        </form>
+    </div>
 </section>
