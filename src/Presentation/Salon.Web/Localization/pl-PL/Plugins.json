@@ -1,3 +1,4 @@
 {
-  "Plugins.Import.Csv.DisplayName": "Import klientów z CSV (Booksy, Versum)"
+  "Plugins.Import.Csv.DisplayName": "Import klientów z CSV (Booksy, Versum)",
+  "Plugins.Payments.Stripe.DisplayName": "Stripe (tryb testowy): zadatki przy rezerwacji online"
 }

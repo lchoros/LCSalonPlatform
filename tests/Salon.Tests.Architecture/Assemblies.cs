@@ -13,6 +13,7 @@ internal static class Assemblies
     [
         typeof(Salon.Plugin.Import.CsvClientImportProvider).Assembly,
         typeof(Salon.Plugin.Payments.Manual.ManualPaymentProvider).Assembly,
+        typeof(Salon.Plugin.Payments.Stripe.StripePaymentsPlugin).Assembly,
         typeof(Salon.Plugin.Sms.Log.LogSmsProvider).Assembly,
     ];
 }

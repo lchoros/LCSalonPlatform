@@ -1,3 +1,4 @@
 {
-  "Plugins.Import.Csv.DisplayName": "CSV client import (Booksy, Versum)"
+  "Plugins.Import.Csv.DisplayName": "CSV client import (Booksy, Versum)",
+  "Plugins.Payments.Stripe.DisplayName": "Stripe (test mode): deposits at online booking"
 }

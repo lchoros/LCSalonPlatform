@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Compile-time plugin (ADR 0082). May reference Salon.Services and Salon.Core only.
+    Stripe.net is the one place the Stripe SDK is referenced; nothing outside this project may use it.
+  -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libraries\Salon.Core\Salon.Core.csproj" />
+    <ProjectReference Include="..\..\Libraries\Salon.Services\Salon.Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <PackageReference Include="Stripe.net" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="plugin.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Salon.Tests.Unit" />
+  </ItemGroup>
+
+</Project>

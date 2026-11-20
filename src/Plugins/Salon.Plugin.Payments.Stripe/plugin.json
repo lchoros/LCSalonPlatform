@@ -1,0 +1,8 @@
+{
+  "systemName": "Payments.Stripe",
+  "displayNameKey": "Plugins.Payments.Stripe.DisplayName",
+  "group": "Payments",
+  "author": "Salon Platform",
+  "version": "0.1.0",
+  "description": "Stripe in test mode: takes the deposit of an online booking on Stripe's hosted Checkout page. Off unless Features:StripeDeposits is on. Never sees or stores card data."
+}
