@@ -81,7 +81,7 @@
         </nav>
 
         @* The timetable. Week view scrolls sideways inside this box only; the day view with every person is replaced by a list on a phone. *@
-        <div data-testid="calendar-grid" data-view="@CalendarController.ViewSegment(board.View)" class="rounded-xl border border-stone-200 bg-white shadow-sm @(isWeek ? "overflow-x-auto" : string.Empty) @(allStaffDay ? "hidden sm:block" : string.Empty)">
+        <div data-testid="calendar-grid" data-view="@CalendarController.ViewSegment(board.View)" data-drop-path="@CalendarController.CalendarPath" data-refused="@T["Appointments.Calendar.Drag.Refused"]" class="rounded-xl border border-stone-200 bg-white shadow-sm @(isWeek ? "overflow-x-auto" : string.Empty) @(allStaffDay ? "hidden sm:block" : string.Empty)">
             <div class="flex @(isWeek ? "min-w-[42rem]" : string.Empty)">
                 <div class="w-12 shrink-0 border-r border-stone-200" aria-hidden="true">
                     <div class="h-10 border-b border-stone-200"></div>
@@ -120,7 +120,7 @@
                                 {
                                     var minute = CalendarLayout.MinuteOfRow(grid, row);
                                     var working = CalendarLayout.IsWorking(column.WorkingRanges, minute);
-                                    <div class="col-start-1 border-t @(minute % 60 == 0 ? "border-stone-200" : "border-stone-100") @(working ? "bg-white" : "bg-stone-100")" style="grid-row: @row" data-working="@(working ? "true" : "false")" aria-hidden="true"></div>
+                                    <div class="col-start-1 border-t @(minute % 60 == 0 ? "border-stone-200" : "border-stone-100") @(working ? "bg-white" : "bg-stone-100")" style="grid-row: @row" data-row="@row" data-minute="@minute" data-working="@(working ? "true" : "false")" aria-hidden="true"></div>
                                 }
                                 @foreach (var block in column.Blocks)
                                 {
@@ -129,7 +129,7 @@
                                        data-appointment-id="@block.Id"
                                        data-staff-id="@column.Staff.Id"
                                        data-status="@block.Status"
-                                       class="relative z-10 flex min-w-0 flex-col overflow-hidden rounded border-l-4 px-1 py-0.5 text-[11px] leading-tight text-stone-900 hover:ring-2 hover:ring-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900"
+                                       class="cal-block"
                                        style="@CalendarBlockStyle.For(block, column.Staff.Colour)"
                                        title="@block.Start.ToShortTime(culture)–@block.End.ToShortTime(culture) @block.ClientFirstName · @block.ServiceName">
                                         @* The block only shows what its height can hold (the owner's bug report, 2026-11-20): one line
@@ -222,4 +222,9 @@
             </div>
         }
     }
+    @* The one script of this page (ADR 0086): dragging a visit proposes a move; the server decides. *@
+    <form id="calendar-drop-token" class="hidden" aria-hidden="true">@Html.AntiForgeryToken()</form>
 </section>
+@section Scripts {
+    <script type="module" src="~/js/calendar-drag.js" asp-append-version="true"></script>
+}

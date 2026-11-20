@@ -74,7 +74,8 @@ public partial class CalendarTests(SalonWebApplicationFactory factory) : IAsyncL
         blocks.Single(b => b.StaffId == _tomId).Id.ShouldBe(tomsVisit.Id);
         blocks.ShouldAllBe(b => b.Status == "Booked");
         html.ShouldContain("border-color: #BE185D", Case.Sensitive, "Anna's colour edges her blocks");
-        html.ShouldContain("background-color: #BE185D26");
+        html.ShouldContain("class=\"cal-block\"", customMessage: "the fill is a brand shade chosen by status in the stylesheet (ADR 0086)");
+        html.ShouldNotContain("background-color: #BE185D26");
         html.ShouldContain("border-color: #1D4ED8");
         html.ShouldContain("Olivia");
         html.ShouldContain("Cut");
@@ -92,7 +93,8 @@ public partial class CalendarTests(SalonWebApplicationFactory factory) : IAsyncL
         html.ShouldContain($"href=\"/admin/appointments/new?date={Iso(_day)}\"");
         html.ShouldContain($"href=\"/admin/appointments?date={Iso(_day)}\"");
         html.ShouldContain($"href=\"{CalendarPath}/{tomsVisit.Id}\"");
-        html.ShouldNotContain("<script", Case.Sensitive, "the calendar ships no inline script");
+        html.ShouldNotContain("<script>", Case.Sensitive, "the calendar ships no inline script");
+        html.ShouldContain("<script type=\"module\" src=\"/js/calendar-drag.js", Case.Sensitive, "its one script is a same-origin module file (ADR 0086)");
         html.ShouldContain($">{_day.DayOfWeek} {_day.Day} ", Case.Sensitive, "the day is named by its weekday first");
 
         var filtered = await GetAsync(client, DayPath(_day, _annaId));
@@ -152,14 +154,14 @@ public partial class CalendarTests(SalonWebApplicationFactory factory) : IAsyncL
         card.ShouldContain($"action=\"/admin/appointments/{appointment.Id}/cancel\"");
         card.ShouldContain("data-testid=\"move-step\"");
         card.ShouldContain("data-testid=\"move-slot\"");
-        card.ShouldNotContain($"value=\"{InstantPattern.ExtendedIso.Format(At(10, 0))}\"", Case.Sensitive, "the time the visit holds now is not offered");
-        card.ShouldContain($"value=\"{InstantPattern.ExtendedIso.Format(At(10, 30))}\"", Case.Sensitive, "the slot right after is free: the visit does not block itself");
-        card.ShouldContain($"value=\"{InstantPattern.ExtendedIso.Format(At(16, 30))}\"");
+        card.ShouldNotContain($"start={Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(At(10, 0)))}", Case.Sensitive, "the time the visit holds now is not offered");
+        card.ShouldContain($"start={Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(At(10, 30)))}", Case.Sensitive, "the slot right after is free: the visit does not block itself");
+        card.ShouldContain($"start={Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(At(16, 30)))}");
 
         var tomsDay = await GetAsync(client, $"{CalendarPath}/{appointment.Id}?staffId={_tomId}&date={Iso(_day)}");
         tomsDay.ShouldContain($"<option value=\"{_tomId}\" selected");
-        tomsDay.ShouldContain($"value=\"{InstantPattern.ExtendedIso.Format(At(10, 0))}\"", Case.Sensitive, "Tom is free at 10:00");
-        tomsDay.ShouldNotContain($"value=\"{InstantPattern.ExtendedIso.Format(At(9, 0))}\"", Case.Sensitive, "Tom starts at 10:00");
+        tomsDay.ShouldContain($"start={Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(At(10, 0)))}", Case.Sensitive, "Tom is free at 10:00");
+        tomsDay.ShouldNotContain($"start={Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(At(9, 0)))}", Case.Sensitive, "Tom starts at 10:00");
 
         var response = await PostMoveAsync(client, appointment.Id, _tomId, At(11, 0));
 
@@ -207,7 +209,7 @@ public partial class CalendarTests(SalonWebApplicationFactory factory) : IAsyncL
         html.ShouldContain("data-testid=\"error\"");
         html.ShouldContain("That time is already taken. Pick another one below.");
         html.ShouldContain("data-testid=\"move-slot\"");
-        html.ShouldNotContain($"value=\"{InstantPattern.ExtendedIso.Format(At(11, 0))}\"");
+        html.ShouldNotContain($"start={Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(At(11, 0)))}");
         (await StartAsync(first.Id)).ShouldBe(At(10, 0));
 
         var blank = await PostMoveAsync(client, first.Id, null, At(12, 0));
@@ -307,6 +309,82 @@ public partial class CalendarTests(SalonWebApplicationFactory factory) : IAsyncL
         => BlockPattern().Matches(html)
             .Select(m => (Guid.Parse(m.Groups["id"].Value), Guid.Parse(m.Groups["staff"].Value), m.Groups["status"].Value))
             .ToList();
+
+    [Fact]
+    public async Task A_dropped_block_moves_when_the_engine_agrees_and_the_reload_carries_the_confirmation()
+    {
+        var appointment = await BookAsync(_annaId, At(10, 0));
+        using var client = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Owner);
+
+        // The script names a column (person, day) and a row (minute of the salon's clock): Tom, 11:00.
+        var response = await PostDropAsync(client, appointment.Id, _tomId, Iso(_day), 11 * 60);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        (await StartAsync(appointment.Id)).ShouldBe(At(11, 0), "the server turned the row into an instant in the salon's zone");
+        (await GetAsync(client, $"{CalendarPath}?view=day&date={Iso(_day)}")).ShouldContain("data-testid=\"flash\"");
+    }
+
+    [Fact]
+    public async Task A_drop_the_engine_refuses_changes_nothing_and_says_why_in_one_sentence()
+    {
+        var appointment = await BookAsync(_annaId, At(10, 0));
+        using var client = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Owner);
+
+        // 03:00 is nobody's working time; a missing row or day is no proposal at all.
+        var night = await PostDropAsync(client, appointment.Id, _annaId, Iso(_day), 3 * 60);
+        night.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        (await night.Content.ReadAsStringAsync()).ShouldBe("That time is not free for this person. The visit stays where it was.");
+
+        (await PostDropAsync(client, appointment.Id, _annaId, Iso(_day), null)).StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        (await PostDropAsync(client, appointment.Id, _annaId, null, 11 * 60)).StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        (await PostDropAsync(client, appointment.Id, _annaId, Iso(_day), 24 * 60)).StatusCode.ShouldBe(HttpStatusCode.Conflict);
+
+        (await StartAsync(appointment.Id)).ShouldBe(At(10, 0));
+        await using var scope = factory.CreateTenantScope(_studio.Id);
+        var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+        (await db.OutboxMessages.AsNoTracking().CountAsync(m => m.EventType == typeof(AppointmentMoved).FullName)).ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task A_tapped_free_time_on_the_card_is_only_chosen_and_the_button_does_the_move()
+    {
+        var appointment = await BookAsync(_annaId, At(10, 0));
+        using var client = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Owner);
+        var eleven = Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(At(11, 0)));
+
+        var bare = await GetAsync(client, $"{CalendarPath}/{appointment.Id}?staffId={_annaId}&date={Iso(_day)}");
+        bare.ShouldContain("data-testid=\"move-slot\"");
+        bare.ShouldNotContain("data-testid=\"move-confirm\"", customMessage: "nothing moves on a tap alone");
+
+        var picked = await GetAsync(client, $"{CalendarPath}/{appointment.Id}?staffId={_annaId}&date={Iso(_day)}&start={eleven}");
+        picked.ShouldContain("is-chosen");
+        picked.ShouldContain("data-testid=\"move-confirm\"");
+        (await StartAsync(appointment.Id)).ShouldBe(At(10, 0), "still where it was until the button");
+
+        // A start that is not one of the free times (or rubbish) quietly chooses nothing.
+        (await GetAsync(client, $"{CalendarPath}/{appointment.Id}?staffId={_annaId}&date={Iso(_day)}&start=rubbish")).ShouldNotContain("data-testid=\"move-confirm\"");
+    }
+
+    /// <summary>POSTs what the drag script posts: a person, a day and a minute of the salon's clock.</summary>
+    private async Task<HttpResponseMessage> PostDropAsync(HttpClient client, Guid appointmentId, Guid staffMemberId, string? date, int? minute)
+    {
+        var fields = new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = IdentityTestClient.AntiForgeryToken(await GetAsync(client, $"{CalendarPath}?view=day&date={Iso(_day)}")),
+            ["staffMemberId"] = staffMemberId.ToString(),
+        };
+        if (date is not null)
+        {
+            fields["date"] = date;
+        }
+
+        if (minute is { } value)
+        {
+            fields["minute"] = value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        return await client.PostAsync(new Uri($"{CalendarPath}/{appointmentId}/drop", UriKind.Relative), new FormUrlEncodedContent(fields));
+    }
 
     /// <summary>The page as text: entities decoded, so names with an ampersand and the en dash read like the screen.</summary>
     private static async Task<string> GetAsync(HttpClient client, string path)
