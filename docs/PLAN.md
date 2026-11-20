@@ -49,8 +49,13 @@ Gate: the pilot salon pays; then 3 paying salons before scaling up.
   The appointment card's move form stays as the no-script fallback
 - [ ] Customer login (owner 2026-11-20, Tier 2): passwordless client area — phone number + SMS code (the booking
   code machinery), showing upcoming visits with their change/cancel links; no passwords, no account to create
-- [ ] Stripe in test mode (owner 2026-11-20, Tier 2): Salon.Plugin.Payments.Stripe behind a flag, deposits at
-  online booking through Checkout in test mode; keys live in user-secrets and host config only, never the repo
+- [x] Stripe in test mode (owner 2026-11-20, Tier 2, ADR 0082, waits for the owner): `Salon.Plugin.Payments.Stripe`
+  behind `Features:StripeDeposits` (off everywhere by default). After the SMS code a booking that asks for a deposit
+  is sent to Stripe's hosted Checkout for exactly that deposit; paid, it is one held deposit on the client's account
+  by "Card online (Stripe)", however often the return address or the webhook is hit; unpaid, the booking stands with
+  its deposit due. Test-mode keys only, on the platform's own account; keys live in user-secrets and host config
+  only, never the repo. New runtime dependency: Stripe.net. Not built: Connect (still parked), refunds through
+  Stripe, anything that charges besides the deposit
 - [!] First hosting: Dockerfile, staging + prod, deploy job (Tier 2)
 - [!] Stripe Connect plugin: onboarding, online deposits, card on file, refunds (Tier 2)
 - [!] Real SMS/email plugins: Twilio (UK), SMSAPI.pl (PL), Postmark/SES (Tier 2)
