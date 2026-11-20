@@ -16,9 +16,12 @@ recorded direction instead of each PR guessing.
   carried through buttons, active navigation, the calendar's accents, progress steps — wherever today's screens use
   the stone-900 black primary. The Tailwind violet/indigo range is the palette to draw from when this is built.
 - **The admin becomes a dashboard with a left side menu**, the way Booksy Biz and Cinolla lay out their back office:
-  a vertical menu on desktop instead of today's top nav row, and the same menu as a slide-in drawer behind a
-  hamburger on mobile — the owner weighed a bottom bar and chose the drawer, because the diary needs every pixel of
-  phone height. A proper dashboard landing (today's bookings, takings, occupancy at a glance) belongs to this shell.
+  a vertical menu on desktop instead of today's top nav row. On mobile, the Booksy pattern the owner pointed at
+  (2026-11-20, second look — this supersedes the first instinct of drawer-only): a **slim bottom bar with the
+  everyday destinations** (the diary, clients, the till, and a "menu" item) plus the **same full menu as a slide-in
+  drawer** for everything else. Inside a module, the Versum pattern: **section tabs** (as their Inventory shows
+  Products / Sales / Usage / Deliveries / Orders / Stocktaking) instead of burying sections in the main menu.
+  A proper dashboard landing (today's bookings, takings, occupancy at a glance) belongs to this shell.
 - **The sign-in page keeps the Booksy-style card as its future shape**: one centred card, a Login / Sign up toggle
   (once sign-up is public), one strong primary button. No social sign-in — email and password only, as decided in
   ADR 0075/0076.
@@ -35,7 +38,8 @@ recorded direction instead of each PR guessing.
 
 ## Alternatives considered
 
-- Bottom tab bar on mobile (the common app pattern): rejected by the owner — vertical space on the diary matters
-  more, and one drawer serves both widths with one menu to maintain.
+- Drawer-only on mobile (no bottom bar): the owner's first instinct, withdrawn the same day after looking at
+  Booksy's mobile shell — the bottom bar carries only the three or four everyday destinations, so the diary keeps
+  its height while the desk never hunts through a drawer for the pages they open fifty times a day.
 - Rebranding ad hoc, screen by screen, as PRs happen to touch things: rejected — the shell-then-palette order keeps
   every intermediate state coherent.
