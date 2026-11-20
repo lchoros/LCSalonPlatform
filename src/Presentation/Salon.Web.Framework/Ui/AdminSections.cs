@@ -8,7 +8,7 @@ namespace Salon.Web.Framework.Ui;
 public sealed record SectionTab(string Key, string LabelKey, string Url, params string[] Permissions);
 
 /// <param name="Name">The module, for test ids: <c>section-tabs-{Name}</c>.</param>
-/// <param name="LabelKey">What the tab row is called for assistive technology.</param>
+/// <param name="LabelKey">The module's name; the row is announced as "{module}: pages", apart from any other landmark of the page.</param>
 /// <param name="CurrentKey">The tab of the page being shown.</param>
 public sealed record SectionTabsModel(string Name, string LabelKey, IReadOnlyList<SectionTab> Tabs, string CurrentKey);
 

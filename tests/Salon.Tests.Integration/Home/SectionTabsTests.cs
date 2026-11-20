@@ -75,7 +75,7 @@ public partial class SectionTabsTests(SalonWebApplicationFactory factory) : IAsy
 
         english.ShouldContain("data-testid=\"section-tab-waitlist\" class=\"section-tab\">Waitlist</a>");
         english.ShouldContain("data-testid=\"section-tab-day\" aria-current=\"page\" class=\"section-tab\">Day list</a>");
-        english.ShouldContain("<nav aria-label=\"Appointments\" data-testid=\"section-tabs-appointments\"");
+        english.ShouldContain("<nav aria-label=\"Appointments: pages\" data-testid=\"section-tabs-appointments\"");
     }
 
     [GeneratedRegex("data-testid=\"section-tab-([a-z-]+)\"")]

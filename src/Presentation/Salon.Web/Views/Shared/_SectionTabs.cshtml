@@ -8,7 +8,7 @@
 }
 @if (open.Count > 1)
 {
-    <nav aria-label="@T[Model.LabelKey]" data-testid="section-tabs-@Model.Name" class="section-tabs screen-only">
+    <nav aria-label="@T.Format("Sections.Pages", T[Model.LabelKey])" data-testid="section-tabs-@Model.Name" class="section-tabs screen-only">
         @foreach (var tab in open)
         {
             <a href="@tab.Url" data-testid="section-tab-@tab.Key" aria-current="@(tab.Key == Model.CurrentKey ? "page" : null)" class="section-tab">@T[tab.LabelKey]</a>
