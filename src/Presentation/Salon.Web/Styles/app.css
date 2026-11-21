@@ -475,8 +475,14 @@
     @apply overflow-hidden rounded-2xl border border-slate-200 bg-white;
   }
 
+  /* A line a person can actually see between two services (the owner, 2026-11-21), and a faint tint on every
+     other row so the eye keeps its line across to the price. */
   .service-rows > li + li {
-    @apply border-t border-slate-100;
+    @apply border-t border-slate-200;
+  }
+
+  .service-rows > li:nth-child(even) {
+    @apply bg-slate-50/60;
   }
 
   .service-rows .choice-card,
@@ -487,11 +493,29 @@
 
   .service-rows .choice-card,
   .service-rows .variant-card > summary {
-    @apply min-h-14 rounded-none px-4 py-2.5 transition-colors hover:bg-brand-mist;
+    @apply min-h-12 rounded-none px-4 py-2 transition-colors hover:bg-brand-mist;
   }
 
   .service-rows .service-dot {
-    @apply size-9 text-sm;
+    @apply size-8 text-xs;
+  }
+
+  /* Quieter type in the sheet (the owner, 2026-11-21: "text may be too big"): the name at 15 px medium, the
+     duration small, the price the one strong thing on the right. */
+  .service-rows .choice-card .font-semibold,
+  .service-rows .variant-card > summary .font-semibold,
+  .service-rows .variant-name {
+    @apply text-[0.9375rem] font-medium;
+  }
+
+  .service-rows .choice-card > .tabular-nums,
+  .service-rows .variant-card > summary .tabular-nums,
+  .service-rows .variant-link > .tabular-nums {
+    @apply text-[0.9375rem] font-semibold;
+  }
+
+  .service-rows .text-sm {
+    @apply text-xs;
   }
 
   .service-rows .variant-list {
