@@ -202,8 +202,10 @@
     @apply inline-flex size-11 shrink-0 items-center justify-center rounded-full pb-1 text-2xl leading-none text-slate-600 transition-colors hover:bg-brand-soft hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand;
   }
 
+  /* Where you are: one short form for a day and a week, in a box of one width, so the bar does not shift or cut
+     the text when the view or the month changes (the owner, 2026-11-21). */
   .cal-range {
-    @apply min-w-0 truncate pl-1 text-lg font-semibold tracking-tight text-stone-900 sm:text-xl;
+    @apply pl-1 text-lg font-semibold tracking-tight whitespace-nowrap text-stone-900 tabular-nums sm:w-56;
   }
 
   .cal-bar-pick {
@@ -264,6 +266,10 @@
 
   .cal-day[aria-current="date"] {
     @apply bg-brand text-white hover:bg-brand-strong hover:text-white;
+  }
+
+  .cal-off {
+    @apply rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-slate-600 normal-case;
   }
 
   .cal-cell {
@@ -822,6 +828,21 @@
 
   .vt-times {
     view-transition-name: booking-times;
+  }
+
+  /* The calendar: its bar and its grid are the same things on the old and the new page, so switching between a
+     day and a week (or stepping on) fades the inside of each instead of blinking the whole page. */
+  .cal-bar {
+    view-transition-name: calendar-bar;
+  }
+
+  .cal {
+    view-transition-name: calendar-grid;
+  }
+
+  ::view-transition-group(calendar-bar),
+  ::view-transition-group(calendar-grid) {
+    animation-duration: 200ms;
   }
 
   ::view-transition-old(root),

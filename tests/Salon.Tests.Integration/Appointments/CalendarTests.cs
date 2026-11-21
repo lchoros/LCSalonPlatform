@@ -98,7 +98,7 @@ public partial class CalendarTests(SalonWebApplicationFactory factory) : IAsyncL
         html.ShouldContain($"href=\"{CalendarPath}/{tomsVisit.Id}\"");
         html.ShouldNotContain("<script>", Case.Sensitive, "the calendar ships no inline script");
         html.ShouldContain("<script type=\"module\" src=\"/js/calendar-drag.js", Case.Sensitive, "its one script is a same-origin module file (ADR 0086)");
-        html.ShouldContain($">{_day.DayOfWeek} {_day.Day} ", Case.Sensitive, "the day is named by its weekday first");
+        html.ShouldContain($">{_day.ToString("ddd d MMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("en-GB"))}<", Case.Sensitive, "the day is named by its weekday first, in the short form the bar keeps at one width (ADR 0092)");
 
         var filtered = await GetAsync(client, DayPath(_day, _annaId));
         Count(filtered, "data-testid=\"calendar-column\"").ShouldBe(1);
@@ -259,7 +259,7 @@ public partial class CalendarTests(SalonWebApplicationFactory factory) : IAsyncL
         html.ShouldContain("Dzień");
         html.ShouldContain("Tydzień");
         html.ShouldContain("Wszyscy");
-        html.ShouldContain("Zarezerwuj");
+        html.ShouldContain("Nowa wizyta");
     }
 
     [Fact]
