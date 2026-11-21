@@ -10,6 +10,13 @@ namespace Salon.Web.Components;
 /// </summary>
 public sealed class WaitlistLinkViewComponent(IWaitlistService waitlist) : ViewComponent
 {
-    public async Task<IViewComponentResult> InvokeAsync()
-        => View(await waitlist.CountWaitingAsync(HttpContext.RequestAborted));
+    /// <param name="onlyWhenWaiting">
+    /// On the calendar (ADR 0092) the waiting list is a tab, so the link is drawn only when it has something to say:
+    /// that somebody is waiting.
+    /// </param>
+    public async Task<IViewComponentResult> InvokeAsync(bool onlyWhenWaiting = false)
+    {
+        var waiting = await waitlist.CountWaitingAsync(HttpContext.RequestAborted);
+        return onlyWhenWaiting && waiting == 0 ? Content(string.Empty) : View(waiting);
+    }
 }

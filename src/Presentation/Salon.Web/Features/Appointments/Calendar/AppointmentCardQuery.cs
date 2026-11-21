@@ -66,7 +66,11 @@ public sealed record VisitHistoryLine(LocalDateTime At, VisitHistoryKind Kind, s
 public sealed record VisitPlace(LocalDateTime At, string? StaffName);
 
 /// <summary>A status button: the URL segment of the day list's <c>POST admin/appointments/{id}/{segment}</c> route and the label key.</summary>
-public sealed record CardAction(string Segment, AppointmentStatus Target, string LabelKey);
+public sealed record CardAction(string Segment, AppointmentStatus Target, string LabelKey)
+{
+    /// <summary>True for a step that cannot be taken back with one tap: its button asks first (ADR 0092).</summary>
+    public bool AsksFirst => Target == AppointmentStatus.CancelledBySalon;
+}
 
 public static class CardActions
 {

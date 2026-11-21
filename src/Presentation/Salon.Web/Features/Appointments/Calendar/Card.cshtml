@@ -86,9 +86,23 @@
                 <div class="flex flex-wrap gap-2" data-testid="card-actions">
                     @foreach (var action in card.Actions)
                     {
-                        <form method="post" action="@(CalendarController.DayListPath)/@card.Id/@action.Segment" asp-antiforgery="true" data-testid="action-@action.Segment">
-                            <button type="submit" class="@actionClass">@T[action.LabelKey]</button>
-                        </form>
+                        @if (action.AsksFirst)
+                        {
+                            @* Cancelling asks first (the owner, 2026-11-21: "too quick"): the button only opens the question. *@
+                            <details class="confirm" data-testid="confirm-@action.Segment">
+                                <summary class="@actionClass">@T[action.LabelKey]</summary>
+                                <form method="post" action="@(CalendarController.DayListPath)/@card.Id/@action.Segment" asp-antiforgery="true" data-testid="action-@action.Segment" class="confirm-panel">
+                                    <p>@T["Appointments.Action.CancelSure"]</p>
+                                    <button type="submit" class="btn btn-compact btn-danger">@T["Appointments.Action.CancelYes"]</button>
+                                </form>
+                            </details>
+                        }
+                        else
+                        {
+                            <form method="post" action="@(CalendarController.DayListPath)/@card.Id/@action.Segment" asp-antiforgery="true" data-testid="action-@action.Segment">
+                                <button type="submit" class="@actionClass">@T[action.LabelKey]</button>
+                            </form>
+                        }
                     }
                 </div>
             </div>
@@ -125,7 +139,7 @@
             else
             {
                 @* A tap only chooses (ADR 0086, the owner found the one-tap move jumpy); the button below does the move. *@
-                <ul class="grid grid-cols-3 gap-2 sm:grid-cols-4" data-testid="move-slot-list">
+                <ul class="slot-grid" data-testid="move-slot-list">
                     @foreach (var slot in card.Slots)
                     {
                         var chosen = slot.Start == card.Chosen?.Start;

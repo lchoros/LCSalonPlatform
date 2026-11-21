@@ -91,6 +91,50 @@ public partial class CalendarTests
         ToastPattern().IsMatch(after).ShouldBeTrue("the confirmation floats in the stack instead of pushing the grid down");
     }
 
+    [Fact]
+    public async Task The_bar_offers_any_date_and_leaves_the_sibling_pages_to_the_tabs()
+    {
+        using var client = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Owner);
+
+        var html = await GetAsync(client, DayPath(_day, _annaId));
+
+        // One plain GET form carries the date and the person, so either choice keeps the other (ADR 0092).
+        html.ShouldContain($"<input id=\"jump\" type=\"date\" name=\"date\" value=\"{Iso(_day)}\"");
+        html.ShouldContain($"<option value=\"{_annaId}\" selected=\"selected\">Anna Kowalska</option>");
+        html.ShouldContain("data-testid=\"view-day\" aria-current=\"page\"");
+        html.ShouldContain("data-testid=\"book\"");
+        html.ShouldNotContain("data-testid=\"day-list\"", Case.Sensitive, "the day list is the tab above, not a second button beside \"Day\"");
+        html.ShouldNotContain("data-testid=\"waitlist-link\"", Case.Sensitive, "the waiting list is a tab too; its link shows here only when somebody waits");
+        html.ShouldContain("data-testid=\"section-tab-day\"");
+        html.ShouldContain("data-testid=\"section-tab-waitlist\"");
+
+        var jumped = await GetAsync(client, $"{CalendarPath}?view=day&date={Iso(_day.PlusDays(9))}&staff={_annaId}");
+        jumped.ShouldContain($"name=\"date\" value=\"{Iso(_day.PlusDays(9))}\"");
+    }
+
+    [Fact]
+    public async Task Cancelling_asks_first_on_the_card_and_on_the_day_list_and_the_other_steps_stay_one_tap()
+    {
+        var appointment = await BookAsync(_annaId, At(10, 0));
+        using var client = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Owner);
+
+        foreach (var path in new[] { $"{CalendarPath}/{appointment.Id}", $"/admin/appointments?date={Iso(_day)}" })
+        {
+            var html = await GetAsync(client, path);
+
+            // The button only opens the question; the form that cancels is inside it, with the red button (ADR 0092).
+            var ask = CancelAskPattern().Match(html);
+            ask.Success.ShouldBeTrue($"{path}: cancelling is a disclosure, not a one-tap form");
+            ask.Groups[1].Value.ShouldContain($"action=\"/admin/appointments/{appointment.Id}/cancel\"");
+            ask.Groups[1].Value.ShouldContain("Cancel this visit?");
+            ask.Groups[1].Value.ShouldContain("class=\"btn btn-compact btn-danger\">Yes, cancel the visit</button>");
+            html.ShouldContain($"<form method=\"post\" action=\"/admin/appointments/{appointment.Id}/confirm\" data-testid=\"action-confirm\">", Case.Sensitive, $"{path}: confirming stays one tap");
+        }
+    }
+
+    [GeneratedRegex("<details class=\"confirm\" data-testid=\"confirm-cancel\">(.*?)</details>", RegexOptions.Singleline)]
+    private static partial Regex CancelAskPattern();
+
     [GeneratedRegex("data-testid=\"history-line\" data-kind=\"([A-Za-z]+)\"")]
     private static partial Regex HistoryKindPattern();
 

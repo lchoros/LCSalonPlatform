@@ -207,6 +207,48 @@ public partial class BookForClientTests(SalonWebApplicationFactory factory) : IA
         (await CountAsync(_studio.Id)).ShouldBe(1);
     }
 
+    [Fact]
+    public async Task A_day_without_free_times_says_so_plainly_and_leads_to_the_next_day_that_has_one()
+    {
+        // Anna does not work on the weekday of the chosen day: nothing is free then, and the day after has times.
+        await using (var scope = factory.CreateTenantScope(_studio.Id))
+        {
+            var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+            await db.WorkingHours.Where(h => h.StaffMemberId == _a.StaffId && h.Day == _day.DayOfWeek).ExecuteDeleteAsync();
+        }
+
+        using var client = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Owner);
+
+        var html = await GetAsync(client, $"{FormPath}?serviceId={_a.ServiceId}&staffId={_a.StaffId}&date={Iso(_day)}");
+
+        SlotStarts(html).ShouldBeEmpty();
+        html.ShouldContain("<div class=\"notice notice-error space-y-2\" role=\"status\" data-testid=\"no-slots\">", Case.Sensitive, "nothing free is said in the voice of a refusal, not as grey small print (ADR 0092)");
+        html.ShouldContain("No free times with Anna Kowalska on ");
+        var next = System.Net.WebUtility.HtmlDecode(NextFreePattern().Match(html).Groups[1].Value);
+        next.ShouldBe($"{FormPath}?date={Iso(_day.PlusDays(1))}&serviceId={_a.ServiceId}&staffId={_a.StaffId}", "the way on keeps the service and the person and names the first day with a time");
+        html.ShouldNotContain("data-testid=\"none-soon\"");
+
+        SlotStarts(await GetAsync(client, next)).ShouldNotBeEmpty("the day it leads to has times");
+    }
+
+    [Fact]
+    public async Task Asking_for_times_without_a_service_marks_the_field_and_says_what_is_missing()
+    {
+        using var client = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Owner);
+
+        var fresh = await GetAsync(client, $"{FormPath}?date={Iso(_day)}");
+        fresh.ShouldNotContain("data-testid=\"service-missing\"", Case.Sensitive, "a form nobody has pressed anything on is not in error");
+        fresh.ShouldContain("<p class=\"text-sm text-stone-600\" data-testid=\"slots-hint\">");
+
+        var asked = await GetAsync(client, $"{FormPath}?serviceId=&staffId={_a.StaffId}&date={Iso(_day)}&asked=true");
+        asked.ShouldContain("data-testid=\"service-missing\">Choose a service first");
+        asked.ShouldContain("aria-invalid=\"true\" aria-describedby=\"service-missing\"");
+        asked.ShouldContain("<p class=\"notice notice-error\" data-testid=\"slots-hint\">");
+    }
+
+    [GeneratedRegex("href=\"([^\"]+)\" data-testid=\"next-free\"")]
+    private static partial Regex NextFreePattern();
+
     private static string Iso(LocalDate day) => LocalDatePattern.Iso.Format(day);
 
     private static List<Instant> SlotStarts(string html)
