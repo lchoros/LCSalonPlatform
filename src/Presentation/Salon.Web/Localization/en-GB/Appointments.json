@@ -3,7 +3,7 @@
   "Appointments.Day.Previous": "Previous day",
   "Appointments.Day.Next": "Next day",
   "Appointments.Day.Today": "Today",
-  "Appointments.Day.Book": "Book",
+  "Appointments.Day.Book": "New booking",
   "Appointments.Day.NoStaff": "No bookable staff yet. Add a person and their working hours first.",
   "Appointments.Day.Empty": "No appointments",
   "Appointments.Day.StatusChanged": "The appointment is now marked {0}.",

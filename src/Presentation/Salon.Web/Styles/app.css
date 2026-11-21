@@ -856,3 +856,12 @@
     animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
   }
 }
+
+/* A form that submits itself on change keeps its button only for a browser without script. Where script runs, the
+   button is never drawn — hiding it from script after the page appeared made the bar jump on every change
+   (the owner, 2026-11-21). */
+@media (scripting: enabled) {
+  [data-auto-submit-fallback] {
+    display: none;
+  }
+}

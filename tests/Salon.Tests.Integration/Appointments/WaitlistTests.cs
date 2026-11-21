@@ -64,7 +64,7 @@ public partial class WaitlistTests(SalonWebApplicationFactory factory) : IAsyncL
         var empty = await GetAsync(desk, ListPath);
         empty.ShouldContain("data-testid=\"empty-state\"");
         empty.ShouldContain("Nobody is waiting.");
-        (await GetAsync(desk, "/admin/appointments")).ShouldContain("data-testid=\"waitlist-link\" data-count=\"0\"");
+        (await GetAsync(desk, "/admin/appointments")).ShouldNotContain("data-testid=\"waitlist-link\"", Case.Sensitive, "the waiting list is a tab; its link shows only when somebody waits (ADR 0092)");
 
         var card = await GetAsync(desk, $"/admin/clients/{_oliviaId}");
         card.ShouldContain($"href=\"/admin/appointments/waitlist/new?clientId={_oliviaId}\" data-testid=\"add-to-waitlist\"");

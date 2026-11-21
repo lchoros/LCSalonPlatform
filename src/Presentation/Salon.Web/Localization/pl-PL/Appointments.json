@@ -3,7 +3,7 @@
   "Appointments.Day.Previous": "Poprzedni dzień",
   "Appointments.Day.Next": "Następny dzień",
   "Appointments.Day.Today": "Dziś",
-  "Appointments.Day.Book": "Zarezerwuj",
+  "Appointments.Day.Book": "Nowa wizyta",
   "Appointments.Day.NoStaff": "Nie ma jeszcze pracowników przyjmujących wizyty. Najpierw dodaj osobę i jej godziny pracy.",
   "Appointments.Day.Empty": "Brak wizyt",
   "Appointments.Day.StatusChanged": "Wizyta ma teraz status: {0}.",
