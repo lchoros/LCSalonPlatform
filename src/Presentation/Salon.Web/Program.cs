@@ -5,6 +5,7 @@ using Salon.Plugin.Payments.Manual;
 using Salon.Plugin.Payments.Stripe;
 using Salon.Plugin.Sms.Log;
 using Salon.Services.Seeding;
+using Salon.Web.Framework.Alerts;
 using Salon.Web.Framework.Identity;
 using Salon.Web.Framework.Infrastructure;
 using Salon.Web.Framework.Jobs;
@@ -29,6 +30,7 @@ builder.Services.AddCsvProductImport();
 builder.Services.AddCsvServiceImport();
 builder.Services.AddCsvAppointmentImport();
 builder.Services.AddSalonPlugins();
+builder.Services.AddSalonAlerts();
 builder.Services.AddSalonJobs(builder.Configuration);
 
 var app = builder.Build();
@@ -69,6 +71,9 @@ app.UseSalonScheduleTasks();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+
+// For the outside monitor that tells the developer the site is down (ADR 0093): healthy only with the database reachable.
+app.MapHealthChecks(AlertsServiceCollectionExtensions.HealthPath).AllowAnonymous();
 
 app.MapControllerRoute(
     name: "areas",

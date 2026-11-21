@@ -22,7 +22,9 @@ public static class JobsServiceCollectionExtensions
         var connectionString = configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("ConnectionStrings:Default is not configured.");
 
-        services.AddHangfire(config => config
+        services.AddHangfire((provider, config) => config
+            // A job that gave up after its retries tells the developer (ADR 0093).
+            .UseFilter(new Alerts.JobFailureAlertFilter(provider.GetRequiredService<Alerts.IDeveloperAlerts>()))
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
             .UseSimpleAssemblyNameTypeSerializer()
             .UseRecommendedSerializerSettings()
