@@ -134,7 +134,7 @@ public class DayListTests(SalonWebApplicationFactory factory) : IAsyncLifetime
 
         html.ShouldContain("<html lang=\"pl-PL\"");
         html.ShouldContain("Wizyty");
-        html.ShouldContain("Zarezerwuj");
+        html.ShouldContain("Nowa wizyta");
         html.ShouldContain("data-testid=\"nav-appointments\"");
         html.ShouldContain("data-testid=\"nav-clients\"");
         html.ShouldContain("href=\"/admin/clients\"");

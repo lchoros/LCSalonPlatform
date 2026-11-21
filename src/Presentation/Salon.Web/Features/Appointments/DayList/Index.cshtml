@@ -23,22 +23,19 @@
     }
     @await Component.InvokeAsync("VisitsWithoutOutcome")
     @await Component.InvokeAsync("SetupNote")
-    <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div class="space-y-2">
-            <h1 class="page-title">@T["Appointments.Day.Title"]</h1>
-            <nav aria-label="@T["Appointments.Day.Title"]" class="flex items-center gap-2">
-                <a href="@DayListController.DayPath(board.Day.PlusDays(-1))" data-testid="prev-day" class="@navClass" aria-label="@T["Appointments.Day.Previous"]">&larr;</a>
-                <time datetime="@board.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-testid="day" class="min-w-0 flex-1 text-center text-base font-medium sm:text-lg">@board.Day.ToDayHeading(culture)</time>
-                <a href="@DayListController.DayPath(board.Day.PlusDays(1))" data-testid="next-day" class="@navClass" aria-label="@T["Appointments.Day.Next"]">&rarr;</a>
-                <a href="@DayListController.ListPath" data-testid="today" class="@navClass">@T["Appointments.Day.Today"]</a>
-            </nav>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-            <a href="@(DayListController.ListPath)/calendar?view=day&date=@board.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-testid="calendar" class="@navClass">@T["Appointments.Day.Calendar"]</a>
-            @await Component.InvokeAsync("WaitlistLink")
-            <a href="@(DayListController.ListPath)/new?date=@board.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-testid="book" class="@buttonClass">@T["Appointments.Day.Book"]</a>
-        </div>
-    </header>
+    <h1 class="page-title">@T["Appointments.Day.Title"]</h1>
+    @* The same bar as the calendar's (ADR 0092): where you are, the ways to move, the one thing to do. The calendar
+       and the waiting list are the tabs above; the waiting-list link shows here only when somebody is waiting. *@
+    <div class="cal-bar" data-testid="day-bar">
+        <nav aria-label="@T["Appointments.Day.Title"]" class="cal-bar-nav">
+            <a href="@DayListController.ListPath" data-testid="today" class="@navClass">@T["Appointments.Day.Today"]</a>
+            <a href="@DayListController.DayPath(board.Day.PlusDays(-1))" data-testid="prev-day" class="cal-arrow" aria-label="@T["Appointments.Day.Previous"]">&lsaquo;</a>
+            <a href="@DayListController.DayPath(board.Day.PlusDays(1))" data-testid="next-day" class="cal-arrow" aria-label="@T["Appointments.Day.Next"]">&rsaquo;</a>
+            <time datetime="@board.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-testid="day" class="cal-range">@board.Day.ToString("ddd d MMM yyyy", culture)</time>
+        </nav>
+        @await Component.InvokeAsync("WaitlistLink", new { onlyWhenWaiting = true })
+        <a href="@(DayListController.ListPath)/new?date=@board.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-testid="book" class="@buttonClass">@T["Appointments.Day.Book"]</a>
+    </div>
 
     @if (board.Staff.Count == 0)
     {

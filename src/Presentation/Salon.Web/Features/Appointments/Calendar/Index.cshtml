@@ -49,7 +49,7 @@
             }
             else
             {
-                <time datetime="@isoDay" data-testid="range" class="cal-range">@board.Day.ToDayHeading(culture)</time>
+                <time datetime="@isoDay" data-testid="range" class="cal-range">@board.Day.ToString("ddd d MMM yyyy", culture)</time>
             }
         </nav>
         <form method="get" action="@CalendarController.CalendarPath" class="cal-bar-pick" data-testid="staff-filter" data-auto-submit>
@@ -114,6 +114,11 @@
                                     <a href="@CalendarController.Path(CalendarView.Day, column.Date, column.Staff.Id)" class="cal-day" aria-current="@(column.Date == board.Day ? "date" : null)">
                                         <time datetime="@column.Date.ToIso()">@column.Date.ToString("ddd d MMM", culture)</time>
                                     </a>
+                                    @if (column.WorkingRanges.Count == 0)
+                                    {
+                                        @* A whole day shaded grey is a day off: say so, so the shade is not read as a fault (the owner, 2026-11-21). *@
+                                        <span class="cal-off" data-testid="day-off">@T["Appointments.Calendar.DayOff"]</span>
+                                    }
                                 }
                                 else
                                 {

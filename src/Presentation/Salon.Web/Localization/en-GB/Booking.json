@@ -105,6 +105,7 @@
   "Booking.Public.ShowAll": "Show all services",
   "Booking.Public.PriceRange": "{0} – {1}",
   "Booking.Public.Variants": "Options: {0}",
+  "Booking.Public.BookRow": "Book",
   "Booking.Public.Verify.Wrong.One": "That code isn't right. You have 1 attempt left.",
   "Booking.Public.Verify.Wrong.Many": "That code isn't right. You have {0} attempts left.",
   "Booking.Public.Terms.FreeUntil.One": "Free up to 1 hour before the visit.",
