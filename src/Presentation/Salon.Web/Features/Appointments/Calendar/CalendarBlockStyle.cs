@@ -9,13 +9,13 @@ namespace Salon.Web.Features.Appointments.Calendar;
 public static class CalendarBlockStyle
 {
     /// <summary>
-    /// Row placement, lane offset and the staff colour as the solid left edge; the fill is a shade of the brand chosen
-    /// by the visit's status in the stylesheet (ADR 0086), so the calendar speaks one colour family.
+    /// Row placement and lane offset. The look is the stylesheet's: a pill in a depth of the brand chosen by the visit's
+    /// status (ADR 0086, ADR 0092); the person's own colour is the dot in the column's heading, not an edge on every visit.
     /// </summary>
-    public static string For(CalendarBlock block, string colour)
+    public static string For(CalendarBlock block)
     {
         ArgumentNullException.ThrowIfNull(block);
-        return $"grid-row: {block.Row} / span {block.Span}; grid-column: 1; margin-left: {Percent(block.Lane, block.Lanes)}%; width: {Percent(1, block.Lanes)}%; border-color: {colour}";
+        return $"grid-row: {block.Row} / span {block.Span}; grid-column: 1; margin-left: {Percent(block.Lane, block.Lanes)}%; width: {Percent(1, block.Lanes)}%";
     }
 
     /// <summary>Row placement and lane offset of a kept time; its dashed look comes from classes, not the staff colour.</summary>

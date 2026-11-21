@@ -90,13 +90,17 @@
         }
         <div class="space-y-1">
             <label for="serviceId" class="field-label">@T["Appointments.Book.Service"]</label>
-            <select id="serviceId" name="serviceId" data-testid="service-select" class="@inputClass">
+            <select id="serviceId" name="serviceId" data-testid="service-select" class="@inputClass" aria-invalid="@(Model.ServiceMissing ? "true" : null)" aria-describedby="@(Model.ServiceMissing ? "service-missing" : null)">
                 <option value="">@T["Appointments.Book.ChooseService"]</option>
                 @foreach (var service in form.Services)
                 {
                     <option value="@service.Id" selected="@(service.Id == form.ServiceId)">@service.Name (@T.Format("Appointments.Book.DurationMinutes", service.DurationMinutes))</option>
                 }
             </select>
+            @if (Model.ServiceMissing)
+            {
+                <p id="service-missing" class="field-error" data-testid="service-missing">@T["Appointments.Book.ServiceMissing"]</p>
+            }
         </div>
         <div class="space-y-1">
             <label for="staffId" class="field-label">@T["Appointments.Book.Staff"]</label>
@@ -112,6 +116,7 @@
             <label for="date" class="field-label">@T["Appointments.Book.Date"]</label>
             <input id="date" name="date" type="date" value="@day" data-testid="date-input" class="@inputClass" />
         </div>
+        <input type="hidden" name="asked" value="true" />
         <button type="submit" data-testid="show-slots" class="@secondaryClass w-full sm:w-auto">@T["Appointments.Book.ShowSlots"]</button>
     </form>
 
@@ -137,7 +142,7 @@
         }
         @if (!form.ShowSlots)
         {
-            <p class="text-sm text-stone-600" data-testid="slots-hint">@T["Appointments.Book.ChooseServiceHint"]</p>
+            <p class="@(Model.ServiceMissing ? "notice notice-error" : "text-sm text-stone-600")" data-testid="slots-hint">@T["Appointments.Book.ChooseServiceHint"]</p>
         }
         else if (form.Offering is { Offered: false })
         {
@@ -145,7 +150,19 @@
         }
         else if (form.Slots.Count == 0)
         {
-            <p class="text-sm text-stone-600" data-testid="no-slots">@T["Appointments.Book.NoSlots"]</p>
+            @* Said plainly and in the voice of a refusal (the owner, 2026-11-20): which day, with whom, and the way on —
+               the next day that has a time, one tap away. *@
+            <div class="notice notice-error space-y-2" role="status" data-testid="no-slots">
+                <p class="font-medium">@BookForClientText.NoSlots(T, form, CultureInfo.CurrentCulture)</p>
+                @if (form.NextFreeDay is { } nextFree)
+                {
+                    <a href="@BookForClientController.DayAddress(form, nextFree)" data-testid="next-free" class="btn btn-compact btn-secondary">@T.Format("Appointments.Book.NextFree", nextFree.ToDayHeading(CultureInfo.CurrentCulture))</a>
+                }
+                else
+                {
+                    <p data-testid="none-soon">@T.Format("Appointments.Book.NoneSoon", BookForClientFormHandler.LookAheadDays)</p>
+                }
+            </div>
             @if (form.Client is { } waitingClient && form.ServiceId is { } wantedService)
             {
                 @* Nothing free: the wish goes on the waitlist instead of being lost (ADR 0041). The Waitlist form owns the address. *@
@@ -154,7 +171,7 @@
         }
         else
         {
-            <ul class="grid grid-cols-3 gap-2 sm:grid-cols-4" data-testid="slot-list">
+            <ul class="slot-grid" data-testid="slot-list">
                 @foreach (var slot in form.Slots)
                 {
                     <li>

@@ -16,7 +16,7 @@
     ViewData["Title"] = T["Appointments.Calendar.Title"];
     const string buttonClass = "btn btn-compact btn-primary";
     const string navClass = "btn btn-compact btn-secondary min-w-11 px-3";
-    var rowsStyle = $"grid-template-rows: repeat({grid.RowCount}, 1rem)";
+    var rowsStyle = $"grid-template-rows: repeat({grid.RowCount}, 1.25rem)";
 }
 <section class="space-y-4">
     <partial name="_SectionTabs" model="@AdminSections.Appointments("calendar")" />
@@ -30,50 +30,35 @@
     </div>
     @await Component.InvokeAsync("VisitsWithoutOutcome")
     @await Component.InvokeAsync("SetupNote")
-    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div class="space-y-2">
-            <h1 class="page-title">@T["Appointments.Calendar.Title"]</h1>
-            <nav aria-label="@T["Appointments.Calendar.Title"]" class="flex items-center gap-2">
-                <a href="@CalendarController.Path(board.View, board.Day.PlusDays(-step), board.SelectedStaffId)" data-testid="prev" class="@navClass" aria-label="@T["Appointments.Calendar.Previous"]">&larr;</a>
-                @if (isWeek)
-                {
-                    <span data-testid="range" class="min-w-0 flex-1 text-center text-base font-medium sm:text-lg">
-                        <time datetime="@board.From.ToIso()">@T.Format("Appointments.Calendar.WeekOf", board.From.ToString("d", culture))</time>
-                        <span class="text-stone-500">&ndash; <time datetime="@board.To.ToIso()">@board.To.ToString("d", culture)</time></span>
-                    </span>
-                }
-                else
-                {
-                    <time datetime="@isoDay" data-testid="range" class="min-w-0 flex-1 text-center text-base font-medium sm:text-lg">@board.Day.ToDayHeading(culture)</time>
-                }
-                <a href="@CalendarController.Path(board.View, board.Day.PlusDays(step), board.SelectedStaffId)" data-testid="next" class="@navClass" aria-label="@T["Appointments.Calendar.Next"]">&rarr;</a>
-                <a href="@CalendarController.TodayPath(board.View, board.SelectedStaffId)" data-testid="today" class="@navClass">@T["Appointments.Calendar.Today"]</a>
-            </nav>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-            <nav aria-label="@T["Appointments.Calendar.ViewSwitch"]" class="inline-flex rounded-lg border border-stone-300 bg-white" data-testid="view-switch">
-                <a href="@CalendarController.Path(CalendarView.Day, board.Day, board.SelectedStaffId)" data-testid="view-day" aria-current="@(isWeek ? null : "page")" class="inline-flex min-h-11 items-center px-4 py-2 text-sm font-medium @(isWeek ? "hover:bg-stone-100" : "bg-brand text-white") rounded-l-lg">@T["Appointments.Calendar.Day"]</a>
-                <a href="@CalendarController.Path(CalendarView.Week, board.Day, board.SelectedStaffId)" data-testid="view-week" aria-current="@(isWeek ? "page" : null)" class="inline-flex min-h-11 items-center px-4 py-2 text-sm font-medium @(isWeek ? "bg-brand text-white" : "hover:bg-stone-100") rounded-r-lg">@T["Appointments.Calendar.Week"]</a>
-            </nav>
-            <a href="@(CalendarController.DayListPath)?date=@isoDay" data-testid="day-list" class="@navClass">@T["Appointments.Calendar.DayList"]</a>
-            @await Component.InvokeAsync("WaitlistLink")
-            <a href="@(CalendarController.DayListPath)/new?date=@isoDay@(board.SelectedStaffId is { } bookStaff ? $"&staffId={bookStaff}" : string.Empty)" data-testid="book" class="@buttonClass">@T["Appointments.Calendar.Book"]</a>
-        </div>
-    </header>
-
-    @if (board.Staff.Count == 0)
-    {
-        <p data-testid="empty-state" class="empty-state">@T["Appointments.Calendar.NoStaff"]</p>
-    }
-    else
-    {
-        @* Whose calendar: a dropdown, so a team of eight takes the room of a team of two (the owner, 2026-11-20).
-           It is a plain GET form; with script it submits on change (auto-submit.js), without, the button does. *@
-        <form method="get" action="@CalendarController.CalendarPath" class="flex flex-wrap items-end gap-2" data-testid="staff-filter" data-auto-submit>
+    <h1 class="page-title">@T["Appointments.Calendar.Title"]</h1>
+    @* One bar (ADR 0092): where you are and the ways to move — today, a step back or forward, any date straight from
+       the browser's own calendar — then whose diary, how much of it (a day or a week) and the one thing to do: book.
+       The day list and the waiting list are the tabs above, not buttons here. The date and the person are one plain
+       GET form; with script a change submits it (auto-submit.js), without, its button does. *@
+    <div class="cal-bar" data-testid="calendar-bar">
+        <nav aria-label="@T["Appointments.Calendar.Title"]" class="cal-bar-nav">
+            <a href="@CalendarController.TodayPath(board.View, board.SelectedStaffId)" data-testid="today" class="@navClass">@T["Appointments.Calendar.Today"]</a>
+            <a href="@CalendarController.Path(board.View, board.Day.PlusDays(-step), board.SelectedStaffId)" data-testid="prev" class="cal-arrow" aria-label="@T["Appointments.Calendar.Previous"]">&lsaquo;</a>
+            <a href="@CalendarController.Path(board.View, board.Day.PlusDays(step), board.SelectedStaffId)" data-testid="next" class="cal-arrow" aria-label="@T["Appointments.Calendar.Next"]">&rsaquo;</a>
+            @if (isWeek)
+            {
+                <span data-testid="range" class="cal-range">
+                    <time datetime="@board.From.ToIso()">@board.From.ToString("d MMM", culture)</time>
+                    &ndash; <time datetime="@board.To.ToIso()">@board.To.ToString("d MMM yyyy", culture)</time>
+                </span>
+            }
+            else
+            {
+                <time datetime="@isoDay" data-testid="range" class="cal-range">@board.Day.ToDayHeading(culture)</time>
+            }
+        </nav>
+        <form method="get" action="@CalendarController.CalendarPath" class="cal-bar-pick" data-testid="staff-filter" data-auto-submit>
             <input type="hidden" name="view" value="@CalendarController.ViewSegment(board.View)" />
-            <input type="hidden" name="date" value="@isoDay" />
-            <div class="min-w-48 space-y-1">
-                <label for="staff" class="field-label">@T["Appointments.Calendar.StaffFilter"]</label>
+            <label for="jump" class="sr-only">@T["Appointments.Calendar.GoToDate"]</label>
+            <input id="jump" type="date" name="date" value="@isoDay" required class="field field-compact cal-date" data-testid="jump-date" />
+            @if (board.Staff.Count > 0)
+            {
+                <label for="staff" class="sr-only">@T["Appointments.Calendar.StaffFilter"]</label>
                 <select id="staff" name="staff" class="field field-compact" data-testid="staff-select">
                     @if (!isWeek)
                     {
@@ -84,15 +69,28 @@
                         <option value="@person.Id" selected="@(person.Id == board.SelectedStaffId)">@person.DisplayName</option>
                     }
                 </select>
-            </div>
+            }
             <button type="submit" class="btn btn-compact btn-secondary" data-testid="staff-filter-submit" data-auto-submit-fallback>@T["Appointments.Calendar.ShowStaff"]</button>
         </form>
+        @await Component.InvokeAsync("WaitlistLink", new { onlyWhenWaiting = true })
+        <nav aria-label="@T["Appointments.Calendar.ViewSwitch"]" class="cal-switch" data-testid="view-switch">
+            <a href="@CalendarController.Path(CalendarView.Day, board.Day, board.SelectedStaffId)" data-testid="view-day" aria-current="@(isWeek ? null : "page")">@T["Appointments.Calendar.Day"]</a>
+            <a href="@CalendarController.Path(CalendarView.Week, board.Day, board.SelectedStaffId)" data-testid="view-week" aria-current="@(isWeek ? "page" : null)">@T["Appointments.Calendar.Week"]</a>
+        </nav>
+        <a href="@(CalendarController.DayListPath)/new?date=@isoDay@(board.SelectedStaffId is { } bookStaff ? $"&staffId={bookStaff}" : string.Empty)" data-testid="book" class="@buttonClass">@T["Appointments.Calendar.Book"]</a>
+    </div>
 
+    @if (board.Staff.Count == 0)
+    {
+        <p data-testid="empty-state" class="empty-state">@T["Appointments.Calendar.NoStaff"]</p>
+    }
+    else
+    {
         @* The timetable. Week view scrolls sideways inside this box only; the day view with every person is replaced by a list on a phone. *@
-        <div data-testid="calendar-grid" data-view="@CalendarController.ViewSegment(board.View)" data-drop-path="@CalendarController.CalendarPath" data-refused="@T["Appointments.Calendar.Drag.Refused"]" class="rounded-xl border border-stone-200 bg-white shadow-sm @(isWeek ? "overflow-x-auto" : string.Empty) @(allStaffDay ? "hidden sm:block" : string.Empty)">
+        <div data-testid="calendar-grid" data-view="@CalendarController.ViewSegment(board.View)" data-drop-path="@CalendarController.CalendarPath" data-refused="@T["Appointments.Calendar.Drag.Refused"]" class="cal @(isWeek ? "overflow-x-auto" : string.Empty) @(allStaffDay ? "hidden sm:block" : string.Empty)">
             <div class="flex @(isWeek ? "min-w-[42rem]" : string.Empty)">
-                <div class="w-12 shrink-0 border-r border-stone-200" aria-hidden="true">
-                    <div class="h-10 border-b border-stone-200"></div>
+                <div class="cal-gutter" aria-hidden="true">
+                    <div class="cal-corner"></div>
                     <div class="grid" style="@rowsStyle">
                         @for (var row = 1; row <= grid.RowCount; row++)
                         {
@@ -100,7 +98,7 @@
                             if (minute % 60 == 0)
                             {
                                 <div class="relative" style="grid-row: @row">
-                                    <span class="absolute -top-2 right-1 text-xs tabular-nums text-stone-500">@LocalTime.FromMinutesSinceMidnight(minute).ToShortTime(culture)</span>
+                                    <span class="cal-hour">@LocalTime.FromMinutesSinceMidnight(minute).ToShortTime(culture)</span>
                                 </div>
                             }
                         }
@@ -109,18 +107,18 @@
                 <div class="grid min-w-0 flex-1" style="grid-template-columns: repeat(@board.Columns.Count, minmax(0, 1fr))">
                     @foreach (var column in board.Columns)
                     {
-                        <div class="min-w-0 border-l border-stone-200 first:border-l-0" data-testid="calendar-column" data-staff-id="@column.Staff.Id" data-date="@column.Date.ToIso()">
-                            <div class="flex h-10 items-center gap-2 overflow-hidden border-b border-stone-200 px-2 text-sm font-semibold">
+                        <div class="cal-col" data-testid="calendar-column" data-staff-id="@column.Staff.Id" data-date="@column.Date.ToIso()">
+                            <div class="cal-head">
                                 @if (isWeek)
                                 {
-                                    <a href="@CalendarController.Path(CalendarView.Day, column.Date, column.Staff.Id)" class="truncate hover:underline" aria-current="@(column.Date == board.Day ? "date" : null)">
+                                    <a href="@CalendarController.Path(CalendarView.Day, column.Date, column.Staff.Id)" class="cal-day" aria-current="@(column.Date == board.Day ? "date" : null)">
                                         <time datetime="@column.Date.ToIso()">@column.Date.ToString("ddd d MMM", culture)</time>
                                     </a>
                                 }
                                 else
                                 {
                                     <span class="size-3 shrink-0 rounded-full" style="background-color: @column.Staff.Colour" aria-hidden="true"></span>
-                                    <a href="@CalendarController.Path(CalendarView.Day, column.Date, column.Staff.Id)" class="truncate hover:underline" data-testid="column-staff">@column.Staff.DisplayName</a>
+                                    <a href="@CalendarController.Path(CalendarView.Day, column.Date, column.Staff.Id)" class="cal-person" data-testid="column-staff">@column.Staff.DisplayName</a>
                                 }
                             </div>
                             <div class="grid" style="@rowsStyle">
@@ -128,7 +126,7 @@
                                 {
                                     var minute = CalendarLayout.MinuteOfRow(grid, row);
                                     var working = CalendarLayout.IsWorking(column.WorkingRanges, minute);
-                                    <div class="col-start-1 border-t @(minute % 60 == 0 ? "border-stone-200" : "border-stone-100") @(working ? "bg-white" : "bg-stone-100")" style="grid-row: @row" data-row="@row" data-minute="@minute" data-working="@(working ? "true" : "false")" aria-hidden="true"></div>
+                                    <div class="cal-cell @(minute % 60 == 0 ? "is-hour" : null) @(working ? null : "is-off")" style="grid-row: @row" data-row="@row" data-minute="@minute" data-working="@(working ? "true" : "false")" aria-hidden="true"></div>
                                 }
                                 @foreach (var block in column.Blocks)
                                 {
@@ -138,7 +136,7 @@
                                        data-staff-id="@column.Staff.Id"
                                        data-status="@block.Status"
                                        class="cal-block"
-                                       style="@CalendarBlockStyle.For(block, column.Staff.Colour)"
+                                       style="@CalendarBlockStyle.For(block)"
                                        title="@block.Start.ToShortTime(culture)–@block.End.ToShortTime(culture) @block.ClientFirstName · @block.ServiceName">
                                         @* The block only shows what its height can hold (the owner's bug report, 2026-11-20): one line
                                            when it spans a single row, the service on the second, the badge from the third; the title
@@ -150,7 +148,7 @@
                                         }
                                         @if (block.Span >= 3)
                                         {
-                                            <span class="mt-auto self-start rounded px-1 text-[10px] font-medium @Badges.AppointmentInList(block.Status)" data-testid="status-badge">@T[$"Appointments.Status.{block.Status}"]</span>
+                                            <span class="cal-badge" data-testid="status-badge">@T[$"Appointments.Status.{block.Status}"]</span>
                                         }
                                     </a>
                                 }
@@ -160,12 +158,12 @@
                                        data-testid="calendar-kept"
                                        data-offer-id="@kept.OfferId"
                                        data-staff-id="@column.Staff.Id"
-                                       class="relative z-10 flex min-w-0 flex-col overflow-hidden rounded border border-dashed border-amber-400 bg-amber-50 px-1 py-0.5 text-[11px] leading-tight text-stone-900 hover:ring-2 hover:ring-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900"
+                                       class="cal-kept"
                                        style="@CalendarBlockStyle.For(kept)"
                                        title="@kept.Start.ToShortTime(culture)–@kept.End.ToShortTime(culture) @T.Format("Appointments.Calendar.Kept", kept.ClientFirstName) · @kept.ServiceName">
                                         <span class="truncate"><span class="font-semibold tabular-nums">@kept.Start.ToShortTime(culture)</span> @T.Format("Appointments.Calendar.Kept", kept.ClientFirstName)</span>
                                         <span class="truncate">@kept.ServiceName</span>
-                                        <span class="mt-auto self-start rounded px-1 text-[10px] font-medium @Badges.KeptTime">@T["Appointments.Day.Kept.Badge"]</span>
+                                        <span class="cal-badge">@T["Appointments.Day.Kept.Badge"]</span>
                                     </a>
                                 }
                             </div>

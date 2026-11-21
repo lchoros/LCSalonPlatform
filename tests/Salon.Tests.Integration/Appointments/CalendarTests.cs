@@ -73,10 +73,11 @@ public partial class CalendarTests(SalonWebApplicationFactory factory) : IAsyncL
         blocks.Count(b => b.StaffId == _annaId).ShouldBe(2);
         blocks.Single(b => b.StaffId == _tomId).Id.ShouldBe(tomsVisit.Id);
         blocks.ShouldAllBe(b => b.Status == "Booked");
-        html.ShouldContain("border-color: #BE185D", Case.Sensitive, "Anna's colour edges her blocks");
+        html.ShouldContain("background-color: #BE185D", Case.Sensitive, "Anna's colour is the dot in her column's heading");
+        html.ShouldNotContain("border-color: #BE185D", Case.Sensitive, "a visit is a pill in a depth of the brand, without a coloured edge (ADR 0092)");
         html.ShouldContain("class=\"cal-block\"", customMessage: "the fill is a brand shade chosen by status in the stylesheet (ADR 0086)");
         html.ShouldNotContain("background-color: #BE185D26");
-        html.ShouldContain("border-color: #1D4ED8");
+        html.ShouldContain("background-color: #1D4ED8");
         html.ShouldContain("Olivia");
         html.ShouldContain("Cut");
         html.ShouldContain("10:00");
@@ -93,7 +94,7 @@ public partial class CalendarTests(SalonWebApplicationFactory factory) : IAsyncL
         html.ShouldContain($"href=\"{DayPath(_day.PlusDays(-1), null)}\"");
         html.ShouldContain($"href=\"{DayPath(_day.PlusDays(1), null)}\"");
         html.ShouldContain($"href=\"/admin/appointments/new?date={Iso(_day)}\"");
-        html.ShouldContain($"href=\"/admin/appointments?date={Iso(_day)}\"");
+        html.ShouldContain("data-testid=\"section-tab-day\"", customMessage: "the day list is the tab above the bar, not a second button beside \"Day\" (ADR 0092)");
         html.ShouldContain($"href=\"{CalendarPath}/{tomsVisit.Id}\"");
         html.ShouldNotContain("<script>", Case.Sensitive, "the calendar ships no inline script");
         html.ShouldContain("<script type=\"module\" src=\"/js/calendar-drag.js", Case.Sensitive, "its one script is a same-origin module file (ADR 0086)");

@@ -39,6 +39,13 @@ public sealed record BookForClientForm(
 {
     /// <summary>True once a service is chosen, so the page shows the slot section (with its empty state when nothing is free).</summary>
     public bool ShowSlots => ServiceId is not null;
+
+    /// <summary>
+    /// When the chosen day has no free time: the first later day that has one for the same service and person, looked
+    /// for over <see cref="BookForClientFormHandler.LookAheadDays"/> days (ADR 0092). Null when there is none either,
+    /// or when the day has times.
+    /// </summary>
+    public LocalDate? NextFreeDay { get; init; }
 }
 
 /// <summary>The duration and price the slots are for: the chosen person's own, or the list duration and the cheapest price under "any".</summary>
@@ -57,4 +64,8 @@ public sealed record SlotOption(Guid StaffMemberId, string StaffName, Instant St
 
 /// <param name="Form">The page state.</param>
 /// <param name="Error">A refused booking (slot taken meanwhile), already localized.</param>
-public sealed record BookForClientViewModel(BookForClientForm Form, string? Error);
+public sealed record BookForClientViewModel(BookForClientForm Form, string? Error)
+{
+    /// <summary>True when the times were asked for without a service: the field is marked and says so.</summary>
+    public bool ServiceMissing { get; init; }
+}

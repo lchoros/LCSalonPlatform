@@ -170,31 +170,139 @@
     @apply border-brand text-brand;
   }
 
-  /* A visit on the calendar (ADR 0086): the fill is a shade of the brand that deepens as the visit progresses, the
-     left edge keeps the staff member's own colour, and done or missed visits step back out of the purple. */
-  .cal-block {
-    @apply relative z-10 flex min-w-0 flex-col overflow-hidden rounded border-l-4 bg-brand-mist px-1 py-0.5 text-[11px] leading-tight text-brand-deep focus:outline-none focus:ring-2 focus:ring-brand;
-    transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+  /* The calendar's one bar (ADR 0092): where you are and how to move on the left, whose diary and how much of it on
+     the right, and the single primary action last. It wraps into rows on a phone. */
+  .cal-bar {
+    @apply flex flex-wrap items-center gap-x-3 gap-y-2;
   }
 
-  .cal-block:hover {
-    @apply ring-2 ring-brand-line;
+  .cal-bar-nav {
+    @apply flex min-w-0 flex-1 basis-full items-center gap-1 sm:basis-64;
+  }
+
+  .cal-arrow {
+    @apply inline-flex size-11 shrink-0 items-center justify-center rounded-full pb-1 text-2xl leading-none text-slate-600 transition-colors hover:bg-brand-soft hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand;
+  }
+
+  .cal-range {
+    @apply min-w-0 truncate pl-1 text-lg font-semibold tracking-tight text-stone-900 sm:text-xl;
+  }
+
+  .cal-bar-pick {
+    @apply flex min-w-0 flex-1 basis-full items-center gap-2 sm:flex-none sm:basis-auto;
+  }
+
+  .cal-bar-pick .field {
+    @apply min-w-0 flex-1 sm:w-40 sm:flex-none;
+  }
+
+  /* Day or week: a track with the chosen view lifted out of it. */
+  .cal-switch {
+    @apply inline-flex shrink-0 rounded-lg bg-slate-100 p-1;
+  }
+
+  .cal-switch a {
+    @apply inline-flex min-h-9 items-center rounded-md px-4 text-sm font-medium text-slate-600 transition-colors hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand;
+  }
+
+  .cal-switch a[aria-current="page"] {
+    @apply bg-white font-semibold text-brand shadow-sm;
+  }
+
+  /* The timetable (ADR 0092), after the planner the owner pointed at: a white card with room around it, small capital
+     labels, hour lines only — no cage of quarter-hour lines — and visits as soft pills in three depths of the brand. */
+  .cal {
+    @apply rounded-2xl border border-slate-200 bg-white p-2 shadow-sm sm:p-4;
+  }
+
+  .cal-gutter {
+    @apply w-11 shrink-0;
+  }
+
+  .cal-corner {
+    @apply h-11;
+  }
+
+  .cal-hour {
+    @apply absolute -top-2 right-2 text-[11px] font-medium tabular-nums text-slate-500;
+  }
+
+  .cal-col {
+    @apply min-w-0;
+  }
+
+  .cal-col + .cal-col {
+    @apply border-l border-slate-100;
+  }
+
+  .cal-head {
+    @apply flex h-11 items-center justify-center gap-2 overflow-hidden px-1 text-xs font-semibold tracking-wider text-slate-500 uppercase;
+  }
+
+  .cal-day,
+  .cal-person {
+    @apply truncate rounded-full px-2.5 py-1 transition-colors hover:bg-brand-mist hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand;
+  }
+
+  .cal-day[aria-current="date"] {
+    @apply bg-brand text-white hover:bg-brand-strong hover:text-white;
+  }
+
+  .cal-cell {
+    @apply col-start-1;
+  }
+
+  .cal-cell.is-hour {
+    @apply border-t border-slate-200;
+  }
+
+  /* Outside working hours: a breath of grey, not a wall. */
+  .cal-cell.is-off {
+    @apply bg-slate-50;
+  }
+
+  /* A visit: a pill. Booked is the palest lavender, confirmed the middle one, arrived the full brand in white bold;
+     done and missed visits step out of the purple. The thin white rim keeps neighbours apart without any line. */
+  .cal-block,
+  .cal-kept {
+    @apply relative z-10 flex min-w-0 flex-col overflow-hidden rounded-lg px-2 py-1 text-xs leading-tight focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1;
+    box-shadow: inset 0 0 0 1.5px #fff;
+    transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease, filter 160ms ease;
+  }
+
+  .cal-block {
+    @apply bg-brand-soft font-medium text-brand;
+  }
+
+  .cal-block:hover,
+  .cal-kept:hover {
+    filter: brightness(0.97);
   }
 
   .cal-block[data-status="Confirmed"] {
-    @apply bg-brand-soft;
+    @apply bg-brand-edge text-brand-deep;
   }
 
   .cal-block[data-status="Arrived"] {
-    @apply bg-brand-edge;
+    @apply bg-brand font-semibold text-white;
   }
 
   .cal-block[data-status="Completed"] {
-    @apply bg-stone-100 text-stone-600;
+    @apply bg-slate-100 text-slate-600;
   }
 
   .cal-block[data-status="NoShow"] {
     @apply bg-red-50 text-red-800;
+  }
+
+  /* A time kept for a waiting client: the planner's amber "provisional". */
+  .cal-kept {
+    @apply bg-amber-100 font-medium text-amber-900;
+  }
+
+  /* The status in words, for the visits tall enough to say it: colour alone never carries the meaning. */
+  .cal-badge {
+    @apply mt-auto self-start text-[10px] font-semibold tracking-wide uppercase;
   }
 
   /* Dragging (the calendar's one script): the block lifts under the pointer, a dashed outline shows where it lands. */
@@ -209,7 +317,7 @@
   }
 
   .cal-drop-hint {
-    @apply pointer-events-none z-40 rounded border-2 border-dashed border-brand bg-brand-soft/70;
+    @apply pointer-events-none z-40 rounded-lg border-2 border-dashed border-brand bg-brand-mist/80;
   }
 
   .cal-drop-hint.is-refused {
@@ -270,6 +378,15 @@
   }
 
   /* The round "earlier / later days" paddles beside the strip. */
+  /* The bar of days on the booking page: the arrows keep their places at both ends, faint where there is nowhere to go. */
+  .day-bar {
+    @apply flex scroll-mt-4 items-center gap-2;
+  }
+
+  .strip-arrow.is-off {
+    @apply pointer-events-none border-stone-200 text-stone-300;
+  }
+
   .strip-arrow {
     @apply mb-2 inline-flex size-9 shrink-0 items-center justify-center self-center rounded-full border border-brand-edge bg-white text-brand transition-colors hover:border-brand-line hover:bg-brand-mist sm:size-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
   }
@@ -314,8 +431,13 @@
 
   /* A free time: a flat Cinolla-style chip in the brand's lightest shade; no lift, no pill theatrics (the owner,
      2026-11-20). brand-deep on brand-mist keeps AA. */
+  /* Free times (ADR 0092): compact — four across on a phone, six on a desk — and still a full 44 px to tap. */
+  .slot-grid {
+    @apply grid grid-cols-4 gap-1.5 sm:grid-cols-6;
+  }
+
   .slot {
-    @apply flex min-h-11 items-center justify-center rounded-lg border border-brand-edge bg-brand-mist px-2 py-2 text-base font-semibold tabular-nums text-brand-deep transition-colors hover:border-brand hover:bg-brand-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+    @apply flex h-11 items-center justify-center rounded-md border border-brand-edge bg-brand-mist px-1 text-sm font-semibold tabular-nums text-brand-deep transition-colors hover:border-brand hover:bg-brand-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
   }
 
   /* On a phone the day's parts are tabs so times fit without a long scroll (the owner, 2026-11-20); from sm the
@@ -538,8 +660,10 @@
     background-color: #fff;
   }
 
-  .bottom-link::before {
-    background-color: currentColor;
+  /* On the phone's bar the icons wear the brand too (the owner, 2026-11-20); the place you are in is marked by a
+     line of the brand above it and a bolder word. */
+  .bottom-link[aria-current="true"] {
+    box-shadow: inset 0 2px 0 var(--color-brand);
   }
 
   [data-testid="nav-appointments"],

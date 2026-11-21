@@ -125,7 +125,7 @@
             else
             {
                 @* A tap only chooses (ADR 0086, the owner found the one-tap move jumpy); the button below does the move. *@
-                <ul class="grid grid-cols-3 gap-2 sm:grid-cols-4" data-testid="move-slot-list">
+                <ul class="slot-grid" data-testid="move-slot-list">
                     @foreach (var slot in card.Slots)
                     {
                         var chosen = slot.Start == card.Chosen?.Start;

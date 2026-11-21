@@ -69,6 +69,17 @@ public partial class CalendarE2ETests(KestrelAppFixture app) : IClassFixture<Kes
             var dayAxe = await page.RunAxe();
             dayAxe.Violations.ShouldBeEmpty(string.Join("; ", dayAxe.Violations.Select(v => $"{v.Id}: {v.Help}")));
 
+            // Any date straight from the browser's own calendar (ADR 0092): pick a day next week and come back. The bar
+            // has no "Day list" or "Waitlist" button any more — those are the tabs above it.
+            var elsewhere = DateOnly.ParseExact(day, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture).AddDays(7).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+            await page.GetByTestId("jump-date").FillAsync(elsewhere);
+            await page.ReachAsync(url => url.Contains($"date={elsewhere}", StringComparison.Ordinal));
+            (await page.GetByTestId("jump-date").InputValueAsync()).ShouldBe(elsewhere);
+            await page.GetByTestId("jump-date").FillAsync(day);
+            await page.ReachAsync(url => url.Contains($"date={day}", StringComparison.Ordinal));
+            (await page.GetByTestId("calendar-bar").GetByTestId("day-list").CountAsync()).ShouldBe(0);
+            (await page.GetByTestId("section-tab-day").CountAsync()).ShouldBe(1);
+
             // One person's day is a grid on every screen size.
             await page.GetByTestId("staff-select").SelectOptionAsync(staffId.ToString()); // auto-submit.js sends the form on change (ADR 0087)
             await page.ReachAsync($"**/admin/appointments/calendar?view=day&date={day}&staff={staffId}");

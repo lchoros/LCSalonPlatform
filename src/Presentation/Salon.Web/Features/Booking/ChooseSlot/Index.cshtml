@@ -42,16 +42,23 @@
     }
 
     @{ var windowStart = (r.Days.Count > 0 ? r.Days[0].Date : r.SelectedDate).ToIso(); }
-    <div class="flex items-center gap-2">
+    @* The two arrows always hold their places (the owner, 2026-11-20): where there is nothing earlier or later the
+       arrow is drawn faint and is not a link, so the strip between them never shifts. Every link comes back to this
+       bar (#days), so changing the day or the week does not throw the page to its top. *@
+    <div id="days" class="day-bar">
         @if (r.EarlierFrom is { } earlier)
         {
-            <a href="/book/@r.ServiceId?from=@earlier.ToIso()@staffQuery" class="strip-arrow" data-testid="earlier-days" aria-label="@T["Booking.Public.EarlierDays"]"><span aria-hidden="true" class="text-xl font-bold">&lsaquo;</span></a>
+            <a href="/book/@r.ServiceId?from=@earlier.ToIso()@staffQuery#days" class="strip-arrow" data-testid="earlier-days" aria-label="@T["Booking.Public.EarlierDays"]"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6" /></svg></a>
+        }
+        else
+        {
+            <span class="strip-arrow is-off" data-testid="earlier-days-off" aria-hidden="true"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6" /></svg></span>
         }
         <nav aria-label="@T["Booking.Public.Day"]" data-testid="date-strip" class="scroll-row mx-0 min-w-0 flex-1 px-0 scroll-px-0">
             @foreach (var day in r.Days)
             {
                 var on = day.Date == r.SelectedDate;
-                <a href="/book/@r.ServiceId?date=@day.Date.ToIso()&from=@windowStart@staffQuery" class="tile @Badges.DayTile(on, day.HasSlots)" aria-current="@(on ? "date" : null)" data-testid="day" data-has-slots="@day.HasSlots.ToString().ToLowerInvariant()">
+                <a href="/book/@r.ServiceId?date=@day.Date.ToIso()&from=@windowStart@staffQuery#days" class="tile@Badges.DayTile(on, day.HasSlots)" aria-current="@(on ? "date" : null)" data-testid="day" data-has-slots="@day.HasSlots.ToString().ToLowerInvariant()">
                     <span class="text-[0.6875rem] font-semibold uppercase">@day.Date.ToString("ddd", culture)</span>
                     <span class="tile-date text-lg font-bold tabular-nums">@day.Date.Day</span>
                     <span class="text-[0.6875rem]">@day.Date.ToString("MMM", culture)</span>
@@ -60,7 +67,11 @@
         </nav>
         @if (r.LaterFrom is { } later)
         {
-            <a href="/book/@r.ServiceId?from=@later.ToIso()@staffQuery" class="strip-arrow" data-testid="later-days" aria-label="@T["Booking.Public.LaterDays"]"><span aria-hidden="true" class="text-xl font-bold">&rsaquo;</span></a>
+            <a href="/book/@r.ServiceId?from=@later.ToIso()@staffQuery#days" class="strip-arrow" data-testid="later-days" aria-label="@T["Booking.Public.LaterDays"]"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" /></svg></a>
+        }
+        else
+        {
+            <span class="strip-arrow is-off" data-testid="later-days-off" aria-hidden="true"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" /></svg></span>
         }
     </div>
 
@@ -95,7 +106,7 @@
                     var group = r.Groups[i];
                     <section class="slot-group space-y-2" data-part="@i" data-testid="slot-group">
                         <h3 class="hidden text-xs font-semibold uppercase tracking-wide text-stone-600 sm:block">@T[group.LabelKey]</h3>
-                        <ul class="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                        <ul class="slot-grid">
                             @foreach (var slot in group.Slots)
                             {
                                 var chosen = slot.Start == r.Chosen?.Start;

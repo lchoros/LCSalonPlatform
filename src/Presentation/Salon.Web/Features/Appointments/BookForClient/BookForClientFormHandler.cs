@@ -28,6 +28,9 @@ public sealed class BookForClientFormHandler(
     /// <summary>Enough to recognise the right person on a phone screen; a longer query narrows it further.</summary>
     public const int MaxMatches = 10;
 
+    /// <summary>How far ahead the form looks for a free day when the chosen one has none (ADR 0092).</summary>
+    public const int LookAheadDays = 30;
+
     public async Task<BookForClientForm> HandleAsync(BookForClientFormQuery request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -73,7 +76,17 @@ public sealed class BookForClientFormHandler(
             ? await SummarizeAsync(services.First(s => s.Id == chosen), staffMemberId is { } id ? staff.First(p => p.Id == id) : null, cancellationToken)
             : null;
 
-        return new BookForClientForm(request.Query, matches, client, services, staff, serviceId, staffMemberId, day, slots, offering);
+        // Nothing free on the chosen day: look ahead, so the page can say when there is something (ADR 0092).
+        LocalDate? nextFree = null;
+        if (serviceId is { } wanted && slots.Length == 0 && offering is not { Offered: false })
+        {
+            var today = clock.GetCurrentInstant().InZone(zone).Date;
+            var from = LocalDate.Max(day.PlusDays(1), today);
+            var ahead = await availability.GetSlotsAsync(wanted, staffMemberId, from, from.PlusDays(LookAheadDays - 1), cancellationToken);
+            nextFree = ahead.Select(s => (Instant?)s.Start).Min()?.InZone(zone).Date;
+        }
+
+        return new BookForClientForm(request.Query, matches, client, services, staff, serviceId, staffMemberId, day, slots, offering) { NextFreeDay = nextFree };
     }
 
     /// <summary>The chosen person's own duration and price (ADR 0018); under "any", the list duration and the cheapest price with "from" when staff differ.</summary>

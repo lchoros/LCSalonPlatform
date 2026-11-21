@@ -43,12 +43,25 @@ public sealed class BookForClientController(IDispatcher dispatcher, ILocalizatio
             ("staffId", form.StaffMemberId?.ToString()));
     }
 
+    /// <summary>The same form on another day: where "next free day" leads (ADR 0092).</summary>
+    public static string DayAddress(BookForClientForm form, LocalDate day)
+    {
+        ArgumentNullException.ThrowIfNull(form);
+        return ListUrl.Build(
+            FormPath,
+            ("date", LocalDatePattern.Iso.Format(day)),
+            ("clientId", form.Client?.Id.ToString()),
+            ("serviceId", form.ServiceId?.ToString()),
+            ("staffId", form.StaffMemberId?.ToString()));
+    }
+
     [HttpGet("new")]
-    public async Task<IActionResult> New(string? q, Guid? clientId, Guid? serviceId, Guid? staffId, string? date, CancellationToken cancellationToken)
+    public async Task<IActionResult> New(string? q, Guid? clientId, Guid? serviceId, Guid? staffId, string? date, bool asked, CancellationToken cancellationToken)
     {
         var query = q?.Trim() is { Length: > 0 } text ? text[..Math.Min(text.Length, 100)] : null;
         var form = await dispatcher.SendAsync(new BookForClientFormQuery(query, clientId, serviceId, staffId, ParseDate(date)), cancellationToken);
-        return View(new BookForClientViewModel(form, null));
+        // "Show times" pressed with no service chosen: the page says what is missing instead of repeating its hint.
+        return View(new BookForClientViewModel(form, null) { ServiceMissing = asked && form.ServiceId is null });
     }
 
     [HttpPost("new")]
