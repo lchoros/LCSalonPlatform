@@ -471,9 +471,10 @@
   /* The price list as rows (ADR 0092; the owner: "more like a table, but modern — lots of space wasted"): one white
      sheet, a line between services, the whole name always readable, the price and a Book pill at the right. The
      markup and its classes are the cards' own; inside the sheet they lose their borders and become rows. */
-  /* Square corners, so the first and last rows look like every other row (the owner, 2026-11-21). */
+  /* No box around the list (the owner, 2026-11-21): only the lines between services, with one above the first
+     and one below the last, so every row looks the same. */
   .service-rows {
-    @apply overflow-hidden rounded-md border border-slate-300 bg-white;
+    @apply border-y border-slate-300;
   }
 
   /* A line a person can actually see between two services (the owner, 2026-11-21), and a faint tint on every
