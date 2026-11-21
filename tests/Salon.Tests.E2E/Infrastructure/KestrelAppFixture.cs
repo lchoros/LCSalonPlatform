@@ -146,7 +146,9 @@ public class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
         // Headless by default; set E2E_HEADED=1 to watch the run in a visible browser, E2E_SLOWMO=<ms> to slow each action down.
         var headed = Environment.GetEnvironmentVariable("E2E_HEADED") is "1" or "true";
         var slowMo = float.TryParse(Environment.GetEnvironmentVariable("E2E_SLOWMO"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var ms) ? ms : (headed ? 400f : 0f);
-        Browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = !headed, SlowMo = slowMo });
+        // The walks ask for reduced motion (ADR 0092): pages cross-fade for people, and a walk or its screenshot must
+        // never catch one mid-fade. Every animation in the stylesheet steps aside for this preference.
+        Browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = !headed, SlowMo = slowMo, Args = ["--force-prefers-reduced-motion"] });
     }
 
     /// <summary>

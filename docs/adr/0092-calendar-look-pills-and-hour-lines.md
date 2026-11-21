@@ -65,3 +65,8 @@ The owner went on through the pages while the look was being built; these belong
 - **The phone's bottom bar wears the brand**: purple icons, the current place marked by a line above it.
 - Tried and taken back out: a cross-fade between pages (`@view-transition`). It works in the browser but lets the
   E2E walks and their screenshots catch a page mid-fade; it needs the test contexts to ask for reduced motion first.
+- **Back in, properly** (the owner again: "not smooth when changing weeks on the book page"): the cross-fade
+  returned behind `prefers-reduced-motion: no-preference`, with the booking page's days and times as named parts so
+  they glide while the rest stays still. The E2E browser is launched asking for reduced motion, so no walk or
+  screenshot meets a fade. Browsers without cross-document transitions (Firefox today) simply navigate as before.
+  The day strip inside the bar shows no scrollbar of its own; the arrows page it and a finger still swipes it.

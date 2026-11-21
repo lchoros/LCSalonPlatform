@@ -383,12 +383,21 @@
     @apply flex scroll-mt-4 items-center gap-2;
   }
 
+  /* Inside the bar the arrows page the days, so the strip shows no scrollbar of its own (a finger still swipes it). */
+  .day-bar .scroll-row {
+    @apply pb-0 [scrollbar-width:none];
+  }
+
+  .day-bar .scroll-row::-webkit-scrollbar {
+    display: none;
+  }
+
   .strip-arrow.is-off {
     @apply pointer-events-none border-stone-200 text-stone-300;
   }
 
   .strip-arrow {
-    @apply mb-2 inline-flex size-9 shrink-0 items-center justify-center self-center rounded-full border border-brand-edge bg-white text-brand transition-colors hover:border-brand-line hover:bg-brand-mist sm:size-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+    @apply inline-flex size-9 shrink-0 items-center justify-center self-center rounded-full border border-brand-edge bg-white text-brand transition-colors hover:border-brand-line hover:bg-brand-mist sm:size-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
   }
 
   .is-on {
@@ -777,5 +786,34 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* Changing the day or the week on the booking page (the owner: "not smooth when changing weeks"): where the browser
+   can animate between two documents the page no longer flashes — the days and the times beneath them glide from the
+   old to the new while everything around them stays still, and every other page change is a short cross-fade.
+   Only for people who have not asked for less motion; the E2E browser asks (ADR 0092). */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+
+  .vt-days {
+    view-transition-name: booking-days;
+  }
+
+  .vt-times {
+    view-transition-name: booking-times;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 140ms;
+  }
+
+  ::view-transition-group(booking-days),
+  ::view-transition-group(booking-times) {
+    animation-duration: 240ms;
+    animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
   }
 }
