@@ -70,3 +70,7 @@ The owner went on through the pages while the look was being built; these belong
   they glide while the rest stays still. The E2E browser is launched asking for reduced motion, so no walk or
   screenshot meets a fade. Browsers without cross-document transitions (Firefox today) simply navigate as before.
   The day strip inside the bar shows no scrollbar of its own; the arrows page it and a finger still swipes it.
+- **Cancelling asks first** (the owner, 2026-11-21: "where is the confirmation … too quick"): on the card and on
+  the day list the Cancel button is the summary of a disclosure — it opens "Cancel this visit? The client is told,
+  and the time becomes free." with a red "Yes, cancel the visit"; a second tap closes it. No script. The other
+  steps (confirm, arrived, complete, no-show) stay one tap.

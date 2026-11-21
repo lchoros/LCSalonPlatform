@@ -20,6 +20,8 @@
   "Appointments.Action.Complete": "Complete",
   "Appointments.Action.NoShow": "No-show",
   "Appointments.Action.Cancel": "Cancel",
+  "Appointments.Action.CancelSure": "Cancel this visit? The client is told, and the time becomes free.",
+  "Appointments.Action.CancelYes": "Yes, cancel the visit",
   "Appointments.Book.Title": "Book for a client",
   "Appointments.Book.Back": "Back to appointments",
   "Appointments.Book.Client": "Client",

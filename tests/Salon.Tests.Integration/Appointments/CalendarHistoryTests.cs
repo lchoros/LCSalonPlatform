@@ -112,6 +112,29 @@ public partial class CalendarTests
         jumped.ShouldContain($"name=\"date\" value=\"{Iso(_day.PlusDays(9))}\"");
     }
 
+    [Fact]
+    public async Task Cancelling_asks_first_on_the_card_and_on_the_day_list_and_the_other_steps_stay_one_tap()
+    {
+        var appointment = await BookAsync(_annaId, At(10, 0));
+        using var client = await factory.SignedInClientAsync(HostA, _studio.Id, Role.Owner);
+
+        foreach (var path in new[] { $"{CalendarPath}/{appointment.Id}", $"/admin/appointments?date={Iso(_day)}" })
+        {
+            var html = await GetAsync(client, path);
+
+            // The button only opens the question; the form that cancels is inside it, with the red button (ADR 0092).
+            var ask = CancelAskPattern().Match(html);
+            ask.Success.ShouldBeTrue($"{path}: cancelling is a disclosure, not a one-tap form");
+            ask.Groups[1].Value.ShouldContain($"action=\"/admin/appointments/{appointment.Id}/cancel\"");
+            ask.Groups[1].Value.ShouldContain("Cancel this visit?");
+            ask.Groups[1].Value.ShouldContain("class=\"btn btn-compact btn-danger\">Yes, cancel the visit</button>");
+            html.ShouldContain($"<form method=\"post\" action=\"/admin/appointments/{appointment.Id}/confirm\" data-testid=\"action-confirm\">", Case.Sensitive, $"{path}: confirming stays one tap");
+        }
+    }
+
+    [GeneratedRegex("<details class=\"confirm\" data-testid=\"confirm-cancel\">(.*?)</details>", RegexOptions.Singleline)]
+    private static partial Regex CancelAskPattern();
+
     [GeneratedRegex("data-testid=\"history-line\" data-kind=\"([A-Za-z]+)\"")]
     private static partial Regex HistoryKindPattern();
 

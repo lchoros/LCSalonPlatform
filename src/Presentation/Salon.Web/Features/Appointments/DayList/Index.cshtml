@@ -94,9 +94,23 @@
                                             @foreach (var action in appointment.Actions)
                                             {
                                                 var segment = AppointmentTransitions.Segment(action);
-                                                <form method="post" action="@(DayListController.ListPath)/@appointment.Id/@segment" asp-antiforgery="true" data-testid="action-@segment">
-                                                    <button type="submit" class="@actionClass">@T[$"Appointments.Action.{action}"]</button>
-                                                </form>
+                                                @if (AppointmentTransitions.AsksFirst(action))
+                                                {
+                                                    @* Cancelling asks first (the owner, 2026-11-21: "too quick"): the button only opens the question. *@
+                                                    <details class="confirm" data-testid="confirm-@segment">
+                                                        <summary class="@actionClass">@T[$"Appointments.Action.{action}"]</summary>
+                                                        <form method="post" action="@(DayListController.ListPath)/@appointment.Id/@segment" asp-antiforgery="true" data-testid="action-@segment" class="confirm-panel">
+                                                            <p>@T["Appointments.Action.CancelSure"]</p>
+                                                            <button type="submit" class="btn btn-compact btn-danger">@T["Appointments.Action.CancelYes"]</button>
+                                                        </form>
+                                                    </details>
+                                                }
+                                                else
+                                                {
+                                                    <form method="post" action="@(DayListController.ListPath)/@appointment.Id/@segment" asp-antiforgery="true" data-testid="action-@segment">
+                                                        <button type="submit" class="@actionClass">@T[$"Appointments.Action.{action}"]</button>
+                                                    </form>
+                                                }
                                             }
                                         </div>
                                     }

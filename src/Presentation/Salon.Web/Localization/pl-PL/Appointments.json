@@ -20,6 +20,8 @@
   "Appointments.Action.Complete": "Zakończ",
   "Appointments.Action.NoShow": "Nieobecność",
   "Appointments.Action.Cancel": "Odwołaj",
+  "Appointments.Action.CancelSure": "Odwołać tę wizytę? Klient dostanie wiadomość, a termin się zwolni.",
+  "Appointments.Action.CancelYes": "Tak, odwołaj wizytę",
   "Appointments.Book.Title": "Zarezerwuj dla klienta",
   "Appointments.Book.Back": "Wróć do wizyt",
   "Appointments.Book.Client": "Klient",

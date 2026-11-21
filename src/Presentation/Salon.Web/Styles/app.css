@@ -43,6 +43,24 @@
     @apply bg-red-700 text-white hover:bg-red-800;
   }
 
+  /* A step that asks first (ADR 0092): the button is the summary of a disclosure; the question and the red button
+     that really does it open beneath. No script; a second tap on the button closes it again. */
+  .confirm > summary {
+    @apply cursor-pointer list-none;
+  }
+
+  .confirm > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .confirm[open] > summary {
+    @apply border-red-300 bg-red-50 text-red-800;
+  }
+
+  .confirm-panel {
+    @apply mt-2 flex flex-wrap items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-900;
+  }
+
   /* Quiet in-flow links ("Change service", "Change time"): 44 px tall even though they read as text. */
   .btn-link {
     @apply inline-flex min-h-11 shrink-0 items-center rounded-md px-2 text-sm font-medium text-stone-700 underline underline-offset-4 hover:text-stone-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900;

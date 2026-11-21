@@ -44,6 +44,9 @@ public static class AppointmentTransitions
         ["cancel"] = AppointmentTransition.Cancel,
     };
 
+    /// <summary>True for a step that cannot be taken back with one tap: its button asks first (ADR 0092).</summary>
+    public static bool AsksFirst(AppointmentTransition transition) => transition == AppointmentTransition.Cancel;
+
     /// <summary>The status the transition lands on; a cancellation from the admin is always by the salon.</summary>
     public static AppointmentStatus Target(AppointmentTransition transition) => transition switch
     {
