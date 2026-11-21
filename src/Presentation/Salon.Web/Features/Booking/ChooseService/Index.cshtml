@@ -46,7 +46,7 @@
                 {
                     <h2 class="text-lg font-semibold" data-testid="group-heading">@(group.Key ?? T["Booking.Public.OtherServices"])</h2>
                 }
-                <ul class="grid gap-3 sm:grid-cols-2" data-testid="service-list">
+                <ul class="service-rows" data-testid="service-list">
                     @foreach (var entry in group)
                     {
                         if (!entry.IsVariantGroup)
@@ -56,7 +56,7 @@
                                 <a href="/book/@service.Id" data-testid="book-service" class="choice-card accent-0">
                                     <span class="service-dot" aria-hidden="true">@Monogram.For(service.Name)</span>
                                     <span class="min-w-0 flex-1">
-                                        <span class="block truncate font-semibold leading-snug">@service.Name</span>
+                                        <span class="block font-semibold leading-snug">@service.Name</span>
                                         @if (service.Description is { } description)
                                         {
                                             <span class="block truncate text-sm text-stone-600">@description</span>
@@ -64,19 +64,20 @@
                                         <span class="block text-sm text-stone-600">@T.Format("Booking.Public.DurationMinutes", (int)service.Duration.TotalMinutes)</span>
                                     </span>
                                     <span class="shrink-0 font-semibold tabular-nums">@service.Price.ToDisplayString(culture)</span>
+                                    <span class="row-book" aria-hidden="true">@T["Booking.Public.BookRow"]</span>
                                 </a>
                             </li>
                         }
                         else
                         {
                             @* A search that found these variants shows them at once; otherwise the card opens on a tap. *@
-                            <li class="sm:col-span-2">
+                            <li>
                                 <details class="variant-card accent-0" data-testid="variant-group" open="@(choice.Search is not null)">
                                     <summary data-testid="variant-summary">
                                         <span class="flex items-center gap-3">
                                             <span class="service-dot" aria-hidden="true">@Monogram.For(entry.Title)</span>
                                             <span class="min-w-0 flex-1">
-                                                <span class="block truncate font-semibold leading-snug" data-testid="variant-title">@entry.Title</span>
+                                                <span class="block font-semibold leading-snug" data-testid="variant-title">@entry.Title</span>
                                                 <span class="block text-sm text-stone-600">@T.Format("Booking.Public.Variants", entry.Services.Count)</span>
                                             </span>
                                             <span class="shrink-0 font-semibold tabular-nums" data-testid="variant-prices">@(entry.MinPrice == entry.MaxPrice ? entry.MinPrice.ToDisplayString(culture) : T.Format("Booking.Public.PriceRange", entry.MinPrice.ToDisplayString(culture), entry.MaxPrice.ToDisplayString(culture)))</span>
@@ -93,6 +94,7 @@
                                                         <span class="text-sm text-stone-600">@T.Format("Booking.Public.DurationMinutes", (int)variant.Duration.TotalMinutes)</span>
                                                     </span>
                                                     <span class="shrink-0 font-semibold tabular-nums">@variant.Price.ToDisplayString(culture)</span>
+                                                    <span class="row-book" aria-hidden="true">@T["Booking.Public.BookRow"]</span>
                                                 </a>
                                             </li>
                                         }

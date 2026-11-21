@@ -464,6 +464,60 @@
 
   /* A free time: a flat Cinolla-style chip in the brand's lightest shade; no lift, no pill theatrics (the owner,
      2026-11-20). brand-deep on brand-mist keeps AA. */
+  /* The price list as rows (ADR 0092; the owner: "more like a table, but modern — lots of space wasted"): one white
+     sheet, a line between services, the whole name always readable, the price and a Book pill at the right. The
+     markup and its classes are the cards' own; inside the sheet they lose their borders and become rows. */
+  .service-rows {
+    @apply overflow-hidden rounded-2xl border border-slate-200 bg-white;
+  }
+
+  .service-rows > li + li {
+    @apply border-t border-slate-100;
+  }
+
+  .service-rows .choice-card,
+  .service-rows .variant-card {
+    @apply rounded-none border-0 shadow-none;
+    background: none;
+  }
+
+  .service-rows .choice-card,
+  .service-rows .variant-card > summary {
+    @apply min-h-14 rounded-none px-4 py-2.5 transition-colors hover:bg-brand-mist;
+  }
+
+  .service-rows .service-dot {
+    @apply size-9 text-sm;
+  }
+
+  .service-rows .variant-list {
+    @apply divide-slate-100 border-slate-100 bg-slate-50 pr-4 pl-16;
+  }
+
+  .service-rows .variant-link {
+    @apply gap-3;
+  }
+
+  .service-rows .variant-link > span:first-child {
+    @apply flex-1;
+  }
+
+  .row-book {
+    @apply hidden shrink-0 rounded-full border border-brand-edge px-3 py-1 text-sm font-semibold text-brand transition-colors sm:inline-flex;
+  }
+
+  .choice-card:hover .row-book,
+  .variant-link:hover .row-book {
+    @apply border-brand bg-brand text-white;
+  }
+
+  /* The part of a date being typed stands out in the brand, not white on white (the owner, 2026-11-21). */
+  input[type="date"]::-webkit-datetime-edit-day-field:focus,
+  input[type="date"]::-webkit-datetime-edit-month-field:focus,
+  input[type="date"]::-webkit-datetime-edit-year-field:focus {
+    @apply rounded-sm bg-brand text-white outline-none;
+  }
+
   /* Free times (ADR 0092): compact — four across on a phone, six on a desk — and still a full 44 px to tap. */
   .slot-grid {
     @apply grid grid-cols-4 gap-1.5 sm:grid-cols-6;
