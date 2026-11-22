@@ -359,7 +359,7 @@
   }
 
   .search-submit {
-    @apply inline-flex min-h-12 shrink-0 items-center justify-center rounded-lg bg-stone-900 px-4 py-2 text-base font-semibold text-white transition-colors hover:bg-stone-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2;
+    @apply inline-flex min-h-12 shrink-0 items-center justify-center rounded-lg border border-brand bg-white px-4 py-2 text-base font-semibold text-brand transition-colors hover:bg-brand-mist focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2;
   }
 
   .search-clear {
