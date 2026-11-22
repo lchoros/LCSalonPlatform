@@ -28,8 +28,8 @@ public sealed class PrivacyNoticeHandler(IPrivacyNoticeService notices) : IReque
 [Route("privacy")]
 public sealed class ShowPrivacyNoticeController(IDispatcher dispatcher) : SalonControllerBase
 {
-    /// <summary>The salon's price list, the way back; the ListServices slice owns the route.</summary>
-    public const string ServicesPath = "/services";
+    /// <summary>The way back: the booking page, which is the price list too (ADR 0094); the ChooseService slice owns the route.</summary>
+    public const string ServicesPath = "/book";
 
     [HttpGet("")]
     public async Task<IActionResult> Show(CancellationToken cancellationToken)

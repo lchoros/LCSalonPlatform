@@ -1,9 +1,5 @@
 {
-  "Booking.ListServices.Title": "Services",
-  "Booking.ListServices.Subtitle": "Our services, durations and prices.",
-  "Booking.ListServices.Empty": "This salon has not added any services yet.",
   "Booking.ListServices.DurationMinutes": "{0} min",
-  "Booking.ListServices.Uncategorised": "Other services",
   "Booking.Public.Step": "Step {0} of {1}",
   "Booking.Public.ChooseService": "Choose a service",
   "Booking.Public.NoServices": "This salon has not opened online booking yet.",

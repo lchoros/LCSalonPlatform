@@ -4,7 +4,7 @@ using Salon.Tests.E2E.Infrastructure;
 
 namespace Salon.Tests.E2E.Booking;
 
-/// <summary>Home → "Services and prices" in one tap on a phone and on a desktop; the list renders, is axe-clean and does not scroll sideways.</summary>
+/// <summary>Home → "Book an appointment" in one tap on a phone and on a desktop: the one page that lists the services with their prices (ADR 0094); it renders, is axe-clean and does not scroll sideways. The old <c>/services</c> address leads to it.</summary>
 public class ListServicesE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppFixture>
 {
     private const string Slug = "studio-20";
@@ -34,21 +34,27 @@ public class ListServicesE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
 
         // CI builds no Tailwind output yet, so layout (tap target, overflow) is only asserted when the stylesheet is present.
         var styled = await StylesheetLoadedAsync(page);
-        var link = page.GetByTestId("view-services");
+        var link = page.GetByTestId("book-now");
         if (styled)
         {
             (await link.BoundingBoxAsync()).ShouldNotBeNull().Height.ShouldBeGreaterThanOrEqualTo(44);
         }
 
+        // One page lists the services and starts a booking (ADR 0094, stage 4): the home page has one way in.
+        (await page.GetByTestId("view-services").CountAsync()).ShouldBe(0);
         await link.ClickAsync();
-        await page.ReachAsync("**/services");
+        await page.ReachAsync("**/book");
 
-        (await page.GetByTestId("salon-name").TextContentAsync()).ShouldBe("Studio 20");
-        var cards = page.GetByTestId("service-card");
-        (await cards.CountAsync()).ShouldBe(Services.Length);
-        (await cards.Nth(0).GetByRole(AriaRole.Heading).TextContentAsync()).ShouldBe("Cut & blow-dry");
+        var rows = page.GetByTestId("book-service");
+        (await rows.CountAsync()).ShouldBe(Services.Length);
+        (await rows.Nth(0).TextContentAsync()).ShouldNotBeNull().ShouldContain("Cut & blow-dry");
         (await page.GetByTestId("service-price").AllTextContentsAsync()).ShouldBe(["£45.00", "£85.00", "£15.00"]);
         (await page.GetByTestId("service-duration").First.TextContentAsync()).ShouldBe("45 min");
+
+        // The old address of the price list still leads somewhere: here.
+        await page.GotoAsync(app.TenantUrl(Slug) + "/services");
+        await page.ReachAsync("**/book");
+        (await rows.CountAsync()).ShouldBe(Services.Length);
 
         if (styled)
         {

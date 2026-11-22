@@ -71,7 +71,7 @@ public class SalonDetailsE2ETests(KestrelAppFixture app) : IClassFixture<Kestrel
             ViewportSize = new ViewportSize { Width = 390, Height = 844 },
         });
         var clientPage = await clientContext.NewPageAsync();
-        (await clientPage.GotoAsync(app.TenantUrl(Slug) + "/services")).ShouldNotBeNull().Ok.ShouldBeTrue();
+        (await clientPage.GotoAsync(app.TenantUrl(Slug) + "/")).ShouldNotBeNull().Ok.ShouldBeTrue();
         (await clientPage.GetByTestId("salon-contact-address").TextContentAsync()).ShouldBe($"{street}, London N1 9GU");
         (await clientPage.GetByTestId("salon-contact-phone").GetAttributeAsync("href")).ShouldBe("tel:02079460020");
         (await clientPage.GetByTestId("salon-contact-phone").TextContentAsync()).ShouldBe("Call 020 7946 0020");

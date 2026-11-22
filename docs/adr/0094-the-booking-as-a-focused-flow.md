@@ -45,3 +45,18 @@ selected but a mandatory field."
   details step without a person still books with whoever is free, as "anyone" always did.
 - Cost: one more tap for a client who does not mind who. Taken on purpose, so the choice is seen. The change-a-booking
   page keeps its own picker, where the person the visit is with is already the answer.
+
+## Addendum, 2026-11-22: one page lists the services (stage 4)
+
+The owner: "do we need to list services separate for customers? or just when book is enough?" — and, asked whether to
+fold the two together, "yes merge".
+
+- **`/book` is the price list.** `/services` answers with a redirect to it (302, so it can be taken back), and the
+  home page, the "no access" page and the privacy notice point at `/book`. The home page has one button, "Book an
+  appointment"; "Services and prices" is gone.
+- **Nothing the price list said is lost.** `/book` already showed name, description, duration and price; it now also
+  says "from £40.00" where the people who offer a service charge differently (ADR 0018), which only `/services` did.
+- **The address block** ("Where to find us") was on `/services` and is not wanted on the booking steps: it stays on
+  the home page, the confirmation and the messages.
+- Cost: a salon's printed or shared `/services` links land on step 1 of a booking, under the heading "Choose a
+  service", not on a page called "Services". If a salon wants a plain price list back, the redirect is one line.

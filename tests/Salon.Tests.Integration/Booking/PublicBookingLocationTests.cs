@@ -30,12 +30,12 @@ public partial class PublicBookingTests
         await SaveLocationAsync(_polish.Id, new LocationDetails(null, "ul. Piękna 12", null, "Warszawa", "00-549", "22 123 45 67", null));
         using var client = factory.ClientFor(HostA);
 
-        foreach (var path in new[] { "/book", "/services", $"/book/{_serviceId}", DetailsPath(At(10, 0), _annaId) })
+        foreach (var path in new[] { "/book", "/", $"/book/{_serviceId}", DetailsPath(At(10, 0), _annaId) })
         {
             var page = await GetAsync(client, path);
-            if (path != "/services")
+            if (path != "/")
             {
-                // Inside a booking the page is only the booking (ADR 0094): the address is on the price list, the
+                // Inside a booking the page is only the booking (ADR 0094): the address is on the home page, the
                 // confirmation and the emails, not under every step.
                 page.ShouldNotContain("Where to find us", Case.Sensitive, path);
                 page.ShouldNotContain("Piękna", Case.Sensitive, path);
@@ -65,7 +65,7 @@ public partial class PublicBookingTests
         await SaveLocationAsync(_polish.Id, new LocationDetails("Salon PL Centrum", "ul. Piękna 12", null, "Warszawa", "00-549", "22 123 45 67", null));
         using var client = factory.ClientFor(HostB);
 
-        var page = await GetAsync(client, "/services");
+        var page = await GetAsync(client, "/");
 
         page.ShouldContain("Gdzie nas znaleźć");
         page.ShouldContain("data-testid=\"salon-contact-name\">Salon PL Centrum<");

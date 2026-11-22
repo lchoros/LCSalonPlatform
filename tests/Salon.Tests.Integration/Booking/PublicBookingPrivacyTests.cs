@@ -64,7 +64,7 @@ public partial class PublicBookingTests
     {
         using var visitor = factory.ClientFor(HostA);
 
-        foreach (var path in new[] { "/book", "/services", $"/book/{_serviceId}", DetailsPath(At(10, 0), _annaId), "/privacy" })
+        foreach (var path in new[] { "/book", $"/book/{_serviceId}", DetailsPath(At(10, 0), _annaId), "/privacy" })
         {
             (await GetAsync(visitor, path)).ShouldContain("href=\"/privacy\" class=\"underline underline-offset-2\" data-testid=\"footer-privacy\"", Case.Sensitive, path);
         }

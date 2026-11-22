@@ -125,13 +125,13 @@ public partial class EditServiceTests(SalonWebApplicationFactory factory) : IAsy
     {
         using var client = await OwnerClientAsync("studio-20.localhost", _studio.Id);
         using var visitor = factory.ClientFor("studio-20.localhost");
-        (await (await visitor.GetAsync(new Uri("/services", UriKind.Relative))).Content.ReadAsStringAsync()).ShouldContain("Cut &amp; blow-dry");
+        (await (await visitor.GetAsync(new Uri("/book", UriKind.Relative))).Content.ReadAsStringAsync()).ShouldContain("Cut &amp; blow-dry");
 
         var response = await PostAsync(client, _cutId, Fields(isActive: "false"));
 
         response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
         (await ServiceAsync(_studio.Id, _cutId)).IsActive.ShouldBeFalse();
-        var publicHtml = await (await visitor.GetAsync(new Uri("/services", UriKind.Relative))).Content.ReadAsStringAsync();
+        var publicHtml = await (await visitor.GetAsync(new Uri("/book", UriKind.Relative))).Content.ReadAsStringAsync();
         publicHtml.ShouldNotContain("Cut &amp; blow-dry");
         publicHtml.ShouldContain("Colour");
 
