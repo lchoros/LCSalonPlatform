@@ -399,7 +399,7 @@
 
   /* A day: a tall rectangle (the shape Booksy uses too) with the weekday, the day of the month and the month. */
   .tile {
-    @apply relative inline-flex h-16 w-14 shrink-0 snap-start flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 leading-none transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+    @apply relative inline-flex h-16 w-14 shrink-0 snap-start flex-col items-center justify-center gap-0.5 rounded-xl border px-2 py-1.5 leading-none transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
   }
 
   /* The round "earlier / later days" paddles beside the strip. */
@@ -408,6 +408,14 @@
      that says the day has times. */
   .book-title {
     @apply text-2xl font-semibold tracking-tight text-slate-800;
+  }
+
+  .book-summary {
+    @apply space-y-3 rounded-xl bg-slate-100 p-4;
+  }
+
+  .book-total {
+    @apply flex items-baseline justify-end gap-3 border-t border-slate-200 pt-4;
   }
 
   .book-close {
@@ -445,7 +453,7 @@
   }
 
   .tile-bar {
-    @apply mt-1 h-1 w-5 rounded-full bg-emerald-500;
+    @apply mt-0.5 h-1 w-5 shrink-0 rounded-full bg-emerald-500;
   }
 
   /* The chosen day is the one solid tile: everything on it is white, the weekday included. */
@@ -524,7 +532,8 @@
 
   /* Chosen states wear the brand purple (ADR 0080); availability speaks in its lighter shades (owner, day 3). */
   .pill.is-on {
-    @apply border-brand bg-brand text-white;
+    @apply border-brand bg-brand-soft font-semibold text-brand;
+    box-shadow: inset 0 0 0 1px var(--color-brand);
   }
 
   /* A day with nothing free: a red dashed border and the date struck through in red (the owner, 2026-11-20 — a
