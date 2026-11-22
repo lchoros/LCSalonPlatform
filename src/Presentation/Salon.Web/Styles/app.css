@@ -414,8 +414,26 @@
     @apply inline-flex size-11 shrink-0 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand;
   }
 
+  /* The month with the two arrows beside it, above the days — not squeezed onto the days' own line
+     (the owner, 2026-11-22). */
+  .day-wrap {
+    @apply scroll-mt-4 space-y-3;
+  }
+
+  .day-head {
+    @apply flex items-center justify-between gap-3;
+  }
+
   .day-month {
-    @apply text-center text-lg font-semibold text-slate-800;
+    @apply flex-1 text-center text-lg font-semibold text-slate-800;
+  }
+
+  .day-wrap .scroll-row {
+    @apply pb-0 [scrollbar-width:none];
+  }
+
+  .day-wrap .scroll-row::-webkit-scrollbar {
+    display: none;
   }
 
   .tile-day {
@@ -430,8 +448,13 @@
     @apply mt-1 h-1 w-5 rounded-full bg-emerald-500;
   }
 
+  /* The chosen day is the one solid tile: everything on it is white, the weekday included. */
   .tile.is-on .tile-day {
-    @apply text-brand;
+    @apply text-white;
+  }
+
+  .tile.is-on .tile-bar {
+    @apply bg-white;
   }
 
   .tile.is-dim .tile-bar {
@@ -555,7 +578,11 @@
   .service-rows .choice-card .font-semibold,
   .service-rows .variant-card > summary .font-semibold,
   .service-rows .variant-name {
-    @apply text-[0.9375rem] font-medium;
+    @apply text-[0.9375rem] font-medium text-slate-700;
+  }
+
+  .service-rows .text-stone-600 {
+    @apply text-slate-500;
   }
 
   .service-rows .choice-card > .tabular-nums,
