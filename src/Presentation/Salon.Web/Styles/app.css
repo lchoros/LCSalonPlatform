@@ -399,10 +399,58 @@
 
   /* A day: a tall rectangle (the shape Booksy uses too) with the weekday, the day of the month and the month. */
   .tile {
-    @apply relative inline-flex h-14 w-12 shrink-0 snap-start sm:h-16 sm:w-14 flex-col items-center justify-center gap-0.5 rounded-xl border px-1.5 py-1 leading-none transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
+    @apply relative inline-flex h-16 w-14 shrink-0 snap-start flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 leading-none transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50;
   }
 
   /* The round "earlier / later days" paddles beside the strip. */
+  /* The booking itself (ADR 0094): gentler type than the rest — slate, semibold, never black — a way out that asks
+     first, the month said once above the days, and day tiles with room around a weekday, a number and a small bar
+     that says the day has times. */
+  .book-title {
+    @apply text-2xl font-semibold tracking-tight text-slate-800;
+  }
+
+  .book-close {
+    @apply inline-flex size-11 shrink-0 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand;
+  }
+
+  .day-month {
+    @apply text-center text-lg font-semibold text-slate-800;
+  }
+
+  .tile-day {
+    @apply text-xs font-medium text-slate-600;
+  }
+
+  .tile-date {
+    @apply text-lg leading-none font-semibold;
+  }
+
+  .tile-bar {
+    @apply mt-1 h-1 w-5 rounded-full bg-emerald-500;
+  }
+
+  .tile.is-on .tile-day {
+    @apply text-brand;
+  }
+
+  .tile.is-dim .tile-bar {
+    @apply bg-transparent;
+  }
+
+  /* A question over the page without script: the link to #discard shows it, any other link takes it away. */
+  .modal {
+    @apply invisible fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 opacity-0 transition-opacity;
+  }
+
+  .modal:target {
+    @apply visible opacity-100;
+  }
+
+  .modal-card {
+    @apply w-full max-w-sm space-y-4 rounded-2xl bg-white p-6 shadow-xl;
+  }
+
   /* The bar of days on the booking page: the arrows keep their places at both ends, faint where there is nowhere to go. */
   .day-bar {
     @apply flex scroll-mt-4 items-center gap-2;

@@ -7,6 +7,7 @@
     var r = Model.Result;
     var culture = CultureInfo.CurrentCulture;
     ViewData["Title"] = T["Booking.Public.ChooseTime"];
+    ViewData["Focused"] = true;
     var staffQuery = r.SelectedStaffId is { } sid ? $"&staff={sid}" : string.Empty;
     var hasAnySlot = r.Days.Any(d => d.HasSlots);
 }
@@ -18,8 +19,21 @@
             <li class="is-done"><span class="steps-bar"></span>@T["Booking.Public.StepTime"]</li>
             <li><span class="steps-bar"></span>@T["Booking.Public.StepDetails"]</li>
         </ol>
-        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Booking.Public.ChooseTime"]</h1>
+        <div class="flex items-center justify-between gap-3">
+            <h1 class="book-title">@T["Booking.Public.ChooseTime"]</h1>
+            @* The way out of a booking asks first (ADR 0094): the link only opens the question below. *@
+            <a href="#discard" class="book-close" data-testid="close-booking" aria-label="@T["Booking.Public.Close"]"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></a>
+        </div>
     </header>
+
+    <div id="discard" class="modal" role="dialog" aria-modal="true" aria-labelledby="discard-title" data-testid="discard-modal">
+        <div class="modal-card">
+            <h2 id="discard-title" class="text-xl font-semibold text-slate-800">@T["Booking.Public.Discard.Title"]</h2>
+            <p class="text-slate-600">@T["Booking.Public.Discard.Text"]</p>
+            <a href="#days" class="btn btn-primary w-full" data-testid="discard-stay">@T["Booking.Public.Discard.Stay"]</a>
+            <a href="/book" class="btn btn-secondary w-full" data-testid="discard-yes">@T["Booking.Public.Discard.Yes"]</a>
+        </div>
+    </div>
 
     <div class="summary-bar">
         <div class="min-w-0">
@@ -45,6 +59,7 @@
     @* The two arrows always hold their places (the owner, 2026-11-20): where there is nothing earlier or later the
        arrow is drawn faint and is not a link, so the strip between them never shifts. Every link comes back to this
        bar (#days), so changing the day or the week does not throw the page to its top. *@
+    <p class="day-month" data-testid="month">@r.SelectedDate.ToString("MMMM yyyy", culture)</p>
     <div id="days" class="day-bar">
         @if (r.EarlierFrom is { } earlier)
         {
@@ -59,9 +74,9 @@
             {
                 var on = day.Date == r.SelectedDate;
                 <a href="/book/@r.ServiceId?date=@day.Date.ToIso()&from=@windowStart@staffQuery#days" class="tile @Badges.DayTile(on, day.HasSlots)" aria-current="@(on ? "date" : null)" data-testid="day" data-has-slots="@day.HasSlots.ToString().ToLowerInvariant()">
-                    <span class="text-[0.6875rem] font-semibold uppercase">@day.Date.ToString("ddd", culture)</span>
-                    <span class="tile-date text-lg font-bold tabular-nums">@day.Date.Day</span>
-                    <span class="text-[0.6875rem]">@day.Date.ToString("MMM", culture)</span>
+                    <span class="tile-day">@day.Date.ToString("ddd", culture)</span>
+                    <span class="tile-date tabular-nums">@day.Date.Day</span>
+                    <span class="tile-bar" aria-hidden="true"></span>
                 </a>
             }
         </nav>
