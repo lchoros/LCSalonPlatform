@@ -23,7 +23,7 @@ public partial class PublicBookingTests
     }
 
     [Fact]
-    public async Task With_an_address_every_step_says_where_to_find_the_salon_and_how_to_call_it()
+    public async Task With_an_address_the_price_list_says_where_to_find_the_salon_and_the_booking_steps_stay_free_of_it()
     {
         await SaveLocationAsync(_studio.Id, new LocationDetails(null, "12 High Street", null, "London", "N1 9GU", "020 7946 0020", "hello@studio20.example"));
         // The other salon's address must never show up on this salon's pages.
@@ -33,9 +33,11 @@ public partial class PublicBookingTests
         foreach (var path in new[] { "/book", "/services", $"/book/{_serviceId}", DetailsPath(At(10, 0), _annaId) })
         {
             var page = await GetAsync(client, path);
-            if (path == $"/book/{_serviceId}")
+            if (path != "/services")
             {
-                // The slot step is about times; the address comes back on the next page.
+                // Inside a booking the page is only the booking (ADR 0094): the address is on the price list, the
+                // confirmation and the emails, not under every step.
+                page.ShouldNotContain("Where to find us", Case.Sensitive, path);
                 page.ShouldNotContain("Piękna", Case.Sensitive, path);
                 continue;
             }
@@ -63,7 +65,7 @@ public partial class PublicBookingTests
         await SaveLocationAsync(_polish.Id, new LocationDetails("Salon PL Centrum", "ul. Piękna 12", null, "Warszawa", "00-549", "22 123 45 67", null));
         using var client = factory.ClientFor(HostB);
 
-        var page = await GetAsync(client, "/book");
+        var page = await GetAsync(client, "/services");
 
         page.ShouldContain("Gdzie nas znaleźć");
         page.ShouldContain("data-testid=\"salon-contact-name\">Salon PL Centrum<");

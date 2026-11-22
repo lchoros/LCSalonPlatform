@@ -6,6 +6,7 @@
     var culture = CultureInfo.CurrentCulture;
     var local = s.Start.InZone(s.Zone).LocalDateTime;
     ViewData["Title"] = T["Booking.Public.YourDetails"];
+    ViewData["Focused"] = true;
 }
 <section class="mx-auto max-w-lg space-y-6">
     <header class="space-y-3">
@@ -126,5 +127,4 @@
             @(s.RequireSmsVerification ? T["Booking.Public.SendCode"] : T["Booking.Public.Book"])
         </button>
     </form>
-    @await Component.InvokeAsync("SalonContact")
 </section>
