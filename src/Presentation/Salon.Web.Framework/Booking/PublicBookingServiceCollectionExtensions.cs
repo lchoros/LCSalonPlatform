@@ -26,6 +26,7 @@ public static class PublicBookingServiceCollectionExtensions
         services.AddOptions<PublicBookingOptions>().BindConfiguration(PublicBookingOptions.SectionName);
         services.AddSingleton<IPublicUrlBuilder, PublicUrlBuilder>();
         services.AddSingleton<IReturningClientCookie, ReturningClientCookie>();
+        services.AddScoped<IVisitBasket, VisitBasket>();
         // Retention of verification rows (ADR 0017): one recurring job like every IScheduleTask (ADR 0005).
         services.AddScoped<IScheduleTask, PhoneVerificationCleanupTask>();
 

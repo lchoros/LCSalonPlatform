@@ -29,16 +29,33 @@ internal sealed class BookingService(
     public async Task<Appointment> BookAsync(BookAppointmentRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        var booked = await BookVisitAsync(
+            new BookVisitRequest(request.ClientId, request.StaffMemberId, [request.ServiceId], request.Start, request.Source, request.Notes, request.ByUserId),
+            cancellationToken).ConfigureAwait(false);
+        return booked[0];
+    }
+
+    public async Task<IReadOnlyList<Appointment>> BookVisitAsync(BookVisitRequest request, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
         if (request.Notes?.Length > Appointment.NotesMaxLength)
         {
             throw new ArgumentException($"Notes may have at most {Appointment.NotesMaxLength} characters.", nameof(request));
         }
 
+        if (request.ServiceIds.Count is 0 or > VisitRules.MaxServices || request.ServiceIds.Distinct().Count() != request.ServiceIds.Count)
+        {
+            throw new ArgumentException($"A visit has one to {VisitRules.MaxServices} services, each once.", nameof(request));
+        }
+
         var zone = await TenantZone.ResolveAsync(tenantContext, tenantLookup, cancellationToken).ConfigureAwait(false);
-        var service = await db.Services.AsNoTracking()
-            .FirstOrDefaultAsync(s => s.Id == request.ServiceId && s.IsActive, cancellationToken)
-            .ConfigureAwait(false)
-            ?? throw new InvalidOperationException($"Service {request.ServiceId} does not exist or is not active in this salon.");
+        var found = await db.Services.AsNoTracking()
+            .Where(s => request.ServiceIds.Contains(s.Id) && s.IsActive)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        var services = request.ServiceIds
+            .Select(id => found.FirstOrDefault(s => s.Id == id) ?? throw new InvalidOperationException($"Service {id} does not exist or is not active in this salon."))
+            .ToList();
         var staffExists = await db.StaffMembers
             .AnyAsync(s => s.Id == request.StaffMemberId && s.IsActive && s.IsBookable, cancellationToken)
             .ConfigureAwait(false);
@@ -48,15 +65,22 @@ internal sealed class BookingService(
         }
 
         // This person's own duration and price, or the service's (ADR 0018); someone who does not offer it cannot be booked.
-        var offering = await offerings.ResolveAsync(request.ServiceId, request.StaffMemberId, cancellationToken).ConfigureAwait(false);
-        if (!offering.Offers)
+        var offered = new List<ServiceOffering>();
+        foreach (var service in services)
         {
-            throw new InvalidOperationException($"Staff member {request.StaffMemberId} does not offer service {request.ServiceId}.");
+            var offering = await offerings.ResolveAsync(service.Id, request.StaffMemberId, cancellationToken).ConfigureAwait(false);
+            if (!offering.Offers)
+            {
+                throw new InvalidOperationException($"Staff member {request.StaffMemberId} does not offer service {service.Id}.");
+            }
+
+            offered.Add(offering);
         }
 
-        // The same rules the client saw: working hours, other bookings, notice and advance limit, as of now.
+        // The same rules the client saw: working hours, other bookings, notice and advance limit, as of now. For several
+        // services the whole visit has to fit, one service after another (ADR 0095).
         var day = request.Start.InZone(zone).Date;
-        var slots = await availability.GetSlotsAsync(request.ServiceId, request.StaffMemberId, day, day, cancellationToken).ConfigureAwait(false);
+        var slots = await availability.GetVisitSlotsAsync(request.ServiceIds, request.StaffMemberId, day, day, cancellationToken).ConfigureAwait(false);
         if (!slots.Any(s => s.Start == request.Start))
         {
             throw new SlotNoLongerAvailableException();
@@ -69,54 +93,68 @@ internal sealed class BookingService(
             .Select(c => c.DepositPercent)
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
-        var depositPercent = DepositRules.Percent(bookingRules.DefaultDepositPercent, service.DepositPercent, clientDepositPercent);
 
         var now = clock.GetCurrentInstant();
-        var appointment = new Appointment
+        Guid? visitGroupId = services.Count > 1 ? Guid.CreateVersion7() : null;
+        var appointments = new List<Appointment>();
+        var start = request.Start;
+        for (var i = 0; i < services.Count; i++)
         {
-            TenantId = tenantContext.TenantId!.Value,
-            ClientId = request.ClientId,
-            StaffMemberId = request.StaffMemberId,
-            ServiceId = request.ServiceId,
-            Start = request.Start,
-            End = request.Start.Plus(offering.Duration),
-            // Every booking gets the secret of the client's own link (ADR 0014, ADR 0029), so a visit booked at the desk can be
-            // confirmed, changed and cancelled by the client like one booked online.
-            PublicToken = PublicBookingToken.Generate(),
-            Status = AppointmentStatus.Booked,
-            Source = request.Source,
-            Notes = request.Notes,
-            PriceAmount = offering.Price,
-            DepositAmount = DepositRules.Amount(offering.Price, depositPercent),
-            Currency = service.Currency,
-            DurationMinutes = (int)offering.Duration.TotalMinutes,
-            CreatedAt = now,
-            CreatedByUserId = request.ByUserId,
-        };
-        var change = new AppointmentStatusChange
-        {
-            TenantId = appointment.TenantId,
-            AppointmentId = appointment.Id,
-            From = null,
-            To = AppointmentStatus.Booked,
-            At = now,
-            ByUserId = request.ByUserId,
-        };
+            var service = services[i];
+            var offering = offered[i];
+            var depositPercent = DepositRules.Percent(bookingRules.DefaultDepositPercent, service.DepositPercent, clientDepositPercent);
+            var appointment = new Appointment
+            {
+                TenantId = tenantContext.TenantId!.Value,
+                ClientId = request.ClientId,
+                StaffMemberId = request.StaffMemberId,
+                ServiceId = service.Id,
+                Start = start,
+                End = start.Plus(offering.Duration),
+                // Every booking gets the secret of the client's own link (ADR 0014, ADR 0029), so a visit booked at the desk can be
+                // confirmed, changed and cancelled by the client like one booked online.
+                PublicToken = PublicBookingToken.Generate(),
+                VisitGroupId = visitGroupId,
+                Status = AppointmentStatus.Booked,
+                Source = request.Source,
+                Notes = request.Notes,
+                PriceAmount = offering.Price,
+                DepositAmount = DepositRules.Amount(offering.Price, depositPercent),
+                Currency = service.Currency,
+                DurationMinutes = (int)offering.Duration.TotalMinutes,
+                CreatedAt = now,
+                CreatedByUserId = request.ByUserId,
+            };
+            db.Appointments.Add(appointment);
+            db.AppointmentStatusChanges.Add(new AppointmentStatusChange
+            {
+                TenantId = appointment.TenantId,
+                AppointmentId = appointment.Id,
+                From = null,
+                To = AppointmentStatus.Booked,
+                At = now,
+                ByUserId = request.ByUserId,
+            });
+            appointments.Add(appointment);
+            start = appointment.End;
+        }
 
-        db.Appointments.Add(appointment);
-        db.AppointmentStatusChanges.Add(change);
         try
         {
-            // The publisher's SaveChangesAsync flushes the appointment, its status change and the outbox row in one batch
-            // (ADR 0007), so even outside a command transaction they commit together, and the exclusion constraint fires here.
-            await publisher.PublishAsync(
-                new AppointmentBooked(appointment.Id, appointment.TenantId, appointment.ClientId, appointment.StaffMemberId, appointment.ServiceId, appointment.Start, appointment.End, appointment.Source),
-                cancellationToken).ConfigureAwait(false);
+            // The publisher's SaveChangesAsync flushes the appointments, their status changes and the outbox rows together
+            // (ADR 0007), so even outside a command transaction they commit as one, and the exclusion constraint fires
+            // here: the first publish writes every appointment of the visit, so it is booked whole or not at all.
+            foreach (var appointment in appointments)
+            {
+                await publisher.PublishAsync(
+                    new AppointmentBooked(appointment.Id, appointment.TenantId, appointment.ClientId, appointment.StaffMemberId, appointment.ServiceId, appointment.Start, appointment.End, appointment.Source),
+                    cancellationToken).ConfigureAwait(false);
+            }
         }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ExclusionViolation })
         {
             // Another booking of the same person won the race between our slot check and the insert. Forget the rows we
-            // added (appointment, status change, outbox message) so the scope stays usable for a fresh slot list.
+            // added (appointments, status changes, outbox messages) so the scope stays usable for a fresh slot list.
             foreach (var entry in db.ChangeTracker.Entries().Where(e => e.State == EntityState.Added).ToList())
             {
                 entry.State = EntityState.Detached;
@@ -125,7 +163,7 @@ internal sealed class BookingService(
             throw new SlotNoLongerAvailableException("The chosen time has just been taken; please pick another slot.", ex);
         }
 
-        return appointment;
+        return appointments;
     }
 
     public Task<Appointment> ConfirmAsync(Guid appointmentId, Guid? byUserId = null, CancellationToken cancellationToken = default)

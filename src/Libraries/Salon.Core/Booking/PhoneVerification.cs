@@ -51,6 +51,12 @@ public class PhoneVerification : BaseEntity, ITenantEntity
     /// </summary>
     public Guid? ServiceId { get; set; }
 
+    /// <summary>
+    /// The further services of a visit booked as several (ADR 0095), in the order they follow <see cref="ServiceId"/>.
+    /// Empty for a booking of one service, a waitlist request and a sign-in.
+    /// </summary>
+    public IList<Guid> ExtraServiceIds { get; set; } = [];
+
     /// <summary>Null means "anyone available": the staff member is chosen when the booking is made.</summary>
     public Guid? StaffMemberId { get; set; }
 

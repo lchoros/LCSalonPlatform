@@ -85,6 +85,12 @@ public class Appointment : BaseEntity, ITenantEntity
     /// </summary>
     public string? PublicToken { get; set; }
 
+    /// <summary>
+    /// Shared by the appointments of one visit booked as several services (ADR 0095): they follow one another with
+    /// the same person. Null on an appointment booked alone, which is every appointment made before that decision.
+    /// </summary>
+    public Guid? VisitGroupId { get; set; }
+
     public Money Price => new(PriceAmount, Currency);
 
     /// <summary>The booked range, half-open.</summary>

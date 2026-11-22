@@ -570,6 +570,7 @@ public class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
             Environment.SetEnvironmentVariable("Features__ClientImport", "true");
             Environment.SetEnvironmentVariable("Features__SignUp", "true");
             Environment.SetEnvironmentVariable("Features__ClientPortal", "true");
+            Environment.SetEnvironmentVariable("Features__SeveralServices", "true");
             _configureHost = configureHost;
         }
 

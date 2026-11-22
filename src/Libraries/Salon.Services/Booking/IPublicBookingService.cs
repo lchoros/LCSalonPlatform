@@ -61,8 +61,12 @@ public sealed record PublicBookingRequest(
     string Phone,
     string? Email,
     bool MarketingConsent,
-    string? ConsentWording)
+    string? ConsentWording,
+    IReadOnlyList<Guid>? ExtraServiceIds = null)
 {
+    /// <summary>Every service of the visit in order: <see cref="ServiceId"/> first, then the further ones (ADR 0095).</summary>
+    public IReadOnlyList<Guid> AllServiceIds => [ServiceId, .. ExtraServiceIds ?? []];
+
     /// <summary>Keeps the phone and email out of any log line that prints the request.</summary>
     public override string ToString() => $"{nameof(PublicBookingRequest)} {{ ServiceId = {ServiceId}, Start = {Start} }}";
 }
@@ -105,6 +109,12 @@ public sealed record PublicAppointment(
     string PublicToken,
     Money? Deposit = null)
 {
+    /// <summary>
+    /// How many services the visit holds (ADR 0095). For more than one, <see cref="ServiceName"/> names them all,
+    /// <see cref="Start"/> and <see cref="End"/> span the visit, and <see cref="Price"/> and <see cref="Deposit"/> are sums.
+    /// </summary>
+    public int ServiceCount { get; init; } = 1;
+
     public bool IsActive => AppointmentStateMachine.IsActive(Status);
 }
 

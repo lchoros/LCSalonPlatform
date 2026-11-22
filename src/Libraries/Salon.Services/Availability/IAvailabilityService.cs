@@ -23,4 +23,12 @@ public interface IAvailabilityService
     /// time it holds now (ADR 0016).
     /// </summary>
     Task<IReadOnlyList<Slot>> GetSlotsAsync(Guid serviceId, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, Guid? excludeAppointmentId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// The free starts of a visit of several services that follow one another with one person (ADR 0095): only people
+    /// who offer every one of them count, and the visit takes the sum of that person's own durations. A slot's
+    /// <see cref="Slot.End"/> is the end of the last service. With one service this is
+    /// <see cref="GetSlotsAsync(Guid, Guid?, LocalDate, LocalDate, CancellationToken)"/>.
+    /// </summary>
+    Task<IReadOnlyList<Slot>> GetVisitSlotsAsync(IReadOnlyList<Guid> serviceIds, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, CancellationToken cancellationToken = default);
 }

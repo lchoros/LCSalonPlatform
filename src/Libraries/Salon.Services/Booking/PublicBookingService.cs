@@ -59,9 +59,16 @@ internal sealed class PublicBookingService(
         }
 
         var wording = request.MarketingConsent ? RequireWording(request.ConsentWording) : null;
-        if (!await db.Services.AnyAsync(s => s.Id == request.ServiceId && s.IsActive, cancellationToken).ConfigureAwait(false))
+        var serviceIds = request.AllServiceIds;
+        if (serviceIds.Count > VisitRules.MaxServices || serviceIds.Distinct().Count() != serviceIds.Count)
         {
-            throw new InvalidOperationException($"Service {request.ServiceId} does not exist or is not active in this salon.");
+            throw new ArgumentException($"A visit has one to {VisitRules.MaxServices} services, each once.", nameof(request));
+        }
+
+        var activeIds = await db.Services.Where(s => serviceIds.Contains(s.Id) && s.IsActive).Select(s => s.Id).ToListAsync(cancellationToken).ConfigureAwait(false);
+        if (serviceIds.Any(id => !activeIds.Contains(id)))
+        {
+            throw new InvalidOperationException($"Service {serviceIds.First(id => !activeIds.Contains(id))} does not exist or is not active in this salon.");
         }
 
         var pending = new PhoneVerification
@@ -71,6 +78,7 @@ internal sealed class PublicBookingService(
             CodeSalt = string.Empty,
             CodeHash = string.Empty,
             ServiceId = request.ServiceId,
+            ExtraServiceIds = [.. request.ExtraServiceIds ?? []],
             StaffMemberId = request.StaffMemberId,
             Start = request.Start,
             FirstName = firstName!,
@@ -202,7 +210,13 @@ internal sealed class PublicBookingService(
             return new PublicCancellation(PublicCancellationOutcome.TooLate, appointment);
         }
 
+        // A visit of several services is cancelled whole (ADR 0095): the link stands for the visit, not for one part of it.
         var cancelled = await booking.CancelAsync(appointment.Id, byClient: true, reason: null, cancellationToken: cancellationToken).ConfigureAwait(false);
+        foreach (var otherId in await OtherActiveOfVisitAsync(appointment.Id, cancellationToken).ConfigureAwait(false))
+        {
+            await booking.CancelAsync(otherId, byClient: true, reason: null, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
         return new PublicCancellation(PublicCancellationOutcome.Cancelled, appointment with { Status = cancelled.Status });
     }
 
@@ -220,7 +234,8 @@ internal sealed class PublicBookingService(
         }
 
         var now = clock.GetCurrentInstant();
-        if (appointment.Start <= now)
+        // A visit of several services cannot be moved online yet (ADR 0095): the salon is asked, as inside the notice period.
+        if (appointment.Start <= now || appointment.ServiceCount > 1)
         {
             return new PublicReschedule(PublicRescheduleOutcome.TooLate, appointment);
         }
@@ -266,19 +281,40 @@ internal sealed class PublicBookingService(
     {
         var clientId = await FindOrCreateClientAsync(pending, cancellationToken).ConfigureAwait(false);
 
+        // The services in order (ADR 0095): one for most bookings; for several the first appointment stands for the visit.
+        IReadOnlyList<Guid> serviceIds = [PhoneVerificationRules.ServiceOf(pending), .. pending.ExtraServiceIds];
         var staffMemberId = pending.StaffMemberId;
         if (staffMemberId is null)
         {
             var zone = await ZoneAsync(cancellationToken).ConfigureAwait(false);
             var day = pending.Start.InZone(zone).Date;
-            var slots = await availability.GetSlotsAsync(PhoneVerificationRules.ServiceOf(pending), null, day, day, cancellationToken).ConfigureAwait(false);
+            var slots = await availability.GetVisitSlotsAsync(serviceIds, null, day, day, cancellationToken).ConfigureAwait(false);
             staffMemberId = slots.FirstOrDefault(s => s.Start == pending.Start)?.StaffMemberId
                 ?? throw new SlotNoLongerAvailableException();
         }
 
-        return await booking.BookAsync(
-            new BookAppointmentRequest(clientId, staffMemberId.Value, PhoneVerificationRules.ServiceOf(pending), pending.Start, AppointmentSource.Online),
+        var booked = await booking.BookVisitAsync(
+            new BookVisitRequest(clientId, staffMemberId.Value, serviceIds, pending.Start, AppointmentSource.Online),
             cancellationToken).ConfigureAwait(false);
+        return booked[0];
+    }
+
+    /// <summary>The other appointments of the same visit that are still active; none for an appointment booked alone.</summary>
+    private async Task<IReadOnlyList<Guid>> OtherActiveOfVisitAsync(Guid appointmentId, CancellationToken cancellationToken)
+    {
+        var groupId = await db.Appointments.AsNoTracking().Where(a => a.Id == appointmentId).Select(a => a.VisitGroupId).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        if (groupId is null)
+        {
+            return [];
+        }
+
+        var active = AppointmentStateMachine.Active.ToArray();
+        return await db.Appointments.AsNoTracking()
+            .Where(a => a.VisitGroupId == groupId && a.Id != appointmentId && active.Contains(a.Status))
+            .OrderBy(a => a.Start)
+            .Select(a => a.Id)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private async Task<Guid> FindOrCreateClientAsync(PhoneVerification pending, CancellationToken cancellationToken)
@@ -326,6 +362,7 @@ internal sealed class PublicBookingService(
                 a.DepositAmount,
                 a.Status,
                 a.PublicToken,
+                a.VisitGroupId,
             })
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
@@ -336,7 +373,43 @@ internal sealed class PublicBookingService(
 
         var serviceName = await db.Services.AsNoTracking().Where(s => s.Id == row.ServiceId).Select(s => s.Name).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
         var staffName = await db.StaffMembers.AsNoTracking().Where(s => s.Id == row.StaffMemberId).Select(s => s.DisplayName).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
-        return new PublicAppointment(row.Id, row.ServiceId, serviceName, row.StaffMemberId, staffName, row.Start, row.End, new Money(row.PriceAmount, row.Currency), row.Status, row.PublicToken, row.DepositAmount > 0m ? new Money(row.DepositAmount, row.Currency) : null);
+        var single = new PublicAppointment(row.Id, row.ServiceId, serviceName, row.StaffMemberId, staffName, row.Start, row.End, new Money(row.PriceAmount, row.Currency), row.Status, row.PublicToken, row.DepositAmount > 0m ? new Money(row.DepositAmount, row.Currency) : null);
+        if (row.VisitGroupId is not { } groupId)
+        {
+            return single;
+        }
+
+        // One visit of several services (ADR 0095) reads as one booking: every service named, from the first start to the
+        // last end, the prices and deposits together. While the visit stands only its active parts count, so a part the
+        // salon took out is not promised; a cancelled visit shows all it was.
+        var parts = await db.Appointments.AsNoTracking()
+            .Where(a => a.VisitGroupId == groupId)
+            .OrderBy(a => a.Start)
+            .Select(a => new { a.ServiceId, a.Start, a.End, a.PriceAmount, a.DepositAmount, a.Status })
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        if (single.IsActive)
+        {
+            parts = parts.Where(p => AppointmentStateMachine.IsActive(p.Status)).ToList();
+        }
+
+        if (parts.Count < 2)
+        {
+            return single;
+        }
+
+        var partIds = parts.Select(p => p.ServiceId).ToList();
+        var names = await db.Services.AsNoTracking().Where(s => partIds.Contains(s.Id)).ToDictionaryAsync(s => s.Id, s => s.Name, cancellationToken).ConfigureAwait(false);
+        var deposit = parts.Sum(p => p.DepositAmount);
+        return single with
+        {
+            ServiceName = VisitRules.JoinNames(parts.Select(p => names.GetValueOrDefault(p.ServiceId, string.Empty))),
+            Start = parts[0].Start,
+            End = parts[^1].End,
+            Price = new Money(parts.Sum(p => p.PriceAmount), row.Currency),
+            Deposit = deposit > 0m ? new Money(deposit, row.Currency) : null,
+            ServiceCount = parts.Count,
+        };
     }
 
     private async Task<TenantInfo> RequireTenantAsync(CancellationToken cancellationToken)

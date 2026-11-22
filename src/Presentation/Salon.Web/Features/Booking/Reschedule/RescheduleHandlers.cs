@@ -52,6 +52,11 @@ public sealed class RescheduleOptionsHandler(
             return RescheduleOptions.Without(appointment, RescheduleState.TooLate, tenant.Name, zone);
         }
 
+        if (appointment.ServiceCount > 1)
+        {
+            return RescheduleOptions.Without(appointment, RescheduleState.SeveralServices, tenant.Name, zone);
+        }
+
         var policy = await settings.LoadAsync<CancellationPolicySettings>(cancellationToken);
         if (CancellationPolicy.IsInsideNotice(appointment.Start, now, policy.FreeChangeHours))
         {

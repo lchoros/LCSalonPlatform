@@ -33,6 +33,8 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
         builder.Ignore(a => a.Price);
         builder.Ignore(a => a.Interval);
         // The client card lists its visits; ADR 0012 added the FK once the clients slice (ADR 0011) was merged.
+        // The appointments of one visit booked as several services (ADR 0095).
+        builder.HasIndex(a => new { a.TenantId, a.VisitGroupId }).HasFilter("visit_group_id IS NOT NULL");
         builder.HasIndex(a => new { a.TenantId, a.ClientId });
         // The day view and the availability engine both ask "this person's appointments in this window".
         builder.HasIndex(a => new { a.TenantId, a.StaffMemberId, a.Start });

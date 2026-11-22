@@ -61,6 +61,12 @@ public abstract class AppointmentBookedNotice : IConsumer<AppointmentBooked>
         }
 
         var data = await _reader.ReadAsync(domainEvent.AppointmentId, cancellationToken).ConfigureAwait(false);
+        if (data is { IsLaterPartOfVisit: true })
+        {
+            _logger.LogDebug("Appointment {AppointmentId} is a later part of a visit of several services; the first part confirms it", domainEvent.AppointmentId);
+            return;
+        }
+
         if (data is null || !data.IsActive)
         {
             _logger.LogInformation("Appointment {AppointmentId} is gone or no longer active; confirmation skipped", domainEvent.AppointmentId);

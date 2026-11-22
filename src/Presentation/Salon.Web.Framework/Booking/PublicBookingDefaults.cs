@@ -5,6 +5,9 @@ public static class PublicBookingDefaults
 {
     public const string BookPath = "/book";
 
+    /// <summary>The <c>staff</c> value in a booking address that says "anyone available" was chosen (ADR 0094).</summary>
+    public const string AnyStaff = "any";
+
     /// <summary>Rate-limiting policy on the details POST (the one that sends an SMS code): per address, see <see cref="PublicBookingOptions.SmsCodeRateLimit"/>.</summary>
     public const string SmsCodeRateLimitPolicy = "sms-code";
 

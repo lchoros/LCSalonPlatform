@@ -131,6 +131,10 @@ namespace Salon.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
 
+                    b.Property<Guid?>("VisitGroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("visit_group_id");
+
                     b.HasKey("Id")
                         .HasName("pk_appointments");
 
@@ -157,6 +161,10 @@ namespace Salon.Data.Migrations
                     b.HasIndex("TenantId", "ImportBatchId")
                         .HasDatabaseName("ix_appointments_tenant_id_import_batch_id")
                         .HasFilter("import_batch_id IS NOT NULL");
+
+                    b.HasIndex("TenantId", "VisitGroupId")
+                        .HasDatabaseName("ix_appointments_tenant_id_visit_group_id")
+                        .HasFilter("visit_group_id IS NOT NULL");
 
                     b.HasIndex("TenantId", "StaffMemberId", "Start")
                         .HasDatabaseName("ix_appointments_tenant_id_staff_member_id_start_at");
@@ -479,6 +487,13 @@ namespace Salon.Data.Migrations
                     b.Property<Instant>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expires_at");
+
+                    b.PrimitiveCollection<Guid[]>("ExtraServiceIds")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("extra_service_ids")
+                        .HasDefaultValueSql("'{}'::uuid[]");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
