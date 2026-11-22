@@ -68,8 +68,19 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await page.GetByTestId("book-service").First.TapAsync();
         await page.ReachAsync(url => url.Contains("/book/", StringComparison.Ordinal) && !url.EndsWith("/book", StringComparison.Ordinal));
 
-        // Step 2: the first free time of the first day that has one ("anyone available" is selected by default).
+        // Step 2 opens on the question "who with" (the owner, 2026-11-22): nobody is chosen for the client, and no
+        // day or time shows until they answer. "Anyone available" is an answer.
         (await page.GetByTestId("service-name").TextContentAsync()).ShouldBe("Cut & blow-dry");
+        await Assertions.Expect(page.GetByTestId("staff-required")).ToBeVisibleAsync();
+        (await page.Locator("[data-testid=staff-picker] [aria-current=true]").CountAsync()).ShouldBe(0);
+        (await page.GetByTestId("day").CountAsync()).ShouldBe(0);
+        (await page.GetByTestId("slot").CountAsync()).ShouldBe(0);
+        (await page.GetByTestId("summary-staff").TextContentAsync()).ShouldBe("Not chosen yet");
+        var whoAxe = await page.RunAxe();
+        whoAxe.Violations.ShouldBeEmpty(string.Join("; ", whoAxe.Violations.Select(v => $"{v.Id}: {v.Help}")));
+        await CaptureAsync(page, "book-who-with-mobile-390.png");
+        await page.ChooseAnyoneAsync();
+        await Assertions.Expect(page.GetByTestId("staff-required")).ToHaveCountAsync(0);
         (await page.GetByTestId("staff-any").GetAttributeAsync("aria-current")).ShouldBe("true");
         (await page.GetByTestId("day").CountAsync()).ShouldBe(14);
 
@@ -152,6 +163,7 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await page.ReachAsync("**/book");
         await page.GetByTestId("book-service").First.TapAsync();
         await page.ReachAsync(url => url.Contains("/book/", StringComparison.Ordinal) && !url.EndsWith("/book", StringComparison.Ordinal));
+        await page.ChooseAnyoneAsync();
         await page.GetByTestId("slot").First.TapAsync();
         await page.GetByTestId("continue").TapAsync();
         await page.ReachAsync("**/details?*");

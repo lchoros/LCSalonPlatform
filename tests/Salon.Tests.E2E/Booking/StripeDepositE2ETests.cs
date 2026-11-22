@@ -55,6 +55,7 @@ public class StripeDepositE2ETests(StripeDepositsAppFixture app) : IClassFixture
         (await page.GotoAsync(app.TenantUrl(Slug) + "/book")).ShouldNotBeNull().Ok.ShouldBeTrue();
         await page.GetByTestId("book-service").First.TapAsync();
         await page.ReachAsync(url => url.Contains("/book/", StringComparison.Ordinal) && !url.EndsWith("/book", StringComparison.Ordinal));
+        await page.ChooseAnyoneAsync();
         await page.GetByTestId("slot").First.TapAsync();
         await page.GetByTestId("continue").TapAsync();
         await page.ReachAsync("**/details?*");

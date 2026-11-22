@@ -28,6 +28,23 @@ public static class PageNavigationExtensions
     /// <summary>Waits until the page is at a URL accepted by <paramref name="matches"/> and has finished loading.</summary>
     public static Task ReachAsync(this IPage page, Func<string, bool> matches) => page.ReachAsync(matches, "the expected URL");
 
+    /// <summary>
+    /// On the public time page, answers "who with" with "anyone available" where the page asks it (more than one
+    /// person offers the service; ADR 0094, stage 3), and waits for the days and times that follow. Where one person
+    /// offers the service there is no question and this does nothing.
+    /// </summary>
+    public static async Task ChooseAnyoneAsync(this IPage page)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+        if (await page.GetByTestId("choose-staff").CountAsync() == 0)
+        {
+            return;
+        }
+
+        await page.GetByTestId("staff-any").ClickAsync();
+        await page.ReachAsync(url => url.Contains("staff=any", StringComparison.Ordinal));
+    }
+
     /// <summary>The regular expression equivalent of a Playwright-style URL glob, anchored at both ends.</summary>
     public static Regex GlobToRegex(string glob)
     {

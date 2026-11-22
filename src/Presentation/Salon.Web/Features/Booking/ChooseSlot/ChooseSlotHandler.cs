@@ -59,8 +59,10 @@ public sealed class ChooseSlotHandler(
         // Faces on the picker (ADR 0088): who has a picture and in which version; the pictures themselves are fetched by the browser.
         var photoVersions = await photos.VersionsAsync(cancellationToken);
         var staff = bookable.Where(s => offered[s.Id].Offers).Select(s => s with { PhotoPath = StaffPhotoAddress.For(s.Id, photoVersions) }).ToList();
-        // A person who is no longer bookable (or no longer offers it) falls back to "anyone" instead of an empty page.
+        // A person who is no longer bookable (or no longer offers it) falls back to the question instead of an empty page.
         var staffId = request.StaffMemberId is { } wanted && staff.Any(s => s.Id == wanted) ? request.StaffMemberId : null;
+        // Who with is asked, not assumed (the owner, 2026-11-22): with a choice of people, nothing shows until one is made.
+        var needsChoice = staff.Count > 1 && staffId is null && !request.Anyone;
 
         var duration = service.Duration;
         var price = new Money(service.Price, service.Currency);
@@ -84,7 +86,7 @@ public sealed class ChooseSlotHandler(
         var windowStart = request.From is { } from && from > today ? LocalDate.Min(from, horizon) : today;
         var last = LocalDate.Min(windowStart.PlusDays(DaysShown - 1), horizon);
         var dayCount = Period.DaysBetween(windowStart, last) + 1;
-        var slots = await availability.GetSlotsAsync(service.Id, staffId, windowStart, last, cancellationToken);
+        var slots = needsChoice ? [] : await availability.GetSlotsAsync(service.Id, staffId, windowStart, last, cancellationToken);
         var byDay = slots.ToLookup(s => s.Start.InZone(zone).Date);
 
         var days = Enumerable.Range(0, dayCount).Select(windowStart.PlusDays).Select(d => new DayOption(d, byDay[d].Any())).ToList();
@@ -110,7 +112,10 @@ public sealed class ChooseSlotHandler(
             daySlots,
             zone)
         {
-            WaitlistOffered = rules.PublicWaitlist,
+            NeedsStaffChoice = needsChoice,
+            DayAsked = request.Date == selected,
+            AnyoneChosen = staffId is null && !needsChoice,
+            WaitlistOffered = rules.PublicWaitlist && !needsChoice,
             EarlierFrom = windowStart > today ? LocalDate.Max(today, windowStart.PlusDays(-DaysShown)) : null,
             LaterFrom = last < horizon ? last.PlusDays(1) : null,
             Groups = groups,

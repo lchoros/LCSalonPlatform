@@ -27,3 +27,21 @@ Issue: the owner, with four screenshots of Booksy's booking — "our main focus 
 
 - A client cannot wander off mid-booking by accident, and cannot lose a half-made booking with one stray tap.
 - We take the pattern, not the look: our brand, our tiles, our words.
+
+## Addendum, 2026-11-22: who with is asked, not assumed (stage 3)
+
+The owner on the time page: "it is not clear to select staff during booking; instead of default all it should not be
+selected but a mandatory field."
+
+- Where **more than one person** offers the service, the page opens with nobody chosen. The question "Who with" stands
+  in a brand-edged box marked "Required", its answers wrapped so all are in sight; no day, no time and no Continue
+  show until it is answered. The summary reads "Staff: Not chosen yet".
+- **"Anyone available" is an answer like the others** and travels in the address as `staff=any`; the day strip, the
+  times and the way back from the details form keep it. Only a person's id goes on to the details step, as before.
+- Where **one person** offers the service there is nothing to ask and the page is as it was.
+- A person in the address who is not bookable (or does not offer the service) is no answer: the question again.
+- A day asked for in the address (the waiting list's "a time came up" message links to one) is kept through the answer.
+- The booking itself is unchanged: this is a rule of the page, not of the engine. A hand-written address to the
+  details step without a person still books with whoever is free, as "anyone" always did.
+- Cost: one more tap for a client who does not mind who. Taken on purpose, so the choice is seen. The change-a-booking
+  page keeps its own picker, where the person the visit is with is already the answer.

@@ -8,7 +8,10 @@
     var culture = CultureInfo.CurrentCulture;
     ViewData["Title"] = T["Booking.Public.ChooseTime"];
     ViewData["Focused"] = true;
-    var staffQuery = r.SelectedStaffId is { } sid ? $"&staff={sid}" : string.Empty;
+    // The person goes on to the next step; "anyone" only has to be remembered on this page.
+    var personQuery = r.SelectedStaffId is { } sid ? $"&staff={sid}" : string.Empty;
+    var staffQuery = r.AnyoneChosen && r.Staff.Count > 1 ? $"&staff={ChooseSlotQuery.AnyStaff}" : personQuery;
+    var keptDay = r.NeedsStaffChoice && !r.DayAsked ? string.Empty : $"&date={r.SelectedDate.ToIso()}";
     var hasAnySlot = r.Days.Any(d => d.HasSlots);
 }
 <section class="mx-auto max-w-2xl space-y-6">
@@ -37,17 +40,34 @@
 
     @if (r.Staff.Count > 1)
     {
-        <nav aria-label="@T["Booking.Public.With"]" data-testid="staff-picker" class="scroll-row">
-            <a href="/book/@r.ServiceId?date=@r.SelectedDate.ToIso()" class="pill @Badges.DayTile(r.SelectedStaffId is null, true)" aria-current="@(r.SelectedStaffId is null ? "true" : null)" data-testid="staff-any">@T["Booking.Public.Anyone"]</a>
-            @foreach (var person in r.Staff)
+        @* Who with is asked, not assumed (the owner, 2026-11-22): nobody is chosen when the page opens, and the days
+           and times wait for the answer. "Anyone available" is an answer like the others (staff=any). *@
+        <section id="who" class="staff-choice @(r.NeedsStaffChoice ? "is-needed" : null)" data-testid="staff-choice">
+            <h2 class="staff-choice-title">
+                @T["Booking.Public.With"]
+                @if (r.NeedsStaffChoice)
+                {
+                    <span class="staff-choice-required" data-testid="staff-required">@T["Booking.Public.Required"]</span>
+                }
+            </h2>
+            <nav aria-label="@T["Booking.Public.With"]" data-testid="staff-picker" class="scroll-row">
+                <a href="/book/@r.ServiceId?staff=@ChooseSlotQuery.AnyStaff@keptDay" class="pill @Badges.DayTile(r.AnyoneChosen, true)" aria-current="@(r.AnyoneChosen ? "true" : null)" data-testid="staff-any">@T["Booking.Public.Anyone"]</a>
+                @foreach (var person in r.Staff)
+                {
+                    var on = person.Id == r.SelectedStaffId;
+                    <a href="/book/@r.ServiceId?staff=@person.Id@keptDay" class="pill gap-2 pl-2 @Badges.DayTile(on, true)" aria-current="@(on ? "true" : null)" data-testid="staff-option"><avatar name="@person.DisplayName" photo="@person.PhotoPath" size="Small" />@person.DisplayName</a>
+                }
+            </nav>
+            @if (r.NeedsStaffChoice)
             {
-                var on = person.Id == r.SelectedStaffId;
-                <a href="/book/@r.ServiceId?date=@r.SelectedDate.ToIso()&staff=@person.Id" class="pill gap-2 pl-2 @Badges.DayTile(on, true)" aria-current="@(on ? "true" : null)" data-testid="staff-option"><avatar name="@person.DisplayName" photo="@person.PhotoPath" size="Small" />@person.DisplayName</a>
+                <p class="text-sm text-slate-600" data-testid="choose-staff">@T["Booking.Public.ChooseStaffFirst"]</p>
             }
-        </nav>
+        </section>
     }
 
-    @{ var windowStart = (r.Days.Count > 0 ? r.Days[0].Date : r.SelectedDate).ToIso(); }
+    @if (!r.NeedsStaffChoice)
+    {
+    var windowStart = (r.Days.Count > 0 ? r.Days[0].Date : r.SelectedDate).ToIso();
     @* The two arrows always hold their places (the owner, 2026-11-20): where there is nothing earlier or later the
        arrow is drawn faint and is not a link, so the strip between them never shifts. Every link comes back to this
        bar (#days), so changing the day or the week does not throw the page to its top. *@
@@ -131,6 +151,7 @@
         }
     </div>
 
+    }
     @* What is being booked, under the times (ADR 0094, stage 2): the service and its price, the time once one is
        tapped, who with, the total, and the one button that goes on. *@
     <section class="book-summary" data-testid="booking-summary" aria-label="@T["Booking.Public.Summary"]">
@@ -153,7 +174,7 @@
     @if (r.Chosen is { } picked)
     {
         <div class="sticky bottom-4" data-testid="continue-bar">
-            <a href="/book/@r.ServiceId/details?start=@Uri.EscapeDataString(picked.Start.ToIso())@staffQuery" class="btn btn-primary w-full shadow-lg" data-testid="continue">@T["Booking.Public.Continue"]</a>
+            <a href="/book/@r.ServiceId/details?start=@Uri.EscapeDataString(picked.Start.ToIso())@personQuery" class="btn btn-primary w-full shadow-lg" data-testid="continue">@T["Booking.Public.Continue"]</a>
         </div>
     }
     else if (r.Slots.Count > 0)

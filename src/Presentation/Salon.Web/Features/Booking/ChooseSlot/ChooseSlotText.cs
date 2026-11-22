@@ -23,6 +23,7 @@ public static class ChooseSlotText
     {
         ArgumentNullException.ThrowIfNull(localizer);
         ArgumentNullException.ThrowIfNull(result);
-        return result.Staff.FirstOrDefault(person => person.Id == result.SelectedStaffId)?.DisplayName ?? localizer["Booking.Public.NoPreference"];
+        return result.Staff.FirstOrDefault(person => person.Id == result.SelectedStaffId)?.DisplayName
+            ?? localizer[result.NeedsStaffChoice ? "Booking.Public.StaffNotChosen" : "Booking.Public.NoPreference"];
     }
 }

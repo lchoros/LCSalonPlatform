@@ -78,6 +78,7 @@ public class ServiceCatalogueE2ETests(KestrelAppFixture app) : IClassFixture<Kes
             await page.GetByTestId("book-variant").ClickAsync();
             await page.ReachAsync("**/book/*");
             (await page.GetByTestId("service-name").TextContentAsync()).ShouldBe("Keratin · Long hair");
+            await page.ChooseAnyoneAsync();
             if (styled)
             {
                 var day = (await page.GetByTestId("day").First.BoundingBoxAsync()).ShouldNotBeNull();
