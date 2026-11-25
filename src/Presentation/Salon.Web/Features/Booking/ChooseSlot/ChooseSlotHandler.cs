@@ -65,8 +65,7 @@ public sealed class ChooseSlotHandler(
         var parts = new[] { service }.Concat(wantedExtras.Select(id => foundExtras.FirstOrDefault(s => s.Id == id)).Where(s => s is not null).Select(s => s!)).ToList();
         var serviceIds = parts.Select(p => p.Id).ToList();
 
-        // Someone who does not offer a service is not on the picker at all (ADR 0018); the engine skips them too. For
-        // several services one person does the whole visit, so only people who offer every one of them are shown.
+        // Someone who does not offer a service is not on its picker at all (ADR 0018); the engine skips them too.
         var bookableIds = bookable.Select(s => s.Id).ToArray();
         var offeredBy = new Dictionary<Guid, IReadOnlyDictionary<Guid, ServiceOffering>>();
         foreach (var part in parts)
@@ -76,28 +75,51 @@ public sealed class ChooseSlotHandler(
 
         // Faces on the picker (ADR 0088): who has a picture and in which version; the pictures themselves are fetched by the browser.
         var photoVersions = await photos.VersionsAsync(cancellationToken);
-        var staff = bookable.Where(s => parts.All(p => offeredBy[p.Id][s.Id].Offers)).Select(s => s with { PhotoPath = StaffPhotoAddress.For(s.Id, photoVersions) }).ToList();
-        // A person who is no longer bookable (or no longer offers it) falls back to the question instead of an empty page.
-        var staffId = request.StaffMemberId is { } wanted && staff.Any(s => s.Id == wanted) ? request.StaffMemberId : null;
-        // Who with is asked, not assumed (the owner, 2026-11-22): with a choice of people, the client has to say before going on.
-        var needsChoice = staff.Count > 1 && staffId is null && !request.Anyone;
+        var faces = bookable.Select(s => s with { PhotoPath = StaffPhotoAddress.For(s.Id, photoVersions) }).ToList();
 
-        // Each service at the chosen person's own price and duration, or the cheapest with "from" until a person is
-        // chosen (ADR 0018); the visit is their sum.
-        var spans = staffId is null ? await offerings.PriceSpansAsync(serviceIds, cancellationToken) : null;
-        var lines = parts
-            .Select(p =>
+        // Who does each service (ADR 0096): its own answer — a person who offers it, or "anyone". Who with is asked,
+        // not assumed (the owner, 2026-11-22), so where there is a choice of people and no answer the line says it is
+        // still owed. A service added to the visit takes the answer of the one before it when that still fits, so
+        // the client is asked again only where it matters. A person who is no longer bookable, or does not offer the
+        // service, is no answer.
+        var spans = await offerings.PriceSpansAsync(serviceIds, cancellationToken);
+        var lines = new List<VisitLine>();
+        for (var i = 0; i < parts.Count; i++)
+        {
+            var part = parts[i];
+            var people = faces.Where(s => offeredBy[part.Id][s.Id].Offers).ToList();
+            var token = i == 0 ? null : (request.ExtraStaff is { } tokens && i - 1 < tokens.Count ? tokens[i - 1] : null);
+            var wanted = i == 0 ? request.StaffMemberId : (Guid.TryParse(token, out var parsed) ? parsed : null);
+            var person = wanted is { } id && people.Any(s => s.Id == id) ? wanted : null;
+            var anyone = person is null && (i == 0 ? request.Anyone : string.Equals(token, ChooseSlotQuery.AnyStaff, StringComparison.OrdinalIgnoreCase));
+            if (person is null && !anyone && i > 0 && !lines[i - 1].NeedsStaffChoice)
             {
-                if (staffId is { } chosen)
-                {
-                    var offering = offeredBy[p.Id][chosen];
-                    return new VisitLine(p.Id, p.Name, offering.Duration, new Money(offering.Price, offering.Currency), false);
-                }
+                var before = lines[i - 1];
+                person = before.StaffId is { } same && people.Any(s => s.Id == same) ? same : null;
+                anyone = person is null && before.Anyone;
+            }
 
-                var span = spans![p.Id];
-                return new VisitLine(p.Id, p.Name, p.Duration, new Money(span.Min, p.Currency), span.IsRange);
-            })
-            .ToList();
+            // One person, or nobody, offers it: there is nothing to ask.
+            anyone |= person is null && people.Count <= 1;
+            // The chosen person's own price and duration, or the cheapest with "from" until a person is chosen (ADR 0018).
+            var offering = person is { } chosen ? offeredBy[part.Id][chosen] : null;
+            var span = spans[part.Id];
+            lines.Add(new VisitLine(
+                part.Id,
+                part.Name,
+                offering?.Duration ?? part.Duration,
+                offering is null ? new Money(span.Min, part.Currency) : new Money(offering.Price, offering.Currency),
+                offering is null && span.IsRange)
+            {
+                Staff = people,
+                StaffId = person,
+                Anyone = anyone,
+            });
+        }
+
+        var staff = lines[0].Staff;
+        var staffId = lines[0].StaffId;
+        var needsChoice = lines.Any(l => l.NeedsStaffChoice);
         var duration = lines.Aggregate(Duration.Zero, (sum, l) => sum + l.Duration);
         var price = new Money(lines.Sum(l => l.Price.Amount), service.Currency);
         var priceIsFrom = lines.Any(l => l.PriceIsFrom);
@@ -110,7 +132,8 @@ public sealed class ChooseSlotHandler(
         var dayCount = Period.DaysBetween(windowStart, last) + 1;
         // Until "who with" is answered the times are those of anyone who could do it (the owner, 2026-11-25): the
         // page shows them from the start, and the answer is asked for when the client goes on.
-        var slots = staff.Count == 0 ? [] : await availability.GetVisitSlotsAsync(serviceIds, staffId, windowStart, last, cancellationToken);
+        var nobody = lines.Any(l => l.Staff.Count == 0);
+        var slots = nobody ? [] : await availability.GetVisitPlanAsync([.. lines.Select(l => new VisitPart(l.ServiceId, l.StaffId))], windowStart, last, cancellationToken);
         var byDay = slots.ToLookup(s => s.Start.InZone(zone).Date);
 
         var days = Enumerable.Range(0, dayCount).Select(windowStart.PlusDays).Select(d => new DayOption(d, byDay[d].Any())).ToList();
@@ -118,7 +141,7 @@ public sealed class ChooseSlotHandler(
             ? requested
             : days.FirstOrDefault(d => d.HasSlots)?.Date ?? windowStart;
 
-        var daySlots = byDay[selected].Select(s => new SlotOption(s.Start, s.Start.InZone(zone).TimeOfDay, s.StaffMemberId)).ToList();
+        var daySlots = byDay[selected].Select(s => new SlotOption(s.Start, s.Start.InZone(zone).TimeOfDay, s.StaffMemberIds[0])).ToList();
         var groups = Grouped(daySlots);
         // Only a start that is genuinely free right now counts; a stale or foreign one quietly deselects.
         var chosenSlot = request.Start is { } wantedStart ? daySlots.FirstOrDefault(s => s.Start == wantedStart) : null;
@@ -138,11 +161,11 @@ public sealed class ChooseSlotHandler(
         {
             NeedsStaffChoice = needsChoice,
             DayAsked = request.Date == selected,
-            AnyoneChosen = staffId is null && !needsChoice,
+            AnyoneChosen = lines[0].Anyone && staff.Count > 0,
             // The waiting list is for one service (ADR 0055); it is not offered for a visit of several.
             WaitlistOffered = rules.PublicWaitlist && lines.Count == 1,
             Lines = lines,
-            NobodyOffersAll = lines.Count > 1 && staff.Count == 0,
+            NobodyOffersAll = nobody,
             EarlierFrom = windowStart > today ? LocalDate.Max(today, windowStart.PlusDays(-DaysShown)) : null,
             LaterFrom = last < horizon ? last.PlusDays(1) : null,
             Groups = groups,

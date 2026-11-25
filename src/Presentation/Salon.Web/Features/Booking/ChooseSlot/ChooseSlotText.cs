@@ -39,12 +39,23 @@ public static class ChooseSlotText
         return $"{start.ToString("HH:mm", culture)} – {start.PlusMinutes(minutes).ToString("HH:mm", culture)}";
     }
 
-    /// <summary>The chosen person, or "No preference" under "anyone available".</summary>
-    public static string Who(ILocalizationService localizer, ChooseSlotResult result)
+    /// <summary>What the client still has to choose before going on or adding a service: a time, who with, or both.</summary>
+    public static string MissingKey(ChooseSlotResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        return (result.Chosen is null, result.NeedsStaffChoice) switch
+        {
+            (true, true) => "Booking.Public.Missing.TimeAndStaff",
+            (false, true) => "Booking.Public.Missing.Staff",
+            _ => "Booking.Public.Missing.Time",
+        };
+    }
+
+    /// <summary>Who does one service: the chosen person, "No preference" under "anyone available", or that the answer is still owed.</summary>
+    public static string Who(ILocalizationService localizer, VisitLine line)
     {
         ArgumentNullException.ThrowIfNull(localizer);
-        ArgumentNullException.ThrowIfNull(result);
-        return result.Staff.FirstOrDefault(person => person.Id == result.SelectedStaffId)?.DisplayName
-            ?? localizer[result.NeedsStaffChoice ? "Booking.Public.StaffNotChosen" : "Booking.Public.NoPreference"];
+        ArgumentNullException.ThrowIfNull(line);
+        return line.Person?.DisplayName ?? localizer[line.NeedsStaffChoice ? "Booking.Public.StaffNotChosen" : "Booking.Public.NoPreference"];
     }
 }

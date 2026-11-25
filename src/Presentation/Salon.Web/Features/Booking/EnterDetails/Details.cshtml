@@ -36,7 +36,7 @@
             </div>
         </dl>
         @* Back to step 2 on the same day and strip window, with the same person (a mis-tapped time costs one tap). *@
-        <a href="/book/@Model.Form.ServiceId?date=@local.Date.ToIso()&from=@local.Date.ToIso()@(Model.Form.StaffMemberId is { } backSid ? $"&staff={backSid}" : "&staff=any")@(Model.Form.Also is { } backAlso ? $"&also={backAlso}" : null)" class="btn btn-compact btn-secondary ml-auto shrink-0" data-testid="change-time">@T["Booking.Public.ChangeTime"]</a>
+        <a href="/book/@Model.Form.ServiceId?date=@local.Date.ToIso()&from=@local.Date.ToIso()@(Model.Form.StaffMemberId is { } backSid ? $"&staff={backSid}" : "&staff=any")@(Model.Form.Also is { } backAlso ? $"&also={backAlso}" : null)@(Model.Form.With is { } backWith ? $"&with={backWith}" : null)" class="btn btn-compact btn-secondary ml-auto shrink-0" data-testid="change-time">@T["Booking.Public.ChangeTime"]</a>
     </div>
 
     @if (s.Deposit is { } depositDue)
@@ -86,6 +86,7 @@
         <input type="hidden" name="Start" value="@Model.Form.Start" />
         <input type="hidden" name="StaffMemberId" value="@Model.Form.StaffMemberId" />
         <input type="hidden" name="Also" value="@Model.Form.Also" />
+        <input type="hidden" name="With" value="@Model.Form.With" />
 
         <div class="grid gap-5 sm:grid-cols-2">
             <div class="space-y-1.5">

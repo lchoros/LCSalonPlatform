@@ -24,12 +24,42 @@ public interface IVisitBasket
     /// <see cref="IsOpen"/> is false.
     /// </summary>
     IReadOnlyList<Guid> Read(string? also, Guid first);
+
+    /// <summary>
+    /// Who does each further service (ADR 0096), as the address says it, one answer for each of <paramref name="count"/>
+    /// services in order: a person's id, "any" for anyone available, or null where nothing is said yet.
+    /// </summary>
+    IReadOnlyList<string?> ReadStaff(string? who, int count);
 }
 
 public sealed class VisitBasket(IOptionsMonitor<FeaturesOptions> features, IOnlineDepositCheckout deposits) : IVisitBasket
 {
     /// <summary>The name of the value in the address and in the details form.</summary>
     public const string Parameter = "also";
+
+    /// <summary>The name of the value that says who does each further service.</summary>
+    public const string StaffParameter = "with";
+
+    /// <summary>How "nothing said yet" is written between the commas, so the answers keep their places.</summary>
+    private const string NoAnswer = "-";
+
+    public IReadOnlyList<string?> ReadStaff(string? who, int count)
+    {
+        var said = IsOpen && !string.IsNullOrWhiteSpace(who) ? who.Split(',', StringSplitOptions.TrimEntries) : [];
+        return [.. Enumerable.Range(0, count).Select(i => i < said.Length && (Guid.TryParse(said[i], out _) || said[i] == PublicBookingDefaults.AnyStaff) ? said[i] : null)];
+    }
+
+    /// <summary>The answers as they are written into an address or a form; null when none is given.</summary>
+    public static string? WriteStaff(IEnumerable<string?> answers)
+    {
+        ArgumentNullException.ThrowIfNull(answers);
+        var list = answers.ToList();
+        return list.All(a => a is null) ? null : string.Join(',', list.Select(a => a ?? NoAnswer));
+    }
+
+    /// <summary>The further services and who does them, as a piece appended to an address that already has a query.</summary>
+    public static string Query(IEnumerable<Guid> extras, IEnumerable<string?> answers)
+        => Query(extras) + (WriteStaff(answers) is { } value ? $"&{StaffParameter}={value}" : string.Empty);
 
     public bool IsOpen => features.CurrentValue.SeveralServices && !deposits.IsAvailable;
 

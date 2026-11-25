@@ -55,6 +55,27 @@ public static class AvailabilityCalculator
         ];
     }
 
+    /// <summary>
+    /// Whether one person can hold <c>[start, start + length)</c>: it lies inside one of their working ranges of that
+    /// local day and overlaps nothing they are busy with. For a part of a visit that starts where another part ends
+    /// (ADR 0096), which need not be on a step of the clock.
+    /// </summary>
+    public static bool IsFree(DateTimeZone zone, StaffAvailabilityInput staff, Instant start, Duration length)
+    {
+        ArgumentNullException.ThrowIfNull(zone);
+        ArgumentNullException.ThrowIfNull(staff);
+        var day = start.InZone(zone).Date;
+        if (!staff.WorkingRanges.TryGetValue(day.DayOfWeek, out var ranges))
+        {
+            return false;
+        }
+
+        var end = start.Plus(length);
+        var held = new Interval(start, end);
+        return !staff.Busy.Any(b => Overlaps(b, held))
+            && ranges.Any(r => zone.AtLeniently(day.At(r.Start)).ToInstant() <= start && end <= zone.AtLeniently(day.At(r.End)).ToInstant());
+    }
+
     private static IEnumerable<Slot> SlotsFor(AvailabilityRequest request, StaffAvailabilityInput staff)
     {
         var earliestStart = request.Now.Plus(request.MinNotice);

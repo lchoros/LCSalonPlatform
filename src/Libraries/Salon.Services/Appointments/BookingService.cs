@@ -56,32 +56,42 @@ internal sealed class BookingService(
         var services = request.ServiceIds
             .Select(id => found.FirstOrDefault(s => s.Id == id) ?? throw new InvalidOperationException($"Service {id} does not exist or is not active in this salon."))
             .ToList();
-        var staffExists = await db.StaffMembers
-            .AnyAsync(s => s.Id == request.StaffMemberId && s.IsActive && s.IsBookable, cancellationToken)
-            .ConfigureAwait(false);
-        if (!staffExists)
+        // Who does each part (ADR 0096): one person for all of it unless the request names a person for every part.
+        var staffIds = request.StaffMemberIds is { Count: > 0 } named ? named : [.. request.ServiceIds.Select(_ => request.StaffMemberId)];
+        if (staffIds.Count != request.ServiceIds.Count)
         {
-            throw new InvalidOperationException($"Staff member {request.StaffMemberId} does not exist or is not bookable in this salon.");
+            throw new ArgumentException("A visit names a person for every one of its services, or one for all.", nameof(request));
+        }
+
+        var distinctStaff = staffIds.Distinct().ToList();
+        var bookable = await db.StaffMembers
+            .Where(s => distinctStaff.Contains(s.Id) && s.IsActive && s.IsBookable)
+            .Select(s => s.Id)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        if (distinctStaff.FirstOrDefault(id => !bookable.Contains(id)) is { } gone && gone != Guid.Empty)
+        {
+            throw new InvalidOperationException($"Staff member {gone} does not exist or is not bookable in this salon.");
         }
 
         // This person's own duration and price, or the service's (ADR 0018); someone who does not offer it cannot be booked.
         var offered = new List<ServiceOffering>();
-        foreach (var service in services)
+        for (var i = 0; i < services.Count; i++)
         {
-            var offering = await offerings.ResolveAsync(service.Id, request.StaffMemberId, cancellationToken).ConfigureAwait(false);
+            var offering = await offerings.ResolveAsync(services[i].Id, staffIds[i], cancellationToken).ConfigureAwait(false);
             if (!offering.Offers)
             {
-                throw new InvalidOperationException($"Staff member {request.StaffMemberId} does not offer service {service.Id}.");
+                throw new InvalidOperationException($"Staff member {staffIds[i]} does not offer service {services[i].Id}.");
             }
 
             offered.Add(offering);
         }
 
         // The same rules the client saw: working hours, other bookings, notice and advance limit, as of now. For several
-        // services the whole visit has to fit, one service after another (ADR 0095).
+        // services the whole visit has to fit, one service after another, each with its own person (ADR 0095, ADR 0096).
         var day = request.Start.InZone(zone).Date;
-        var slots = await availability.GetVisitSlotsAsync(request.ServiceIds, request.StaffMemberId, day, day, cancellationToken).ConfigureAwait(false);
-        if (!slots.Any(s => s.Start == request.Start))
+        var plan = await availability.GetVisitPlanAsync([.. services.Select((s, i) => new VisitPart(s.Id, staffIds[i]))], day, day, cancellationToken).ConfigureAwait(false);
+        if (!plan.Any(s => s.Start == request.Start))
         {
             throw new SlotNoLongerAvailableException();
         }
@@ -107,7 +117,7 @@ internal sealed class BookingService(
             {
                 TenantId = tenantContext.TenantId!.Value,
                 ClientId = request.ClientId,
-                StaffMemberId = request.StaffMemberId,
+                StaffMemberId = staffIds[i],
                 ServiceId = service.Id,
                 Start = start,
                 End = start.Plus(offering.Duration),

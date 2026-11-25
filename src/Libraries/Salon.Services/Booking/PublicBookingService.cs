@@ -79,6 +79,7 @@ internal sealed class PublicBookingService(
             CodeHash = string.Empty,
             ServiceId = request.ServiceId,
             ExtraServiceIds = [.. request.ExtraServiceIds ?? []],
+            ExtraStaffIds = [.. (request.ExtraServiceIds ?? []).Select((_, i) => request.ExtraStaffIds is { } people && i < people.Count ? people[i] ?? Guid.Empty : Guid.Empty)],
             StaffMemberId = request.StaffMemberId,
             Start = request.Start,
             FirstName = firstName!,
@@ -282,19 +283,31 @@ internal sealed class PublicBookingService(
         var clientId = await FindOrCreateClientAsync(pending, cancellationToken).ConfigureAwait(false);
 
         // The services in order (ADR 0095): one for most bookings; for several the first appointment stands for the visit.
+        // Each with the person the client chose for it, or nobody for "anyone" (ADR 0096): those are settled now, by
+        // the plan the times came from.
         IReadOnlyList<Guid> serviceIds = [PhoneVerificationRules.ServiceOf(pending), .. pending.ExtraServiceIds];
-        var staffMemberId = pending.StaffMemberId;
-        if (staffMemberId is null)
+        List<Guid?> chosen = [pending.StaffMemberId];
+        for (var i = 0; i < pending.ExtraServiceIds.Count; i++)
+        {
+            var person = i < pending.ExtraStaffIds.Count ? pending.ExtraStaffIds[i] : Guid.Empty;
+            chosen.Add(person == Guid.Empty ? null : person);
+        }
+
+        List<Guid> staffIds;
+        if (chosen.All(c => c is not null))
+        {
+            staffIds = [.. chosen.Select(c => c!.Value)];
+        }
+        else
         {
             var zone = await ZoneAsync(cancellationToken).ConfigureAwait(false);
             var day = pending.Start.InZone(zone).Date;
-            var slots = await availability.GetVisitSlotsAsync(serviceIds, null, day, day, cancellationToken).ConfigureAwait(false);
-            staffMemberId = slots.FirstOrDefault(s => s.Start == pending.Start)?.StaffMemberId
-                ?? throw new SlotNoLongerAvailableException();
+            var plan = await availability.GetVisitPlanAsync([.. serviceIds.Select((id, i) => new VisitPart(id, chosen[i]))], day, day, cancellationToken).ConfigureAwait(false);
+            staffIds = [.. (plan.FirstOrDefault(s => s.Start == pending.Start) ?? throw new SlotNoLongerAvailableException()).StaffMemberIds];
         }
 
         var booked = await booking.BookVisitAsync(
-            new BookVisitRequest(clientId, staffMemberId.Value, serviceIds, pending.Start, AppointmentSource.Online),
+            new BookVisitRequest(clientId, staffIds[0], serviceIds, pending.Start, AppointmentSource.Online) { StaffMemberIds = staffIds },
             cancellationToken).ConfigureAwait(false);
         return booked[0];
     }

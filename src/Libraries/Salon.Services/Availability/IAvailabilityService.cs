@@ -31,4 +31,18 @@ public interface IAvailabilityService
     /// <see cref="GetSlotsAsync(Guid, Guid?, LocalDate, LocalDate, CancellationToken)"/>.
     /// </summary>
     Task<IReadOnlyList<Slot>> GetVisitSlotsAsync(IReadOnlyList<Guid> serviceIds, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// The free starts of a visit whose services may be done by different people (ADR 0096): each part names its
+    /// service and the person, or nobody for "anyone who offers it". The parts follow one another without a gap. Where
+    /// one person can do every part left open, that is preferred to a change of hands. A slot says who does each part.
+    /// A named person who is not bookable or does not offer their part means there is no time at all.
+    /// </summary>
+    Task<IReadOnlyList<VisitSlot>> GetVisitPlanAsync(IReadOnlyList<VisitPart> parts, LocalDate fromDate, LocalDate toDate, CancellationToken cancellationToken = default);
 }
+
+/// <summary>One service of a visit and who does it; no person means anyone who offers it (ADR 0096).</summary>
+public sealed record VisitPart(Guid ServiceId, Guid? StaffMemberId);
+
+/// <summary>A free start of a whole visit: from the first part's start to the last part's end, and who does each part, in order.</summary>
+public sealed record VisitSlot(Instant Start, Instant End, IReadOnlyList<Guid> StaffMemberIds);

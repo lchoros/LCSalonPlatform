@@ -57,6 +57,12 @@ public class PhoneVerification : BaseEntity, ITenantEntity
     /// </summary>
     public IList<Guid> ExtraServiceIds { get; set; } = [];
 
+    /// <summary>
+    /// Who does each of <see cref="ExtraServiceIds"/>, in the same order (ADR 0096); <see cref="Guid.Empty"/> means
+    /// "anyone available", as null does for <see cref="StaffMemberId"/>. Shorter than the services means anyone for the rest.
+    /// </summary>
+    public IList<Guid> ExtraStaffIds { get; set; } = [];
+
     /// <summary>Null means "anyone available": the staff member is chosen when the booking is made.</summary>
     public Guid? StaffMemberId { get; set; }
 

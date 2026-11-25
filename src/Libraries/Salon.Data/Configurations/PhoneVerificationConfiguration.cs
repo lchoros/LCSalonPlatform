@@ -18,6 +18,7 @@ internal sealed class PhoneVerificationConfiguration : IEntityTypeConfiguration<
         builder.Property(v => v.CodeHash).HasMaxLength(PhoneVerification.HashMaxLength).IsRequired();
         builder.Property(v => v.Start).HasColumnName("start_at");
         builder.Property(v => v.ExtraServiceIds).HasColumnType("uuid[]").HasDefaultValueSql("'{}'::uuid[]").IsRequired();
+        builder.Property(v => v.ExtraStaffIds).HasColumnType("uuid[]").HasDefaultValueSql("'{}'::uuid[]").IsRequired();
         builder.Property(v => v.FirstName).HasMaxLength(PhoneVerification.NameMaxLength).IsRequired();
         builder.Property(v => v.LastName).HasMaxLength(PhoneVerification.NameMaxLength).IsRequired();
         builder.Property(v => v.Email).HasMaxLength(PhoneVerification.EmailMaxLength);

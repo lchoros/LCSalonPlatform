@@ -31,7 +31,7 @@ public sealed class EnterDetailsController(
     IVisitBasket basket) : SalonControllerBase
 {
     [HttpGet("{serviceId:guid}/details")]
-    public async Task<IActionResult> Details(Guid serviceId, string? start, Guid? staff, string? also, bool forget, CancellationToken cancellationToken)
+    public async Task<IActionResult> Details(Guid serviceId, string? start, Guid? staff, string? also, string? with, bool forget, CancellationToken cancellationToken)
     {
         var instant = ParseStart(start);
         if (instant is null)
@@ -41,13 +41,14 @@ public sealed class EnterDetailsController(
 
         // The further services of a visit booked as several (ADR 0095); none while that is switched off.
         var extras = basket.Read(also, serviceId);
-        var summary = await dispatcher.SendAsync(new BookingSummaryQuery(serviceId, staff, instant.Value, extras), cancellationToken);
+        var answers = basket.ReadStaff(with, extras.Count);
+        var summary = await dispatcher.SendAsync(new BookingSummaryQuery(serviceId, staff, instant.Value, extras, People(answers)), cancellationToken);
         if (summary is null)
         {
             return NotFound();
         }
 
-        var form = new StartBookingCommand(serviceId, InstantPattern.ExtendedIso.Format(instant.Value), staff, null, null, null, null, false, VisitBasket.Write(extras));
+        var form = new StartBookingCommand(serviceId, InstantPattern.ExtendedIso.Format(instant.Value), staff, null, null, null, null, false, VisitBasket.Write(extras), VisitBasket.WriteStaff(answers));
         if (forget)
         {
             returning.Forget(Response);
@@ -71,7 +72,8 @@ public sealed class EnterDetailsController(
     {
         ArgumentNullException.ThrowIfNull(command);
         var extras = basket.Read(command.Also, serviceId);
-        command = command with { ServiceId = serviceId, Also = VisitBasket.Write(extras) };
+        var answers = basket.ReadStaff(command.With, extras.Count);
+        command = command with { ServiceId = serviceId, Also = VisitBasket.Write(extras), With = VisitBasket.WriteStaff(answers) };
 
         var instant = ParseStart(command.Start);
         if (instant is null)
@@ -79,7 +81,7 @@ public sealed class EnterDetailsController(
             return Redirect($"/book/{serviceId}");
         }
 
-        var summary = await dispatcher.SendAsync(new BookingSummaryQuery(serviceId, command.StaffMemberId, instant.Value, extras), cancellationToken);
+        var summary = await dispatcher.SendAsync(new BookingSummaryQuery(serviceId, command.StaffMemberId, instant.Value, extras, People(answers)), cancellationToken);
         if (summary is null)
         {
             return NotFound();
@@ -125,6 +127,9 @@ public sealed class EnterDetailsController(
         // Booked at once. With a payment gateway on (ADR 0082) the pay step comes first; it passes straight on when no deposit is due.
         return Redirect(result.AppointmentId is { } booked && deposits.IsAvailable ? PublicBookingDefaults.PayDepositPath(booked) : $"/book/done/{result.AppointmentId}");
     }
+
+    /// <summary>The answers as people: an id is a person, anything else is "anyone" (ADR 0096).</summary>
+    private static List<Guid?> People(IReadOnlyList<string?> answers) => [.. answers.Select(a => Guid.TryParse(a, out var person) ? person : (Guid?)null)];
 
     private static Instant? ParseStart(string? start)
     {

@@ -24,7 +24,7 @@ public sealed class ChooseServiceController(IDispatcher dispatcher, ITenantConte
     public const string CategoryParameter = "category";
 
     [HttpGet("")]
-    public async Task<IActionResult> Index(string? category, string? q, int? page, string? add, string? also, string? staff, string? date, string? from, string? start, CancellationToken cancellationToken)
+    public async Task<IActionResult> Index(string? category, string? q, int? page, string? add, string? also, string? staff, string? with, string? date, string? from, string? start, CancellationToken cancellationToken)
     {
         // [RequireTenant] has already turned a tenant-less request into a 404.
         var tenant = await tenantLookup.FindByIdAsync(tenantContext.TenantId!.Value, cancellationToken);
@@ -35,14 +35,16 @@ public sealed class ChooseServiceController(IDispatcher dispatcher, ITenantConte
         var adding = basket.IsOpen && Guid.TryParse(add, out var first)
             ? new AddingTo(first, basket.Read(also, first), Guid.TryParse(staff, out _) || staff == PublicBookingDefaults.AnyStaff ? staff : null)
             {
-                Kept = [("date", Short(date)), ("from", Short(from)), ("start", Short(start))],
+                // Who does each service so far, the day and the time: passed through as they came (ADR 0096). The service
+                // added gets no answer of its own here; the time page gives it the answer of the one before where that fits.
+                Kept = [(VisitBasket.StaffParameter, Short(with, 160)), ("date", Short(date)), ("from", Short(from)), ("start", Short(start))],
             }
             : null;
         return View(new ChooseServiceViewModel(tenant?.Name ?? string.Empty, choice, Filter(choice, adding), Search(choice, adding), Pager(choice, adding)) { Adding = adding });
     }
 
     /// <summary>A day or a time passed through to the time page, which reads it and drops what it cannot read.</summary>
-    private static string? Short(string? value) => value is { Length: > 0 and <= 40 } ? value : null;
+    private static string? Short(string? value, int most = 40) => value is { Length: > 0 } && value.Length <= most ? value : null;
 
     private static string ListAddress(Guid? categoryId, string? search, AddingTo? adding, int page = 1)
         => ListUrl.Build(

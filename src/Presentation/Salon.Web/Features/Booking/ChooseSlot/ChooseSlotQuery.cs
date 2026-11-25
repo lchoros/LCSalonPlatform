@@ -11,10 +11,11 @@ namespace Salon.Web.Features.Booking.ChooseSlot;
 /// "anyone available"; null without it means the visitor has not said yet, and where more than one person offers the
 /// service no times are shown until they do (the owner, 2026-11-22). <paramref name="From"/> slides
 /// the date strip's window towards the salon's booking horizon; null, the past or beyond the horizon means today.
+/// <paramref name="ExtraStaff"/> answers "who with" for each further service, in order: a person's id, "any", or nothing yet (ADR 0096).
 /// <paramref name="Start"/> is the tapped time: it marks the slot chosen and brings out the Continue button, and only
 /// a start that is genuinely free right now counts (a stale link quietly deselects). A query: tenant required.
 /// </summary>
-public sealed record ChooseSlotQuery(Guid ServiceId, LocalDate? Date, Guid? StaffMemberId, LocalDate? From = null, Instant? Start = null, bool Anyone = false, IReadOnlyList<Guid>? ExtraServiceIds = null) : IQuery<ChooseSlotResult?>
+public sealed record ChooseSlotQuery(Guid ServiceId, LocalDate? Date, Guid? StaffMemberId, LocalDate? From = null, Instant? Start = null, bool Anyone = false, IReadOnlyList<Guid>? ExtraServiceIds = null, IReadOnlyList<string?>? ExtraStaff = null) : IQuery<ChooseSlotResult?>
 {
     /// <summary>The <c>staff</c> value in the address that says "anyone available" was chosen.</summary>
     public const string AnyStaff = "any";
@@ -80,7 +81,23 @@ public sealed record ChooseSlotResult(
 }
 
 /// <summary>One service of the visit as the summary shows it; "from" while nobody is chosen and people charge differently.</summary>
-public sealed record VisitLine(Guid ServiceId, string Name, Duration Duration, Money Price, bool PriceIsFrom);
+public sealed record VisitLine(Guid ServiceId, string Name, Duration Duration, Money Price, bool PriceIsFrom)
+{
+    /// <summary>The people who offer this service, in the salon's order: the answers to "who with" for it (ADR 0096).</summary>
+    public IReadOnlyList<StaffOption> Staff { get; init; } = [];
+
+    /// <summary>The person chosen for this service; null under "anyone" and while the answer is still owed.</summary>
+    public Guid? StaffId { get; init; }
+
+    /// <summary>"Anyone available" for this service: chosen, taken over from the service before, or the only thing there is to say.</summary>
+    public bool Anyone { get; init; }
+
+    /// <summary>There is a choice of people for this service and the client has not said yet.</summary>
+    public bool NeedsStaffChoice => StaffId is null && !Anyone;
+
+    /// <summary>The chosen person, when there is one.</summary>
+    public StaffOption? Person => Staff.FirstOrDefault(s => s.Id == StaffId);
+}
 
 public sealed record DayOption(LocalDate Date, bool HasSlots);
 

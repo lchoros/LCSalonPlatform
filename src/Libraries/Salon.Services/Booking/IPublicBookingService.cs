@@ -62,7 +62,8 @@ public sealed record PublicBookingRequest(
     string? Email,
     bool MarketingConsent,
     string? ConsentWording,
-    IReadOnlyList<Guid>? ExtraServiceIds = null)
+    IReadOnlyList<Guid>? ExtraServiceIds = null,
+    IReadOnlyList<Guid?>? ExtraStaffIds = null)
 {
     /// <summary>Every service of the visit in order: <see cref="ServiceId"/> first, then the further ones (ADR 0095).</summary>
     public IReadOnlyList<Guid> AllServiceIds => [ServiceId, .. ExtraServiceIds ?? []];

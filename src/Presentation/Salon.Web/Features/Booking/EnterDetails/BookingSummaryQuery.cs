@@ -11,7 +11,7 @@ namespace Salon.Web.Features.Booking.EnterDetails;
 /// them all and adds up their durations, prices and deposits. Null when a service is unknown or inactive, or the person
 /// is not bookable here or does not offer one of them. A query.
 /// </summary>
-public sealed record BookingSummaryQuery(Guid ServiceId, Guid? StaffMemberId, Instant Start, IReadOnlyList<Guid>? ExtraServiceIds = null) : IQuery<BookingSummary?>;
+public sealed record BookingSummaryQuery(Guid ServiceId, Guid? StaffMemberId, Instant Start, IReadOnlyList<Guid>? ExtraServiceIds = null, IReadOnlyList<Guid?>? ExtraStaffIds = null) : IQuery<BookingSummary?>;
 
 /// <param name="StaffName">Null for "anyone available".</param>
 /// <param name="RequireSmsVerification">Decides the wording of the submit button and the phone hint.</param>

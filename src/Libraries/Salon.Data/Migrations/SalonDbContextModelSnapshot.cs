@@ -495,6 +495,13 @@ namespace Salon.Data.Migrations
                         .HasColumnName("extra_service_ids")
                         .HasDefaultValueSql("'{}'::uuid[]");
 
+                    b.PrimitiveCollection<Guid[]>("ExtraStaffIds")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("extra_staff_ids")
+                        .HasDefaultValueSql("'{}'::uuid[]");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(100)

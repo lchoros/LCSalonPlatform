@@ -12,6 +12,7 @@ namespace Salon.Web.Features.Booking.EnterDetails;
 /// <param name="Start">The slot as an ISO-8601 instant (<c>2026-11-18T10:00:00Z</c>), as the time picker linked it.</param>
 /// <param name="StaffMemberId">Null for "anyone available".</param>
 /// <param name="MarketingConsent">The tick; the wording recorded is the label shown next to it.</param>
+/// <param name="With">Who does each of those further services (ADR 0096): a person's id or "any" for each, joined by commas.</param>
 /// <param name="Also">The further services of a visit booked as several (ADR 0095): their ids joined by commas, as the address carried them.</param>
 public sealed record StartBookingCommand(
     Guid ServiceId,
@@ -22,7 +23,8 @@ public sealed record StartBookingCommand(
     string? Phone,
     string? Email,
     bool MarketingConsent,
-    string? Also = null) : ICommand<PublicBookingStart>
+    string? Also = null,
+    string? With = null) : ICommand<PublicBookingStart>
 {
     /// <summary>Keeps the phone and email out of any log line that prints the request.</summary>
     public override string ToString() => $"{nameof(StartBookingCommand)} {{ ServiceId = {ServiceId}, Start = {Start} }}";
