@@ -30,7 +30,7 @@
     {
         <div class="space-y-3" data-testid="service-filters">
             <partial name="_SearchBox" model="Model.Search" />
-            @if (choice.Categories.Count > 1)
+            @if (choice.Categories.Count > 1 || choice.HasPopular)
             {
                 <partial name="_FilterTiles" model="Model.Filter" />
             }

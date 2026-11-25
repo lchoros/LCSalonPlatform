@@ -121,6 +121,36 @@ public partial class EditServiceTests(SalonWebApplicationFactory factory) : IAsy
     }
 
     [Fact]
+    public async Task The_owner_ticks_a_service_as_popular_and_clients_get_a_Popular_filter_with_it()
+    {
+        using var client = await OwnerClientAsync("studio-20.localhost", _studio.Id);
+        using var visitor = factory.ClientFor("studio-20.localhost");
+
+        // Nothing ticked: no "Popular" on the booking page, and the tick is on the form, off.
+        (await (await visitor.GetAsync(new Uri("/book", UriKind.Relative))).Content.ReadAsStringAsync()).ShouldNotContain("data-key=\"popular\"");
+        var form = await (await client.GetAsync(new Uri($"/admin/services/{_cutId}", UriKind.Relative))).Content.ReadAsStringAsync();
+        form.ShouldContain("data-testid=\"popular-checkbox\"");
+        form.ShouldContain("Show under Popular");
+
+        var fields = Fields();
+        fields["IsPopular"] = "true";
+        (await PostAsync(client, _cutId, fields)).StatusCode.ShouldBe(HttpStatusCode.Redirect);
+
+        (await ServiceAsync(_studio.Id, _cutId)).IsPopular.ShouldBeTrue();
+        // The owner's pick, not a count (ADR 0094): the tile leads to exactly the ticked services.
+        var popular = await (await visitor.GetAsync(new Uri("/book?category=popular", UriKind.Relative))).Content.ReadAsStringAsync();
+        popular.ShouldContain("Cut &amp; blow-dry");
+        popular.ShouldNotContain(">Colour<");
+
+        // Unticked again (the form posts no value for an empty tick): the filter goes, and its address is the whole list.
+        (await PostAsync(client, _cutId, Fields())).StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        (await ServiceAsync(_studio.Id, _cutId)).IsPopular.ShouldBeFalse();
+        var all = await (await visitor.GetAsync(new Uri("/book?category=popular", UriKind.Relative))).Content.ReadAsStringAsync();
+        all.ShouldContain("Colour");
+        all.ShouldNotContain("data-key=\"popular\"");
+    }
+
+    [Fact]
     public async Task Deactivating_hides_the_service_from_the_public_list_and_queues_ServiceDeactivated_too()
     {
         using var client = await OwnerClientAsync("studio-20.localhost", _studio.Id);

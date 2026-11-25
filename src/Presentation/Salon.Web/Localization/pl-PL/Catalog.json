@@ -1,4 +1,6 @@
 {
+  "Catalog.Service.IsPopular": "Pokaż w „Popularne”",
+  "Catalog.Service.IsPopularHint": "Klienci zobaczą na stronie rezerwacji filtr „Popularne” z usługami zaznaczonymi tutaj.",
   "Catalog.CreateService.Title": "Dodaj usługę",
   "Catalog.CreateService.Name": "Nazwa",
   "Catalog.CreateService.Description": "Opis",

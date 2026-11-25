@@ -13,7 +13,7 @@ namespace Salon.Web.Features.Booking.ChooseService;
 /// <param name="CategoryId">Only this category; an id the salon does not have is ignored.</param>
 /// <param name="Search">Words that must all occur in a service.</param>
 /// <param name="Page">1-based; out of range moves to the nearest page.</param>
-public sealed record ChooseServiceQuery(Guid? CategoryId = null, string? Search = null, int? Page = null) : IQuery<ServiceChoice>;
+public sealed record ChooseServiceQuery(Guid? CategoryId = null, string? Search = null, int? Page = null, bool Popular = false) : IQuery<ServiceChoice>;
 
 /// <param name="Entries">The page of entries, in the catalogue's order.</param>
 /// <param name="Categories">Categories that have at least one active service, in display order, for the filter.</param>
@@ -34,7 +34,13 @@ public sealed record ServiceChoice(
 
     public bool ShowFilters => TotalServices > FilterThreshold;
 
-    public bool IsFiltered => CategoryId is not null || Search is not null;
+    /// <summary>The salon has ticked at least one service as popular (ADR 0094): the list offers a "Popular" tile.</summary>
+    public bool HasPopular { get; init; }
+
+    /// <summary>The list is narrowed to the services the salon ticked as popular.</summary>
+    public bool PopularOnly { get; init; }
+
+    public bool IsFiltered => CategoryId is not null || Search is not null || PopularOnly;
 }
 
 /// <param name="Accent">Which of the five accent colours the category carries on this page.</param>

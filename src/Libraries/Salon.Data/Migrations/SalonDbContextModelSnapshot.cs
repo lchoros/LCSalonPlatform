@@ -620,6 +620,10 @@ namespace Salon.Data.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
 
+                    b.Property<bool>("IsPopular")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_popular");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)

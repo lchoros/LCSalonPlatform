@@ -135,3 +135,13 @@ the price."
 The owner: "can we remove category names when listing services? … filter yes, but no need to show the category name
 on each." The list is one list in the order of the categories; their names are on the filter tiles only. Asked
 alongside and not built: a "popular services" filter — it needs a rule for what counts as popular (see the PR).
+
+### "Popular" is the owner's pick; the steps return on a phone (2026-11-26)
+
+- **Popular.** Offered two rules — the most booked in ninety days, or a tick on each service — the owner chose the
+  tick: "Show under Popular" on a service's form in the admin (`services.is_popular`, additive migration
+  `ServicePopular`). The booking page shows a "Popular" tile beside the categories as soon as one service is ticked
+  (`/book?category=popular`); it narrows the list across categories. Nothing is counted or guessed.
+- **Steps on a phone.** "Can we add steps back on mobile, but only after selecting": the three bars show on the time
+  and details pages on a phone too; the service list, where nothing is chosen yet, stays without them. The line
+  "Step 2 of 3" stays for a desk.

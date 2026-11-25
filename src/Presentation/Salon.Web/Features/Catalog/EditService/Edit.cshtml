@@ -107,6 +107,14 @@
             </div>
         </div>
 
+        <div class="flex min-h-11 items-start gap-3">
+            <input asp-for="IsPopular" type="checkbox" class="mt-0.5 size-5 rounded border-stone-300" aria-describedby="popular-hint" data-testid="popular-checkbox" />
+            <div class="space-y-1">
+                <label asp-for="IsPopular" class="text-sm font-medium">@T["Catalog.Service.IsPopular"]</label>
+                <p id="popular-hint" class="text-sm text-stone-500">@T["Catalog.Service.IsPopularHint"]</p>
+            </div>
+        </div>
+
         <p class="text-sm">
             <a href="/admin/services/@Model.ServiceId/staff" data-testid="staff-overrides" class="inline-flex min-h-11 items-center font-medium text-stone-900 underline hover:text-stone-700">@T["Catalog.Edit.StaffOverrides"]</a>
         </p>

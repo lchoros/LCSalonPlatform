@@ -30,4 +30,5 @@ public sealed record CreateServiceCommand(
     int ProcessingStartsAfterMinutes = 0,
     int? DepositPercent = null,
     string? VariantGroup = null,
-    string? VariantLabel = null) : ICommand<Guid>;
+    string? VariantLabel = null,
+    bool IsPopular = false) : ICommand<Guid>;

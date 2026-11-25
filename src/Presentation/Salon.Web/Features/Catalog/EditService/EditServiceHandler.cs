@@ -44,6 +44,7 @@ public sealed class EditServiceHandler(SalonDbContext db, ITenantContext tenantC
         service.ProcessingMinutes = request.ProcessingMinutes;
         service.ProcessingStartsAfterMinutes = ServiceRules.NormalizeProcessingStart(request.ProcessingMinutes, request.ProcessingStartsAfterMinutes);
         service.IsActive = request.IsActive;
+        service.IsPopular = request.IsPopular;
 
         await db.SaveChangesAsync(cancellationToken);
         await publisher.PublishAsync(new ServiceUpdated(service.Id, tenantId), cancellationToken);

@@ -163,6 +163,34 @@ public class ServiceCatalogueListTests(SalonWebApplicationFactory factory) : IAs
     }
 
     [Fact]
+    public async Task The_Popular_tile_sits_beside_the_categories_and_narrows_the_list_across_them()
+    {
+        await using (var scope = factory.CreateTenantScope(_studio.Id))
+        {
+            var db = scope.ServiceProvider.GetRequiredService<SalonDbContext>();
+            foreach (var service in await db.Services.Where(s => s.Name == "Brows 02" || s.Name == "Hair 01").ToListAsync())
+            {
+                service.IsPopular = true;
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        using var client = factory.ClientFor(HostA);
+
+        var list = await GetAsync(client, "/book");
+        list.ShouldContain("href=\"/book?category=popular\"");
+        list.ShouldContain("data-testid=\"filter-tile\" data-key=\"popular\">Popular<");
+
+        var popular = await GetAsync(client, "/book?category=popular");
+        Count(popular, "data-testid=\"book-service\"").ShouldBe(2);
+        popular.ShouldContain(">Brows 02<");
+        popular.ShouldContain(">Hair 01<");
+        popular.ShouldContain("aria-current=\"true\" data-testid=\"filter-tile\" data-key=\"popular\">Popular<");
+        popular.ShouldContain("<input type=\"hidden\" name=\"category\" value=\"popular\" />", Case.Sensitive, "a search stays inside Popular");
+    }
+
+    [Fact]
     public async Task Variants_sit_under_one_title_with_their_price_range_and_each_can_be_booked()
     {
         using var client = factory.ClientFor(HostA);

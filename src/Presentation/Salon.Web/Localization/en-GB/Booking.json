@@ -112,6 +112,7 @@
   "Booking.Public.AddService": "Add another service",
   "Booking.Public.RemoveService": "Remove",
   "Booking.Public.NobodyOffersAll": "Nobody here does all of these in one visit. Remove one, or book them separately.",
+  "Booking.Public.Popular": "Popular",
   "Booking.Public.ReadMore": "More",
   "Booking.Public.BackToList": "Back to the services",
   "Booking.Public.AddServiceTitle": "Add another service",

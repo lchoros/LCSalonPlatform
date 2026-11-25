@@ -30,12 +30,15 @@ public sealed class ChooseServiceHandler(SalonDbContext db, IServiceOfferingReso
             .ToList();
         var accents = inUse.ToDictionary(c => c.Id, c => c.Accent);
 
-        var categoryId = request.CategoryId is { } wanted && accents.ContainsKey(wanted) ? wanted : (Guid?)null;
+        // The owner's pick (ADR 0094): "Popular" narrows the list to the services the salon ticked, across categories.
+        var hasPopular = services.Any(s => s.IsPopular);
+        var popularOnly = request.Popular && hasPopular;
+        var categoryId = request.CategoryId is { } wanted && !popularOnly && accents.ContainsKey(wanted) ? wanted : (Guid?)null;
         var search = string.IsNullOrWhiteSpace(request.Search) ? null : string.Join(' ', ServiceCatalogue.Words(request.Search));
         // What the people who offer a service charge for it (ADR 0018): one price when they agree, "from" the cheapest when not.
         var spans = await offerings.PriceSpansAsync(services.Select(s => s.Id).ToList(), cancellationToken);
         PriceSpan Span(Service s) => spans.GetValueOrDefault(s.Id, new PriceSpan(s.Price, s.Price));
-        var entries = ServiceCatalogue.Entries(services, categories, categoryId, search)
+        var entries = ServiceCatalogue.Entries(popularOnly ? [.. services.Where(s => s.IsPopular)] : services, categories, categoryId, search)
             .Select(e => new BookableEntry(
                 e.Category?.Name,
                 e.Category is { } category ? accents[category.Id] : 0,
@@ -46,6 +49,6 @@ public sealed class ChooseServiceHandler(SalonDbContext db, IServiceOfferingReso
                 new Money(e.Services.Max(s => Span(s).Max), e.Services[0].Currency)))
             .ToList();
 
-        return new ServiceChoice(Pages.Cut(entries, request.Page, ServiceChoice.PageSize), inUse, categoryId, search, services.Count);
+        return new ServiceChoice(Pages.Cut(entries, request.Page, ServiceChoice.PageSize), inUse, categoryId, search, services.Count) { HasPopular = hasPopular, PopularOnly = popularOnly };
     }
 }

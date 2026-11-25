@@ -23,12 +23,15 @@ public sealed class ChooseServiceController(IDispatcher dispatcher, ITenantConte
 {
     public const string CategoryParameter = "category";
 
+    /// <summary>The value of <see cref="CategoryParameter"/> that asks for the services the salon ticked as popular (ADR 0094).</summary>
+    public const string PopularCategory = "popular";
+
     [HttpGet("")]
     public async Task<IActionResult> Index(string? category, string? q, int? page, string? add, string? also, string? staff, string? with, string? date, string? from, string? start, CancellationToken cancellationToken)
     {
         // [RequireTenant] has already turned a tenant-less request into a 404.
         var tenant = await tenantLookup.FindByIdAsync(tenantContext.TenantId!.Value, cancellationToken);
-        var choice = await dispatcher.SendAsync(new ChooseServiceQuery(Guid.TryParse(category, out var id) ? id : null, q, page), cancellationToken);
+        var choice = await dispatcher.SendAsync(new ChooseServiceQuery(Guid.TryParse(category, out var id) ? id : null, q, page, category == PopularCategory), cancellationToken);
 
         // "Add another service" (ADR 0095): the same list, but a tap adds to the booking that add, also and staff
         // describe. The day and the time already chosen ride along, so the client comes back to them.
@@ -46,17 +49,25 @@ public sealed class ChooseServiceController(IDispatcher dispatcher, ITenantConte
     /// <summary>A day or a time passed through to the time page, which reads it and drops what it cannot read.</summary>
     private static string? Short(string? value, int most = 40) => value is { Length: > 0 } && value.Length <= most ? value : null;
 
-    private static string ListAddress(Guid? categoryId, string? search, AddingTo? adding, int page = 1)
+    /// <summary>The filter as the address says it: a category, "popular", or nothing.</summary>
+    private static string? Current(ServiceChoice choice) => choice.PopularOnly ? PopularCategory : choice.CategoryId?.ToString();
+
+    private static string ListAddress(string? category, string? search, AddingTo? adding, int page = 1)
         => ListUrl.Build(
             PublicBookingDefaults.BookPath,
-            [(CategoryParameter, categoryId?.ToString()), (ListUrl.SearchParameter, search), (ListUrl.PageParameter, page.ToString(CultureInfo.InvariantCulture)), .. adding?.Carried ?? []]);
+            [(CategoryParameter, category), (ListUrl.SearchParameter, search), (ListUrl.PageParameter, page.ToString(CultureInfo.InvariantCulture)), .. adding?.Carried ?? []]);
 
     /// <summary>"All" and one tile per category in use; choosing a category keeps the search and starts at page one.</summary>
     private FilterTilesModel Filter(ServiceChoice choice, AddingTo? adding)
     {
-        var tiles = new List<FilterTile> { new("all", localizer["Booking.Public.AllCategories"], ListAddress(null, choice.Search, adding), choice.CategoryId is null) };
+        var tiles = new List<FilterTile> { new("all", localizer["Booking.Public.AllCategories"], ListAddress(null, choice.Search, adding), choice.CategoryId is null && !choice.PopularOnly) };
+        if (choice.HasPopular)
+        {
+            tiles.Add(new FilterTile(PopularCategory, localizer["Booking.Public.Popular"], ListAddress(PopularCategory, choice.Search, adding), choice.PopularOnly));
+        }
+
         // Calm over carnival (ADR 0080): the public page stopped wearing the five category accents.
-        tiles.AddRange(choice.Categories.Select(c => new FilterTile(c.Id.ToString(), c.Name, ListAddress(c.Id, choice.Search, adding), c.Id == choice.CategoryId)));
+        tiles.AddRange(choice.Categories.Select(c => new FilterTile(c.Id.ToString(), c.Name, ListAddress(c.Id.ToString(), choice.Search, adding), c.Id == choice.CategoryId)));
         return new FilterTilesModel(localizer["Booking.Public.Categories"], tiles);
     }
 
@@ -65,11 +76,11 @@ public sealed class ChooseServiceController(IDispatcher dispatcher, ITenantConte
             PublicBookingDefaults.BookPath,
             choice.Search,
             localizer["Booking.Public.SearchServices"],
-            [(CategoryParameter, choice.CategoryId?.ToString()), .. adding?.Carried ?? []],
-            ListAddress(choice.CategoryId, null, adding));
+            [(CategoryParameter, Current(choice)), .. adding?.Carried ?? []],
+            ListAddress(Current(choice), null, adding));
 
     private static PagerModel Pager(ServiceChoice choice, AddingTo? adding)
-        => PagerModel.For(choice.Entries, page => ListAddress(choice.CategoryId, choice.Search, adding, page));
+        => PagerModel.For(choice.Entries, page => ListAddress(Current(choice), choice.Search, adding, page));
 }
 
 /// <param name="Filter">The category tiles, shown when <see cref="ServiceChoice.ShowFilters"/>.</param>

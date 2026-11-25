@@ -26,6 +26,12 @@ public class Service : BaseEntity, ITenantEntity
 
     public bool IsActive { get; set; } = true;
 
+    /// <summary>
+    /// The owner's pick (ADR 0094): shown under "Popular" on the public booking page. The salon ticks it; nothing is
+    /// counted or guessed.
+    /// </summary>
+    public bool IsPopular { get; set; }
+
     public int SortOrder { get; set; }
 
     /// <summary>Heading on the lists (ADR 0013); null is "uncategorised", shown last.</summary>

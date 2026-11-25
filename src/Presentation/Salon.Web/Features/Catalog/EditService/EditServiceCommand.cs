@@ -30,7 +30,8 @@ public sealed record EditServiceCommand(
     bool IsActive,
     int? DepositPercent = null,
     string? VariantGroup = null,
-    string? VariantLabel = null) : ICommand<bool>
+    string? VariantLabel = null,
+    bool IsPopular = false) : ICommand<bool>
 {
     /// <summary>The form for an existing service, as the GET renders it.</summary>
     public static EditServiceCommand From(Service service)
@@ -49,6 +50,7 @@ public sealed record EditServiceCommand(
             service.IsActive,
             service.DepositPercent is { } percent ? (int)decimal.Round(percent) : null,
             service.VariantGroup,
-            service.VariantLabel);
+            service.VariantLabel,
+            service.IsPopular);
     }
 }

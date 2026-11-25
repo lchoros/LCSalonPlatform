@@ -55,6 +55,14 @@
             </div>
         </div>
 
+        <div class="flex min-h-11 items-start gap-3">
+            <input asp-for="IsPopular" type="checkbox" class="mt-0.5 size-5 rounded border-stone-300" aria-describedby="popular-hint" data-testid="popular-checkbox" />
+            <div class="space-y-1">
+                <label asp-for="IsPopular" class="text-sm font-medium">@T["Catalog.Service.IsPopular"]</label>
+                <p id="popular-hint" class="text-sm text-stone-500">@T["Catalog.Service.IsPopularHint"]</p>
+            </div>
+        </div>
+
         <fieldset class="space-y-4 panel" data-testid="variant-fields">
             <legend class="px-1 font-semibold">@T["Catalog.Variant.Legend"]</legend>
             <p id="variant-hint" class="text-sm text-stone-500">@T["Catalog.Variant.Hint"]</p>

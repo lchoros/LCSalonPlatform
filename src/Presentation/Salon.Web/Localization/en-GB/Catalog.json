@@ -1,4 +1,6 @@
 {
+  "Catalog.Service.IsPopular": "Show under Popular",
+  "Catalog.Service.IsPopularHint": "Clients get a \"Popular\" filter on the booking page with the services you tick here.",
   "Catalog.CreateService.Title": "Add a service",
   "Catalog.CreateService.Name": "Name",
   "Catalog.CreateService.Description": "Description",
