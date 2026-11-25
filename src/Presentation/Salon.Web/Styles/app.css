@@ -586,39 +586,60 @@
     @apply border-brand ring-2 ring-brand ring-offset-2;
   }
 
-  /* The time page as one screen on a phone (the owner, 2026-11-25): the days and the times hold at the top, the total
-     and Continue at the bottom, and the services between them scroll in a space of their own — nothing slides
-     under the button. From sm the page flows as a page does and Continue sticks to the bottom over a solid strip. */
-  [data-testid="continue-bar"] {
-    @apply -mx-4 bg-stone-50 px-4 py-3;
-    bottom: 0;
+  /* The foot of the time page (the owner, 2026-11-26): the total and Continue, close together, over a solid strip.
+     On a phone it is fixed to the bottom of the screen and the whole page scrolls behind it — the services no
+     longer scroll in a space of their own. From sm it sticks to the bottom of the window as the page scrolls. */
+  .book-scroll {
+    @apply space-y-4 sm:space-y-6;
+  }
+
+  .book-bottom {
+    @apply sticky bottom-0 z-20 -mx-4 space-y-2 border-t border-slate-200 bg-stone-50 px-4 pt-2 pb-3;
+  }
+
+  .book-bottom .book-total {
+    @apply items-center border-0 pt-0;
+  }
+
+  .book-total-price {
+    @apply text-2xl font-semibold text-slate-800;
+  }
+
+  /* The step in a few small words at the left of the total: only on a phone, where the bars are not shown. */
+  .book-step {
+    @apply mr-auto text-xs text-slate-500 sm:hidden;
   }
 
   @media (width < 40rem) {
+    /* Room at the end of the page for the fixed foot, and less air between the parts above it. */
     [data-booking] {
-      @apply fixed inset-0 z-10 m-0 flex max-w-none flex-col gap-3 bg-stone-50 px-4 pt-4;
+      @apply space-y-4 pb-28;
     }
 
-    [data-booking] > * {
-      @apply mt-0 shrink-0;
+    .book-bottom {
+      @apply fixed inset-x-0 bottom-0 mx-0 pb-[max(0.75rem,env(safe-area-inset-bottom))];
     }
 
-    [data-booking] > .book-scroll {
-      @apply -mx-4 min-h-24 flex-1 basis-0 space-y-4 overflow-y-auto overscroll-contain px-4 pt-3 pb-2;
+    .book-total-price {
+      @apply text-xl;
     }
 
-    [data-booking] > [data-testid="continue-bar"] {
-      @apply static pt-0 pb-[max(0.75rem,env(safe-area-inset-bottom))];
+    /* Times and the parts of the day a little smaller (the owner, 2026-11-26). */
+    .slot-grid.slot-row .slot {
+      @apply h-10 w-[4.5rem] text-sm;
     }
 
-    [data-booking] > .book-total {
-      @apply pt-3;
+    [data-booking] .slot-part-tab {
+      @apply min-h-8 text-xs;
     }
-  }
 
-  @media (width >= 40rem) {
-    .book-scroll {
-      @apply space-y-6;
+    /* The button on a service's staff line is not taller than the line needs. */
+    .card-staff .btn {
+      @apply min-h-8 px-3 py-1 text-xs;
+    }
+
+    .card-staff {
+      @apply pt-2;
     }
   }
 

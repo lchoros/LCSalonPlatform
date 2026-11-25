@@ -145,3 +145,17 @@ alongside and not built: a "popular services" filter — it needs a rule for wha
 - **Steps on a phone.** "Can we add steps back on mobile, but only after selecting": the three bars show on the time
   and details pages on a phone too; the service list, where nothing is chosen yet, stays without them. The line
   "Step 2 of 3" stays for a desk.
+
+### The phone time page, made tighter (2026-11-26)
+
+The owner, after a day with it: "steps took too much space … times slightly smaller, then tabs slightly smaller … the
+first service can be closer; under the total we don't need the time again … the Choose button on staff is too high …
+maybe do not scroll the services on their own — the entire screen except the total and Continue".
+
+- The three step bars are for a desk again. On a phone the step is a few small words, "Step 2 of 3", at the left of
+  the total, where it costs no room (and small above the title on the details page).
+- Times and the Morning / Afternoon / Evening control are a size smaller; the staff line's button is as low as the
+  line.
+- The foot is the total and Continue, close together, fixed to the bottom of the screen over a solid strip. The
+  length is not repeated beside the total on a phone; each card has it.
+- **The whole page scrolls** behind that foot. The services' own scrolling space (the night before) is withdrawn.
