@@ -40,7 +40,9 @@ public sealed class ChooseSlotController(IDispatcher dispatcher, ITenantContext 
         return View(new ChooseSlotViewModel(tenant?.Name ?? string.Empty, result)
         {
             AlsoQuery = VisitBasket.Query(Extras(result)),
-            AddPath = basket.IsOpen && !result.NeedsStaffChoice && result.Lines.Count < VisitRules.MaxServices ? AddPath(result) : null,
+            // More services come after a time is chosen for what is here (the owner, 2026-11-25); the time rides along.
+            AddPath = basket.IsOpen && result.Chosen is not null && result.Lines.Count < VisitRules.MaxServices ? AddPath(result) : null,
+            AddAfterTime = basket.IsOpen && result.Chosen is null && result.Slots.Count > 0 && result.Lines.Count < VisitRules.MaxServices,
             RemovePaths = result.Lines.Count > 1 ? result.Lines.ToDictionary(l => l.ServiceId, l => WithoutPath(result, l.ServiceId)) : [],
         });
     }
@@ -53,7 +55,14 @@ public sealed class ChooseSlotController(IDispatcher dispatcher, ITenantContext 
 
     /// <summary>The service list in its "add to this booking" mode (ADR 0095); the ChooseService slice owns the route.</summary>
     private static string AddPath(ChooseSlotResult result)
-        => ListUrl.Build(PublicBookingDefaults.BookPath, ("add", result.ServiceId.ToString()), (VisitBasket.Parameter, VisitBasket.Write(Extras(result))), ("staff", StaffValue(result)));
+        => ListUrl.Build(
+            PublicBookingDefaults.BookPath,
+            ("add", result.ServiceId.ToString()),
+            (VisitBasket.Parameter, VisitBasket.Write(Extras(result))),
+            ("staff", StaffValue(result)),
+            ("date", LocalDatePattern.Iso.Format(result.SelectedDate)),
+            ("from", LocalDatePattern.Iso.Format(result.Days.Count > 0 ? result.Days[0].Date : result.SelectedDate)),
+            ("start", result.Chosen is { } chosen ? InstantPattern.ExtendedIso.Format(chosen.Start) : null));
 
     /// <summary>This page without one of its services: the next one takes the first place when the first is taken out.</summary>
     private static string WithoutPath(ChooseSlotResult result, Guid removed)
@@ -92,6 +101,9 @@ public sealed record ChooseSlotViewModel(string SalonName, ChooseSlotResult Resu
 
     /// <summary>Where "Add another service" leads; null when it is not offered (switched off, the question "who with" still open, or the visit is full).</summary>
     public string? AddPath { get; init; }
+
+    /// <summary>"Add another service" would be offered, but a time has to be chosen first.</summary>
+    public bool AddAfterTime { get; init; }
 
     /// <summary>For a visit of several services, the page without each one of them; empty for one service.</summary>
     public IReadOnlyDictionary<Guid, string> RemovePaths { get; init; } = new Dictionary<Guid, string>();

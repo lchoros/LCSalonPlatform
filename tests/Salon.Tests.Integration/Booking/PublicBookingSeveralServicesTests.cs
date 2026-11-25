@@ -44,15 +44,29 @@ public partial class PublicBookingTests
         using var host = SeveralServicesOn();
         using var client = ClientOn(host);
 
-        var one = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff={_annaId}");
-        one.ShouldContain($"href=\"/book?add={_serviceId}&staff={_annaId}\" class=\"add-service\" data-testid=\"add-service\"");
+        // More services come after a time is chosen for what is here (the owner, 2026-11-25).
+        var nineThirty = Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(_day.At(new LocalTime(9, 30)).InZoneStrictly(London).ToInstant()));
+        var today = Iso(SystemClock.Instance.GetCurrentInstant().InZone(London).Date);
+        var noTime = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff={_annaId}");
+        noTime.ShouldNotContain("data-testid=\"add-service\"");
+        noTime.ShouldContain("data-testid=\"add-after-time\">Choose a time first; then you can add another service.</p>");
+
+        var one = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&from={today}&staff={_annaId}&start={nineThirty}");
+        // The way to the list carries who with, the day and the time, so the client comes back to them.
+        one.ShouldContain($"href=\"/book?add={_serviceId}&staff={_annaId}&date={Iso(_day)}&from={today}&start={nineThirty}\" class=\"add-service\" data-testid=\"add-service\"");
         one.ShouldNotContain("data-testid=\"remove-service\"", Case.Sensitive, "one service is changed, not removed");
+        one.ShouldContain("data-testid=\"summary-when\">09:30 – 10:00</p>");
+
+        // Back from the list with the colour added: the time is kept, and each card says its own part of it.
+        var kept = await GetAsync(client, $"/book/{_serviceId}?also={colour}&staff={_annaId}&date={Iso(_day)}&from={today}&start={nineThirty}");
+        LineTimes().Matches(kept).Select(m => m.Groups[1].Value).ShouldBe(["09:30 – 10:00", "10:00 – 10:45"]);
+        kept.ShouldContain("data-testid=\"continue\"");
 
         var both = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff={_annaId}&also={colour}");
 
         both.ShouldContain("data-testid=\"service-name\">Cut</p>");
         both.ShouldContain("data-testid=\"extra-service-name\">Colour</p>");
-        both.ShouldContain("data-testid=\"summary-when\">75 min</span>");
+        both.ShouldContain("data-testid=\"summary-duration\">75 min</p>");
         both.ShouldContain("data-testid=\"summary-total\">£50.00</p>");
         // Taking one out leaves the other as the booking; the answer to "who with" is kept.
         both.ShouldContain($"href=\"/book/{colour}?staff={_annaId}\"");
@@ -91,6 +105,10 @@ public partial class PublicBookingTests
         list.ShouldContain($"href=\"/book/{_serviceId}?also={colour}&staff={_annaId}\" data-testid=\"book-service\"");
         list.ShouldNotContain($"href=\"/book/{_serviceId}\"", Case.Sensitive, "the service already chosen is not offered a second time");
         list.ShouldContain(">Add</span>");
+
+        // A day and a time already chosen ride through the list to the booking with the service added.
+        var carried = await GetAsync(client, $"/book?add={_serviceId}&staff={_annaId}&date={Iso(_day)}&from={Iso(_day)}&start=2026-01-01T09%3A00%3A00Z");
+        carried.ShouldContain($"href=\"/book/{_serviceId}?also={colour}&staff={_annaId}&date={Iso(_day)}&from={Iso(_day)}&start=2026-01-01T09%3A00%3A00Z\" data-testid=\"book-service\"");
 
         // Without the switch the same address is the ordinary first step.
         using var plain = factory.ClientFor(HostA);
@@ -200,6 +218,9 @@ public partial class PublicBookingTests
         anyone.Single(s => s.Start == ten).StaffMemberId.ShouldBe(_tomId);
         anyone.Single(s => s.Start == ten).End.ShouldBe(ten.Plus(Duration.FromMinutes(75)));
     }
+
+    [System.Text.RegularExpressions.GeneratedRegex("data-testid=\"line-when\">([^<]+)</p>")]
+    private static partial System.Text.RegularExpressions.Regex LineTimes();
 
     private WebApplicationFactory<Program> SeveralServicesOn()
         => factory.WithWebHostBuilder(b => b.UseSetting("Features:SeveralServices", "true"));

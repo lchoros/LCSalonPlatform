@@ -27,20 +27,31 @@ public static class PageNavigationExtensions
 
     /// <summary>Waits until the page is at a URL accepted by <paramref name="matches"/> and has finished loading.</summary>
     public static Task ReachAsync(this IPage page, Func<string, bool> matches) => page.ReachAsync(matches, "the expected URL");
+    /// <summary>
+    /// Waits until the booking's time page has finished changing in place (ADR 0094, stage 6): what was fetched has
+    /// arrived and has come up from pale. For a tap that keeps the address pattern a walk is not waiting for.
+    /// </summary>
+    public static Task SettleBookingAsync(this IPage page)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+        return page.WaitForFunctionAsync("() => !document.querySelector('[data-booking][aria-busy]') && !document.getAnimations().some(a => a.playState === 'running' && a.effect?.target?.closest?.('[data-booking]'))");
+    }
+
 
     /// <summary>
-    /// On the public time page, answers "who with" with "anyone available" where the page asks it (more than one
-    /// person offers the service; ADR 0094, stage 3), and waits for the days and times that follow. Where one person
+    /// On the public time page, opens the staff sheet and answers "who with" with "anyone available" where it is owed (more than one
+    /// person offers the service; ADR 0094, stages 3 and 6), and waits for the answered page. Where one person
     /// offers the service there is no question and this does nothing.
     /// </summary>
     public static async Task ChooseAnyoneAsync(this IPage page)
     {
         ArgumentNullException.ThrowIfNull(page);
-        if (await page.GetByTestId("choose-staff").CountAsync() == 0)
+        if (await page.GetByTestId("staff-required").CountAsync() == 0)
         {
             return;
         }
 
+        await page.GetByTestId("change-staff").ClickAsync();
         await page.GetByTestId("staff-any").ClickAsync();
         await page.ReachAsync(url => url.Contains("staff=any", StringComparison.Ordinal));
     }
@@ -88,7 +99,9 @@ public static class PageNavigationExtensions
         // Evaluated inside the page, and re-evaluated by Playwright if a navigation replaces the document meanwhile.
         // The page also has to have finished arriving: where the browser cross-fades between pages (ADR 0092) a
         // screenshot or an axe pass taken during the fade sees two pages at once.
-        await page.WaitForFunctionAsync("() => document.readyState === 'complete' && !document.getAnimations().some(a => a.effect?.pseudoElement?.startsWith('::view-transition'))");
+        // The booking's time page also changes in place (ADR 0094, stage 6): wait until what was fetched has arrived
+        // and has finished coming up from pale.
+        await page.WaitForFunctionAsync("() => document.readyState === 'complete' && !document.querySelector('[data-booking][aria-busy]') && !document.getAnimations().some(a => a.effect?.pseudoElement?.startsWith('::view-transition') || (a.playState === 'running' && a.effect?.target?.closest?.('[data-booking]')))");
     }
 
     /// <summary>

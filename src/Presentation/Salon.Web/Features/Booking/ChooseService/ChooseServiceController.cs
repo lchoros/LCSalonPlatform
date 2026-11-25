@@ -24,28 +24,30 @@ public sealed class ChooseServiceController(IDispatcher dispatcher, ITenantConte
     public const string CategoryParameter = "category";
 
     [HttpGet("")]
-    public async Task<IActionResult> Index(string? category, string? q, int? page, string? add, string? also, string? staff, CancellationToken cancellationToken)
+    public async Task<IActionResult> Index(string? category, string? q, int? page, string? add, string? also, string? staff, string? date, string? from, string? start, CancellationToken cancellationToken)
     {
         // [RequireTenant] has already turned a tenant-less request into a 404.
         var tenant = await tenantLookup.FindByIdAsync(tenantContext.TenantId!.Value, cancellationToken);
         var choice = await dispatcher.SendAsync(new ChooseServiceQuery(Guid.TryParse(category, out var id) ? id : null, q, page), cancellationToken);
 
-        // "Add another service" (ADR 0095): the same list, but a tap adds to the booking that add, also and staff describe.
+        // "Add another service" (ADR 0095): the same list, but a tap adds to the booking that add, also and staff
+        // describe. The day and the time already chosen ride along, so the client comes back to them.
         var adding = basket.IsOpen && Guid.TryParse(add, out var first)
             ? new AddingTo(first, basket.Read(also, first), Guid.TryParse(staff, out _) || staff == PublicBookingDefaults.AnyStaff ? staff : null)
+            {
+                Kept = [("date", Short(date)), ("from", Short(from)), ("start", Short(start))],
+            }
             : null;
         return View(new ChooseServiceViewModel(tenant?.Name ?? string.Empty, choice, Filter(choice, adding), Search(choice, adding), Pager(choice, adding)) { Adding = adding });
     }
 
+    /// <summary>A day or a time passed through to the time page, which reads it and drops what it cannot read.</summary>
+    private static string? Short(string? value) => value is { Length: > 0 and <= 40 } ? value : null;
+
     private static string ListAddress(Guid? categoryId, string? search, AddingTo? adding, int page = 1)
         => ListUrl.Build(
             PublicBookingDefaults.BookPath,
-            (CategoryParameter, categoryId?.ToString()),
-            (ListUrl.SearchParameter, search),
-            (ListUrl.PageParameter, page.ToString(CultureInfo.InvariantCulture)),
-            (AddingTo.AddParameter, adding?.First.ToString()),
-            (VisitBasket.Parameter, adding is null ? null : VisitBasket.Write(adding.Extras)),
-            (AddingTo.StaffParameter, adding?.Staff));
+            [(CategoryParameter, categoryId?.ToString()), (ListUrl.SearchParameter, search), (ListUrl.PageParameter, page.ToString(CultureInfo.InvariantCulture)), .. adding?.Carried ?? []]);
 
     /// <summary>"All" and one tile per category in use; choosing a category keeps the search and starts at page one.</summary>
     private FilterTilesModel Filter(ServiceChoice choice, AddingTo? adding)
@@ -61,7 +63,7 @@ public sealed class ChooseServiceController(IDispatcher dispatcher, ITenantConte
             PublicBookingDefaults.BookPath,
             choice.Search,
             localizer["Booking.Public.SearchServices"],
-            [(CategoryParameter, choice.CategoryId?.ToString()), (AddingTo.AddParameter, adding?.First.ToString()), (VisitBasket.Parameter, adding is null ? null : VisitBasket.Write(adding.Extras)), (AddingTo.StaffParameter, adding?.Staff)],
+            [(CategoryParameter, choice.CategoryId?.ToString()), .. adding?.Carried ?? []],
             ListAddress(choice.CategoryId, null, adding));
 
     private static PagerModel Pager(ServiceChoice choice, AddingTo? adding)
@@ -96,6 +98,12 @@ public sealed record AddingTo(Guid First, IReadOnlyList<Guid> Extras, string? St
     public const string AddParameter = "add";
     public const string StaffParameter = "staff";
 
+    /// <summary>The day and the time chosen on the time page, passed through as they came.</summary>
+    public IReadOnlyList<(string Name, string? Value)> Kept { get; init; } = [];
+
+    /// <summary>Everything the list has to keep in its own addresses (categories, search, pages) to stay in this mode.</summary>
+    public IReadOnlyList<(string Name, string? Value)> Carried => [(AddParameter, First.ToString()), (VisitBasket.Parameter, VisitBasket.Write(Extras)), (StaffParameter, Staff), .. Kept];
+
     public bool Has(Guid serviceId) => serviceId == First || Extras.Contains(serviceId);
 
     /// <summary>The time page of the booking as it is.</summary>
@@ -105,5 +113,5 @@ public sealed record AddingTo(Guid First, IReadOnlyList<Guid> Extras, string? St
     public string With(Guid serviceId) => TimePage([.. Extras, serviceId]);
 
     private string TimePage(IEnumerable<Guid> extras)
-        => ListUrl.Build($"{PublicBookingDefaults.BookPath}/{First}", (VisitBasket.Parameter, VisitBasket.Write(extras)), (StaffParameter, Staff));
+        => ListUrl.Build($"{PublicBookingDefaults.BookPath}/{First}", [(VisitBasket.Parameter, VisitBasket.Write(extras)), (StaffParameter, Staff), .. Kept]);
 }

@@ -411,7 +411,17 @@
   }
 
   .book-summary {
-    @apply space-y-3 rounded-xl bg-slate-100 p-4;
+    @apply relative space-y-3 rounded-xl bg-slate-100 p-4;
+  }
+
+  /* A card for each service of the visit, and one for who with (the owner, 2026-11-25). */
+  .book-cards {
+    @apply space-y-3;
+  }
+
+  /* The cross at a card's corner that takes its service out of the visit. */
+  .card-remove {
+    @apply absolute -top-2.5 -right-2.5 inline-flex size-8 items-center justify-center rounded-full bg-slate-600 text-white shadow-sm ring-2 ring-stone-50 transition-colors hover:bg-slate-800 focus:outline-none focus-visible:ring-brand;
   }
 
   .book-total {
@@ -514,26 +524,68 @@
     }
   }
 
-  /* Who with, as a list in its sheet: a face or a sign, a name, the chosen one outlined. */
-  .staff-list {
-    @apply flex max-h-[60vh] flex-col gap-2 overflow-y-auto;
+  /* Who with, in a sheet (the owner, 2026-11-25): the whole screen in white, coming up gently (solid, because text
+     showing faintly through a veil fails the contrast check), and the people side by side with their faces. Shown by
+     the link to #who, no script. */
+  .sheet {
+    @apply invisible fixed inset-0 z-50 overflow-y-auto bg-white opacity-0 transition-opacity duration-200;
   }
 
-  .staff-row {
-    @apply flex min-h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-base font-medium text-slate-800 transition-colors hover:border-brand-line hover:bg-brand-mist focus:outline-none focus-visible:ring-2 focus-visible:ring-brand;
+  .sheet:target {
+    @apply visible opacity-100;
   }
 
-  .staff-row.is-on {
+  .sheet-body {
+    @apply mx-auto w-full max-w-2xl space-y-5 px-4 py-6;
+  }
+
+  .staff-faces {
+    @apply grid grid-cols-3 gap-3 sm:grid-cols-4;
+  }
+
+  .staff-face {
+    @apply flex flex-col items-center gap-2 rounded-2xl border border-transparent p-3 text-center text-sm font-medium text-slate-800 transition-colors hover:border-brand-edge hover:bg-brand-mist focus:outline-none focus-visible:ring-2 focus-visible:ring-brand;
+  }
+
+  .staff-face.is-on {
     @apply border-brand bg-brand-soft text-brand;
-    box-shadow: inset 0 0 0 1px var(--color-brand);
   }
 
-  .staff-row-any {
-    @apply inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600;
+  .staff-face-any {
+    @apply inline-flex size-20 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600;
   }
 
+  .staff-face-name {
+    @apply leading-snug;
+  }
   .staff-choice-required {
     @apply rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700;
+  }
+
+  /* A tap on a day, an arrow or a time brings the new content into the page without loading it anew (ADR 0094,
+     stage 6): while it is on its way the days and times go pale, and what arrives comes up from pale — the soft
+     blink of white the owner asked for, with the top line and the card holding still. */
+  [data-booking] .vt-days,
+  [data-booking] .vt-times {
+    transition: opacity 120ms ease-out;
+  }
+
+  [data-booking][aria-busy="true"] .vt-days,
+  [data-booking][aria-busy="true"] .vt-times {
+    opacity: 0.35;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    [data-booking][data-arrived] .vt-days,
+    [data-booking][data-arrived] .vt-times {
+      animation: booking-arrive 180ms ease-out;
+    }
+  }
+
+  @keyframes booking-arrive {
+    from {
+      opacity: 0.35;
+    }
   }
 
   /* "Add another service": a line of its own under the card, in the brand, not one more button in it. */
@@ -574,8 +626,7 @@
     @apply invisible fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-4 opacity-0 transition-opacity sm:items-center;
   }
 
-  .modal:target,
-  .modal.is-open {
+  .modal:target {
     @apply visible opacity-100;
   }
 

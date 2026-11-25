@@ -99,46 +99,52 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
     }
 
     [Fact]
-    public async Task Step_2_asks_who_with_before_it_shows_a_day_or_a_time_when_more_than_one_person_offers_the_service()
+    public async Task Step_2_shows_the_times_at_once_and_asks_who_with_before_the_client_goes_on()
     {
         using var client = factory.ClientFor(HostA);
 
-        var asked = await GetAsync(client, $"/book/{_serviceId}");
+        var asked = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}");
 
-        // Nobody is chosen for the visitor (the owner, 2026-11-22): the question stands alone until it is answered.
-        // The question is a sheet over the page (the owner, 2026-11-25), open by itself while it is unanswered.
-        asked.ShouldContain("<div id=\"who\" class=\"modal is-open\" role=\"dialog\"");
-        asked.ShouldNotContain("data-testid=\"change-staff\"");
+        // Nobody is chosen for the visitor (the owner, 2026-11-22), and nothing stands in the way either (2026-11-25):
+        // the days and the times of anyone who could do it are there, the staff line says the answer is still owed,
+        // and its button opens the sheet.
+        asked.ShouldContain("<div id=\"who\" class=\"sheet\" role=\"dialog\"");
+        asked.ShouldContain("data-testid=\"summary-staff\">Not chosen yet</span>");
         asked.ShouldContain("data-testid=\"staff-required\">Required</span>");
+        asked.ShouldContain("<a href=\"#who\" class=\"btn btn-compact btn-secondary shrink-0\" data-testid=\"change-staff\">Choose<");
         asked.ShouldContain("data-testid=\"choose-staff\">Choose a person, or ");
         asked.ShouldNotContain("aria-current=\"true\"", Case.Sensitive, "neither \"anyone\" nor a person is marked as chosen");
-        asked.ShouldContain($"href=\"/book/{_serviceId}?staff=any\"", Case.Sensitive, "\"anyone available\" is an answer of its own");
-        asked.ShouldContain($"href=\"/book/{_serviceId}?staff={_tomId}\"");
-        asked.ShouldNotContain("data-testid=\"date-strip\"");
-        asked.ShouldNotContain("data-testid=\"slot\"");
-        asked.ShouldNotContain("data-testid=\"continue\"");
-        asked.ShouldContain("data-testid=\"summary-staff\">Not chosen yet</span>");
+        asked.ShouldContain($"href=\"/book/{_serviceId}?staff=any&date={Iso(_day)}\"", Case.Sensitive, "\"anyone available\" is an answer of its own");
+        asked.ShouldContain($"href=\"/book/{_serviceId}?staff={_tomId}&date={Iso(_day)}\"");
+        DayCount(asked).ShouldBe(14);
+        var anyoneHrefs = await ExpectedSlotHrefsAsync(null);
+        SlotHrefs(asked).ShouldBe(anyoneHrefs.Select(h => h.Replace("&staff=any", string.Empty, StringComparison.Ordinal)).ToList(), "the times of anyone, with the question still open");
+        asked.ShouldNotContain("data-testid=\"continue-bar\"");
 
-        var anyone = await GetAsync(client, $"/book/{_serviceId}?staff=any&date={Iso(_day)}");
+        // A tapped time with the question open: Continue opens the sheet, and an answer keeps the day and the time.
+        var start = Uri.EscapeDataString(InstantPattern.ExtendedIso.Format((await SlotStartsAsync(_studio.Id, _tomId))[0]));
+        var today = Iso(SystemClock.Instance.GetCurrentInstant().InZone(London).Date);
+        var tapped = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&from={today}&start={start}");
+        tapped.ShouldContain("<a href=\"#who\" class=\"btn btn-primary w-full shadow-lg\" data-testid=\"continue-needs-staff\">Continue</a>");
+        tapped.ShouldNotContain("data-testid=\"continue\"", Case.Sensitive, "nothing leads to the details until who with is answered");
+        tapped.ShouldContain($"href=\"/book/{_serviceId}?staff={_tomId}&date={Iso(_day)}&from={today}&start={start}\"");
+
+        var anyone = await GetAsync(client, $"/book/{_serviceId}?staff=any&date={Iso(_day)}&from={today}&start={start}");
 
         anyone.ShouldNotContain("data-testid=\"staff-required\"");
         anyone.ShouldNotContain("data-testid=\"choose-staff\"");
-        // Answered: the sheet is closed, and "Change" beside the staff line opens it again.
-        anyone.ShouldContain("<div id=\"who\" class=\"modal\" role=\"dialog\"");
-        anyone.ShouldContain("<a href=\"#who\" class=\"btn btn-compact btn-secondary shrink-0\" data-testid=\"change-staff\">");
+        // Answered: "Change" beside the staff line opens the sheet again, and Continue goes on with the time kept.
+        anyone.ShouldContain("<a href=\"#who\" class=\"btn btn-compact btn-secondary shrink-0\" data-testid=\"change-staff\">Change<");
         anyone.ShouldContain("aria-current=\"true\" data-testid=\"staff-any\"");
         anyone.ShouldContain("data-testid=\"summary-staff\">No preference</span>");
-        SlotHrefs(anyone).ShouldBe(await ExpectedSlotHrefsAsync(null));
+        anyone.ShouldContain($"/book/{_serviceId}/details?start={start}\" class=\"btn btn-primary w-full shadow-lg\" data-testid=\"continue\"");
+        SlotHrefs(anyone).ShouldBe(anyoneHrefs);
         DayCount(anyone).ShouldBe(14);
 
-        // A day the address asked for (a link from a message) is kept through the question.
-        var withDay = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}");
-        withDay.ShouldContain($"href=\"/book/{_serviceId}?staff=any&date={Iso(_day)}\"");
-
-        // A person who does not exist is no answer: the question again, not somebody else's times.
+        // A person who does not exist is no answer: the question is still open.
         var stranger = await GetAsync(client, $"/book/{_serviceId}?staff={Guid.NewGuid()}");
-        stranger.ShouldContain("data-testid=\"choose-staff\"");
-        stranger.ShouldNotContain("data-testid=\"slot\"");
+        stranger.ShouldContain("data-testid=\"staff-required\"");
+        stranger.ShouldContain("data-testid=\"summary-staff\">Not chosen yet</span>");
     }
 
     [Fact]

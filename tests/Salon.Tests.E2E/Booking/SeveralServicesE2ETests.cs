@@ -59,6 +59,13 @@ public class SeveralServicesE2ETests(KestrelAppFixture app) : IClassFixture<Kest
         (await page.GetByTestId("service-name").TextContentAsync()).ShouldBe("Cut & blow-dry");
         (await page.GetByTestId("remove-service").CountAsync()).ShouldBe(0, "one service is changed, not removed");
 
+        // More services come after a time is chosen for what is here (the owner, 2026-11-25).
+        (await page.GetByTestId("add-service").CountAsync()).ShouldBe(0);
+        await Assertions.Expect(page.GetByTestId("add-after-time")).ToBeVisibleAsync();
+        await page.GetByTestId("slot").First.TapAsync();
+        await Assertions.Expect(page.GetByTestId("continue")).ToHaveCountAsync(1);
+        var chosenTime = (await page.GetByTestId("summary-when").TextContentAsync()).ShouldNotBeNull();
+
         // "Add another service" opens the same list; what is already chosen is not offered again.
         await page.GetByTestId("add-service").TapAsync();
         await page.ReachAsync(url => url.Contains("add=", StringComparison.Ordinal));
@@ -74,7 +81,10 @@ public class SeveralServicesE2ETests(KestrelAppFixture app) : IClassFixture<Kest
         (await page.GetByTestId("extra-service-name").TextContentAsync()).ShouldBe("Beard trim");
         (await page.GetByTestId("line-price").AllTextContentsAsync()).ShouldBe(["£45.00", "£15.00"]);
         (await page.GetByTestId("summary-total").TextContentAsync()).ShouldBe("£60.00");
-        (await page.GetByTestId("summary-when").TextContentAsync()).ShouldBe("65 min");
+        (await page.GetByTestId("summary-duration").TextContentAsync()).ShouldBe("65 min");
+        // The time chosen before adding is kept: the first card still says it, the second follows on.
+        (await page.GetByTestId("line-when").First.TextContentAsync()).ShouldBe(chosenTime);
+        await Assertions.Expect(page.GetByTestId("continue")).ToHaveCountAsync(1);
         (await page.GetByTestId("choose-staff").CountAsync()).ShouldBe(0);
         (await page.GetByTestId("remove-service").CountAsync()).ShouldBe(2);
         var slots = page.GetByTestId("slot");
@@ -102,6 +112,7 @@ public class SeveralServicesE2ETests(KestrelAppFixture app) : IClassFixture<Kest
     /// <summary>No sideways scroll (when styled), a screenshot for the PR and an axe pass.</summary>
     private static async Task CaptureAsync(IPage page, string fileName)
     {
+        await page.SettleBookingAsync();
         if (await page.EvaluateAsync<bool>("() => Array.from(document.styleSheets).some(s => s.href && s.cssRules.length > 0)"))
         {
             (await page.EvaluateAsync<int>("() => document.documentElement.scrollWidth")).ShouldBeLessThanOrEqualTo(Width, fileName);

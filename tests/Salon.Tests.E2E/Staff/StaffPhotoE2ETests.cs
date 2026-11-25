@@ -74,6 +74,9 @@ public class StaffPhotoE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAp
             await visitor.GetByTestId("book-service").First.TapAsync();
             await visitor.ReachAsync(url => url.Contains("/book/", StringComparison.Ordinal) && !url.EndsWith("/book", StringComparison.Ordinal));
 
+            // The people are in the sheet the staff line opens (ADR 0094, stage 6).
+            await visitor.GetByTestId("change-staff").TapAsync();
+            await visitor.WaitForFunctionAsync("() => getComputedStyle(document.getElementById(\"who\")).opacity === \"1\"");
             var picker = visitor.GetByTestId("staff-picker");
             var options = picker.GetByTestId("staff-option");
             (await options.CountAsync()).ShouldBe(3);

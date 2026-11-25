@@ -68,21 +68,29 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await page.GetByTestId("book-service").First.TapAsync();
         await page.ReachAsync(url => url.Contains("/book/", StringComparison.Ordinal) && !url.EndsWith("/book", StringComparison.Ordinal));
 
-        // Step 2 opens on the question "who with" (the owner, 2026-11-22): nobody is chosen for the client, and no
-        // day or time shows until they answer. "Anyone available" is an answer.
+        // Step 2 shows the days and times at once (the owner, 2026-11-25); nobody is chosen for the client, and the
+        // staff line says so. Going on with a tapped time asks who with first, in a sheet, and the answer keeps the time.
         (await page.GetByTestId("service-name").TextContentAsync()).ShouldBe("Cut & blow-dry");
         await Assertions.Expect(page.GetByTestId("staff-required")).ToBeVisibleAsync();
-        (await page.Locator("[data-testid=staff-picker] [aria-current=true]").CountAsync()).ShouldBe(0);
-        (await page.GetByTestId("day").CountAsync()).ShouldBe(0);
-        (await page.GetByTestId("slot").CountAsync()).ShouldBe(0);
         (await page.GetByTestId("summary-staff").TextContentAsync()).ShouldBe("Not chosen yet");
+        (await page.GetByTestId("day").CountAsync()).ShouldBe(14);
+        await Assertions.Expect(page.GetByTestId("staff-option").First).ToBeHiddenAsync();
+        await page.GetByTestId("slot").First.TapAsync();
+        await page.GetByTestId("continue-needs-staff").TapAsync();
+        await Assertions.Expect(page.GetByTestId("staff-option").First).ToBeVisibleAsync();
+        (await page.Locator("[data-testid=staff-picker] [aria-current=true]").CountAsync()).ShouldBe(0);
+        // The sheet comes up over a fifth of a second; the check is of the sheet, not of the fade.
+        await page.WaitForFunctionAsync("() => getComputedStyle(document.getElementById(\"who\")).opacity === \"1\"");
         var whoAxe = await page.RunAxe();
         whoAxe.Violations.ShouldBeEmpty(string.Join("; ", whoAxe.Violations.Select(v => $"{v.Id}: {v.Help}")));
         await CaptureAsync(page, "book-who-with-mobile-390.png");
-        await page.ChooseAnyoneAsync();
+        await page.GetByTestId("staff-any").TapAsync();
+        await page.ReachAsync(url => url.Contains("staff=any", StringComparison.Ordinal));
         await Assertions.Expect(page.GetByTestId("staff-required")).ToHaveCountAsync(0);
-        // Who with lives in a sheet now: closed once answered, opened again by "Change" and closed by its cross.
         await Assertions.Expect(page.GetByTestId("staff-option").First).ToBeHiddenAsync();
+        await Assertions.Expect(page.GetByTestId("continue")).ToHaveCountAsync(1);
+        (await page.GetByTestId("summary-staff").TextContentAsync()).ShouldBe("No preference");
+        // "Change" opens the sheet again and its cross closes it.
         await page.GetByTestId("change-staff").TapAsync();
         await Assertions.Expect(page.GetByTestId("staff-option").First).ToBeVisibleAsync();
         await page.GetByTestId("staff-close").TapAsync();
@@ -201,6 +209,7 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
     /// <summary>Full-page screenshot, no horizontal scroll (when the stylesheet is present), axe clean.</summary>
     private static async Task CaptureAsync(IPage page, string fileName, int width = Width)
     {
+        await page.SettleBookingAsync();
         if (await page.EvaluateAsync<bool>("() => Array.from(document.styleSheets).some(s => s.href && s.cssRules.length > 0)"))
         {
             (await page.EvaluateAsync<int>("() => document.documentElement.scrollWidth")).ShouldBeLessThanOrEqualTo(width, fileName);

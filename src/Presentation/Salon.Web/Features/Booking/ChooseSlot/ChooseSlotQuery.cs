@@ -36,7 +36,10 @@ public sealed record ChooseSlotResult(
     IReadOnlyList<SlotOption> Slots,
     DateTimeZone Zone)
 {
-    /// <summary>More than one person offers the service and the visitor has not said who (or "anyone") yet: no days, no times.</summary>
+    /// <summary>
+    /// More than one person offers the service and the visitor has not said who (or "anyone") yet. The days and times
+    /// shown are then those of anyone who could do it, and Continue asks for the answer first.
+    /// </summary>
     public bool NeedsStaffChoice { get; init; }
 
     /// <summary>The address asked for <see cref="SelectedDate"/> itself (a link from a message does): the answer to "who with" keeps it.</summary>

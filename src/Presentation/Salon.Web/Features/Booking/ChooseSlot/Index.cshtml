@@ -11,11 +11,13 @@
     // The person goes on to the next step; "anyone" only has to be remembered on this page.
     var personQuery = (r.SelectedStaffId is { } sid ? $"&staff={sid}" : string.Empty) + Model.AlsoQuery;
     var staffQuery = r.AnyoneChosen && r.Staff.Count > 1 ? $"&staff={ChooseSlotQuery.AnyStaff}{Model.AlsoQuery}" : personQuery;
-    var keptDay = r.NeedsStaffChoice && !r.DayAsked ? string.Empty : $"&date={r.SelectedDate.ToIso()}";
+    var keptDay = $"&date={r.SelectedDate.ToIso()}";
     var hasAnySlot = r.Days.Any(d => d.HasSlots);
     var windowStart = (r.Days.Count > 0 ? r.Days[0].Date : r.SelectedDate).ToIso();
+    // An answer to "who with" keeps the day and the tapped time; a time that person does not have quietly drops out.
+    var keptTime = r.Chosen is { } kept ? $"&from={windowStart}&start={Uri.EscapeDataString(kept.Start.ToIso())}" : string.Empty;
 }
-<section class="mx-auto max-w-2xl space-y-6">
+<section class="mx-auto max-w-2xl space-y-6" data-booking>
     @* The steps are for a desk; a phone has the page to itself (the owner, 2026-11-25). *@
     <div class="space-y-3 max-sm:hidden">
         <p class="text-sm font-medium text-stone-600" data-testid="step">@T.Format("Booking.Public.Step", 2, 3)</p>
@@ -31,9 +33,9 @@
        sits between its arrows. One set of elements, placed by the grid, so nothing is in the page twice. Every day
        and week link comes back here (#days). The arrows always hold their places: where there is nothing earlier or
        later the arrow is drawn faint and is not a link. *@
-    <header id="days" class="book-top @(r.NeedsStaffChoice ? null : "has-month")">
+    <header id="days" class="book-top has-month">
         <h1 class="book-title book-top-title">@T["Booking.Public.ChooseTime"]</h1>
-        @if (!r.NeedsStaffChoice)
+        @if (r.Days.Count > 0)
         {
             @if (r.EarlierFrom is { } earlier)
             {
@@ -68,46 +70,34 @@
 
     @if (r.Staff.Count > 1)
     {
-        @* Who with, in a light sheet over the page instead of a row on it (the owner, 2026-11-25). It is still asked,
-           not assumed (2026-11-22): while nobody is chosen the sheet is simply there and the days and times wait
-           behind it; afterwards "Change" beside the staff line opens it again. "Anyone available" is an answer like
-           the others (staff=any). No script: the link to #who shows it, any answer is a new page. *@
-        <div id="who" class="modal @(r.NeedsStaffChoice ? "is-open" : null)" role="dialog" aria-modal="true" aria-labelledby="who-title" data-testid="staff-choice">
-            <div class="modal-card">
+        @* Who with (the owner, 2026-11-25): not in the way when the page opens. The staff line in the card has a
+           button; it opens this sheet — the whole screen, a gentle white, the people side by side with their faces.
+           It is still asked, not assumed (2026-11-22): until it is answered Continue opens the sheet instead of going
+           on. "Anyone available" is an answer like the others (staff=any). An answer keeps the day and the tapped
+           time. No script: the link to #who shows it, any answer is a new page. *@
+        <div id="who" class="sheet" role="dialog" aria-modal="true" aria-labelledby="who-title" data-testid="staff-choice">
+            <div class="sheet-body">
                 <div class="flex items-center justify-between gap-3">
-                    <h2 id="who-title" class="flex items-center gap-2 text-xl font-semibold text-slate-800">
-                        @T["Booking.Public.With"]
-                        @if (r.NeedsStaffChoice)
-                        {
-                            <span class="staff-choice-required" data-testid="staff-required">@T["Booking.Public.Required"]</span>
-                        }
-                    </h2>
-                    @if (!r.NeedsStaffChoice)
-                    {
-                        <a href="#days" class="book-close" data-testid="staff-close" aria-label="@T["Booking.Public.CloseChoice"]"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></a>
-                    }
+                    <h2 id="who-title" class="book-title">@T["Booking.Public.With"]</h2>
+                    <a href="#days" class="book-close" data-testid="staff-close" aria-label="@T["Booking.Public.CloseChoice"]"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></a>
                 </div>
                 @if (r.NeedsStaffChoice)
                 {
-                    <p class="text-sm text-slate-600" data-testid="choose-staff">@T["Booking.Public.ChooseStaffFirst"]</p>
+                    <p class="text-slate-600" data-testid="choose-staff">@T["Booking.Public.ChooseStaffFirst"]</p>
                 }
-                <nav aria-label="@T["Booking.Public.With"]" data-testid="staff-picker" class="staff-list">
-                    <a href="/book/@r.ServiceId?staff=@ChooseSlotQuery.AnyStaff@keptDay@Model.AlsoQuery" class="staff-row @(r.AnyoneChosen ? "is-on" : null)" aria-current="@(r.AnyoneChosen ? "true" : null)" data-testid="staff-any"><span class="staff-row-any" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.6-3.4 3.2-5.5 6.5-5.5s5.900 2.100 6.500 5.500M16 4.800a3.500 3.500 0 0 1 0 6.400M18.500 14.900c1.700.9 2.700 2.600 3 5.100" /></svg></span>@T["Booking.Public.Anyone"]</a>
+                <nav aria-label="@T["Booking.Public.With"]" data-testid="staff-picker" class="staff-faces">
+                    <a href="/book/@r.ServiceId?staff=@ChooseSlotQuery.AnyStaff@keptDay@keptTime@Model.AlsoQuery" class="staff-face @(r.AnyoneChosen ? "is-on" : null)" aria-current="@(r.AnyoneChosen ? "true" : null)" data-testid="staff-any"><span class="staff-face-any" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.6-3.4 3.2-5.5 6.5-5.5s5.9 2.1 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.9c1.700.9 2.700 2.600 3 5.100" /></svg></span><span class="staff-face-name">@T["Booking.Public.Anyone"]</span></a>
                     @foreach (var person in r.Staff)
                     {
                         var on = person.Id == r.SelectedStaffId;
-                        <a href="/book/@r.ServiceId?staff=@person.Id@keptDay@Model.AlsoQuery" class="staff-row @(on ? "is-on" : null)" aria-current="@(on ? "true" : null)" data-testid="staff-option"><avatar name="@person.DisplayName" photo="@person.PhotoPath" size="Small" />@person.DisplayName</a>
+                        <a href="/book/@r.ServiceId?staff=@person.Id@keptDay@keptTime@Model.AlsoQuery" class="staff-face @(on ? "is-on" : null)" aria-current="@(on ? "true" : null)" data-testid="staff-option"><avatar name="@person.DisplayName" photo="@person.PhotoPath" size="Large" /><span class="staff-face-name">@person.DisplayName</span></a>
                     }
                 </nav>
-                @if (r.NeedsStaffChoice)
-                {
-                    <a href="/book" class="btn btn-secondary w-full" data-testid="staff-back">@T["Booking.Public.BackToServices"]</a>
-                }
             </div>
         </div>
     }
 
-    @if (!r.NeedsStaffChoice)
+    @if (r.Days.Count > 0)
     {
         <nav aria-label="@T["Booking.Public.Day"]" data-testid="date-strip" class="vt-days day-strip scroll-row">
             @foreach (var day in r.Days)
@@ -173,56 +163,58 @@
 
     @* What is being booked, under the times (ADR 0094, stage 2): the service and its price, the time once one is
        tapped, who with, the total, and the one button that goes on. *@
-    <section class="book-summary" data-testid="booking-summary" aria-label="@T["Booking.Public.Summary"]">
-        @if (r.Lines.Count <= 1)
+    <section class="book-cards" data-testid="booking-summary" aria-label="@T["Booking.Public.Summary"]">
+        @* A grey card for each service (the owner, 2026-11-25): its name, its price and its own time once one is
+           tapped. One service can be changed for another; of several, each can be taken out by the cross at its corner. *@
+        @foreach (var line in r.Lines)
         {
-            <div class="flex items-start justify-between gap-4">
-                <div class="min-w-0">
-                    <p class="font-medium text-slate-800" data-testid="service-name">@r.ServiceName</p>
-                    <a href="/book" class="text-sm text-slate-600 underline underline-offset-4" data-testid="change-service">@T["Booking.Public.ChangeService"]</a>
-                </div>
-                <div class="shrink-0 text-right">
-                    <p class="font-semibold text-slate-800 tabular-nums" data-testid="summary-price">@(r.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", r.Price.ToDisplayString(culture)) : r.Price.ToDisplayString(culture))</p>
-                    <p class="text-sm text-slate-600 tabular-nums" data-testid="summary-when">@ChooseSlotText.When(T, r, culture)</p>
+            var first = line.ServiceId == r.ServiceId;
+            <div class="book-summary" data-testid="visit-line">
+                @if (r.Lines.Count > 1)
+                {
+                    <a href="@Model.RemovePaths[line.ServiceId]" class="card-remove" data-testid="remove-service" aria-label="@T["Booking.Public.RemoveService"]: @line.Name"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></a>
+                }
+                <div class="flex items-start justify-between gap-4">
+                    <div class="min-w-0">
+                        <p class="font-medium text-slate-800" data-testid="@(first ? "service-name" : "extra-service-name")">@line.Name</p>
+                        @if (r.Lines.Count == 1)
+                        {
+                            <a href="/book" class="text-sm text-slate-600 underline underline-offset-4" data-testid="change-service">@T["Booking.Public.ChangeService"]</a>
+                        }
+                    </div>
+                    <div class="shrink-0 text-right">
+                        <p class="font-semibold text-slate-800 tabular-nums" data-testid="@(r.Lines.Count == 1 ? "summary-price" : "line-price")">@(line.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", line.Price.ToDisplayString(culture)) : line.Price.ToDisplayString(culture))</p>
+                        <p class="text-sm text-slate-600 tabular-nums" data-testid="@(r.Lines.Count == 1 ? "summary-when" : "line-when")">@ChooseSlotText.LineWhen(T, r, line, culture)</p>
+                    </div>
                 </div>
             </div>
-        }
-        else
-        {
-            @* Several services in one visit (ADR 0095): each with its own price and length and a way to take it out;
-               the time and the total below are for the whole visit. *@
-            <ul class="space-y-3" data-testid="visit-lines">
-                @foreach (var line in r.Lines)
-                {
-                    <li class="flex items-start justify-between gap-4" data-testid="visit-line">
-                        <div class="min-w-0">
-                            <p class="font-medium text-slate-800" data-testid="@(line.ServiceId == r.ServiceId ? "service-name" : "extra-service-name")">@line.Name</p>
-                            <a href="@Model.RemovePaths[line.ServiceId]" class="text-sm text-slate-600 underline underline-offset-4" data-testid="remove-service">@T["Booking.Public.RemoveService"]<span class="sr-only">: @line.Name</span></a>
-                        </div>
-                        <div class="shrink-0 text-right">
-                            <p class="font-semibold text-slate-800 tabular-nums" data-testid="line-price">@(line.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", line.Price.ToDisplayString(culture)) : line.Price.ToDisplayString(culture))</p>
-                            <p class="text-sm text-slate-600 tabular-nums">@T.Format("Booking.Public.DurationMinutes", (int)line.Duration.TotalMinutes)</p>
-                        </div>
-                    </li>
-                }
-            </ul>
-            <p class="border-t border-slate-200 pt-3 text-sm text-slate-600">@T["Booking.Public.SummaryWhen"] <span class="font-medium text-slate-800 tabular-nums" data-testid="summary-when">@ChooseSlotText.When(T, r, culture)</span></p>
         }
         @if (r.NobodyOffersAll)
         {
             <p class="notice notice-error" role="alert" data-testid="nobody-offers-all">@T["Booking.Public.NobodyOffersAll"]</p>
         }
-        <div class="flex items-center justify-between gap-3 border-t border-slate-200 pt-3 text-sm">
-            <p class="min-w-0 text-slate-600">@T["Booking.Public.SummaryStaff"] <span class="font-medium text-slate-800" data-testid="summary-staff">@ChooseSlotText.Who(T, r)</span></p>
-            @if (r.Staff.Count > 1 && !r.NeedsStaffChoice)
+        <div class="book-summary flex items-center justify-between gap-3 text-sm">
+            <p class="min-w-0 text-slate-600">
+                @T["Booking.Public.SummaryStaff"] <span class="font-medium text-slate-800" data-testid="summary-staff">@ChooseSlotText.Who(T, r)</span>
+                @if (r.NeedsStaffChoice)
+                {
+                    <span class="staff-choice-required" data-testid="staff-required">@T["Booking.Public.Required"]</span>
+                }
+            </p>
+            @if (r.Staff.Count > 1)
             {
-                <a href="#who" class="btn btn-compact btn-secondary shrink-0" data-testid="change-staff">@T["Booking.Public.ChangeStaff"]<span class="sr-only">: @T["Booking.Public.With"]</span></a>
+                <a href="#who" class="btn btn-compact btn-secondary shrink-0" data-testid="change-staff">@T[r.NeedsStaffChoice ? "Booking.Public.ChooseStaff" : "Booking.Public.ChangeStaff"]<span class="sr-only">: @T["Booking.Public.With"]</span></a>
             }
         </div>
     </section>
     @if (Model.AddPath is { } addPath)
     {
         <a href="@addPath" class="add-service" data-testid="add-service"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>@T["Booking.Public.AddService"]</a>
+    }
+    else if (Model.AddAfterTime)
+    {
+        @* More services come after a time is chosen for what is here (the owner, 2026-11-25). *@
+        <p class="text-sm text-slate-600" data-testid="add-after-time">@T["Booking.Public.AddAfterTime"]</p>
     }
     <div class="book-total">
         <p class="text-sm text-slate-600">@T["Booking.Public.Total"]</p>
@@ -231,10 +223,17 @@
             <p class="text-sm text-slate-600 tabular-nums" data-testid="summary-duration">@T.Format("Booking.Public.DurationMinutes", (int)r.Duration.TotalMinutes)</p>
         </div>
     </div>
-    @if (r.Chosen is { } picked)
+    @if (r.Chosen is { } picked && r.NeedsStaffChoice)
+    {
+        @* A time is tapped but nobody is chosen: going on asks who with first (the sheet), and the answer keeps the time. *@
+        <div class="sticky bottom-4" data-testid="continue-bar">
+            <a href="#who" class="btn btn-primary w-full shadow-lg" data-testid="continue-needs-staff">@T["Booking.Public.Continue"]</a>
+        </div>
+    }
+    else if (r.Chosen is { } going)
     {
         <div class="sticky bottom-4" data-testid="continue-bar">
-            <a href="/book/@r.ServiceId/details?start=@Uri.EscapeDataString(picked.Start.ToIso())@personQuery" class="btn btn-primary w-full shadow-lg" data-testid="continue">@T["Booking.Public.Continue"]</a>
+            <a href="/book/@r.ServiceId/details?start=@Uri.EscapeDataString(going.Start.ToIso())@personQuery" class="btn btn-primary w-full shadow-lg" data-testid="continue">@T["Booking.Public.Continue"]</a>
         </div>
     }
     else if (r.Slots.Count > 0)

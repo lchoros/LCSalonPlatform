@@ -124,7 +124,7 @@ public partial class StaffPhotoTests(SalonWebApplicationFactory factory) : IAsyn
         Avatars(picker).ShouldBe([$"photo:{address}", "letter:T"], "the two people a client may choose; 'anyone' has no face");
         picker.ShouldContain("data-testid=\"staff-any\"");
         StaffOptionCount().Count(picker).ShouldBe(2);
-        picker.ShouldContain($"href=\"/book/{_serviceId}?staff=any\"", Case.Sensitive, "nobody is chosen yet, so the pills are the answers to \"who with\"");
+        picker.ShouldContain($"href=\"/book/{_serviceId}?staff=any", Case.Sensitive, "nobody is chosen yet; the faces in the sheet are the answers to \"who with\"");
     }
 
     [Fact]

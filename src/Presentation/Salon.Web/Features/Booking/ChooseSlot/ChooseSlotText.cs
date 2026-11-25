@@ -18,6 +18,27 @@ public static class ChooseSlotText
             : localizer.Format("Booking.Public.DurationMinutes", minutes);
     }
 
+    /// <summary>
+    /// One service of the visit: its own "09:00 – 09:45" once a time is tapped — each begins where the one before
+    /// ends — and until then how long it takes.
+    /// </summary>
+    public static string LineWhen(ILocalizationService localizer, ChooseSlotResult result, VisitLine line, CultureInfo culture)
+    {
+        ArgumentNullException.ThrowIfNull(localizer);
+        ArgumentNullException.ThrowIfNull(result);
+        ArgumentNullException.ThrowIfNull(line);
+        ArgumentNullException.ThrowIfNull(culture);
+        var minutes = (int)line.Duration.TotalMinutes;
+        if (result.Chosen is not { } picked)
+        {
+            return localizer.Format("Booking.Public.DurationMinutes", minutes);
+        }
+
+        var before = (int)result.Lines.TakeWhile(l => l.ServiceId != line.ServiceId).Sum(l => l.Duration.TotalMinutes);
+        var start = picked.LocalStart.PlusMinutes(before);
+        return $"{start.ToString("HH:mm", culture)} – {start.PlusMinutes(minutes).ToString("HH:mm", culture)}";
+    }
+
     /// <summary>The chosen person, or "No preference" under "anyone available".</summary>
     public static string Who(ILocalizationService localizer, ChooseSlotResult result)
     {

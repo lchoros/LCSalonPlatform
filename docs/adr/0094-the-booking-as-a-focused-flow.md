@@ -89,3 +89,29 @@ own rule of three days earlier; one line to change if "No preference" should be 
 and only parts of the day that have a free time get a tab.
 
 Not done yet: the wide layout with the order in a column at the right (the owner's third picture).
+
+## Addendum, 2026-11-25 (evening): staff by its button, no reload, a card per service (stage 6)
+
+The owner tried stage 5 on a phone the same evening.
+
+- **The staff sheet does not open by itself** ("on Booksy you can see the change staff button, so we want that, not a
+  modal from the start"). The page opens with the days and the times of anyone who could do the visit; the staff card
+  says "Not chosen yet · Required" with a **Choose** button. It is still asked, not assumed: with a time tapped and
+  nobody chosen, **Continue opens the sheet** instead of going on, and the answer keeps the day and the time (a time
+  that person does not have quietly drops out).
+- **The sheet is the whole screen in white, coming up gently, with the people side by side** under their faces. Solid
+  white, not a veil: text showing faintly through fails the contrast check.
+- **A tap on a day, an arrow, a time or a person no longer loads the page** ("the loading bar at the top is showing
+  and the entire screen jumps up and down"). `booking-slots.js` fetches the same address the link points to, puts
+  the content it gets into the page, and writes the address without adding a step to the history. While it is on its
+  way the days and times go pale, and what arrives comes up from pale. The server decides everything as before;
+  without script, or when the fetch fails, the link is simply followed.
+- **A grey card for each service** with its own time ("09:45 – 10:30", then "10:30 – 10:50") and a cross at its
+  corner that takes it out; who with has a card of its own.
+- **"Add another service" comes after a time is chosen** ("I would rather require select time first, then being able
+  to add more services" — Booksy puts the second service half an hour later by itself). Until then the page says so.
+  The day and the time ride through the service list and back.
+
+Asked for and not built yet: **a person chosen for each service** (now one person does the whole visit, ADR 0095).
+That changes how the times of a visit are found and what a booking stores; it is the next step, and the staff line
+moves into each service's card with it.
