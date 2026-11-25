@@ -10,6 +10,8 @@
     <ProjectReference Include="..\..\src\Plugins\Salon.Plugin.Payments.Manual\Salon.Plugin.Payments.Manual.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Salon.Plugin.Payments.Stripe\Salon.Plugin.Payments.Stripe.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Salon.Plugin.Sms.Log\Salon.Plugin.Sms.Log.csproj" />
+    <ProjectReference Include="..\..\src\Libraries\Salon.Api.Contracts\Salon.Api.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Mobile\Salon.Mobile.Core\Salon.Mobile.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

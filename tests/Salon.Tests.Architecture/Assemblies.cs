@@ -9,6 +9,8 @@ internal static class Assemblies
     public static readonly Assembly Services = typeof(Salon.Services.ServiceCollectionExtensions).Assembly;
     public static readonly Assembly WebFramework = typeof(Salon.Web.Framework.Controllers.SalonControllerBase).Assembly;
     public static readonly Assembly Web = typeof(Program).Assembly;
+    public static readonly Assembly ApiContracts = typeof(Salon.Api.Contracts.Booking.BookingApi).Assembly;
+    public static readonly Assembly MobileCore = typeof(Salon.Mobile.Core.Api.IBookingApi).Assembly;
     public static readonly Assembly[] Plugins =
     [
         typeof(Salon.Plugin.Import.CsvClientImportProvider).Assembly,
