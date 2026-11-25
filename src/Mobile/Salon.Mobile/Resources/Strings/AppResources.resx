@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppName" xml:space="preserve">
+    <value>Booking</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading…</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="ServicesTitle" xml:space="preserve">
+    <value>Choose a service</value>
+  </data>
+  <data name="AddServiceTitle" xml:space="preserve">
+    <value>Add another service</value>
+  </data>
+  <data name="AddServiceLead" xml:space="preserve">
+    <value>It follows straight after what you have chosen.</value>
+  </data>
+  <data name="BackToBooking" xml:space="preserve">
+    <value>Back to your booking</value>
+  </data>
+  <data name="SearchServices" xml:space="preserve">
+    <value>Search services</value>
+  </data>
+  <data name="Categories" xml:space="preserve">
+    <value>Categories</value>
+  </data>
+  <data name="FilterAll" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="FilterPopular" xml:space="preserve">
+    <value>Popular</value>
+  </data>
+  <data name="Book" xml:space="preserve">
+    <value>Book</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="ReadMore" xml:space="preserve">
+    <value>More</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Back to the services</value>
+  </data>
+  <data name="ShowOptions" xml:space="preserve">
+    <value>Show options</value>
+  </data>
+  <data name="NoMatch" xml:space="preserve">
+    <value>No services match.</value>
+  </data>
+  <data name="ShowAll" xml:space="preserve">
+    <value>Show all services</value>
+  </data>
+  <data name="NoServices" xml:space="preserve">
+    <value>This salon has not opened online booking yet.</value>
+  </data>
+  <data name="PriceFrom" xml:space="preserve">
+    <value>from {0}</value>
+  </data>
+  <data name="DurationMinutes" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="DurationHours" xml:space="preserve">
+    <value>{0} h</value>
+  </data>
+  <data name="DurationHoursMinutes" xml:space="preserve">
+    <value>{0} h {1} min</value>
+  </data>
+  <data name="PriceAndDuration" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="TimeRange" xml:space="preserve">
+    <value>{0} – {1}</value>
+  </data>
+  <data name="DateAtTime" xml:space="preserve">
+    <value>{0} at {1}</value>
+  </data>
+  <data name="DateLongFormat" xml:space="preserve">
+    <value>dddd d MMMM</value>
+  </data>
+  <data name="ChooseTime" xml:space="preserve">
+    <value>Choose a time</value>
+  </data>
+  <data name="EarlierDays" xml:space="preserve">
+    <value>Earlier days</value>
+  </data>
+  <data name="LaterDays" xml:space="preserve">
+    <value>Later days</value>
+  </data>
+  <data name="LeaveBooking" xml:space="preserve">
+    <value>Leave the booking</value>
+  </data>
+  <data name="DiscardTitle" xml:space="preserve">
+    <value>Discard booking?</value>
+  </data>
+  <data name="DiscardText" xml:space="preserve">
+    <value>Nothing has been booked yet. If you leave now, the service and time you chose are not kept.</value>
+  </data>
+  <data name="DiscardStay" xml:space="preserve">
+    <value>Continue booking</value>
+  </data>
+  <data name="DiscardYes" xml:space="preserve">
+    <value>Yes, discard</value>
+  </data>
+  <data name="Morning" xml:space="preserve">
+    <value>Morning</value>
+  </data>
+  <data name="Afternoon" xml:space="preserve">
+    <value>Afternoon</value>
+  </data>
+  <data name="Evening" xml:space="preserve">
+    <value>Evening</value>
+  </data>
+  <data name="NoSlotsOnDay" xml:space="preserve">
+    <value>No free times on this day. Try another day.</value>
+  </data>
+  <data name="StaffLabel" xml:space="preserve">
+    <value>Staff:</value>
+  </data>
+  <data name="StaffNotChosen" xml:space="preserve">
+    <value>Not chosen yet</value>
+  </data>
+  <data name="Required" xml:space="preserve">
+    <value>Required</value>
+  </data>
+  <data name="ChangeStaff" xml:space="preserve">
+    <value>Change</value>
+  </data>
+  <data name="ChooseStaff" xml:space="preserve">
+    <value>Choose</value>
+  </data>
+  <data name="Anyone" xml:space="preserve">
+    <value>Anyone available</value>
+  </data>
+  <data name="RemoveService" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="AddService" xml:space="preserve">
+    <value>+ Add another service</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Continue" xml:space="preserve">
+    <value>Continue</value>
+  </data>
+  <data name="MissingTime" xml:space="preserve">
+    <value>Choose a time first.</value>
+  </data>
+  <data name="MissingStaff" xml:space="preserve">
+    <value>Choose who with first.</value>
+  </data>
+  <data name="MissingTimeAndStaff" xml:space="preserve">
+    <value>Choose a time and who with first.</value>
+  </data>
+  <data name="MissingTimeBeforeAdding" xml:space="preserve">
+    <value>Choose a time first, then add another service.</value>
+  </data>
+  <data name="VisitFull" xml:space="preserve">
+    <value>This booking holds as many services as the salon allows.</value>
+  </data>
+  <data name="WhoWith" xml:space="preserve">
+    <value>Who with</value>
+  </data>
+  <data name="ChooseStaffFor" xml:space="preserve">
+    <value>Who would you like for {0}?</value>
+  </data>
+  <data name="StaffAtTime" xml:space="preserve">
+    <value>These are the people free at {0}. For somebody else, choose another time first.</value>
+  </data>
+  <data name="CloseChoice" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="YourDetails" xml:space="preserve">
+    <value>Your details</value>
+  </data>
+  <data name="SummaryTitle" xml:space="preserve">
+    <value>Your booking</value>
+  </data>
+  <data name="FirstName" xml:space="preserve">
+    <value>First name</value>
+  </data>
+  <data name="LastName" xml:space="preserve">
+    <value>Last name</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Mobile number</value>
+  </data>
+  <data name="PhoneHint" xml:space="preserve">
+    <value>We'll text a 6-digit code to this number to confirm your booking.</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Email (optional)</value>
+  </data>
+  <data name="PrivacyAtForm" xml:space="preserve">
+    <value>We use what you type here to book your visit and to contact you about it.</value>
+  </data>
+  <data name="PrivacyLink" xml:space="preserve">
+    <value>How we use your details</value>
+  </data>
+  <data name="SendCode" xml:space="preserve">
+    <value>Send code</value>
+  </data>
+  <data name="BookNow" xml:space="preserve">
+    <value>Book</value>
+  </data>
+  <data name="CodeTitle" xml:space="preserve">
+    <value>Enter the code we texted you</value>
+  </data>
+  <data name="CodeSent" xml:space="preserve">
+    <value>We've texted a 6-digit code to {0}. It is valid for 10 minutes.</value>
+  </data>
+  <data name="CodeLabel" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="CodeSubmit" xml:space="preserve">
+    <value>Confirm booking</value>
+  </data>
+  <data name="WrongCodeOne" xml:space="preserve">
+    <value>That code isn't right. You have 1 attempt left.</value>
+  </data>
+  <data name="WrongCodeMany" xml:space="preserve">
+    <value>That code isn't right. You have {0} attempts left.</value>
+  </data>
+  <data name="DoneTitle" xml:space="preserve">
+    <value>Your appointment is booked</value>
+  </data>
+  <data name="DoneLead" xml:space="preserve">
+    <value>We've texted you a confirmation. See you soon.</value>
+  </data>
+  <data name="DoneService" xml:space="preserve">
+    <value>Service</value>
+  </data>
+  <data name="DoneWhen" xml:space="preserve">
+    <value>When</value>
+  </data>
+  <data name="DoneStaff" xml:space="preserve">
+    <value>With</value>
+  </data>
+  <data name="DonePrice" xml:space="preserve">
+    <value>Price</value>
+  </data>
+  <data name="Manage" xml:space="preserve">
+    <value>Manage this booking</value>
+  </data>
+  <data name="BookAnother" xml:space="preserve">
+    <value>Book another appointment</value>
+  </data>
+  <data name="FirstNameRequired" xml:space="preserve">
+    <value>Enter your first name.</value>
+  </data>
+  <data name="LastNameRequired" xml:space="preserve">
+    <value>Enter your last name.</value>
+  </data>
+  <data name="PhoneRequired" xml:space="preserve">
+    <value>Enter your mobile number.</value>
+  </data>
+  <data name="PhoneInvalid" xml:space="preserve">
+    <value>Enter a valid mobile number; use the country code for numbers from abroad.</value>
+  </data>
+  <data name="EmailInvalid" xml:space="preserve">
+    <value>Enter a valid email address.</value>
+  </data>
+  <data name="CodeInvalid" xml:space="preserve">
+    <value>Enter the 6-digit code.</value>
+  </data>
+  <data name="CodeTooMany" xml:space="preserve">
+    <value>Too many wrong codes. Start again to get a new one.</value>
+  </data>
+  <data name="Separator" xml:space="preserve">
+    <value> · </value>
+  </data>
+</root>

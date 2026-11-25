@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- The splash: the icon's mark alone, white on the brand purple set in Salon.Mobile.csproj. -->
+<svg width="200" height="200" viewBox="0 0 200 200" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="30" y="44" width="140" height="132" rx="22" />
+    <line x1="30" y1="84" x2="170" y2="84" />
+    <line x1="66" y1="24" x2="66" y2="58" />
+    <line x1="134" y1="24" x2="134" y2="58" />
+    <polyline points="64,130 88,152 136,108" />
+  </g>
+</svg>

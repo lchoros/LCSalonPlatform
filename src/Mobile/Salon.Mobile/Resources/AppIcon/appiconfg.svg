@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- The mark: a page of a diary with a tick, in white, kept inside the middle of the canvas so Android's round and
+     squircle masks never cut it. Drawn for this app; no third-party artwork. -->
+<svg width="456" height="456" viewBox="0 0 456 456" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g fill="none" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="146" y="158" width="164" height="156" rx="26" />
+    <line x1="146" y1="206" x2="310" y2="206" />
+    <line x1="188" y1="136" x2="188" y2="176" />
+    <line x1="268" y1="136" x2="268" y2="176" />
+    <polyline points="186,260 214,286 270,234" />
+  </g>
+</svg>

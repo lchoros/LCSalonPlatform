@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Type, controls and shapes in one place. The booking's gentler type (ADR 0094): slate and medium weight, never black
+     and bold. No bundled fonts: each platform's own sans-serif, with its medium face where there is one. Every control
+     a finger presses is at least 44 high. -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <OnPlatform x:Key="FontMedium" x:TypeArguments="x:String">
+        <On Platform="Android" Value="sans-serif-medium" />
+        <On Platform="WinUI" Value="Segoe UI Semibold" />
+    </OnPlatform>
+
+    <!-- iOS has no medium face by name here; bold stands in for it until the app is looked at on a Mac. -->
+    <OnPlatform x:Key="MediumAttributes" x:TypeArguments="FontAttributes" Default="None">
+        <On Platform="iOS" Value="Bold" />
+    </OnPlatform>
+
+    <x:Double x:Key="TapSize">44</x:Double>
+
+    <!-- Icons: 24 x 24 strokes, drawn here (no icon font, no third-party artwork). -->
+    <PathGeometry x:Key="IconChevronLeft" Figures="M15,18 L9,12 L15,6" />
+    <PathGeometry x:Key="IconChevronRight" Figures="M9,18 L15,12 L9,6" />
+    <PathGeometry x:Key="IconChevronDown" Figures="M6,9 L12,15 L18,9" />
+    <PathGeometry x:Key="IconClose" Figures="M18,6 L6,18 M6,6 L18,18" />
+    <PathGeometry x:Key="IconBack" Figures="M19,12 L5,12 M12,19 L5,12 L12,5" />
+    <PathGeometry x:Key="IconSearch" Figures="M11,4 A7,7 0 1 1 10.99,4 Z M21,21 L16.2,16.2" />
+    <PathGeometry x:Key="IconCheck" Figures="M5,13 L9,17 L19,7" />
+    <PathGeometry x:Key="IconPeople" Figures="M9,4 A3.5,3.5 0 1 1 8.99,4 Z M2,20 C2,16 5,13.5 9,13.5 C13,13.5 16,16 16,20 M16,4.2 A3.3,3.3 0 0 1 16,10.8 M18,13.8 C20.5,14.6 22,16.8 22,20" />
+
+    <!-- Pages -->
+    <Style TargetType="ContentPage" ApplyToDerivedTypes="True">
+        <Setter Property="BackgroundColor" Value="{StaticResource Page}" />
+        <Setter Property="Shell.NavBarIsVisible" Value="False" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+    <Style TargetType="Shell" ApplyToDerivedTypes="True">
+        <Setter Property="Shell.BackgroundColor" Value="{StaticResource Page}" />
+        <Setter Property="Shell.ForegroundColor" Value="{StaticResource Brand}" />
+        <Setter Property="Shell.TitleColor" Value="{StaticResource Ink}" />
+        <Setter Property="Shell.NavBarHasShadow" Value="False" />
+        <Setter Property="Shell.FlyoutBehavior" Value="Disabled" />
+        <Setter Property="Shell.TabBarIsVisible" Value="False" />
+    </Style>
+
+    <!-- Text -->
+    <Style TargetType="Label">
+        <Setter Property="TextColor" Value="{StaticResource Ink}" />
+        <Setter Property="FontSize" Value="15" />
+    </Style>
+
+    <Style x:Key="Title" TargetType="Label">
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontFamily" Value="{StaticResource FontMedium}" />
+        <Setter Property="FontAttributes" Value="{StaticResource MediumAttributes}" />
+        <Setter Property="TextColor" Value="{StaticResource Ink}" />
+        <Setter Property="SemanticProperties.HeadingLevel" Value="Level1" />
+    </Style>
+
+    <Style x:Key="Heading" TargetType="Label">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontFamily" Value="{StaticResource FontMedium}" />
+        <Setter Property="FontAttributes" Value="{StaticResource MediumAttributes}" />
+        <Setter Property="TextColor" Value="{StaticResource Ink}" />
+        <Setter Property="SemanticProperties.HeadingLevel" Value="Level2" />
+    </Style>
+
+    <Style x:Key="Strong" TargetType="Label">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontFamily" Value="{StaticResource FontMedium}" />
+        <Setter Property="FontAttributes" Value="{StaticResource MediumAttributes}" />
+        <Setter Property="TextColor" Value="{StaticResource Ink}" />
+    </Style>
+
+    <Style x:Key="RowName" TargetType="Label" BasedOn="{StaticResource Strong}">
+        <Setter Property="TextColor" Value="{StaticResource InkSoft}" />
+    </Style>
+
+    <Style x:Key="Small" TargetType="Label">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="TextColor" Value="{StaticResource Muted}" />
+    </Style>
+
+    <Style x:Key="Body" TargetType="Label">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="TextColor" Value="{StaticResource InkSoft}" />
+        <Setter Property="LineHeight" Value="1.3" />
+    </Style>
+
+    <Style x:Key="Muted" TargetType="Label" BasedOn="{StaticResource Body}">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="TextColor" Value="{StaticResource Muted}" />
+    </Style>
+
+    <Style x:Key="FieldLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontFamily" Value="{StaticResource FontMedium}" />
+        <Setter Property="FontAttributes" Value="{StaticResource MediumAttributes}" />
+        <Setter Property="TextColor" Value="{StaticResource InkSoft}" />
+    </Style>
+
+    <Style x:Key="FieldError" TargetType="Label">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="TextColor" Value="{StaticResource Danger}" />
+    </Style>
+
+    <Style x:Key="LinkLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontFamily" Value="{StaticResource FontMedium}" />
+        <Setter Property="FontAttributes" Value="{StaticResource MediumAttributes}" />
+        <Setter Property="TextColor" Value="{StaticResource Brand}" />
+        <Setter Property="TextDecorations" Value="Underline" />
+    </Style>
+
+    <!-- Buttons: one solid purple thing to press per screen; the rest are outlines or links (ADR 0080). -->
+    <Style TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{StaticResource Brand}" />
+        <Setter Property="TextColor" Value="{StaticResource White}" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontFamily" Value="{StaticResource FontMedium}" />
+        <Setter Property="FontAttributes" Value="{StaticResource MediumAttributes}" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="MinimumHeightRequest" Value="52" />
+        <Setter Property="MinimumWidthRequest" Value="{StaticResource TapSize}" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal" />
+                    <VisualState x:Name="Disabled">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="{StaticResource Disabled}" />
+                            <Setter Property="TextColor" Value="{StaticResource White}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="PointerOver" />
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+
+    <!-- Continue before it is allowed: grey, yet still tappable so the screen can say what is missing. -->
+    <Style x:Key="Waiting" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{StaticResource Disabled}" />
+        <Setter Property="TextColor" Value="{StaticResource White}" />
+    </Style>
+
+    <Style x:Key="Outline" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{StaticResource White}" />
+        <Setter Property="TextColor" Value="{StaticResource Brand}" />
+        <Setter Property="BorderColor" Value="{StaticResource BrandEdge}" />
+        <Setter Property="BorderWidth" Value="1" />
+    </Style>
+
+    <Style x:Key="Link" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{StaticResource Brand}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Padding" Value="8,0" />
+        <Setter Property="MinimumHeightRequest" Value="{StaticResource TapSize}" />
+        <Setter Property="BorderWidth" Value="0" />
+    </Style>
+
+    <!-- "Book" at the right of a row: a 44-high pill in the brand's outline. -->
+    <Style x:Key="Pill" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{StaticResource White}" />
+        <Setter Property="TextColor" Value="{StaticResource Brand}" />
+        <Setter Property="BorderColor" Value="{StaticResource BrandLine}" />
+        <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="CornerRadius" Value="22" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="HeightRequest" Value="{StaticResource TapSize}" />
+        <Setter Property="MinimumHeightRequest" Value="{StaticResource TapSize}" />
+    </Style>
+
+    <!-- Fields -->
+    <Style TargetType="Entry">
+        <Setter Property="TextColor" Value="{StaticResource Ink}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource Faint}" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="MinimumHeightRequest" Value="{StaticResource TapSize}" />
+    </Style>
+
+    <Style x:Key="Field" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource White}" />
+        <Setter Property="Stroke" Value="{StaticResource LineStrong}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="Padding" Value="12,2" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+    </Style>
+
+    <Style TargetType="CheckBox">
+        <Setter Property="Color" Value="{StaticResource Brand}" />
+        <Setter Property="MinimumHeightRequest" Value="{StaticResource TapSize}" />
+        <Setter Property="MinimumWidthRequest" Value="{StaticResource TapSize}" />
+    </Style>
+
+    <Style TargetType="ActivityIndicator">
+        <Setter Property="Color" Value="{StaticResource Brand}" />
+    </Style>
+
+    <!-- Shapes -->
+    <Style x:Key="Card" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource Card}" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 16" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <Style x:Key="Problem" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource DangerSoft}" />
+        <Setter Property="Stroke" Value="{StaticResource DangerEdge}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="Padding" Value="12" />
+    </Style>
+
+    <Style x:Key="Chip" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource White}" />
+        <Setter Property="Stroke" Value="{StaticResource LineStrong}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 22" />
+        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="HeightRequest" Value="{StaticResource TapSize}" />
+    </Style>
+
+    <Style x:Key="Rule" TargetType="BoxView">
+        <Setter Property="HeightRequest" Value="1" />
+        <Setter Property="Color" Value="{StaticResource Line}" />
+    </Style>
+
+    <!-- A full-screen sheet over the page (who with, a service's description): solid white, never a veil. -->
+    <Style x:Key="Sheet" TargetType="Grid">
+        <Setter Property="BackgroundColor" Value="{StaticResource White}" />
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+</ResourceDictionary>

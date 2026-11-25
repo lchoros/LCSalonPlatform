@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- The app's colours in one place. The brand and its shades are the web's own (Salon.Web/Styles/app.css, @theme,
+     ADR 0080); the greys are Tailwind's slate and stone that the booking pages use. Light theme only for now. -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <Color x:Key="Brand">#5B3FE0</Color>
+    <Color x:Key="BrandStrong">#4A30C4</Color>
+    <Color x:Key="BrandBright">#6F57EA</Color>
+    <Color x:Key="BrandDeep">#241F6B</Color>
+    <Color x:Key="BrandLine">#A19AF3</Color>
+    <Color x:Key="BrandEdge">#C6C1F9</Color>
+    <Color x:Key="BrandSoft">#E7E5FD</Color>
+    <Color x:Key="BrandMist">#F4F3FE</Color>
+
+    <Color x:Key="White">#FFFFFF</Color>
+    <Color x:Key="Page">#FFFFFF</Color>
+    <Color x:Key="Card">#F1F5F9</Color>
+    <Color x:Key="Line">#E2E8F0</Color>
+    <Color x:Key="LineStrong">#CBD5E1</Color>
+    <Color x:Key="Ink">#1E293B</Color>
+    <Color x:Key="InkSoft">#334155</Color>
+    <Color x:Key="Muted">#64748B</Color>
+    <Color x:Key="Faint">#94A3B8</Color>
+    <Color x:Key="Disabled">#CBD5E1</Color>
+
+    <Color x:Key="Free">#10B981</Color>
+    <Color x:Key="Danger">#B91C1C</Color>
+    <Color x:Key="DangerSoft">#FEF2F2</Color>
+    <Color x:Key="DangerEdge">#FCA5A5</Color>
+    <Color x:Key="DangerStrike">#EF4444</Color>
+
+    <SolidColorBrush x:Key="BrandBrush" Color="{StaticResource Brand}" />
+    <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}" />
+    <SolidColorBrush x:Key="CardBrush" Color="{StaticResource Card}" />
+    <SolidColorBrush x:Key="LineBrush" Color="{StaticResource Line}" />
+
+</ResourceDictionary>
