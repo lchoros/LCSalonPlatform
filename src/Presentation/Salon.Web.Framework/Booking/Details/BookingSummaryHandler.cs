@@ -11,9 +11,8 @@ using Salon.Services.Catalog;
 using Salon.Services.Localization;
 using Salon.Services.Settings;
 using Salon.Services.Tenancy;
-using Salon.Web.Framework.Booking.Details;
 
-namespace Salon.Web.Features.Booking.EnterDetails;
+namespace Salon.Web.Framework.Booking.Details;
 
 public sealed class BookingSummaryHandler(
     SalonDbContext db,

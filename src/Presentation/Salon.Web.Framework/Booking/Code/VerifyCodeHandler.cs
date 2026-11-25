@@ -1,7 +1,7 @@
 using Salon.Core.Cqrs;
 using Salon.Services.Booking;
 
-namespace Salon.Web.Features.Booking.VerifyCode;
+namespace Salon.Web.Framework.Booking.Code;
 
 /// <summary>Runs inside the pipeline's transaction: the attempt count, the client, the appointment and its outbox event commit together.</summary>
 public sealed class VerifyCodeHandler(IPublicBookingService publicBooking) : IRequestHandler<VerifyCodeCommand, PublicBookingVerification>
