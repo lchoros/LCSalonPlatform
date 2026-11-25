@@ -206,6 +206,8 @@ public class KestrelAppFixture : IAsyncLifetime, IAsyncDisposable
                 db.Services.Add(new Service
                 {
                     Name = serviceName,
+                    // One service says something about itself, so the walks can open "More" (ADR 0094).
+                    Description = serviceName == "Cut & blow-dry" ? "A wash, a cut to the shape you want and a blow-dry to finish. Bring a picture if you have one in mind; allow a little longer for very long or very thick hair." : null,
                     Duration = Duration.FromMinutes(minutes),
                     Price = price,
                     Currency = currency,

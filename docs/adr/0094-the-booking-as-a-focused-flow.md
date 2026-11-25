@@ -115,3 +115,17 @@ The owner tried stage 5 on a phone the same evening.
 Asked for and not built yet: **a person chosen for each service** (now one person does the whole visit, ADR 0095).
 That changes how the times of a visit are found and what a booking stores; it is the next step, and the staff line
 moves into each service's card with it.
+
+### The service list, the same evening
+
+The owner on the list of services: "smaller text, more padding top and bottom … Booksy has a small grey description,
+not fully visible, so something to read it in full when clicking … and they show the time small and grey just under
+the price."
+
+- Rows have more room above and below; the name and the price are 14 px.
+- How long a service takes moved from under the name to **under the price**, small and grey.
+- What the salon wrote about a service shows as **two grey lines under the row with "More"**; a tap opens all of it in
+  the same white sheet as "who with", with the price and length, **"← Back to the services"** and a Book button. It is
+  a link of its own, outside the row's link, so a tap on the row still books and a tap on the text reads.
+- "Book" is on the row on a phone too (it was only shown from `sm`).
+- Options of one service (variants) show no description yet.

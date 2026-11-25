@@ -49,7 +49,10 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
         html.ShouldContain("£85.00");
         html.ShouldContain("45 min");
         html.ShouldContain("90 min");
-        html.ShouldContain("Full head.");
+        // What the salon wrote: under the row as a link, and whole in the sheet that link opens.
+        html.ShouldContain("class=\"row-about\" data-testid=\"service-about\"><span class=\"row-about-text\">Full head.</span>");
+        html.ShouldContain("data-testid=\"service-sheet-text\">Full head.</p>");
+        html.ShouldContain("data-testid=\"service-duration\">90 min</span>");
         html.ShouldNotContain("data-testid=\"empty-state\"");
     }
 

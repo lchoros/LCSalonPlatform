@@ -68,20 +68,34 @@
                         if (!entry.IsVariantGroup)
                         {
                             var service = entry.Services[0];
-                            <li>
+                            <li id="s-@service.Id" class="scroll-mt-4">
                                 <a href="@Model.ServicePath(service.Id)" data-testid="book-service" class="choice-card accent-0">
                                     <span class="service-dot" aria-hidden="true">@Monogram.For(service.Name)</span>
                                     <span class="min-w-0 flex-1">
                                         <span class="block font-semibold leading-snug">@service.Name</span>
-                                        @if (service.Description is { } description)
-                                        {
-                                            <span class="block truncate text-sm text-stone-600">@description</span>
-                                        }
-                                        <span class="block text-sm text-stone-600" data-testid="service-duration">@T.Format("Booking.Public.DurationMinutes", (int)service.Duration.TotalMinutes)</span>
                                     </span>
-                                    <span class="shrink-0 font-semibold tabular-nums" data-testid="service-price" data-from="@(service.PriceIsFrom ? "true" : null)">@(service.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", service.Price.ToDisplayString(culture)) : service.Price.ToDisplayString(culture))</span>
+                                    @* The price, and how long it takes small and grey just under it (the owner, 2026-11-25). *@
+                                    <span class="row-figures">
+                                        <span class="tabular-nums" data-testid="service-price" data-from="@(service.PriceIsFrom ? "true" : null)">@(service.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", service.Price.ToDisplayString(culture)) : service.Price.ToDisplayString(culture))</span>
+                                        <span class="row-time tabular-nums" data-testid="service-duration">@T.Format("Booking.Public.DurationMinutes", (int)service.Duration.TotalMinutes)</span>
+                                    </span>
                                     <span class="row-book" aria-hidden="true">@T[Model.Adding is null ? "Booking.Public.BookRow" : "Booking.Public.AddRow"]</span>
                                 </a>
+                                @if (service.Description is { } description)
+                                {
+                                    @* What the salon wrote about it: two grey lines under the row, and a tap opens all of
+                                       it over the page, with a way back to this row and a way on to the booking. *@
+                                    <a href="#about-@service.Id" class="row-about" data-testid="service-about"><span class="row-about-text">@description</span><span class="row-about-more">@T["Booking.Public.ReadMore"]<span class="sr-only">: @service.Name</span></span></a>
+                                    <div id="about-@service.Id" class="sheet" role="dialog" aria-modal="true" aria-labelledby="about-title-@service.Id" data-testid="service-sheet">
+                                        <div class="sheet-body">
+                                            <a href="#s-@service.Id" class="back-link" data-testid="service-sheet-back">&larr; @T["Booking.Public.BackToList"]</a>
+                                            <h2 id="about-title-@service.Id" class="book-title">@service.Name</h2>
+                                            <p class="text-sm text-slate-600 tabular-nums">@(service.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", service.Price.ToDisplayString(culture)) : service.Price.ToDisplayString(culture)) · @T.Format("Booking.Public.DurationMinutes", (int)service.Duration.TotalMinutes)</p>
+                                            <p class="whitespace-pre-line text-slate-700" data-testid="service-sheet-text">@description</p>
+                                            <a href="@Model.ServicePath(service.Id)" class="btn btn-primary w-full" data-testid="service-sheet-book">@T[Model.Adding is null ? "Booking.Public.BookRow" : "Booking.Public.AddRow"]</a>
+                                        </div>
+                                    </div>
+                                }
                             </li>
                         }
                         else
@@ -107,9 +121,11 @@
                                                 <a href="@Model.ServicePath(variant.Id)" data-testid="book-variant" class="variant-link">
                                                     <span class="flex min-w-0 flex-col">
                                                         <span class="variant-name font-medium">@variant.Name</span>
-                                                        <span class="text-sm text-stone-600">@T.Format("Booking.Public.DurationMinutes", (int)variant.Duration.TotalMinutes)</span>
                                                     </span>
-                                                    <span class="shrink-0 font-semibold tabular-nums" data-testid="service-price" data-from="@(variant.PriceIsFrom ? "true" : null)">@(variant.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", variant.Price.ToDisplayString(culture)) : variant.Price.ToDisplayString(culture))</span>
+                                                    <span class="row-figures">
+                                                        <span class="tabular-nums" data-testid="service-price" data-from="@(variant.PriceIsFrom ? "true" : null)">@(variant.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", variant.Price.ToDisplayString(culture)) : variant.Price.ToDisplayString(culture))</span>
+                                                        <span class="row-time tabular-nums">@T.Format("Booking.Public.DurationMinutes", (int)variant.Duration.TotalMinutes)</span>
+                                                    </span>
                                                     <span class="row-book" aria-hidden="true">@T[Model.Adding is null ? "Booking.Public.BookRow" : "Booking.Public.AddRow"]</span>
                                                 </a>
                                             </li>

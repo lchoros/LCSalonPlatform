@@ -64,6 +64,15 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         (await page.GetByTestId("book-service").CountAsync()).ShouldBe(Services.Length);
         interaction.Stop();
         await CaptureAsync(page, "book-services-mobile-390.png");
+        // What the salon wrote about a service: two lines under its row, all of it in a sheet on a tap, and a way back.
+        await Assertions.Expect(page.GetByTestId("service-sheet-text")).ToBeHiddenAsync();
+        await page.GetByTestId("service-about").TapAsync();
+        await Assertions.Expect(page.GetByTestId("service-sheet-text")).ToBeVisibleAsync();
+        await page.WaitForFunctionAsync("() => getComputedStyle(document.querySelector('[data-testid=service-sheet]')).opacity === '1'");
+        (await page.GetByTestId("service-sheet-text").TextContentAsync()).ShouldNotBeNull().ShouldEndWith("very thick hair.");
+        await CaptureAsync(page, "book-service-about-mobile-390.png");
+        await page.GetByTestId("service-sheet-back").TapAsync();
+        await Assertions.Expect(page.GetByTestId("service-sheet-text")).ToBeHiddenAsync();
         interaction.Start();
         await page.GetByTestId("book-service").First.TapAsync();
         await page.ReachAsync(url => url.Contains("/book/", StringComparison.Ordinal) && !url.EndsWith("/book", StringComparison.Ordinal));

@@ -114,6 +114,8 @@
   "Booking.Public.RemoveService": "Usuń",
   "Booking.Public.NobodyOffersAll": "Nikt tutaj nie wykonuje wszystkich tych usług podczas jednej wizyty. Usuń jedną albo zarezerwuj je osobno.",
   "Booking.Public.AddAfterTime": "Najpierw wybierz godzinę; potem możesz dodać kolejną usługę.",
+  "Booking.Public.ReadMore": "Więcej",
+  "Booking.Public.BackToList": "Wróć do usług",
   "Booking.Public.AddServiceTitle": "Dodaj kolejną usługę",
   "Booking.Public.AddServiceLead": "Odbędzie się zaraz po wybranych usługach, u tej samej osoby.",
   "Booking.Public.BackToBooking": "Wróć do rezerwacji",
