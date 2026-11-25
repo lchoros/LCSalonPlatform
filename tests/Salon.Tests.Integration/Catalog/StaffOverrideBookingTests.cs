@@ -144,17 +144,17 @@ public partial class StaffOverrideBookingTests(SalonWebApplicationFactory factor
     public async Task The_public_list_shows_a_from_price_only_while_prices_differ_between_staff()
     {
         using var visitor = factory.ClientFor(HostA);
-        PriceTag(await GetAsync(visitor, "/services")).ShouldBe("£40.00");
+        PriceTag(await GetAsync(visitor, "/book")).ShouldBe("£40.00");
 
         await AddOverrideAsync(_studio.Id, _annaId, _cutId, 60, 45m, offers: true);
-        var withOverride = await GetAsync(visitor, "/services");
+        var withOverride = await GetAsync(visitor, "/book");
         PriceTag(withOverride).ShouldBe("from £40.00");
         withOverride.ShouldContain("data-from=\"true\"");
         withOverride.ShouldContain("45 min", Case.Sensitive, "the default duration stays on the card");
 
         // Tom stops offering it: only Anna is left, so her price is the price.
         await AddOverrideAsync(_studio.Id, _tomId, _cutId, null, null, offers: false);
-        PriceTag(await GetAsync(visitor, "/services")).ShouldBe("£45.00");
+        PriceTag(await GetAsync(visitor, "/book")).ShouldBe("£45.00");
     }
 
     [Fact]
@@ -164,7 +164,7 @@ public partial class StaffOverrideBookingTests(SalonWebApplicationFactory factor
         await AddOverrideAsync(_polish.Id, anna, service, null, 95m, offers: true);
         using var visitor = factory.ClientFor("salon-pl.localhost");
 
-        var html = WebUtility.HtmlDecode(await GetAsync(visitor, "/services"));
+        var html = WebUtility.HtmlDecode(await GetAsync(visitor, "/book"));
 
         html.ShouldContain("od 80,00 zł");
     }

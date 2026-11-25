@@ -11,7 +11,7 @@ using Salon.Tests.Integration.Infrastructure;
 namespace Salon.Tests.Integration.Booking;
 
 /// <summary>
-/// The public price list over HTTP: only the tenant's active services in SortOrder, prices and durations formatted for
+/// The public list of services over HTTP, which since ADR 0094 is the booking page (<c>/services</c> leads to it): only the tenant's active services in SortOrder, prices and durations formatted for
 /// the salon's culture and currency, the empty state, the home-page link, and no list on the bare platform domain.
 /// </summary>
 [Collection(SharedDatabase.Name)]
@@ -40,7 +40,7 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
     {
         var html = await GetHtmlAsync("studio-20.localhost");
 
-        html.ShouldContain("data-testid=\"salon-name\">Studio 20<");
+        html.ShouldContain("Studio 20");
         html.ShouldContain("<html lang=\"en-GB\"");
         CardNames(html).ShouldBe(["Cut &amp; blow-dry", "Colour"]);
         html.ShouldNotContain("Retired perm");
@@ -59,8 +59,7 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
         var html = await GetHtmlAsync("salon-pl.localhost");
 
         html.ShouldContain("<html lang=\"pl-PL\"");
-        html.ShouldContain("Usługi");
-        html.ShouldContain("Nasze usługi, czas trwania i ceny.");
+        html.ShouldContain("Wybierz usługę");
         CardNames(html).ShouldBe(["Strzyżenie damskie"]);
         // The encoder writes the no-break space as &#xA0;; the reader sees "45,00 zł".
         WebUtility.HtmlDecode(html).ShouldContain("45,00\u00A0zł");
@@ -73,8 +72,8 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
         var html = await GetHtmlAsync("empty-salon.localhost");
 
         html.ShouldContain("data-testid=\"empty-state\"");
-        html.ShouldContain("This salon has not added any services yet.");
-        html.ShouldNotContain("data-testid=\"service-card\"");
+        html.ShouldContain("This salon has not opened online booking yet.");
+        html.ShouldNotContain("data-testid=\"book-service\"");
     }
 
     [Fact]
@@ -86,8 +85,8 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var html = await response.Content.ReadAsStringAsync();
-        html.ShouldContain("href=\"/services\"");
-        html.ShouldContain("Services and prices");
+        html.ShouldContain("href=\"/book\"");
+        html.ShouldNotContain("href=\"/services\"", Case.Sensitive, "one page lists the services and books them: one way in");
     }
 
     [Fact]
@@ -99,8 +98,7 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
 
         html.ShouldContain("data-testid=\"book-lead\">Book your appointment online at any time.");
         html.ShouldContain("<a href=\"/book\" data-testid=\"book-now\" class=\"btn btn-primary\">Book an appointment</a>");
-        html.IndexOf("data-testid=\"book-now\"", StringComparison.Ordinal)
-            .ShouldBeLessThan(html.IndexOf("data-testid=\"view-services\"", StringComparison.Ordinal), "booking is the first thing offered");
+        html.ShouldNotContain("data-testid=\"view-services\"", Case.Sensitive, "booking is the one thing offered");
         html.ShouldNotContain("opens here", Case.Insensitive, "no build notes on a page clients read");
     }
 
@@ -126,11 +124,22 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
     }
 
     [Fact]
+    public async Task The_old_address_of_the_price_list_leads_to_the_booking_page()
+    {
+        using var client = factory.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        client.DefaultRequestHeaders.Host = "studio-20.localhost";
+
+        var response = await client.GetAsync(new Uri("/services", UriKind.Relative));
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Redirect, "not permanent: the choice can be taken back");
+        response.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe("/book");
+    }
+
+    [Fact]
     public async Task Without_categories_the_list_is_flat_and_with_them_it_is_grouped_with_other_services_last()
     {
         var flat = await GetHtmlAsync("studio-20.localhost");
         flat.ShouldNotContain("data-testid=\"group-heading\"");
-        flat.ShouldContain("<h2 class=\"text-lg font-semibold leading-snug\">Cut &amp; blow-dry</h2>");
 
         await using (var scope = factory.CreateTenantScope(_studio.Id))
         {
@@ -145,7 +154,6 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
 
         GroupHeadings(grouped).ShouldBe(["Hair", "Other services"]);
         CardNames(grouped).ShouldBe(["Colour", "Cut &amp; blow-dry"]);
-        grouped.ShouldContain("<h3 class=\"text-lg font-semibold leading-snug\">Colour</h3>");
         grouped.ShouldNotContain("Retired perm");
 
         var polish = await GetHtmlAsync("salon-pl.localhost");
@@ -162,7 +170,7 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
     private async Task<string> GetHtmlAsync(string host)
     {
         using var client = ClientFor(host);
-        var response = await client.GetAsync(new Uri("/services", UriKind.Relative));
+        var response = await client.GetAsync(new Uri("/book", UriKind.Relative));
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         return await response.Content.ReadAsStringAsync();
     }
@@ -191,8 +199,8 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
         await db.SaveChangesAsync();
     }
 
-    /// <summary>The heading inside each service card, in document order (h2 on a flat list, h3 under a category heading).</summary>
-    [GeneratedRegex("data-testid=\"service-card\">\\s*<div[^>]*>\\s*<h[23][^>]*>(?<name>[^<]+)</h[23]>")]
+    /// <summary>The name on each service row, in document order.</summary>
+    [GeneratedRegex("data-testid=\"book-service\".*?<span class=\"block font-semibold leading-snug\">(?<name>[^<]+)</span>", RegexOptions.Singleline)]
     private static partial Regex CardNamePattern();
 
     /// <summary>The text of each category heading, in document order.</summary>

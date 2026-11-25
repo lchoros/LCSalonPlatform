@@ -15,6 +15,9 @@
     // The dashboard shell belongs to the salon's back office only (the owner, 2026-11-20): a signed-in person on the
     // public pages sees them exactly as a client does, plus one quiet way back into the admin.
     var adminShell = signedIn && Context.Request.Path.StartsWithSegments("/admin");
+    // Inside a booking (ADR 0094) the page is only the booking: no salon bar, no other way to wander off than its own
+    // close button. The footer stays — the privacy notice must always be one tap away (ADR 0063).
+    var focused = ViewData["Focused"] is true;
     // A client on a salon's host sees the salon's name where staff see the platform brand (ADR 0014: trust first).
     // The lookup is cached per tenant, so this costs nothing on a hot path.
     var salonName = !signedIn && TenantContext.TenantId is { } tenantId
@@ -135,6 +138,8 @@
     else
     {
         <div class="flex min-h-screen flex-col">
+            @if (!focused)
+            {
             <header class="brand-line border-b border-stone-200 bg-white screen-only">
                 <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2">
                     @if (salonName is not null)
@@ -157,6 +162,7 @@
                     }
                 </div>
             </header>
+            }
             <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
                 @RenderBody()
             </main>

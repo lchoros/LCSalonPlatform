@@ -72,7 +72,8 @@ public class DemoSeederTests(SalonWebApplicationFactory factory) : IAsyncLifetim
         using var client = factory.CreateClient();
         client.DefaultRequestHeaders.Host = "studio-20.localhost";
 
-        var response = await client.GetAsync(new Uri("/services", UriKind.Relative));
+        // The booking page is the price list (ADR 0094); it pages a long catalogue, so the service is searched for.
+        var response = await client.GetAsync(new Uri("/book?q=Olaplex", UriKind.Relative));
 
         response.IsSuccessStatusCode.ShouldBeTrue();
         var html = await response.Content.ReadAsStringAsync();

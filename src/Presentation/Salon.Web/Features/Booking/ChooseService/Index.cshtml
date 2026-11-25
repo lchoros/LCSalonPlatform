@@ -61,9 +61,9 @@
                                         {
                                             <span class="block truncate text-sm text-stone-600">@description</span>
                                         }
-                                        <span class="block text-sm text-stone-600">@T.Format("Booking.Public.DurationMinutes", (int)service.Duration.TotalMinutes)</span>
+                                        <span class="block text-sm text-stone-600" data-testid="service-duration">@T.Format("Booking.Public.DurationMinutes", (int)service.Duration.TotalMinutes)</span>
                                     </span>
-                                    <span class="shrink-0 font-semibold tabular-nums">@service.Price.ToDisplayString(culture)</span>
+                                    <span class="shrink-0 font-semibold tabular-nums" data-testid="service-price" data-from="@(service.PriceIsFrom ? "true" : null)">@(service.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", service.Price.ToDisplayString(culture)) : service.Price.ToDisplayString(culture))</span>
                                     <span class="row-book" aria-hidden="true">@T["Booking.Public.BookRow"]</span>
                                 </a>
                             </li>
@@ -93,7 +93,7 @@
                                                         <span class="variant-name font-medium">@variant.Name</span>
                                                         <span class="text-sm text-stone-600">@T.Format("Booking.Public.DurationMinutes", (int)variant.Duration.TotalMinutes)</span>
                                                     </span>
-                                                    <span class="shrink-0 font-semibold tabular-nums">@variant.Price.ToDisplayString(culture)</span>
+                                                    <span class="shrink-0 font-semibold tabular-nums" data-testid="service-price" data-from="@(variant.PriceIsFrom ? "true" : null)">@(variant.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", variant.Price.ToDisplayString(culture)) : variant.Price.ToDisplayString(culture))</span>
                                                     <span class="row-book" aria-hidden="true">@T["Booking.Public.BookRow"]</span>
                                                 </a>
                                             </li>
@@ -108,5 +108,4 @@
         }
         <partial name="_Pager" model="Model.Pager" />
     }
-    @await Component.InvokeAsync("SalonContact")
 </section>

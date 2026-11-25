@@ -53,4 +53,6 @@ public sealed record BookableEntry(
     Money MaxPrice);
 
 /// <summary>One bookable service; the price carries its currency so the view formats it for the reader.</summary>
-public sealed record BookableService(Guid Id, string Name, string? Description, Duration Duration, Money Price);
+/// <param name="Price">The price every person who offers it charges, or the cheapest when <paramref name="PriceIsFrom"/>.</param>
+/// <param name="PriceIsFrom">Staff charge differently for it, so the page says "from" (ADR 0018).</param>
+public sealed record BookableService(Guid Id, string Name, string? Description, Duration Duration, Money Price, bool PriceIsFrom = false);

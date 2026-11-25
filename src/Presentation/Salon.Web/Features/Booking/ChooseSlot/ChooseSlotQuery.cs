@@ -7,12 +7,18 @@ namespace Salon.Web.Features.Booking.ChooseSlot;
 /// <summary>
 /// Step 2 of the public booking flow (ADR 0014): the next days with free times for one service, for one person or for
 /// anyone. <paramref name="Date"/> picks the day to list; null (or a day outside the strip) means today or the first
-/// day with a free time. <paramref name="StaffMemberId"/> null means "anyone available". <paramref name="From"/> slides
+/// day with a free time. <paramref name="StaffMemberId"/> null with <paramref name="Anyone"/> means
+/// "anyone available"; null without it means the visitor has not said yet, and where more than one person offers the
+/// service no times are shown until they do (the owner, 2026-11-22). <paramref name="From"/> slides
 /// the date strip's window towards the salon's booking horizon; null, the past or beyond the horizon means today.
 /// <paramref name="Start"/> is the tapped time: it marks the slot chosen and brings out the Continue button, and only
 /// a start that is genuinely free right now counts (a stale link quietly deselects). A query: tenant required.
 /// </summary>
-public sealed record ChooseSlotQuery(Guid ServiceId, LocalDate? Date, Guid? StaffMemberId, LocalDate? From = null, Instant? Start = null) : IQuery<ChooseSlotResult?>;
+public sealed record ChooseSlotQuery(Guid ServiceId, LocalDate? Date, Guid? StaffMemberId, LocalDate? From = null, Instant? Start = null, bool Anyone = false) : IQuery<ChooseSlotResult?>
+{
+    /// <summary>The <c>staff</c> value in the address that says "anyone available" was chosen.</summary>
+    public const string AnyStaff = "any";
+}
 
 /// <param name="Days">The date strip, in order; <see cref="DayOption.HasSlots"/> marks days worth tapping.</param>
 /// <param name="Slots">Free starts on <see cref="SelectedDate"/>, in order; for "anyone" one per start.</param>
@@ -30,6 +36,15 @@ public sealed record ChooseSlotResult(
     IReadOnlyList<SlotOption> Slots,
     DateTimeZone Zone)
 {
+    /// <summary>More than one person offers the service and the visitor has not said who (or "anyone") yet: no days, no times.</summary>
+    public bool NeedsStaffChoice { get; init; }
+
+    /// <summary>The address asked for <see cref="SelectedDate"/> itself (a link from a message does): the answer to "who with" keeps it.</summary>
+    public bool DayAsked { get; init; }
+
+    /// <summary>"Anyone available" was chosen, as against nothing chosen yet.</summary>
+    public bool AnyoneChosen { get; init; }
+
     /// <summary>Whether the salon offers "tell me when a time comes up" (ADR 0055).</summary>
     public bool WaitlistOffered { get; init; }
 

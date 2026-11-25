@@ -135,7 +135,7 @@ public partial class ListStaffTests(SalonWebApplicationFactory factory) : IAsync
         receptionistHtml.ShouldNotContain("data-testid=\"nav-services\"");
 
         using var anonymous = factory.ClientFor("studio-20.localhost");
-        (await (await anonymous.GetAsync(new Uri("/services", UriKind.Relative))).Content.ReadAsStringAsync()).ShouldNotContain("data-testid=\"admin-nav\"");
+        (await (await anonymous.GetAsync(new Uri("/book", UriKind.Relative))).Content.ReadAsStringAsync()).ShouldNotContain("data-testid=\"admin-nav\"");
     }
 
     [Fact]

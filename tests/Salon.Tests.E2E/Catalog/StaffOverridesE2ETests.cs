@@ -29,7 +29,7 @@ public class StaffOverridesE2ETests(KestrelAppFixture app) : IClassFixture<Kestr
         var page = await context.NewPageAsync();
 
         // The demo seed gives Anna her own price, so the public list already says "from" the list price.
-        await page.GotoAsync(app.TenantUrl(Slug) + "/services");
+        await page.GotoAsync(app.TenantUrl(Slug) + "/book");
         (await page.GetByTestId("service-price").First.TextContentAsync()).ShouldBe("from £16.00");
 
         await page.GotoAsync(app.TenantUrl(Slug) + "/admin/services");
@@ -72,7 +72,7 @@ public class StaffOverridesE2ETests(KestrelAppFixture app) : IClassFixture<Kestr
         await page.ReachAsync("**/admin/services");
         (await page.GetByTestId("flash").TextContentAsync()).ShouldBe("Staff prices and durations for “HAIR MEN 17: Haircut Scissors” have been saved.");
 
-        await page.GotoAsync(app.TenantUrl(Slug) + "/services");
+        await page.GotoAsync(app.TenantUrl(Slug) + "/book");
         (await page.GetByTestId("service-price").First.TextContentAsync()).ShouldBe("from £12.00");
         (await page.GetByTestId("service-duration").First.TextContentAsync()).ShouldBe("30 min");
         await page.ScreenshotAsync(new PageScreenshotOptions

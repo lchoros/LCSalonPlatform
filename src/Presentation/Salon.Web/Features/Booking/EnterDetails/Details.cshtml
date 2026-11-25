@@ -6,6 +6,7 @@
     var culture = CultureInfo.CurrentCulture;
     var local = s.Start.InZone(s.Zone).LocalDateTime;
     ViewData["Title"] = T["Booking.Public.YourDetails"];
+    ViewData["Focused"] = true;
 }
 <section class="mx-auto max-w-lg space-y-6">
     <header class="space-y-3">
@@ -35,7 +36,7 @@
             </div>
         </dl>
         @* Back to step 2 on the same day and strip window, with the same person (a mis-tapped time costs one tap). *@
-        <a href="/book/@Model.Form.ServiceId?date=@local.Date.ToIso()&from=@local.Date.ToIso()@(Model.Form.StaffMemberId is { } backSid ? $"&staff={backSid}" : string.Empty)" class="btn btn-compact btn-secondary ml-auto shrink-0" data-testid="change-time">@T["Booking.Public.ChangeTime"]</a>
+        <a href="/book/@Model.Form.ServiceId?date=@local.Date.ToIso()&from=@local.Date.ToIso()@(Model.Form.StaffMemberId is { } backSid ? $"&staff={backSid}" : "&staff=any")" class="btn btn-compact btn-secondary ml-auto shrink-0" data-testid="change-time">@T["Booking.Public.ChangeTime"]</a>
     </div>
 
     @if (s.Deposit is { } depositDue)
@@ -126,5 +127,4 @@
             @(s.RequireSmsVerification ? T["Booking.Public.SendCode"] : T["Booking.Public.Book"])
         </button>
     </form>
-    @await Component.InvokeAsync("SalonContact")
 </section>

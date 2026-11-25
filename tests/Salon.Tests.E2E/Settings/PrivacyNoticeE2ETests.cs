@@ -31,7 +31,7 @@ public class PrivacyNoticeE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         var visitor = await visitorContext.NewPageAsync();
 
         // 1. From the price list to the notice.
-        var response = await visitor.GotoAsync($"{app.TenantUrl(Slug)}/services");
+        var response = await visitor.GotoAsync($"{app.TenantUrl(Slug)}/book");
         response.ShouldNotBeNull().Ok.ShouldBeTrue();
         await visitor.GetByTestId("footer-privacy").ClickAsync();
         await visitor.ReachAsync("**/privacy");

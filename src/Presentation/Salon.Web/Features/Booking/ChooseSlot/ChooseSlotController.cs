@@ -10,8 +10,9 @@ using Salon.Web.Framework.Mvc;
 namespace Salon.Web.Features.Booking.ChooseSlot;
 
 /// <summary>
-/// Step 2 at <c>/book/{serviceId}?date=yyyy-MM-dd&amp;staff={id}&amp;start={instant}</c> (ADR 0014): a date strip, a
-/// person picker with "anyone available" first, and the free times of the chosen day. Tapping a time selects it on
+/// Step 2 at <c>/book/{serviceId}?date=yyyy-MM-dd&amp;staff={id}&amp;start={instant}</c> (ADR 0014): a person picker
+/// that has to be answered first where more than one person offers the service ("anyone available" is an answer,
+/// <c>staff=any</c>), a date strip, and the free times of the chosen day. Tapping a time selects it on
 /// this same page and the Continue button carries it to the details form (the owner's call, 2026-11-20) — all plain
 /// links, so the page works without JavaScript. An unknown day, person or start falls back quietly.
 /// </summary>
@@ -20,9 +21,12 @@ namespace Salon.Web.Features.Booking.ChooseSlot;
 public sealed class ChooseSlotController(IDispatcher dispatcher, ITenantContext tenantContext, ITenantLookup tenantLookup) : SalonControllerBase
 {
     [HttpGet("{serviceId:guid}")]
-    public async Task<IActionResult> Index(Guid serviceId, string? date, Guid? staff, string? from, string? start, CancellationToken cancellationToken)
+    public async Task<IActionResult> Index(Guid serviceId, string? date, string? staff, string? from, string? start, CancellationToken cancellationToken)
     {
-        var result = await dispatcher.SendAsync(new ChooseSlotQuery(serviceId, ParseDate(date), staff, ParseDate(from), ParseStart(start)), cancellationToken);
+        // "any" is a choice the visitor made; nothing at all is no choice yet (ADR 0094, stage 3).
+        var anyone = string.Equals(staff, ChooseSlotQuery.AnyStaff, StringComparison.OrdinalIgnoreCase);
+        Guid? staffId = Guid.TryParse(staff, out var id) ? id : null;
+        var result = await dispatcher.SendAsync(new ChooseSlotQuery(serviceId, ParseDate(date), staffId, ParseDate(from), ParseStart(start), anyone), cancellationToken);
         if (result is null)
         {
             return NotFound();

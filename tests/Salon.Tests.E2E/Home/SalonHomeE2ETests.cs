@@ -6,7 +6,7 @@ namespace Salon.Tests.E2E.Home;
 
 /// <summary>
 /// The salon's own front page on a phone (the English pass, ADR 0035): it invites a booking in plain words, the first
-/// button leads into the booking flow in one tap and the price list is the second choice.
+/// button leads into the booking flow in one tap, and that page is the price list too (ADR 0094).
 /// </summary>
 public class SalonHomeE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppFixture>
 {
@@ -35,7 +35,7 @@ public class SalonHomeE2ETests(KestrelAppFixture app) : IClassFixture<KestrelApp
         (await page.GetByTestId("book-lead").TextContentAsync()).ShouldBe("Book your appointment online at any time. Choose a service, pick a time and you're done.");
         var book = page.GetByTestId("book-now");
         (await book.TextContentAsync()).ShouldBe("Book an appointment");
-        (await page.GetByTestId("view-services").TextContentAsync()).ShouldBe("Services and prices");
+        (await page.GetByTestId("view-services").CountAsync()).ShouldBe(0, "the booking page is the price list too (ADR 0094): one way in");
         (await page.ContentAsync()).ShouldNotContain("opens here");
 
         // CI builds no Tailwind output, so layout (tap target, overflow) is only asserted when the stylesheet is present.
@@ -43,7 +43,6 @@ public class SalonHomeE2ETests(KestrelAppFixture app) : IClassFixture<KestrelApp
         if (styled)
         {
             (await book.BoundingBoxAsync()).ShouldNotBeNull().Height.ShouldBeGreaterThanOrEqualTo(44);
-            (await page.GetByTestId("view-services").BoundingBoxAsync()).ShouldNotBeNull().Height.ShouldBeGreaterThanOrEqualTo(44);
             (await page.EvaluateAsync<int>("() => document.documentElement.scrollWidth")).ShouldBeLessThanOrEqualTo(Width);
         }
 

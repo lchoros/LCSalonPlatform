@@ -82,7 +82,7 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
     {
         using var client = factory.ClientFor(HostA);
 
-        var anyone = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}");
+        var anyone = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff=any");
         var tomOnly = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff={_tomId}");
 
         anyone.ShouldContain("Choose a time");
@@ -99,12 +99,50 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
     }
 
     [Fact]
+    public async Task Step_2_asks_who_with_before_it_shows_a_day_or_a_time_when_more_than_one_person_offers_the_service()
+    {
+        using var client = factory.ClientFor(HostA);
+
+        var asked = await GetAsync(client, $"/book/{_serviceId}");
+
+        // Nobody is chosen for the visitor (the owner, 2026-11-22): the question stands alone until it is answered.
+        asked.ShouldContain("data-testid=\"staff-choice\"");
+        asked.ShouldContain("data-testid=\"staff-required\">Required</span>");
+        asked.ShouldContain("data-testid=\"choose-staff\">Choose a person, or ");
+        asked.ShouldNotContain("aria-current=\"true\"", Case.Sensitive, "neither \"anyone\" nor a person is marked as chosen");
+        asked.ShouldContain($"href=\"/book/{_serviceId}?staff=any\"", Case.Sensitive, "\"anyone available\" is an answer of its own");
+        asked.ShouldContain($"href=\"/book/{_serviceId}?staff={_tomId}\"");
+        asked.ShouldNotContain("data-testid=\"date-strip\"");
+        asked.ShouldNotContain("data-testid=\"slot\"");
+        asked.ShouldNotContain("data-testid=\"continue\"");
+        asked.ShouldContain("data-testid=\"summary-staff\">Not chosen yet</span>");
+
+        var anyone = await GetAsync(client, $"/book/{_serviceId}?staff=any&date={Iso(_day)}");
+
+        anyone.ShouldNotContain("data-testid=\"staff-required\"");
+        anyone.ShouldNotContain("data-testid=\"choose-staff\"");
+        anyone.ShouldContain("aria-current=\"true\" data-testid=\"staff-any\"");
+        anyone.ShouldContain("data-testid=\"summary-staff\">No preference</span>");
+        SlotHrefs(anyone).ShouldBe(await ExpectedSlotHrefsAsync(null));
+        DayCount(anyone).ShouldBe(14);
+
+        // A day the address asked for (a link from a message) is kept through the question.
+        var withDay = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}");
+        withDay.ShouldContain($"href=\"/book/{_serviceId}?staff=any&date={Iso(_day)}\"");
+
+        // A person who does not exist is no answer: the question again, not somebody else's times.
+        var stranger = await GetAsync(client, $"/book/{_serviceId}?staff={Guid.NewGuid()}");
+        stranger.ShouldContain("data-testid=\"choose-staff\"");
+        stranger.ShouldNotContain("data-testid=\"slot\"");
+    }
+
+    [Fact]
     public async Task The_date_strip_is_bounded_by_MaxAdvanceDays()
     {
         await SaveSettingsAsync(_studio.Id, s => s.MaxAdvanceDays = 3);
         using var client = factory.ClientFor(HostA);
 
-        var html = await GetAsync(client, $"/book/{_serviceId}");
+        var html = await GetAsync(client, $"/book/{_serviceId}?staff=any");
 
         DayCount(html).ShouldBe(4);
     }
@@ -116,13 +154,13 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         var today = SystemClock.Instance.GetCurrentInstant().InZone(London).Date;
 
         // The first window starts today: no way back, a way forward (the default horizon is 60 days out).
-        var first = await GetAsync(client, $"/book/{_serviceId}");
+        var first = await GetAsync(client, $"/book/{_serviceId}?staff=any");
         first.ShouldNotContain("data-testid=\"earlier-days\"");
         first.ShouldContain("data-testid=\"later-days\"");
         first.ShouldContain($"from={Iso(today.PlusDays(14))}");
 
         // The second window: fourteen later days, a way back to today, still a way forward.
-        var second = await GetAsync(client, $"/book/{_serviceId}?from={Iso(today.PlusDays(14))}");
+        var second = await GetAsync(client, $"/book/{_serviceId}?from={Iso(today.PlusDays(14))}&staff=any");
         DayCount(second).ShouldBe(14);
         second.ShouldContain($"date={Iso(today.PlusDays(14))}");
         second.ShouldContain("data-testid=\"earlier-days\"");
@@ -130,7 +168,7 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         second.ShouldContain("data-testid=\"later-days\"");
 
         // A window asked beyond the horizon is clamped to it and pages only back.
-        var last = await GetAsync(client, $"/book/{_serviceId}?from={Iso(today.PlusDays(200))}");
+        var last = await GetAsync(client, $"/book/{_serviceId}?from={Iso(today.PlusDays(200))}&staff=any");
         DayCount(last).ShouldBe(1);
         last.ShouldContain("data-testid=\"earlier-days\"");
         last.ShouldNotContain("data-testid=\"later-days\"");
@@ -142,7 +180,7 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         using var client = factory.ClientFor(HostA);
 
         // Anna works 09:00–17:00: mornings, early afternoons and late starts all exist on the page.
-        var html = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}");
+        var html = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff=any");
 
         html.ShouldContain("data-testid=\"slot-group\"");
         html.ShouldContain("Until 12:00");
@@ -158,17 +196,17 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         var encoded = Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(start));
 
         // Without a start nothing is chosen and there is no Continue.
-        var bare = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}");
+        var bare = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff=any");
         bare.ShouldNotContain("data-testid=\"continue\"");
 
         // The tap marks the time and brings out the Continue bar pointing at the details form.
-        var picked = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&start={encoded}");
+        var picked = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&start={encoded}&staff=any");
         picked.ShouldContain("is-chosen");
         picked.ShouldContain("data-testid=\"continue-bar\"");
         picked.ShouldContain($"/book/{_serviceId}/details?start={encoded}");
 
         // A start that is not free (or plain rubbish) quietly deselects instead of failing.
-        var stale = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&start=rubbish");
+        var stale = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&start=rubbish&staff=any");
         stale.ShouldNotContain("data-testid=\"continue\"");
     }
 
@@ -604,7 +642,7 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         await using var scope = factory.CreateTenantScope(_studio.Id);
         var slots = await scope.ServiceProvider.GetRequiredService<IAvailabilityService>().GetSlotsAsync(_serviceId, staffId, _day, _day);
         slots.ShouldNotBeEmpty();
-        var suffix = staffId is { } s ? $"&staff={s}" : string.Empty;
+        var suffix = staffId is { } s ? $"&staff={s}" : "&staff=any";
         var today = SystemClock.Instance.GetCurrentInstant().InZone(London).Date;
         return slots.Select(slot => $"/book/{_serviceId}?date={Iso(_day)}&from={Iso(today)}&start={Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(slot.Start))}{suffix}").ToList();
     }

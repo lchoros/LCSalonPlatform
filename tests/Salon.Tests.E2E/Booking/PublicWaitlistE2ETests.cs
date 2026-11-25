@@ -56,6 +56,7 @@ public class PublicWaitlistE2ETests(KestrelAppFixture app) : IClassFixture<Kestr
             var styled = await StylesheetLoadedAsync(page);
             await page.GetByTestId("book-service").First.ClickAsync();
             await page.ReachAsync(url => url.Contains("/book/", StringComparison.Ordinal) && !url.EndsWith("/book", StringComparison.Ordinal));
+            await page.ChooseAnyoneAsync();
             await page.GetByTestId("join-waitlist").ClickAsync();
             await page.ReachAsync(url => url.Contains("/waitlist", StringComparison.Ordinal));
 
