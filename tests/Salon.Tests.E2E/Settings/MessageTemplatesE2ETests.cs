@@ -7,9 +7,10 @@ using Salon.Tests.E2E.Infrastructure;
 namespace Salon.Tests.E2E.Settings;
 
 /// <summary>
-/// The demo owner on a phone opens Settings, Messages, rewrites the booking confirmation text, previews it without
-/// saving, saves it, sees it marked as the salon's own wording on the list, and goes back to the standard wording
-/// (ADR 0030). 390 px, axe clean, no horizontal scroll.
+/// The demo owner on a phone opens Settings, Messages, rewrites the booking confirmation text, puts a tag in with one
+/// tap where the cursor is and watches the example and the count of texts follow (ADR 0098), sees a tag the message
+/// does not have marked and refused, saves, finds the wording kept after a reload, sees it marked as the salon's own
+/// on the list, and puts back the standard text after saying yes (ADR 0030). 390 px, axe clean, no horizontal scroll.
 /// </summary>
 public class MessageTemplatesE2ETests(KestrelAppFixture app) : IClassFixture<KestrelAppFixture>
 {
@@ -18,12 +19,13 @@ public class MessageTemplatesE2ETests(KestrelAppFixture app) : IClassFixture<Kes
     private const string Password = "Studio20!e2e";
 
     [Fact]
-    public async Task The_owner_rewrites_a_message_previews_it_saves_it_and_goes_back_on_a_phone()
+    public async Task The_owner_rewrites_a_message_with_a_tapped_tag_saves_it_and_puts_back_the_standard_text_on_a_phone()
     {
         var tenantId = await app.EnsureTenantAsync(Slug, "Studio 20", [("Cut & blow-dry", 45, 45m)]);
         await app.EnsureUserAsync(tenantId, Email, "Studio 20 Owner", Role.Owner, Password);
         // A word no earlier run can have left behind, so the assertions below prove this save.
         var marker = "Ref" + Random.Shared.Next(1000, 9999).ToString(CultureInfo.InvariantCulture);
+        var typed = "Hello, see you on {{AppointmentStart}}. " + marker;
         var wording = "Hello {{ClientFirstName}}, see you on {{AppointmentStart}}. " + marker;
         await using var context = await app.Browser.NewContextAsync(new BrowserNewContextOptions
         {
@@ -49,38 +51,73 @@ public class MessageTemplatesE2ETests(KestrelAppFixture app) : IClassFixture<Kes
         await page.GetByTestId("edit-Booking.Confirmation-Sms").ClickAsync();
         await page.ReachAsync("**/admin/settings/messages/Booking.Confirmation/sms");
 
-        // 2. A preview shows the typed text with made-up details and says it is not saved.
-        await page.GetByTestId("body").FillAsync(wording);
-        await page.GetByTestId("preview-message").ClickAsync();
-        await page.ReachAsync("**/admin/settings/messages/Booking.Confirmation/sms/preview");
-        (await page.GetByTestId("preview-unsaved").IsVisibleAsync()).ShouldBeTrue();
-        (await page.GetByTestId("preview-body").TextContentAsync()).ShouldNotBeNull().ShouldStartWith("Hello Olivia, see you on ");
-        (await page.GetByTestId("preview-length").GetAttributeAsync("data-segments")).ShouldBe("1");
-        (await page.GetByTestId("body").InputValueAsync()).ShouldBe(wording);
+        // 2. The script is on: the tags are buttons, and the example follows the box, so the Preview button steps aside.
+        var chip = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Client's first name" });
+        await Assertions.Expect(chip).ToBeEnabledAsync();
+        (await page.GetByTestId("preview-message").IsHiddenAsync()).ShouldBeTrue("the example is live, so the server's preview is only the way without script");
+        (await page.GetByTestId("tag-Code").CountAsync()).ShouldBe(0, "the confirmation has no code to offer");
+        var body = page.GetByTestId("body");
+        await body.FillAsync(typed);
+        (await page.GetByTestId("preview-body").TextContentAsync()).ShouldNotBeNull().ShouldStartWith("Hello, see you on ");
+        var countBefore = await page.GetByTestId("preview-length").TextContentAsync();
 
-        // 3. A placeholder the message does not have is refused next to the field.
-        await page.GetByTestId("body").FillAsync(wording + " {{Price}}");
+        // 3. A tap in the box after "Hello", a tap on the tag: it goes in at the cursor with a space before it, the cursor
+        // waits after it in the box, and the example and the count follow at once.
+        await body.ClickAsync();
+        await body.PressAsync("Control+Home");
+        for (var i = 0; i < "Hello".Length; i++)
+        {
+            await body.PressAsync("ArrowRight");
+        }
+
+        await chip.ClickAsync();
+        (await body.InputValueAsync()).ShouldBe(wording);
+        (await page.EvaluateAsync<string>("() => document.activeElement?.id")).ShouldBe("body", "the focus goes back to the box");
+        (await body.EvaluateAsync<int>("b => b.selectionStart")).ShouldBe("Hello {{ClientFirstName}}".Length);
+        (await page.GetByTestId("preview-body").TextContentAsync()).ShouldNotBeNull().ShouldStartWith("Hello Olivia, see you on ");
+        (await page.GetByTestId("preview-body").Locator("mark.tag-value").First.TextContentAsync()).ShouldBe("Olivia");
+        var countAfter = await page.GetByTestId("preview-length").TextContentAsync();
+        countAfter.ShouldNotBe(countBefore, "the name adds characters to the example");
+        countAfter.ShouldNotBeNull().ShouldStartWith("Texts needed: 1.");
+        (await page.GetByTestId("preview-length").GetAttributeAsync("data-segments")).ShouldBe("1");
+        await CheckPageAsync(page, styled, "tag-ClientFirstName", "message-tags-mobile-390.png");
+
+        // 4. A tag the message does not have is marked in the example as the person types, and refused on saving.
+        await body.FillAsync(wording + " {{Price}}");
+        (await page.GetByTestId("preview-body").Locator("mark.tag-unknown").TextContentAsync()).ShouldBe("{{Price}} unknown tag");
         await page.GetByTestId("save-message").ClickAsync();
+        // The page that answers has the same address; wait for its refusal, then for the cross-fade to end.
+        await Assertions.Expect(page.GetByTestId("body-error")).ToContainTextAsync("This message cannot use {{Price}}.");
+        await page.ReachAsync("**/admin/settings/messages/Booking.Confirmation/sms");
         (await page.GetByTestId("body-error").TextContentAsync()).ShouldNotBeNull().ShouldStartWith("This message cannot use {{Price}}.");
+        (await page.GetByTestId("preview-body").Locator("mark.tag-unknown").TextContentAsync()).ShouldBe("{{Price}} unknown tag", "the server marks the same tag");
         await CheckPageAsync(page, styled, "save-message", "message-edit-error-mobile-390.png");
 
-        // 4. Saved: the page says so and offers the way back to the standard wording.
-        await page.GetByTestId("body").FillAsync(wording);
+        // 5. Saved: the page says so, and after a reload the wording, the example and the count are the ones typed.
+        await body.FillAsync(wording);
+        var countTyped = await page.GetByTestId("preview-length").TextContentAsync();
         await page.GetByTestId("save-message").ClickAsync();
         (await page.GetByTestId("flash").TextContentAsync()).ShouldBe("The message has been saved.");
+        await page.ReloadAsync();
+        await page.ReachAsync("**/admin/settings/messages/Booking.Confirmation/sms");
         (await page.GetByTestId("status").TextContentAsync()).ShouldBe("Your own wording");
+        (await body.InputValueAsync()).ShouldBe(wording);
         (await page.GetByTestId("preview-body").TextContentAsync()).ShouldNotBeNull().ShouldEndWith(marker);
+        (await page.GetByTestId("preview-length").TextContentAsync()).ShouldBe(countTyped, "the browser counts the way the server does");
         await CheckPageAsync(page, styled, "save-message", "message-edit-mobile-390.png");
 
-        // 5. The list marks that one message as the salon's own.
+        // 6. The list marks that one message as the salon's own.
         await page.GetByTestId("back-to-messages").ClickAsync();
         await page.ReachAsync("**/admin/settings/messages");
         (await page.GetByTestId("status-Booking.Confirmation-Sms").TextContentAsync()).ShouldBe("Your own wording");
 
-        // 6. Back to the standard wording, so the salon is left as it was found.
+        // 7. Put back the standard text, after saying yes, so the salon is left as it was found.
         await page.GetByTestId("edit-Booking.Confirmation-Sms").ClickAsync();
         await page.ReachAsync("**/admin/settings/messages/Booking.Confirmation/sms");
+        await page.GetByTestId("reset-jump").ClickAsync();
         await page.GetByTestId("reset-message").ClickAsync();
+        (await page.GetByTestId("reset-yes").IsVisibleAsync()).ShouldBeTrue("the first tap only asks");
+        await page.GetByTestId("reset-yes").ClickAsync();
         (await page.GetByTestId("flash").TextContentAsync()).ShouldBe("The standard wording is in use again.");
         (await page.GetByTestId("status").TextContentAsync()).ShouldBe("Standard wording");
         (await page.GetByTestId("body").InputValueAsync()).ShouldStartWith("Hi {{ClientFirstName}}, your {{ServiceName}}");

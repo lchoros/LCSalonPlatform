@@ -3,10 +3,11 @@
 @model MessageTemplateEditViewModel
 @{
     var details = Model.Details;
+    var preview = Model.Preview;
     var isEmail = details.Channel == MessageChannel.Email;
     var name = T[$"Settings.Messages.Name.{details.Key}"];
     var channel = T[$"Settings.Messages.Channel.{details.Channel}"];
-    var path = MessageTemplatesController.EditPath(details.Key, details.Channel);
+    var unknownLabel = T["Settings.Messages.UnknownTag"];
     ViewData["Title"] = $"{name} · {channel}";
     const string inputClass = "field field-compact aria-[invalid=true]:border-red-600";
     const string primaryClass = "btn btn-compact btn-primary w-full sm:w-auto";
@@ -21,7 +22,13 @@
         <a href="@MessageTemplatesController.Path" data-testid="back-to-messages" class="inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-2">&larr; @T["Settings.Messages.Back"]</a>
         <h1 class="page-title">@name <span class="font-normal text-stone-600">· @channel</span></h1>
         <p class="text-stone-600">@T[$"Settings.Messages.When.{details.Key}"]</p>
-        <p><span class="rounded px-1.5 py-0.5 text-xs font-medium @(details.IsOwn ? "bg-green-100 text-green-900" : "bg-stone-100 text-stone-800")" data-testid="status">@T[details.IsOwn ? "Settings.Messages.Own" : "Settings.Messages.Standard"]</span></p>
+        <p class="flex flex-wrap items-center gap-x-3">
+            <span class="rounded px-1.5 py-0.5 text-xs font-medium @(details.IsOwn ? "bg-green-100 text-green-900" : "bg-stone-100 text-stone-800")" data-testid="status">@T[details.IsOwn ? "Settings.Messages.Own" : "Settings.Messages.Standard"]</span>
+            @if (details.IsOwn)
+            {
+                <a href="#standard" class="btn-link" data-testid="reset-jump">@T["Settings.Messages.Reset"]</a>
+            }
+        </p>
     </header>
 
     @if (Model.Flash is { } flash)
@@ -29,76 +36,99 @@
         <p role="status" data-testid="flash" class="notice notice-ok">@flash</p>
     }
 
-    <form method="post" action="@path" asp-antiforgery="true" class="@cardClass" novalidate data-testid="message-form">
+    @* The boxes keep the real {{Name}} syntax, so what is saved and checked is what was always saved and checked. The
+       script (ADR 0098) makes the tags tappable and the preview live; without it the tags are a list to read and the
+       preview is the one this page was sent with. *@
+    <form method="post" action="@MessageTemplatesController.EditPath(details.Key, details.Channel)" asp-antiforgery="true" class="@cardClass" novalidate
+          data-testid="message-form" data-message-form data-pattern="@MessageTemplateRenderer.PlaceholderPattern" data-unknown-label="@unknownLabel">
+        <div class="tag-panel" data-testid="tags">
+            <h2 id="tags-title" class="text-sm font-semibold">@T["Settings.Messages.Placeholders"]</h2>
+            <p class="field-hint" data-when-script hidden>@T["Settings.Messages.TagsHint"]</p>
+            <p class="field-hint" data-when-noscript>@T["Settings.Messages.PlaceholdersHint"]</p>
+            <ul class="tag-chips" aria-labelledby="tags-title" data-tag-chips>
+                @foreach (var tag in preview.Tags)
+                {
+                    <li>
+                        <button type="button" class="tag-chip" data-tag="@tag.Name" data-sample="@tag.Sample" data-testid="tag-@tag.Name" disabled>
+                            <svg class="tag-plus size-4" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10" /></svg>
+                            <span>@T[$"Settings.Messages.Token.{tag.Name}"]</span>
+                            <code class="tag-code">@MessageEditText.Placeholder(tag.Name)</code>
+                            @if (tag.Required)
+                            {
+                                <span class="tag-required">@T["Settings.Messages.Required"]</span>
+                            }
+                        </button>
+                    </li>
+                }
+            </ul>
+            <p id="tags-explain" class="field-hint">@T["Settings.Messages.TagsExplain"]</p>
+        </div>
+
         @if (isEmail)
         {
             <div class="space-y-1">
                 <label for="subject" class="field-label">@T["Settings.Messages.Subject"]</label>
-                <input id="subject" name="subject" type="text" value="@Model.Subject" maxlength="@MessageTemplateRules.SubjectMaxLength" required
-                       aria-describedby="subject-error" aria-invalid="@(subjectErrors.Count > 0 ? "true" : "false")" class="@inputClass" data-testid="subject" />
+                <input id="subject" name="subject" type="text" value="@Model.Subject" maxlength="@MessageTemplateRules.SubjectMaxLength" required data-tag-target
+                       aria-describedby="tags-explain subject-error" aria-invalid="@(subjectErrors.Count > 0 ? "true" : "false")" class="@inputClass" data-testid="subject" />
                 <p id="subject-error" class="text-sm text-red-700" data-testid="subject-error">@string.Join(" ", subjectErrors)</p>
+                @if (preview.Subject is { } previewSubject)
+                {
+                    <div class="message-preview">
+                        <p id="subject-preview-title" class="message-preview-title">@T["Settings.Messages.PreviewSubject"]</p>
+                        <p class="message-preview-text font-semibold" data-preview-of="subject" aria-live="polite" data-testid="preview-subject">@MessageEditText.Preview(previewSubject, unknownLabel)</p>
+                    </div>
+                }
             </div>
         }
+
         <div class="space-y-1">
             <label for="body" class="field-label">@T["Settings.Messages.Body"]</label>
-            <textarea id="body" name="body" rows="@(isEmail ? 9 : 5)" maxlength="@MessageTemplateRules.BodyMaxLength(details.Channel)" required
-                      aria-describedby="placeholders-hint body-error" aria-invalid="@(bodyErrors.Count > 0 ? "true" : "false")" class="@inputClass" data-testid="body">@Model.Body</textarea>
+            <textarea id="body" name="body" rows="@(isEmail ? 9 : 5)" maxlength="@MessageTemplateRules.BodyMaxLength(details.Channel)" required data-tag-target
+                      aria-describedby="tags-explain body-error" aria-invalid="@(bodyErrors.Count > 0 ? "true" : "false")" class="@inputClass" data-testid="body">@Model.Body</textarea>
             <p id="body-error" class="text-sm text-red-700" data-testid="body-error">@string.Join(" ", bodyErrors)</p>
-        </div>
-
-        <div class="space-y-2 rounded-md bg-stone-50 p-3" data-testid="placeholders">
-            <h2 class="text-sm font-semibold">@T["Settings.Messages.Placeholders"]</h2>
-            <p id="placeholders-hint" class="text-sm text-stone-600">@T["Settings.Messages.PlaceholdersHint"]</p>
-            <dl class="grid grid-cols-1 gap-x-4 gap-y-1 text-sm sm:grid-cols-[auto_1fr]">
-                @foreach (var token in details.Placeholders)
+            <div class="message-preview" data-testid="preview">
+                <h2 id="preview-title" class="message-preview-title">@T["Settings.Messages.PreviewTitle"] <span class="font-normal text-stone-600">· @T["Settings.Messages.PreviewHint"]</span></h2>
+                @if (Model.Unsaved)
                 {
-                    <dt><code class="rounded bg-white px-1 py-0.5 font-mono">@("{{" + token + "}}")</code></dt>
-                    <dd class="text-stone-700">@T[$"Settings.Messages.Token.{token}"]@if (details.Required.Contains(token)) {<span class="font-medium">, @T["Settings.Messages.Required"]</span>}</dd>
+                    <p role="status" class="notice notice-warn" data-testid="preview-unsaved">@T["Settings.Messages.PreviewUnsaved"]</p>
                 }
-            </dl>
+                <p class="message-preview-text" data-preview-of="body" aria-live="polite" data-testid="preview-body">@MessageEditText.Preview(preview.Body, unknownLabel)</p>
+                @if (preview.Length is { } length)
+                {
+                    <p class="text-sm font-medium text-stone-800" data-sms-count data-format="@T["Settings.Messages.Length"]" data-testid="preview-length" data-segments="@length.Segments">@T.Format("Settings.Messages.Length", length.Segments, length.Characters)</p>
+                    <p class="field-hint" data-testid="preview-estimate">@T["Settings.Messages.LengthEstimate"]</p>
+                    <p class="text-sm text-amber-900" data-sms-unicode data-testid="preview-unicode" hidden="@(!length.IsUnicode)">@T["Settings.Messages.LengthUnicode"]</p>
+                }
+            </div>
         </div>
 
         <div class="flex flex-col gap-2 sm:flex-row">
             <button type="submit" class="@primaryClass" data-testid="save-message">@T["Settings.Messages.Save"]</button>
-            <button type="submit" formaction="@(path + "/preview")" class="@secondaryClass" data-testid="preview-message">@T["Settings.Messages.Preview"]</button>
+            <button type="submit" formaction="@MessageTemplatesController.PreviewPath(details.Key, details.Channel)" class="@secondaryClass" data-testid="preview-message" data-when-noscript>@T["Settings.Messages.Preview"]</button>
         </div>
     </form>
 
-    <section class="@cardClass" data-testid="preview" aria-labelledby="preview-title">
-        <h2 id="preview-title" class="text-lg font-semibold">@T["Settings.Messages.PreviewTitle"]</h2>
-        <p class="text-sm text-stone-600">@T["Settings.Messages.PreviewHint"]</p>
-        @if (Model.Unsaved)
-        {
-            <p role="status" class="notice notice-warn" data-testid="preview-unsaved">@T["Settings.Messages.PreviewUnsaved"]</p>
-        }
-        @if (Model.Preview.Subject is { } previewSubject)
-        {
-            <p class="font-semibold" data-testid="preview-subject">@previewSubject</p>
-        }
-        <p class="whitespace-pre-line break-words rounded-md bg-stone-50 p-3" data-testid="preview-body">@Model.Preview.Body</p>
-        @if (Model.Preview.Length is { } length)
-        {
-            <p class="text-sm text-stone-700" data-testid="preview-length" data-segments="@length.Segments">@T.Format("Settings.Messages.Length", length.Segments, length.Characters)</p>
-            @if (length.IsUnicode)
-            {
-                <p class="text-sm text-amber-900" data-testid="preview-unicode">@T["Settings.Messages.LengthUnicode"]</p>
-            }
-        }
-    </section>
-
     @if (details.IsOwn)
     {
-        <section class="@cardClass" data-testid="standard" aria-labelledby="standard-title">
+        <section id="standard" class="@cardClass" data-testid="standard" aria-labelledby="standard-title">
             <h2 id="standard-title" class="text-lg font-semibold">@T["Settings.Messages.Standard"]</h2>
             @if (details.StandardSubject is { } standardSubject)
             {
                 <p class="font-semibold">@standardSubject</p>
             }
             <p class="whitespace-pre-line break-words rounded-md bg-stone-50 p-3 text-sm" data-testid="standard-body">@details.StandardBody</p>
-            <form method="post" action="@(path + "/reset")" asp-antiforgery="true" class="space-y-2" data-testid="reset-form">
-                <p class="text-sm text-stone-600">@T["Settings.Messages.ResetHint"]</p>
-                <button type="submit" class="@secondaryClass" data-testid="reset-message">@T["Settings.Messages.Reset"]</button>
-            </form>
+            @* Putting it back asks first (the no-script confirm of ADR 0092): the button only opens the question. *@
+            <details class="confirm" data-testid="confirm-reset">
+                <summary class="@secondaryClass" data-testid="reset-message">@T["Settings.Messages.Reset"]</summary>
+                <form method="post" action="@MessageTemplatesController.ResetPath(details.Key, details.Channel)" asp-antiforgery="true" class="confirm-panel" data-testid="reset-form">
+                    <p>@T["Settings.Messages.ResetHint"]</p>
+                    <button type="submit" class="btn btn-compact btn-danger" data-testid="reset-yes">@T["Settings.Messages.ResetYes"]</button>
+                </form>
+            </details>
         </section>
     }
 </section>
+
+@section Scripts {
+    <script type="module" src="~/js/message-tags.js" asp-append-version="true"></script>
+}

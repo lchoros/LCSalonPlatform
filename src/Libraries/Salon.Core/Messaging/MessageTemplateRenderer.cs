@@ -9,8 +9,16 @@ namespace Salon.Core.Messaging;
 /// </summary>
 public static partial class MessageTemplateRenderer
 {
-    // Group "escape" is the backslash before an escaped placeholder; group "name" is the token name of a real one.
-    [GeneratedRegex(@"(?<escape>\\)?\{\{\s*(?<name>[A-Za-z][A-Za-z0-9_.]{0,63})\s*\}\}", RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture)]
+    /// <summary>
+    /// What a placeholder looks like. Group "escape" is the backslash before an escaped placeholder; group "name" is the
+    /// token name of a real one. The messages page hands the same pattern to its script (ADR 0098), which reads it with
+    /// the same meaning, so the browser's preview finds exactly the placeholders this class does.
+    /// </summary>
+    public const string PlaceholderPattern = @"(?<escape>\\)?\{\{\s*(?<name>[A-Za-z][A-Za-z0-9_.]{0,63})\s*\}\}";
+
+    internal static Regex PlaceholderRegex => Placeholder();
+
+    [GeneratedRegex(PlaceholderPattern, RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture)]
     private static partial Regex Placeholder();
 
     /// <summary>Renders <paramref name="template"/> with <paramref name="tokens"/>; one pass, values are never re-expanded.</summary>
