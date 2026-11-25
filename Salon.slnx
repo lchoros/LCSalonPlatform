@@ -17,6 +17,9 @@
     <Project Path="src/Presentation/Salon.Web.Framework/Salon.Web.Framework.csproj" />
     <Project Path="src/Presentation/Salon.Web/Salon.Web.csproj" />
   </Folder>
+  <Folder Name="/src/Mobile/">
+    <Project Path="src/Mobile/Salon.Mobile.Core/Salon.Mobile.Core.csproj" />
+  </Folder>
   <Folder Name="/src/Plugins/">
     <Project Path="src/Plugins/Salon.Plugin.Import/Salon.Plugin.Import.csproj" />
     <Project Path="src/Plugins/Salon.Plugin.Payments.Manual/Salon.Plugin.Payments.Manual.csproj" />
@@ -28,5 +31,6 @@
     <Project Path="tests/Salon.Tests.Integration/Salon.Tests.Integration.csproj" />
     <Project Path="tests/Salon.Tests.Architecture/Salon.Tests.Architecture.csproj" />
     <Project Path="tests/Salon.Tests.E2E/Salon.Tests.E2E.csproj" />
+    <Project Path="tests/Salon.Tests.Mobile/Salon.Tests.Mobile.csproj" />
   </Folder>
 </Solution>

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The client booking app's logic (ADR 0097): the API client and the state of each screen, with no MAUI and no UI
+    framework, so the screens in src/Mobile/Salon.Mobile only bind to it. References the shared shapes only
+    (guarded by Salon.Tests.Architecture). Trim- and AOT-safe, because the app ships trimmed on iOS and Android.
+  -->
+
+  <PropertyGroup>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libraries\Salon.Api.Contracts\Salon.Api.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The app's own words, one flat file per language; every key in both (tests/Salon.Tests.Mobile). -->
+    <EmbeddedResource Include="Localization\*.json" LogicalName="Salon.Mobile.Core.Localization.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Salon.Tests.Mobile" />
+  </ItemGroup>
+
+</Project>
