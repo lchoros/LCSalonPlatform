@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
+using Salon.Core.Appointments;
 using Salon.Core.Cqrs;
 using Salon.Core.Domain;
 using Salon.Core.Payments;
@@ -77,8 +78,47 @@ public sealed class BookingSummaryHandler(
         // What the service and the salon ask for; a client's own rule (ADR 0023) is applied when the booking is made.
         var deposit = DepositRules.Amount(price.Amount, DepositRules.Percent(rules.DefaultDepositPercent, service.DepositPercent, null));
 
+        // The further services of the visit (ADR 0095), each by the same rules, added to the first.
+        var names = new List<string> { service.Name };
+        foreach (var extraId in request.ExtraServiceIds ?? [])
+        {
+            var extra = await db.Services.AsNoTracking()
+                .Where(s => s.Id == extraId && s.IsActive)
+                .Select(s => new { s.Id, s.Name, s.Duration, s.Price, s.Currency, s.DepositPercent })
+                .FirstOrDefaultAsync(cancellationToken);
+            if (extra is null)
+            {
+                return null;
+            }
+
+            var extraPrice = extra.Price;
+            var extraDuration = extra.Duration;
+            if (request.StaffMemberId is { } person)
+            {
+                var offering = await offerings.ResolveAsync(extra.Id, person, cancellationToken);
+                if (!offering.Offers)
+                {
+                    return null;
+                }
+
+                extraDuration = offering.Duration;
+                extraPrice = offering.Price;
+            }
+            else
+            {
+                var span = (await offerings.PriceSpansAsync([extra.Id], cancellationToken))[extra.Id];
+                extraPrice = span.Min;
+                priceIsFrom |= span.IsRange;
+            }
+
+            names.Add(extra.Name);
+            duration += extraDuration;
+            price = price with { Amount = price.Amount + extraPrice };
+            deposit += DepositRules.Amount(extraPrice, DepositRules.Percent(rules.DefaultDepositPercent, extra.DepositPercent, null));
+        }
+
         return new BookingSummary(
-            service.Name,
+            VisitRules.JoinNames(names),
             duration,
             price,
             priceIsFrom,

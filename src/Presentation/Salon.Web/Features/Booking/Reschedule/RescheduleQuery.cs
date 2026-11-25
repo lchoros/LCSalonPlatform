@@ -30,6 +30,9 @@ public enum RescheduleState
     /// <summary>The visit has started.</summary>
     TooLate,
 
+    /// <summary>A visit of several services (ADR 0095): it cannot be moved online yet; cancelling it and booking again is offered.</summary>
+    SeveralServices,
+
     /// <summary>The free-change period of the salon's cancellation policy is over (ADR 0022).</summary>
     InsideNotice,
 

@@ -10,8 +10,8 @@
 }
 <section class="mx-auto max-w-lg space-y-6">
     <header class="space-y-3">
-        <p class="text-sm font-medium text-stone-600" data-testid="step">@T.Format("Booking.Public.Step", 3, 3)</p>
-        <ol class="steps">
+        <p class="text-sm font-medium text-stone-600 max-sm:hidden" data-testid="step">@T.Format("Booking.Public.Step", 3, 3)</p>
+        <ol class="steps max-sm:hidden">
             <li class="is-done"><span class="steps-bar"></span>@T["Booking.Public.StepService"]</li>
             <li class="is-done"><span class="steps-bar"></span>@T["Booking.Public.StepTime"]</li>
             <li class="is-done"><span class="steps-bar"></span>@T["Booking.Public.StepDetails"]</li>
@@ -36,7 +36,7 @@
             </div>
         </dl>
         @* Back to step 2 on the same day and strip window, with the same person (a mis-tapped time costs one tap). *@
-        <a href="/book/@Model.Form.ServiceId?date=@local.Date.ToIso()&from=@local.Date.ToIso()@(Model.Form.StaffMemberId is { } backSid ? $"&staff={backSid}" : "&staff=any")" class="btn btn-compact btn-secondary ml-auto shrink-0" data-testid="change-time">@T["Booking.Public.ChangeTime"]</a>
+        <a href="/book/@Model.Form.ServiceId?date=@local.Date.ToIso()&from=@local.Date.ToIso()@(Model.Form.StaffMemberId is { } backSid ? $"&staff={backSid}" : "&staff=any")@(Model.Form.Also is { } backAlso ? $"&also={backAlso}" : null)" class="btn btn-compact btn-secondary ml-auto shrink-0" data-testid="change-time">@T["Booking.Public.ChangeTime"]</a>
     </div>
 
     @if (s.Deposit is { } depositDue)
@@ -68,7 +68,7 @@
     @if (Model.SlotTaken)
     {
         <p role="alert" data-testid="slot-taken" class="notice notice-warn">
-            @T["Booking.Public.SlotTaken"] <a href="/book/@Model.Form.ServiceId" class="font-medium underline underline-offset-4">@T["Booking.Public.Verify.PickAnother"]</a>
+            @T["Booking.Public.SlotTaken"] <a href="/book/@Model.Form.ServiceId@(Model.Form.Also is { } takenAlso ? $"?also={takenAlso}" : null)" class="font-medium underline underline-offset-4">@T["Booking.Public.Verify.PickAnother"]</a>
         </p>
     }
 
@@ -85,6 +85,7 @@
         @* Plain field names (no "Form." prefix): the command binds them and the pipeline's failures are keyed the same way. *@
         <input type="hidden" name="Start" value="@Model.Form.Start" />
         <input type="hidden" name="StaffMemberId" value="@Model.Form.StaffMemberId" />
+        <input type="hidden" name="Also" value="@Model.Form.Also" />
 
         <div class="grid gap-5 sm:grid-cols-2">
             <div class="space-y-1.5">

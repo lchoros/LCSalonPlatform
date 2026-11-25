@@ -18,6 +18,14 @@ public interface IBookingService
     /// </summary>
     Task<Appointment> BookAsync(BookAppointmentRequest request, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Books one visit of several services (ADR 0095): they follow one another from <see cref="BookVisitRequest.Start"/>
+    /// with the one person, who has to offer every one of them. Each service becomes an appointment of its own with its
+    /// own price, duration and deposit, all sharing one <see cref="Appointment.VisitGroupId"/>; the visit is booked whole
+    /// or not at all. With one service this is <see cref="BookAsync"/> and no group is made. Returned in order.
+    /// </summary>
+    Task<IReadOnlyList<Appointment>> BookVisitAsync(BookVisitRequest request, CancellationToken cancellationToken = default);
+
     Task<Appointment> ConfirmAsync(Guid appointmentId, Guid? byUserId = null, CancellationToken cancellationToken = default);
 
     Task<Appointment> MarkArrivedAsync(Guid appointmentId, Guid? byUserId = null, CancellationToken cancellationToken = default);
@@ -51,6 +59,16 @@ public sealed record BookAppointmentRequest(
     Guid ClientId,
     Guid StaffMemberId,
     Guid ServiceId,
+    Instant Start,
+    AppointmentSource Source,
+    string? Notes = null,
+    Guid? ByUserId = null);
+
+/// <summary>What a visit of several services needs: the services in the order they are done, one person, one start.</summary>
+public sealed record BookVisitRequest(
+    Guid ClientId,
+    Guid StaffMemberId,
+    IReadOnlyList<Guid> ServiceIds,
     Instant Start,
     AppointmentSource Source,
     string? Notes = null,

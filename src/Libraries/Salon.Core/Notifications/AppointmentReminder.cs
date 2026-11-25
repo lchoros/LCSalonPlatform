@@ -50,4 +50,7 @@ public enum ReminderOutcome
 
     /// <summary>Another reminder for the same visit went out in the same pass; this one is recorded so it never follows.</summary>
     Superseded = 4,
+
+    /// <summary>Not sent on purpose: a later part of a visit of several services, which the first part's reminder speaks for (ADR 0095).</summary>
+    PartOfVisit = 5,
 }

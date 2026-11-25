@@ -128,6 +128,13 @@ internal sealed class AppointmentReminderService(
             return false;
         }
 
+        if (data.IsLaterPartOfVisit)
+        {
+            // The reminder for the first part of the visit names every service (ADR 0095).
+            await FinishAsync(claim, ReminderOutcome.PartOfVisit, cancellationToken).ConfigureAwait(false);
+            return false;
+        }
+
         // Admin bookings have no public page yet (ADR 0014); their link leads to the salon's booking page instead.
         var link = appointment.PublicToken is { } token ? urls.CancelBookingUrl(tenant.Slug, token) : urls.BookingUrl(tenant.Slug);
         var tokens = BookingSmsTokens.Confirmation(tenant.Name, data.ClientFirstName, data.ServiceName, data.StaffName, appointment.Start, zone, CultureInfo.GetCultureInfo(tenant.Culture), link);

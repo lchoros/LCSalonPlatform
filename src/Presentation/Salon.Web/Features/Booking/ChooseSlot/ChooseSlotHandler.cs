@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
+using Salon.Core.Appointments;
 using Salon.Core.Cqrs;
 using Salon.Core.Domain;
 using Salon.Core.Settings;
@@ -54,31 +55,52 @@ public sealed class ChooseSlotHandler(
             .OrderBy(s => s.SortOrder).ThenBy(s => s.DisplayName).ThenBy(s => s.Id)
             .Select(s => new StaffOption(s.Id, s.DisplayName))
             .ToListAsync(cancellationToken);
-        // Someone who does not offer this service is not on the picker at all (ADR 0018); the engine skips them too.
-        var offered = await offerings.ResolveAsync(service.Id, bookable.Select(s => s.Id).ToArray(), cancellationToken);
+        // The further services of a visit booked as several (ADR 0095), in order; one that is unknown or no longer
+        // active quietly drops out, like a person who is no longer bookable.
+        var wantedExtras = (request.ExtraServiceIds ?? []).Where(id => id != service.Id).Distinct().Take(VisitRules.MaxServices - 1).ToList();
+        var foundExtras = await db.Services.AsNoTracking()
+            .Where(s => wantedExtras.Contains(s.Id) && s.IsActive)
+            .Select(s => new { s.Id, s.Name, s.Duration, s.Price, s.Currency })
+            .ToListAsync(cancellationToken);
+        var parts = new[] { service }.Concat(wantedExtras.Select(id => foundExtras.FirstOrDefault(s => s.Id == id)).Where(s => s is not null).Select(s => s!)).ToList();
+        var serviceIds = parts.Select(p => p.Id).ToList();
+
+        // Someone who does not offer a service is not on the picker at all (ADR 0018); the engine skips them too. For
+        // several services one person does the whole visit, so only people who offer every one of them are shown.
+        var bookableIds = bookable.Select(s => s.Id).ToArray();
+        var offeredBy = new Dictionary<Guid, IReadOnlyDictionary<Guid, ServiceOffering>>();
+        foreach (var part in parts)
+        {
+            offeredBy[part.Id] = await offerings.ResolveAsync(part.Id, bookableIds, cancellationToken);
+        }
+
         // Faces on the picker (ADR 0088): who has a picture and in which version; the pictures themselves are fetched by the browser.
         var photoVersions = await photos.VersionsAsync(cancellationToken);
-        var staff = bookable.Where(s => offered[s.Id].Offers).Select(s => s with { PhotoPath = StaffPhotoAddress.For(s.Id, photoVersions) }).ToList();
+        var staff = bookable.Where(s => parts.All(p => offeredBy[p.Id][s.Id].Offers)).Select(s => s with { PhotoPath = StaffPhotoAddress.For(s.Id, photoVersions) }).ToList();
         // A person who is no longer bookable (or no longer offers it) falls back to the question instead of an empty page.
         var staffId = request.StaffMemberId is { } wanted && staff.Any(s => s.Id == wanted) ? request.StaffMemberId : null;
         // Who with is asked, not assumed (the owner, 2026-11-22): with a choice of people, nothing shows until one is made.
         var needsChoice = staff.Count > 1 && staffId is null && !request.Anyone;
 
-        var duration = service.Duration;
-        var price = new Money(service.Price, service.Currency);
-        var priceIsFrom = false;
-        if (staffId is { } chosen)
-        {
-            var offering = offered[chosen];
-            duration = offering.Duration;
-            price = new Money(offering.Price, offering.Currency);
-        }
-        else
-        {
-            var span = (await offerings.PriceSpansAsync([service.Id], cancellationToken))[service.Id];
-            price = new Money(span.Min, service.Currency);
-            priceIsFrom = span.IsRange;
-        }
+        // Each service at the chosen person's own price and duration, or the cheapest with "from" until a person is
+        // chosen (ADR 0018); the visit is their sum.
+        var spans = staffId is null ? await offerings.PriceSpansAsync(serviceIds, cancellationToken) : null;
+        var lines = parts
+            .Select(p =>
+            {
+                if (staffId is { } chosen)
+                {
+                    var offering = offeredBy[p.Id][chosen];
+                    return new VisitLine(p.Id, p.Name, offering.Duration, new Money(offering.Price, offering.Currency), false);
+                }
+
+                var span = spans![p.Id];
+                return new VisitLine(p.Id, p.Name, p.Duration, new Money(span.Min, p.Currency), span.IsRange);
+            })
+            .ToList();
+        var duration = lines.Aggregate(Duration.Zero, (sum, l) => sum + l.Duration);
+        var price = new Money(lines.Sum(l => l.Price.Amount), service.Currency);
+        var priceIsFrom = lines.Any(l => l.PriceIsFrom);
 
         // The strip is a window of up to two weeks that slides between today and the salon's booking horizon.
         var today = clock.GetCurrentInstant().InZone(zone).Date;
@@ -86,7 +108,7 @@ public sealed class ChooseSlotHandler(
         var windowStart = request.From is { } from && from > today ? LocalDate.Min(from, horizon) : today;
         var last = LocalDate.Min(windowStart.PlusDays(DaysShown - 1), horizon);
         var dayCount = Period.DaysBetween(windowStart, last) + 1;
-        var slots = needsChoice ? [] : await availability.GetSlotsAsync(service.Id, staffId, windowStart, last, cancellationToken);
+        var slots = needsChoice || staff.Count == 0 ? [] : await availability.GetVisitSlotsAsync(serviceIds, staffId, windowStart, last, cancellationToken);
         var byDay = slots.ToLookup(s => s.Start.InZone(zone).Date);
 
         var days = Enumerable.Range(0, dayCount).Select(windowStart.PlusDays).Select(d => new DayOption(d, byDay[d].Any())).ToList();
@@ -115,7 +137,10 @@ public sealed class ChooseSlotHandler(
             NeedsStaffChoice = needsChoice,
             DayAsked = request.Date == selected,
             AnyoneChosen = staffId is null && !needsChoice,
-            WaitlistOffered = rules.PublicWaitlist && !needsChoice,
+            // The waiting list is for one service (ADR 0055); it is not offered for a visit of several.
+            WaitlistOffered = rules.PublicWaitlist && !needsChoice && lines.Count == 1,
+            Lines = lines,
+            NobodyOffersAll = lines.Count > 1 && staff.Count == 0,
             EarlierFrom = windowStart > today ? LocalDate.Max(today, windowStart.PlusDays(-DaysShown)) : null,
             LaterFrom = last < horizon ? last.PlusDays(1) : null,
             Groups = groups,

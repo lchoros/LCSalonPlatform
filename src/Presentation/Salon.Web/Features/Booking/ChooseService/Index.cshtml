@@ -8,13 +8,23 @@
 }
 <section class="mx-auto max-w-2xl space-y-6">
     <header class="space-y-3">
-        <p class="text-sm font-medium text-stone-600" data-testid="step">@T.Format("Booking.Public.Step", 1, 3)</p>
-        <ol class="steps">
+        <p class="text-sm font-medium text-stone-600 max-sm:hidden" data-testid="step">@T.Format("Booking.Public.Step", 1, 3)</p>
+        <ol class="steps max-sm:hidden">
             <li class="is-done"><span class="steps-bar"></span>@T["Booking.Public.StepService"]</li>
             <li><span class="steps-bar"></span>@T["Booking.Public.StepTime"]</li>
             <li><span class="steps-bar"></span>@T["Booking.Public.StepDetails"]</li>
         </ol>
-        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Booking.Public.ChooseService"]</h1>
+        @if (Model.Adding is { } adding)
+        {
+            @* The same list, adding to a booking already begun (ADR 0095): a tap puts the service at its end. *@
+            <h1 class="text-2xl font-bold tracking-tight sm:text-3xl" data-testid="adding-title">@T["Booking.Public.AddServiceTitle"]</h1>
+            <p class="text-stone-600">@T["Booking.Public.AddServiceLead"]</p>
+            <a href="@adding.BackPath" class="back-link" data-testid="back-to-booking">&larr; @T["Booking.Public.BackToBooking"]</a>
+        }
+        else
+        {
+            <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">@T["Booking.Public.ChooseService"]</h1>
+        }
     </header>
     @if (choice.ShowFilters)
     {
@@ -49,11 +59,17 @@
                 <ul class="service-rows" data-testid="service-list">
                     @foreach (var entry in group)
                     {
+                        // A service already in the booking being added to (ADR 0095) is not offered twice.
+                        if (!entry.IsVariantGroup && !Model.Offers(entry.Services[0].Id))
+                        {
+                            continue;
+                        }
+
                         if (!entry.IsVariantGroup)
                         {
                             var service = entry.Services[0];
                             <li>
-                                <a href="/book/@service.Id" data-testid="book-service" class="choice-card accent-0">
+                                <a href="@Model.ServicePath(service.Id)" data-testid="book-service" class="choice-card accent-0">
                                     <span class="service-dot" aria-hidden="true">@Monogram.For(service.Name)</span>
                                     <span class="min-w-0 flex-1">
                                         <span class="block font-semibold leading-snug">@service.Name</span>
@@ -64,7 +80,7 @@
                                         <span class="block text-sm text-stone-600" data-testid="service-duration">@T.Format("Booking.Public.DurationMinutes", (int)service.Duration.TotalMinutes)</span>
                                     </span>
                                     <span class="shrink-0 font-semibold tabular-nums" data-testid="service-price" data-from="@(service.PriceIsFrom ? "true" : null)">@(service.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", service.Price.ToDisplayString(culture)) : service.Price.ToDisplayString(culture))</span>
-                                    <span class="row-book" aria-hidden="true">@T["Booking.Public.BookRow"]</span>
+                                    <span class="row-book" aria-hidden="true">@T[Model.Adding is null ? "Booking.Public.BookRow" : "Booking.Public.AddRow"]</span>
                                 </a>
                             </li>
                         }
@@ -85,16 +101,16 @@
                                         </span>
                                     </summary>
                                     <ul class="variant-list">
-                                        @foreach (var variant in entry.Services)
+                                        @foreach (var variant in entry.Services.Where(v => Model.Offers(v.Id)))
                                         {
                                             <li>
-                                                <a href="/book/@variant.Id" data-testid="book-variant" class="variant-link">
+                                                <a href="@Model.ServicePath(variant.Id)" data-testid="book-variant" class="variant-link">
                                                     <span class="flex min-w-0 flex-col">
                                                         <span class="variant-name font-medium">@variant.Name</span>
                                                         <span class="text-sm text-stone-600">@T.Format("Booking.Public.DurationMinutes", (int)variant.Duration.TotalMinutes)</span>
                                                     </span>
                                                     <span class="shrink-0 font-semibold tabular-nums" data-testid="service-price" data-from="@(variant.PriceIsFrom ? "true" : null)">@(variant.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", variant.Price.ToDisplayString(culture)) : variant.Price.ToDisplayString(culture))</span>
-                                                    <span class="row-book" aria-hidden="true">@T["Booking.Public.BookRow"]</span>
+                                                    <span class="row-book" aria-hidden="true">@T[Model.Adding is null ? "Booking.Public.BookRow" : "Booking.Public.AddRow"]</span>
                                                 </a>
                                             </li>
                                         }

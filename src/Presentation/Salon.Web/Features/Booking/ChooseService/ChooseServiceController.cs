@@ -19,46 +19,53 @@ namespace Salon.Web.Features.Booking.ChooseService;
 /// </summary>
 [RequireTenant]
 [Route("book")]
-public sealed class ChooseServiceController(IDispatcher dispatcher, ITenantContext tenantContext, ITenantLookup tenantLookup, ILocalizationService localizer) : SalonControllerBase
+public sealed class ChooseServiceController(IDispatcher dispatcher, ITenantContext tenantContext, ITenantLookup tenantLookup, ILocalizationService localizer, IVisitBasket basket) : SalonControllerBase
 {
     public const string CategoryParameter = "category";
 
     [HttpGet("")]
-    public async Task<IActionResult> Index(string? category, string? q, int? page, CancellationToken cancellationToken)
+    public async Task<IActionResult> Index(string? category, string? q, int? page, string? add, string? also, string? staff, CancellationToken cancellationToken)
     {
         // [RequireTenant] has already turned a tenant-less request into a 404.
         var tenant = await tenantLookup.FindByIdAsync(tenantContext.TenantId!.Value, cancellationToken);
         var choice = await dispatcher.SendAsync(new ChooseServiceQuery(Guid.TryParse(category, out var id) ? id : null, q, page), cancellationToken);
 
-        return View(new ChooseServiceViewModel(tenant?.Name ?? string.Empty, choice, Filter(choice), Search(choice), Pager(choice)));
+        // "Add another service" (ADR 0095): the same list, but a tap adds to the booking that add, also and staff describe.
+        var adding = basket.IsOpen && Guid.TryParse(add, out var first)
+            ? new AddingTo(first, basket.Read(also, first), Guid.TryParse(staff, out _) || staff == PublicBookingDefaults.AnyStaff ? staff : null)
+            : null;
+        return View(new ChooseServiceViewModel(tenant?.Name ?? string.Empty, choice, Filter(choice, adding), Search(choice, adding), Pager(choice, adding)) { Adding = adding });
     }
 
-    private static string ListAddress(Guid? categoryId, string? search, int page = 1)
+    private static string ListAddress(Guid? categoryId, string? search, AddingTo? adding, int page = 1)
         => ListUrl.Build(
             PublicBookingDefaults.BookPath,
             (CategoryParameter, categoryId?.ToString()),
             (ListUrl.SearchParameter, search),
-            (ListUrl.PageParameter, page.ToString(CultureInfo.InvariantCulture)));
+            (ListUrl.PageParameter, page.ToString(CultureInfo.InvariantCulture)),
+            (AddingTo.AddParameter, adding?.First.ToString()),
+            (VisitBasket.Parameter, adding is null ? null : VisitBasket.Write(adding.Extras)),
+            (AddingTo.StaffParameter, adding?.Staff));
 
     /// <summary>"All" and one tile per category in use; choosing a category keeps the search and starts at page one.</summary>
-    private FilterTilesModel Filter(ServiceChoice choice)
+    private FilterTilesModel Filter(ServiceChoice choice, AddingTo? adding)
     {
-        var tiles = new List<FilterTile> { new("all", localizer["Booking.Public.AllCategories"], ListAddress(null, choice.Search), choice.CategoryId is null) };
+        var tiles = new List<FilterTile> { new("all", localizer["Booking.Public.AllCategories"], ListAddress(null, choice.Search, adding), choice.CategoryId is null) };
         // Calm over carnival (ADR 0080): the public page stopped wearing the five category accents.
-        tiles.AddRange(choice.Categories.Select(c => new FilterTile(c.Id.ToString(), c.Name, ListAddress(c.Id, choice.Search), c.Id == choice.CategoryId)));
+        tiles.AddRange(choice.Categories.Select(c => new FilterTile(c.Id.ToString(), c.Name, ListAddress(c.Id, choice.Search, adding), c.Id == choice.CategoryId)));
         return new FilterTilesModel(localizer["Booking.Public.Categories"], tiles);
     }
 
-    private SearchBoxModel Search(ServiceChoice choice)
+    private SearchBoxModel Search(ServiceChoice choice, AddingTo? adding)
         => new(
             PublicBookingDefaults.BookPath,
             choice.Search,
             localizer["Booking.Public.SearchServices"],
-            [(CategoryParameter, choice.CategoryId?.ToString())],
-            ListAddress(choice.CategoryId, null));
+            [(CategoryParameter, choice.CategoryId?.ToString()), (AddingTo.AddParameter, adding?.First.ToString()), (VisitBasket.Parameter, adding is null ? null : VisitBasket.Write(adding.Extras)), (AddingTo.StaffParameter, adding?.Staff)],
+            ListAddress(choice.CategoryId, null, adding));
 
-    private static PagerModel Pager(ServiceChoice choice)
-        => PagerModel.For(choice.Entries, page => ListAddress(choice.CategoryId, choice.Search, page));
+    private static PagerModel Pager(ServiceChoice choice, AddingTo? adding)
+        => PagerModel.For(choice.Entries, page => ListAddress(choice.CategoryId, choice.Search, adding, page));
 }
 
 /// <param name="Filter">The category tiles, shown when <see cref="ServiceChoice.ShowFilters"/>.</param>
@@ -69,4 +76,34 @@ public sealed record ChooseServiceViewModel(string SalonName, ServiceChoice Choi
 
     /// <summary>The entries of the page under their category, in order; a category split by a page break gets its heading again.</summary>
     public IEnumerable<IGrouping<string?, BookableEntry>> Groups => Choice.Entries.Items.GroupBy(e => e.CategoryName);
+
+    /// <summary>Set while the list is adding a service to a booking already begun (ADR 0095); null on the ordinary first step.</summary>
+    public AddingTo? Adding { get; init; }
+
+    /// <summary>Where a tap on a service leads: its own time page, or the begun booking with this service added.</summary>
+    public string ServicePath(Guid serviceId) => Adding?.With(serviceId) ?? $"{PublicBookingDefaults.BookPath}/{serviceId}";
+
+    /// <summary>A service already in the begun booking is not offered a second time.</summary>
+    public bool Offers(Guid serviceId) => Adding is null || !Adding.Has(serviceId);
+}
+
+/// <summary>
+/// The booking a service is being added to (ADR 0095), as the address describes it: its first service, the further
+/// ones so far, and the answer to "who with" (a person's id or "any") so the client is not asked again.
+/// </summary>
+public sealed record AddingTo(Guid First, IReadOnlyList<Guid> Extras, string? Staff)
+{
+    public const string AddParameter = "add";
+    public const string StaffParameter = "staff";
+
+    public bool Has(Guid serviceId) => serviceId == First || Extras.Contains(serviceId);
+
+    /// <summary>The time page of the booking as it is.</summary>
+    public string BackPath => TimePage(Extras);
+
+    /// <summary>The time page of the booking with one more service at its end.</summary>
+    public string With(Guid serviceId) => TimePage([.. Extras, serviceId]);
+
+    private string TimePage(IEnumerable<Guid> extras)
+        => ListUrl.Build($"{PublicBookingDefaults.BookPath}/{First}", (VisitBasket.Parameter, VisitBasket.Write(extras)), (StaffParameter, Staff));
 }

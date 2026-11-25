@@ -22,7 +22,21 @@ internal sealed class AvailabilityService(
     public Task<IReadOnlyList<Slot>> GetSlotsAsync(Guid serviceId, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, CancellationToken cancellationToken = default)
         => GetSlotsAsync(serviceId, staffMemberId, fromDate, toDate, null, cancellationToken);
 
-    public async Task<IReadOnlyList<Slot>> GetSlotsAsync(Guid serviceId, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, Guid? excludeAppointmentId, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<Slot>> GetSlotsAsync(Guid serviceId, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, Guid? excludeAppointmentId, CancellationToken cancellationToken = default)
+        => SlotsAsync([serviceId], staffMemberId, fromDate, toDate, excludeAppointmentId, cancellationToken);
+
+    public Task<IReadOnlyList<Slot>> GetVisitSlotsAsync(IReadOnlyList<Guid> serviceIds, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(serviceIds);
+        if (serviceIds.Count == 0 || serviceIds.Distinct().Count() != serviceIds.Count)
+        {
+            throw new ArgumentException("A visit needs at least one service and each service once.", nameof(serviceIds));
+        }
+
+        return SlotsAsync(serviceIds, staffMemberId, fromDate, toDate, null, cancellationToken);
+    }
+
+    private async Task<IReadOnlyList<Slot>> SlotsAsync(IReadOnlyList<Guid> serviceIds, Guid? staffMemberId, LocalDate fromDate, LocalDate toDate, Guid? excludeAppointmentId, CancellationToken cancellationToken)
     {
         if (toDate < fromDate)
         {
@@ -30,12 +44,18 @@ internal sealed class AvailabilityService(
         }
 
         var zone = await TenantZone.ResolveAsync(tenantContext, tenantLookup, cancellationToken).ConfigureAwait(false);
-        var service = await db.Services.AsNoTracking()
-            .Where(s => s.Id == serviceId && s.IsActive)
-            .Select(s => new { s.Duration })
-            .FirstOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false)
-            ?? throw new InvalidOperationException($"Service {serviceId} does not exist or is not active in this salon.");
+        var durations = await db.Services.AsNoTracking()
+            .Where(s => serviceIds.Contains(s.Id) && s.IsActive)
+            .Select(s => new { s.Id, s.Duration })
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        if (serviceIds.FirstOrDefault(id => durations.All(d => d.Id != id)) is { } missing && missing != Guid.Empty)
+        {
+            throw new InvalidOperationException($"Service {missing} does not exist or is not active in this salon.");
+        }
+
+        // One service after another without a gap: the visit is as long as its services together.
+        var listDuration = durations.Aggregate(Duration.Zero, (sum, d) => sum + d.Duration);
         var settings = await settingService.LoadAsync<BookingSettings>(cancellationToken).ConfigureAwait(false);
 
         var staffIds = await db.StaffMembers.AsNoTracking()
@@ -44,9 +64,19 @@ internal sealed class AvailabilityService(
             .Select(s => s.Id)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
-        // Staff-specific durations; people who do not offer this service drop out here, also under "any staff" (ADR 0018).
-        var offered = await offerings.ResolveAsync(serviceId, staffIds, cancellationToken).ConfigureAwait(false);
-        staffIds = staffIds.Where(id => offered[id].Offers).ToList();
+        // Staff-specific durations; people who do not offer a service drop out here, also under "any staff" (ADR 0018).
+        // For a visit of several services a person has to offer every one of them (ADR 0095).
+        var ownDuration = staffIds.ToDictionary(id => id, _ => Duration.Zero);
+        foreach (var serviceId in serviceIds)
+        {
+            var offered = await offerings.ResolveAsync(serviceId, staffIds, cancellationToken).ConfigureAwait(false);
+            staffIds = staffIds.Where(id => offered[id].Offers).ToList();
+            foreach (var id in staffIds)
+            {
+                ownDuration[id] += offered[id].Duration;
+            }
+        }
+
         if (staffIds.Count == 0)
         {
             return [];
@@ -94,14 +124,14 @@ internal sealed class AvailabilityService(
                     .Concat(timeOff.Where(t => t.StaffMemberId == id).SelectMany(t => StaffTimeOffRules.ToIntervals(t, zone)))
                     .Concat(held.Where(h => h.StaffMemberId == id).Select(h => new Interval(h.Start, h.End.Plus(buffer))))
                     .ToArray(),
-                offered[id].Duration))
+                ownDuration[id]))
             .ToArray();
 
         var request = new AvailabilityRequest(
             zone,
             fromDate,
             toDate,
-            service.Duration,
+            listDuration,
             buffer,
             settings.SlotStepMinutes,
             now,

@@ -4,6 +4,7 @@ using Salon.Core.Tenancy;
 using Salon.Services.Booking;
 using Salon.Services.Localization;
 using Salon.Services.Tenancy;
+using Salon.Web.Framework.Booking;
 
 namespace Salon.Web.Features.Booking.EnterDetails;
 
@@ -16,7 +17,8 @@ public sealed class StartBookingHandler(
     IPublicBookingService publicBooking,
     ITenantContext tenantContext,
     ITenantLookup tenantLookup,
-    ILocalizationService localizer) : IRequestHandler<StartBookingCommand, PublicBookingStart>
+    ILocalizationService localizer,
+    IVisitBasket basket) : IRequestHandler<StartBookingCommand, PublicBookingStart>
 {
     public async Task<PublicBookingStart> HandleAsync(StartBookingCommand request, CancellationToken cancellationToken)
     {
@@ -47,7 +49,8 @@ public sealed class StartBookingHandler(
                 request.Phone ?? string.Empty,
                 request.Email,
                 request.MarketingConsent,
-                wording),
+                wording,
+                basket.Read(request.Also, request.ServiceId)),
             cancellationToken);
     }
 

@@ -7,9 +7,11 @@ namespace Salon.Web.Features.Booking.EnterDetails;
 
 /// <summary>
 /// What the details page shows above the form (ADR 0014): the chosen service, person ("anyone" when null) and start, in
-/// the salon's zone. Null when the service is unknown or inactive, or the person is not bookable here. A query.
+/// the salon's zone. For a visit of several services (ADR 0095) the further ones are named too: the summary then names
+/// them all and adds up their durations, prices and deposits. Null when a service is unknown or inactive, or the person
+/// is not bookable here or does not offer one of them. A query.
 /// </summary>
-public sealed record BookingSummaryQuery(Guid ServiceId, Guid? StaffMemberId, Instant Start) : IQuery<BookingSummary?>;
+public sealed record BookingSummaryQuery(Guid ServiceId, Guid? StaffMemberId, Instant Start, IReadOnlyList<Guid>? ExtraServiceIds = null) : IQuery<BookingSummary?>;
 
 /// <param name="StaffName">Null for "anyone available".</param>
 /// <param name="RequireSmsVerification">Decides the wording of the submit button and the phone hint.</param>

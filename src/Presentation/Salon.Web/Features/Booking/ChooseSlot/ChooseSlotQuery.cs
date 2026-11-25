@@ -14,7 +14,7 @@ namespace Salon.Web.Features.Booking.ChooseSlot;
 /// <paramref name="Start"/> is the tapped time: it marks the slot chosen and brings out the Continue button, and only
 /// a start that is genuinely free right now counts (a stale link quietly deselects). A query: tenant required.
 /// </summary>
-public sealed record ChooseSlotQuery(Guid ServiceId, LocalDate? Date, Guid? StaffMemberId, LocalDate? From = null, Instant? Start = null, bool Anyone = false) : IQuery<ChooseSlotResult?>
+public sealed record ChooseSlotQuery(Guid ServiceId, LocalDate? Date, Guid? StaffMemberId, LocalDate? From = null, Instant? Start = null, bool Anyone = false, IReadOnlyList<Guid>? ExtraServiceIds = null) : IQuery<ChooseSlotResult?>
 {
     /// <summary>The <c>staff</c> value in the address that says "anyone available" was chosen.</summary>
     public const string AnyStaff = "any";
@@ -45,6 +45,15 @@ public sealed record ChooseSlotResult(
     /// <summary>"Anyone available" was chosen, as against nothing chosen yet.</summary>
     public bool AnyoneChosen { get; init; }
 
+    /// <summary>
+    /// The services of the visit in order (ADR 0095): one for most bookings. <see cref="ServiceName"/> is the first;
+    /// <see cref="Duration"/> and <see cref="Price"/> are the sums.
+    /// </summary>
+    public IReadOnlyList<VisitLine> Lines { get; init; } = [];
+
+    /// <summary>Several services were chosen and no one person offers them all: there is nothing to book until one is taken out.</summary>
+    public bool NobodyOffersAll { get; init; }
+
     /// <summary>Whether the salon offers "tell me when a time comes up" (ADR 0055).</summary>
     public bool WaitlistOffered { get; init; }
 
@@ -66,6 +75,9 @@ public sealed record ChooseSlotResult(
     /// <summary>Where that form is, with the chosen person carried along; the JoinWaitlist slice owns the route.</summary>
     public string WaitlistPath => SelectedStaffId is { } staff ? $"/book/{ServiceId}/waitlist?staff={staff}" : $"/book/{ServiceId}/waitlist";
 }
+
+/// <summary>One service of the visit as the summary shows it; "from" while nobody is chosen and people charge differently.</summary>
+public sealed record VisitLine(Guid ServiceId, string Name, Duration Duration, Money Price, bool PriceIsFrom);
 
 public sealed record DayOption(LocalDate Date, bool HasSlots);
 

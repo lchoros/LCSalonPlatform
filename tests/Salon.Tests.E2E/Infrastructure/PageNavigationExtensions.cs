@@ -86,7 +86,9 @@ public static class PageNavigationExtensions
         }
 
         // Evaluated inside the page, and re-evaluated by Playwright if a navigation replaces the document meanwhile.
-        await page.WaitForFunctionAsync("() => document.readyState === 'complete'");
+        // The page also has to have finished arriving: where the browser cross-fades between pages (ADR 0092) a
+        // screenshot or an axe pass taken during the fade sees two pages at once.
+        await page.WaitForFunctionAsync("() => document.readyState === 'complete' && !document.getAnimations().some(a => a.effect?.pseudoElement?.startsWith('::view-transition'))");
     }
 
     /// <summary>

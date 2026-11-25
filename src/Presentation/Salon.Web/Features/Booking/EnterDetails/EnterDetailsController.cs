@@ -27,10 +27,11 @@ public sealed class EnterDetailsController(
     ILocalizationService localizer,
     ITenantContext tenantContext,
     IReturningClientCookie returning,
-    IOnlineDepositCheckout deposits) : SalonControllerBase
+    IOnlineDepositCheckout deposits,
+    IVisitBasket basket) : SalonControllerBase
 {
     [HttpGet("{serviceId:guid}/details")]
-    public async Task<IActionResult> Details(Guid serviceId, string? start, Guid? staff, bool forget, CancellationToken cancellationToken)
+    public async Task<IActionResult> Details(Guid serviceId, string? start, Guid? staff, string? also, bool forget, CancellationToken cancellationToken)
     {
         var instant = ParseStart(start);
         if (instant is null)
@@ -38,13 +39,15 @@ public sealed class EnterDetailsController(
             return Redirect($"/book/{serviceId}");
         }
 
-        var summary = await dispatcher.SendAsync(new BookingSummaryQuery(serviceId, staff, instant.Value), cancellationToken);
+        // The further services of a visit booked as several (ADR 0095); none while that is switched off.
+        var extras = basket.Read(also, serviceId);
+        var summary = await dispatcher.SendAsync(new BookingSummaryQuery(serviceId, staff, instant.Value, extras), cancellationToken);
         if (summary is null)
         {
             return NotFound();
         }
 
-        var form = new StartBookingCommand(serviceId, InstantPattern.ExtendedIso.Format(instant.Value), staff, null, null, null, null, false);
+        var form = new StartBookingCommand(serviceId, InstantPattern.ExtendedIso.Format(instant.Value), staff, null, null, null, null, false, VisitBasket.Write(extras));
         if (forget)
         {
             returning.Forget(Response);
@@ -67,7 +70,8 @@ public sealed class EnterDetailsController(
     public async Task<IActionResult> Details(Guid serviceId, StartBookingCommand command, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(command);
-        command = command with { ServiceId = serviceId };
+        var extras = basket.Read(command.Also, serviceId);
+        command = command with { ServiceId = serviceId, Also = VisitBasket.Write(extras) };
 
         var instant = ParseStart(command.Start);
         if (instant is null)
@@ -75,7 +79,7 @@ public sealed class EnterDetailsController(
             return Redirect($"/book/{serviceId}");
         }
 
-        var summary = await dispatcher.SendAsync(new BookingSummaryQuery(serviceId, command.StaffMemberId, instant.Value), cancellationToken);
+        var summary = await dispatcher.SendAsync(new BookingSummaryQuery(serviceId, command.StaffMemberId, instant.Value, extras), cancellationToken);
         if (summary is null)
         {
             return NotFound();

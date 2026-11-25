@@ -27,4 +27,10 @@ public sealed class FeaturesOptions
 
     /// <summary>A client's own pages at /my-bookings on a salon's host (ADR 0083): sign-in by text message code, upcoming visits. Off until the owner says.</summary>
     public bool ClientPortal { get; set; }
+
+    /// <summary>
+    /// Several services in one online booking (ADR 0095): "Add another service" on the time page, the services one
+    /// after another with one person. Off unless switched on; also closed while a payment gateway takes deposits online.
+    /// </summary>
+    public bool SeveralServices { get; set; }
 }
