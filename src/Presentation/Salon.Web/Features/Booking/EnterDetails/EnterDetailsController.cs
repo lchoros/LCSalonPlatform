@@ -10,6 +10,7 @@ using Salon.Services.Appointments;
 using Salon.Services.Booking;
 using Salon.Services.Localization;
 using Salon.Web.Framework.Booking;
+using Salon.Web.Framework.Booking.Details;
 using Salon.Web.Framework.Controllers;
 using Salon.Web.Framework.Mvc;
 

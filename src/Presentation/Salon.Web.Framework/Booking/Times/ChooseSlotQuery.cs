@@ -2,7 +2,7 @@ using NodaTime;
 using Salon.Core.Cqrs;
 using Salon.Core.Domain;
 
-namespace Salon.Web.Features.Booking.ChooseSlot;
+namespace Salon.Web.Framework.Booking.Times;
 
 /// <summary>
 /// Step 2 of the public booking flow (ADR 0014): the next days with free times for one service, for one person or for

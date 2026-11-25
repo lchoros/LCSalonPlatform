@@ -13,7 +13,7 @@ using Salon.Services.Staff;
 using Salon.Services.Tenancy;
 using Salon.Web.Framework.Ui;
 
-namespace Salon.Web.Features.Booking.ChooseSlot;
+namespace Salon.Web.Framework.Booking.Times;
 
 /// <summary>
 /// Step 2 of the public flow (ADR 0014): the people who offer the service, two weeks of days, the slots of one day. Price

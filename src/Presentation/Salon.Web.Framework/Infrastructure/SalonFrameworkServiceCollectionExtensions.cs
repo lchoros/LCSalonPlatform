@@ -66,7 +66,9 @@ public static class SalonFrameworkServiceCollectionExtensions
                    .AddInterceptors(provider.GetRequiredService<TenantCommandInterceptor>()));
 
         services.AddHttpContextAccessor();
-        services.AddSalonPipeline(sliceAssemblies);
+        // The requests two faces of one use case share (the time page and the booking API, ADR 0097) live in this
+        // assembly, so that neither slice references the other (CLAUDE.md rule 3); their handlers and validators join.
+        services.AddSalonPipeline([.. sliceAssemblies, typeof(SalonFrameworkServiceCollectionExtensions).Assembly]);
         services.AddSalonEvents(sliceAssemblies);
         // Public booking (ADR 0014): absolute links for SMS/email and the per-address limits on the code endpoints.
         services.AddSalonPublicBooking();

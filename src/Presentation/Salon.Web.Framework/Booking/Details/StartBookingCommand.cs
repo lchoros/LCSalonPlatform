@@ -1,7 +1,7 @@
 using Salon.Core.Cqrs;
 using Salon.Services.Booking;
 
-namespace Salon.Web.Features.Booking.EnterDetails;
+namespace Salon.Web.Framework.Booking.Details;
 
 /// <summary>
 /// Step 3 posted (ADR 0014): the chosen slot plus the client's details. Sends the SMS code (returning the verification to
