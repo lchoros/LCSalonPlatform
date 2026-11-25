@@ -48,6 +48,47 @@ public class SmsLengthRulesTests
         SmsLengthRules.Measure("[ok]").ShouldBe(new SmsLength(4, 1, false));
     }
 
+    [Theory]
+    [InlineData('€')]
+    [InlineData('[')]
+    [InlineData(']')]
+    [InlineData('{')]
+    [InlineData('}')]
+    [InlineData('~')]
+    [InlineData('^')]
+    [InlineData('|')]
+    [InlineData('\\')]
+    public void Each_sign_of_the_extension_table_tips_a_full_text_into_two(char sign)
+    {
+        // The messages page counts with the same table in the browser (ADR 0098), so every sign is pinned here.
+        SmsLengthRules.Measure(new string('a', 158) + sign).ShouldBe(new SmsLength(159, 1, false));
+        SmsLengthRules.Measure(new string('a', 159) + sign).ShouldBe(new SmsLength(160, 2, false));
+    }
+
+    [Theory]
+    [InlineData('ą')]
+    [InlineData('ć')]
+    [InlineData('ę')]
+    [InlineData('ł')]
+    [InlineData('ń')]
+    [InlineData('ó')]
+    [InlineData('ś')]
+    [InlineData('ź')]
+    [InlineData('ż')]
+    [InlineData('Ł')]
+    public void Every_polish_letter_makes_a_text_unicode_with_70_in_one_and_67_each_beyond(char letter)
+    {
+        SmsLengthRules.Measure(letter + new string('a', 69)).ShouldBe(new SmsLength(70, 1, true));
+        SmsLengthRules.Measure(letter + new string('a', 70)).ShouldBe(new SmsLength(71, 2, true));
+    }
+
+    [Fact]
+    public void The_accented_letters_of_the_basic_alphabet_stay_basic()
+    {
+        SmsLengthRules.Measure("Renée à Göteborg, Muñoz").ShouldBe(new SmsLength(23, 1, false));
+        SmsLengthRules.Measure("Zoé in Málaga").IsUnicode.ShouldBeTrue("á is not in the basic alphabet");
+    }
+
     [Fact]
     public void The_usual_signs_of_an_english_text_are_basic()
     {
