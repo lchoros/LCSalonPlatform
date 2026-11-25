@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Unit tests of the client app's logic (ADR 0097): screen models over a fake IBookingApi and INavigator, the API client over a stub handler. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Mobile\Salon.Mobile.Core\Salon.Mobile.Core.csproj" />
+    <ProjectReference Include="..\..\src\Libraries\Salon.Api.Contracts\Salon.Api.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Shouldly" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="Shouldly" />
+  </ItemGroup>
+
+</Project>
