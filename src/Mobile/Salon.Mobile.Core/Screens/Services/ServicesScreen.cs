@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using System.Windows.Input;
 using Salon.Api.Contracts.Booking;
 using Salon.Mobile.Core.Api;
@@ -337,18 +338,38 @@ public sealed class ServicesScreen : ObservableObject
         return string.Equals(service.CategoryName, chip.Category, StringComparison.Ordinal);
     }
 
-    private bool MatchesSearch(ServiceItem service, string search)
+    private static bool MatchesSearch(ServiceItem service, string search)
     {
         if (search.Length == 0)
         {
             return true;
         }
 
-        // Case and accents aside, in the salon's language: "zel" finds "Żel", "MANI" finds "Manicure".
-        var compare = Text.Culture.CompareInfo;
-        const CompareOptions options = CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace;
+        // Case and accents aside: "zel" finds "Żel", "MANI" finds "Manicure". Folded by hand, because Polish collation
+        // keeps Ż and Ł letters of their own.
+        var folded = Fold(search);
         return new[] { service.Name, service.VariantGroup, service.VariantLabel, service.Description, service.CategoryName }
-            .Any(field => !string.IsNullOrEmpty(field) && compare.IndexOf(field, search, options) >= 0);
+            .Any(field => !string.IsNullOrEmpty(field) && Fold(field).Contains(folded, StringComparison.Ordinal));
+    }
+
+    private static string Fold(string text)
+    {
+        var builder = new StringBuilder(text.Length);
+        foreach (var c in text.Normalize(NormalizationForm.FormD))
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.NonSpacingMark)
+            {
+                continue;
+            }
+
+            builder.Append(c switch
+            {
+                'ł' or 'Ł' => 'L',
+                _ => char.ToUpperInvariant(c),
+            });
+        }
+
+        return builder.ToString();
     }
 
     private List<ServiceRow> Group(List<ServiceItem> services)

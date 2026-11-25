@@ -19,6 +19,9 @@ public sealed class AppText : IAppText
 
     private static readonly FrozenDictionary<string, FrozenDictionary<string, string>> Dictionaries = LoadAll();
 
+    private static readonly Lazy<HashSet<string>> KnownCultures = new(
+        () => CultureInfo.GetCultures(CultureTypes.SpecificCultures).Select(c => c.Name).ToHashSet(StringComparer.OrdinalIgnoreCase));
+
     private FrozenDictionary<string, string> _words = Dictionaries[English];
 
     public AppText(string? cultureName = null)
@@ -95,7 +98,8 @@ public sealed class AppText : IAppText
                 return CultureInfo.GetCultureInfo(string.Equals(culture.TwoLetterISOLanguageName, "pl", StringComparison.OrdinalIgnoreCase) ? Polish : English);
             }
 
-            return culture;
+            // ICU makes up a culture for any well-formed name; only one the platform really knows has a region and a currency.
+            return KnownCultures.Value.Contains(culture.Name) ? culture : CultureInfo.GetCultureInfo(English);
         }
         catch (CultureNotFoundException)
         {
