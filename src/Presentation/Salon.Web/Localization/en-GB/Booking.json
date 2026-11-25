@@ -121,6 +121,7 @@
   "Booking.Public.AddRow": "Add",
   "Booking.Public.ChangeStaff": "Change",
   "Booking.Public.ChooseStaff": "Choose",
+  "Booking.Public.StaffAtTime": "These are the people free at {0}. For somebody else, choose another time first.",
   "Booking.Public.Missing.Time": "Choose a time first.",
   "Booking.Public.Missing.Staff": "Choose who with first.",
   "Booking.Public.Missing.TimeAndStaff": "Choose a time and who with first.",

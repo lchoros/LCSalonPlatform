@@ -59,11 +59,11 @@ public partial class PublicBookingTests
         one.ShouldContain("data-testid=\"summary-when\">09:30 – 10:00</p>");
 
         // Back from the list with the colour added: the time is kept, and each card says its own part of it.
-        var kept = await GetAsync(client, $"/book/{_serviceId}?also={colour}&staff={_annaId}&date={Iso(_day)}&from={today}&start={nineThirty}");
+        var kept = await GetAsync(client, $"/book/{_serviceId}?also={colour}&with={_annaId}&staff={_annaId}&date={Iso(_day)}&from={today}&start={nineThirty}");
         LineTimes().Matches(kept).Select(m => m.Groups[1].Value).ShouldBe(["09:30 – 10:00", "10:00 – 10:45"]);
         kept.ShouldContain("data-testid=\"continue\"");
 
-        var both = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff={_annaId}&also={colour}");
+        var both = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff={_annaId}&also={colour}&with={_annaId}");
 
         both.ShouldContain("data-testid=\"service-name\">Cut</p>");
         both.ShouldContain("data-testid=\"extra-service-name\">Colour</p>");
@@ -83,7 +83,7 @@ public partial class PublicBookingTests
 
         // The continue link carries the visit to the details, whose summary names it whole.
         var start = expected[0];
-        var picked = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff={_annaId}&also={colour}&start={Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(start))}");
+        var picked = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff={_annaId}&also={colour}&with={_annaId}&start={Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(start))}");
         picked.ShouldContain($"/book/{_serviceId}/details?start={Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(start))}&staff={_annaId}&also={colour}&with={_annaId}\"");
         var details = await GetAsync(client, $"{DetailsPath(start, _annaId)}&also={colour}");
         details.ShouldContain("Cut + Colour");
@@ -128,11 +128,12 @@ public partial class PublicBookingTests
         var start = Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(ten));
         var today = Iso(SystemClock.Instance.GetCurrentInstant().InZone(London).Date);
 
-        // A service added to the visit takes the person of the one before it: nothing more to answer.
+        // Nobody is picked for a service added to the visit: its line says the answer is owed, and nothing goes on.
         var same = await GetAsync(client, $"/book/{_serviceId}?staff={_annaId}&also={colour}&date={Iso(_day)}&from={today}&start={start}");
         same.ShouldContain("data-testid=\"summary-staff\">Anna</span>");
-        same.ShouldContain("data-testid=\"line-summary-staff\">Anna</span>");
-        same.ShouldNotContain("staff-required\"");
+        same.ShouldContain("data-testid=\"line-summary-staff\">Not chosen yet</span>");
+        same.ShouldContain("data-testid=\"line-staff-required\">Required</span>");
+        same.ShouldContain("<a href=\"#staff-line-1\" class=\"btn btn-primary btn-off w-full\" data-testid=\"continue-off\">");
         // Its own sheet offers the people who do it; an answer there changes only that service.
         same.ShouldContain("<div id=\"who-1\" class=\"sheet\" role=\"dialog\"");
         same.ShouldContain("data-testid=\"line-choose-staff\">Who would you like for Colour?</p>");
@@ -172,6 +173,14 @@ public partial class PublicBookingTests
         booked.Select(a => (a.ServiceId, a.StaffMemberId)).ShouldBe([(_serviceId, _annaId), (colour, _tomId)]);
         booked[1].Start.ShouldBe(booked[0].End);
         booked[1].VisitGroupId.ShouldBe(booked[0].VisitGroupId.ShouldNotBeNull());
+
+        // With a time tapped, a service's sheet offers only the people free then (the owner, 2026-11-25). Tom now has
+        // the colour above until 11:15, so for a cut at 10:30 and a colour at 11:00 only Anna is offered for the colour.
+        var halfPast = Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(_day.At(new LocalTime(10, 30)).InZoneStrictly(London).ToInstant()));
+        var filtered = await GetAsync(client, $"/book/{_serviceId}?staff={_annaId}&also={colour}&date={Iso(_day)}&from={today}&start={halfPast}");
+        filtered.ShouldContain("data-testid=\"line-staff-at-time\">These are the people free at 10:30. For somebody else, choose another time first.</p>");
+        filtered.ShouldContain($"&also={colour}&with={_annaId}&date=");
+        filtered.ShouldNotContain($"&also={colour}&with={_tomId}&date=");
     }
 
     [Fact]

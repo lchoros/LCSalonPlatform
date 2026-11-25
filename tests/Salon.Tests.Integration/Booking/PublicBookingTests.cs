@@ -129,7 +129,8 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         var start = Uri.EscapeDataString(InstantPattern.ExtendedIso.Format((await SlotStartsAsync(_studio.Id, _tomId))[0]));
         var today = Iso(SystemClock.Instance.GetCurrentInstant().InZone(London).Date);
         var tapped = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&from={today}&start={start}");
-        tapped.ShouldContain("<a href=\"#who\" class=\"btn btn-primary w-full shadow-lg\" data-testid=\"continue-needs-staff\">Continue</a>");
+        tapped.ShouldContain("<a href=\"#staff-line-0\" class=\"btn btn-primary btn-off w-full\" data-testid=\"continue-off\">Continue</a>", Case.Sensitive, "still grey: it points at the staff line that waits");
+        tapped.ShouldContain("<div id=\"staff-line-0\" class=\"card-staff\">");
         tapped.ShouldNotContain("data-testid=\"continue\"", Case.Sensitive, "nothing leads to the details until who with is answered");
         tapped.ShouldContain($"href=\"/book/{_serviceId}?staff={_tomId}&date={Iso(_day)}&from={today}&start={start}\"");
 

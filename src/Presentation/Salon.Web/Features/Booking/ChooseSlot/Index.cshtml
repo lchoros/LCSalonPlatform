@@ -92,9 +92,14 @@
                     <a href="#days" class="book-close" data-testid="@prefix-close" aria-label="@T["Booking.Public.CloseChoice"]"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></a>
                 </div>
                 <p class="text-slate-600" data-testid="@(i == 0 ? "choose-staff" : "line-choose-staff")">@(r.Lines.Count > 1 ? T.Format("Booking.Public.ChooseStaffFor", line.Name) : T["Booking.Public.ChooseStaffFirst"])</p>
+                @if (r.Chosen is { } at && line.Offered.Count < line.Staff.Count)
+                {
+                    @* Only the people free at the tapped time are offered (the owner, 2026-11-25). *@
+                    <p class="text-sm text-slate-600" data-testid="@prefix-at-time">@T.Format("Booking.Public.StaffAtTime", at.LocalStart.ToString("HH:mm", culture))</p>
+                }
                 <nav aria-label="@T["Booking.Public.With"]" data-testid="@prefix-picker" class="staff-faces">
                     <a href="@Model.StaffPath(index, ChooseSlotQuery.AnyStaff)" class="staff-face @(line.Anyone ? "is-on" : null)" aria-current="@(line.Anyone ? "true" : null)" data-testid="@prefix-any"><span class="staff-face-any" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.6-3.4 3.2-5.5 6.5-5.5s5.9 2.1 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.9c1.7.9 2.7 2.6 3 5.1" /></svg></span><span class="staff-face-name">@T["Booking.Public.Anyone"]</span></a>
-                    @foreach (var person in line.Staff)
+                    @foreach (var person in line.Offered)
                     {
                         var on = person.Id == line.StaffId;
                         <a href="@Model.StaffPath(index, person.Id.ToString())" class="staff-face @(on ? "is-on" : null)" aria-current="@(on ? "true" : null)" data-testid="@prefix-option"><avatar name="@person.DisplayName" photo="@person.PhotoPath" size="Large" /><span class="staff-face-name">@person.DisplayName</span></a>
@@ -170,6 +175,9 @@
 
     @* What is being booked, under the times (ADR 0094, stage 2): the service and its price, the time once one is
        tapped, who with, the total, and the one button that goes on. *@
+    @* The services scroll in a space of their own on a phone (the owner, 2026-11-25): the days and times stay above,
+       the total and Continue below, and nothing slides under the button. *@
+    <div class="book-scroll">
     <section class="book-cards" data-testid="booking-summary" aria-label="@T["Booking.Public.Summary"]">
         @* A grey card for each service (the owner, 2026-11-25): its name, its price and its own time once one is
            tapped, and under a thin line who does it, with a small face and the button that opens its sheet (ADR 0096).
@@ -197,7 +205,7 @@
                         <p class="text-sm text-slate-600 tabular-nums" data-testid="@(r.Lines.Count == 1 ? "summary-when" : "line-when")">@ChooseSlotText.LineWhen(T, r, line, culture)</p>
                     </div>
                 </div>
-                <div class="card-staff">
+                <div id="staff-line-@i" class="card-staff">
                     <p class="flex min-w-0 items-center gap-2 text-slate-600">
                         @T["Booking.Public.SummaryStaff"]
                         @if (line.Person is { } who)
@@ -232,6 +240,15 @@
            time and who with — before another is added. A tap says what is still missing. *@
         <a href="#pick-first" class="add-service is-off" data-testid="add-service-off"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>@T["Booking.Public.AddService"]</a>
     }
+    @if (r.WaitlistOffered)
+    {
+        @* For somebody who finds no time that suits (ADR 0055); only while the owner has switched it on. *@
+        <p class="rounded-xl border border-stone-200 bg-white p-4 text-center text-stone-700" data-testid="waitlist-offer">
+            @T["Booking.Waitlist.Offer"]
+            <a href="@r.WaitlistPath" class="font-medium underline underline-offset-4" data-testid="join-waitlist">@T["Booking.Waitlist.OfferLink"]</a>
+        </p>
+    }
+    </div>
     <div class="book-total">
         <p class="text-sm text-slate-600">@T["Booking.Public.Total"]</p>
         <div class="text-right">
@@ -239,8 +256,9 @@
             <p class="text-sm text-slate-600 tabular-nums" data-testid="summary-duration">@T.Format("Booking.Public.DurationMinutes", (int)r.Duration.TotalMinutes)</p>
         </div>
     </div>
-    @* Continue is always there (the owner, 2026-11-25): grey until a time is tapped; with a time and an answer still
-       owed it opens the sheet that waits, and the answer keeps the time; otherwise it goes on. *@
+    @* Continue is always there (the owner, 2026-11-25) and stays grey until a time is tapped and every "who with" is
+       answered. Tapped too early it does not go on: with no time it says so at the top of the page; with a time and
+       an answer still owed it points at the staff line that waits, which lights up gently for a moment. *@
     <div class="sticky bottom-4" data-testid="continue-bar">
         @if (r.Chosen is not { } going)
         {
@@ -248,7 +266,7 @@
         }
         else if (r.NeedsStaffChoice)
         {
-            <a href="#@Model.FirstOpenSheet" class="btn btn-primary w-full shadow-lg" data-testid="continue-needs-staff">@T["Booking.Public.Continue"]</a>
+            <a href="#@Model.FirstOpenStaffLine" class="btn btn-primary btn-off w-full" data-testid="continue-off">@T["Booking.Public.Continue"]</a>
         }
         else
         {
@@ -262,14 +280,6 @@
         <a href="#days" class="pick-first-close" aria-label="@T["Booking.Public.CloseChoice"]"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></a>
     </p>
 
-    @if (r.WaitlistOffered)
-    {
-        @* For somebody who finds no time that suits (ADR 0055); only while the owner has switched it on. *@
-        <p class="rounded-xl border border-stone-200 bg-white p-4 text-center text-stone-700" data-testid="waitlist-offer">
-            @T["Booking.Waitlist.Offer"]
-            <a href="@r.WaitlistPath" class="font-medium underline underline-offset-4" data-testid="join-waitlist">@T["Booking.Waitlist.OfferLink"]</a>
-        </p>
-    }
 </section>
 @section Scripts {
     <script type="module" src="~/js/booking-slots.js" asp-append-version="true"></script>

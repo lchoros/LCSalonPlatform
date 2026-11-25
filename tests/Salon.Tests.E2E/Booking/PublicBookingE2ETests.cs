@@ -78,14 +78,19 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await page.ReachAsync(url => url.Contains("/book/", StringComparison.Ordinal) && !url.EndsWith("/book", StringComparison.Ordinal));
 
         // Step 2 shows the days and times at once (the owner, 2026-11-25); nobody is chosen for the client, and the
-        // staff line says so. Going on with a tapped time asks who with first, in a sheet, and the answer keeps the time.
+        // staff line says so. Who with is answered in a sheet the staff line opens, and the answer keeps the time.
         (await page.GetByTestId("service-name").TextContentAsync()).ShouldBe("Cut & blow-dry");
         await Assertions.Expect(page.GetByTestId("staff-required")).ToBeVisibleAsync();
         (await page.GetByTestId("summary-staff").TextContentAsync()).ShouldBe("Not chosen yet");
         (await page.GetByTestId("day").CountAsync()).ShouldBe(14);
         await Assertions.Expect(page.GetByTestId("staff-option").First).ToBeHiddenAsync();
         await page.GetByTestId("slot").First.TapAsync();
-        await page.GetByTestId("continue-needs-staff").TapAsync();
+        // Continue stays grey until who with is answered too (the owner, 2026-11-25): a tap does not go on, it points
+        // at the staff line, which lights up; the button there opens the sheet.
+        await page.GetByTestId("continue-off").TapAsync();
+        (await page.EvaluateAsync<bool>("() => document.getElementById(\"staff-line-0\").matches(\":target\")")).ShouldBeTrue();
+        page.Url.ShouldNotContain("/details");
+        await page.GetByTestId("change-staff").TapAsync();
         await Assertions.Expect(page.GetByTestId("staff-option").First).ToBeVisibleAsync();
         (await page.Locator("[data-testid=staff-picker] [aria-current=true]").CountAsync()).ShouldBe(0);
         // The sheet comes up over a fifth of a second; the check is of the sheet, not of the fade.

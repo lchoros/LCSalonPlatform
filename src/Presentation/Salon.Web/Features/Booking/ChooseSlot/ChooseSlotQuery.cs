@@ -86,10 +86,16 @@ public sealed record VisitLine(Guid ServiceId, string Name, Duration Duration, M
     /// <summary>The people who offer this service, in the salon's order: the answers to "who with" for it (ADR 0096).</summary>
     public IReadOnlyList<StaffOption> Staff { get; init; } = [];
 
+    /// <summary>With a time tapped, the people of <see cref="Staff"/> who can do this service then; null while no time is tapped.</summary>
+    public IReadOnlyList<StaffOption>? StaffAtTime { get; init; }
+
+    /// <summary>The people the sheet offers: those free at the tapped time, or everybody who offers the service.</summary>
+    public IReadOnlyList<StaffOption> Offered => StaffAtTime ?? Staff;
+
     /// <summary>The person chosen for this service; null under "anyone" and while the answer is still owed.</summary>
     public Guid? StaffId { get; init; }
 
-    /// <summary>"Anyone available" for this service: chosen, taken over from the service before, or the only thing there is to say.</summary>
+    /// <summary>"Anyone available" for this service: chosen, or the only thing there is to say.</summary>
     public bool Anyone { get; init; }
 
     /// <summary>There is a choice of people for this service and the client has not said yet.</summary>

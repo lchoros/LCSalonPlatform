@@ -79,8 +79,8 @@ public sealed class ChooseSlotHandler(
 
         // Who does each service (ADR 0096): its own answer — a person who offers it, or "anyone". Who with is asked,
         // not assumed (the owner, 2026-11-22), so where there is a choice of people and no answer the line says it is
-        // still owed. A service added to the visit takes the answer of the one before it when that still fits, so
-        // the client is asked again only where it matters. A person who is no longer bookable, or does not offer the
+        // still owed, and that goes for a service added to the visit too: nobody is picked for the client
+        // (2026-11-25, late). A person who is no longer bookable, or does not offer the
         // service, is no answer.
         var spans = await offerings.PriceSpansAsync(serviceIds, cancellationToken);
         var lines = new List<VisitLine>();
@@ -92,12 +92,6 @@ public sealed class ChooseSlotHandler(
             var wanted = i == 0 ? request.StaffMemberId : (Guid.TryParse(token, out var parsed) ? parsed : null);
             var person = wanted is { } id && people.Any(s => s.Id == id) ? wanted : null;
             var anyone = person is null && (i == 0 ? request.Anyone : string.Equals(token, ChooseSlotQuery.AnyStaff, StringComparison.OrdinalIgnoreCase));
-            if (person is null && !anyone && i > 0 && !lines[i - 1].NeedsStaffChoice)
-            {
-                var before = lines[i - 1];
-                person = before.StaffId is { } same && people.Any(s => s.Id == same) ? same : null;
-                anyone = person is null && before.Anyone;
-            }
 
             // One person, or nobody, offers it: there is nothing to ask.
             anyone |= person is null && people.Count <= 1;
@@ -146,6 +140,27 @@ public sealed class ChooseSlotHandler(
         // Only a start that is genuinely free right now counts; a stale or foreign one quietly deselects.
         var chosenSlot = request.Start is { } wantedStart ? daySlots.FirstOrDefault(s => s.Start == wantedStart) : null;
         var chosenPart = chosenSlot is null ? 0 : Math.Max(0, groups.ToList().FindIndex(g => g.Slots.Contains(chosenSlot)));
+
+        // With a time tapped, each service's sheet offers only the people who can do it then (the owner, 2026-11-25):
+        // the visit is planned once more for each person in that place, the other answers as they are. A person
+        // already chosen stays in sight whatever the plan says, so an answer never vanishes from its own sheet.
+        if (chosenSlot is not null)
+        {
+            for (var i = 0; i < lines.Count; i++)
+            {
+                var free = new List<StaffOption>();
+                foreach (var person in lines[i].Staff)
+                {
+                    var asked = lines.Select((l, at) => new VisitPart(l.ServiceId, at == i ? person.Id : l.StaffId)).ToList();
+                    if (person.Id == lines[i].StaffId || (await availability.GetVisitPlanAsync(asked, selected, selected, cancellationToken)).Any(s => s.Start == chosenSlot.Start))
+                    {
+                        free.Add(person);
+                    }
+                }
+
+                lines[i] = lines[i] with { StaffAtTime = free };
+            }
+        }
         return new ChooseSlotResult(
             service.Id,
             service.Name,

@@ -121,6 +121,6 @@ public sealed record ChooseSlotViewModel(string SalonName, ChooseSlotResult Resu
     /// <summary>This page with one service's "who with" answered: the line (0 is the first service) and the answer, a person's id or "any" (ADR 0096).</summary>
     public Func<int, string, string> StaffPath { get; init; } = (_, _) => string.Empty;
 
-    /// <summary>The sheet of the first service whose "who with" is still owed: where Continue leads until every answer is in.</summary>
-    public string FirstOpenSheet => Result.Lines.ToList().FindIndex(l => l.NeedsStaffChoice) is var open and > 0 ? $"who-{open}" : "who";
+    /// <summary>The staff line of the first service whose "who with" is still owed: what a too-early Continue points at.</summary>
+    public string FirstOpenStaffLine => $"staff-line-{Math.Max(0, Result.Lines.ToList().FindIndex(l => l.NeedsStaffChoice))}";
 }

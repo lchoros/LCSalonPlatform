@@ -58,3 +58,19 @@ each service of a visit was already an appointment of its own with its own `staf
 - **Let the engine place the second service by itself with a wait between** (what Booksy does): the owner called it
   out — the client should choose the time, and the parts should follow one another.
 - **Chaining the step-aligned slot lists of each service**: a 20-minute first service never lines up with a second.
+
+## Addendum, the same night: what the owner changed after trying it
+
+- **Nobody is picked for an added service.** ("second service should not set auto staff.") The rule above that an
+  added service takes the answer of the one before it is withdrawn: its line says "Not chosen yet · Required" like
+  the first. Where only one person offers a service there is still nothing to ask.
+- **Continue stays grey until a time is tapped and every "who with" is answered.** Tapped too early it does not open
+  a sheet any more: with no time it says so at the top of the page; with a time and an answer owed it points at the
+  staff line that waits, which lights up gently for a moment.
+- **With a time tapped, a service's sheet offers only the people free then.** The visit is planned once more for each
+  person in that place, the other answers as they are; a note says whose list this is and that another time shows
+  others. Cost: one plan per person per service on each page with a tapped time — a few dozen small queries for a
+  salon of three; to be made one pass if a salon with many people feels it.
+- **The time page is one screen on a phone**: the days and times hold at the top, the total and Continue at the
+  bottom, and the service cards scroll in a space of their own between them, so nothing slides under the button.
+  From `sm` the page flows as before with Continue stuck to the bottom over a solid strip.

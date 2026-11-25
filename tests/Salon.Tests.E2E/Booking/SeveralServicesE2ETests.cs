@@ -90,9 +90,10 @@ public class SeveralServicesE2ETests(KestrelAppFixture app) : IClassFixture<Kest
         (await page.GetByTestId("summary-duration").TextContentAsync()).ShouldBe("65 min");
         // The time chosen before adding is kept: the first card still says it, the second follows on.
         (await page.GetByTestId("line-when").First.TextContentAsync()).ShouldBe(chosenTime);
-        await Assertions.Expect(page.GetByTestId("continue")).ToHaveCountAsync(1);
+        // Nobody is picked for the added service (the owner, 2026-11-25): its line says the answer is owed and Continue is grey.
+        await Assertions.Expect(page.GetByTestId("continue-off")).ToHaveCountAsync(1);
         (await page.GetByTestId("staff-required").CountAsync()).ShouldBe(0, "who with was not asked again");
-        (await page.GetByTestId("line-staff-required").CountAsync()).ShouldBe(0, "the added service takes the answer of the one before it");
+        await Assertions.Expect(page.GetByTestId("line-staff-required")).ToBeVisibleAsync();
         (await page.GetByTestId("remove-service").CountAsync()).ShouldBe(2);
         var slots = page.GetByTestId("slot");
         (await slots.CountAsync()).ShouldBeGreaterThan(0, "the demo rota has room for a 65-minute visit within two weeks");

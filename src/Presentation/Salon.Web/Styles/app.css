@@ -586,15 +586,65 @@
     @apply border-brand ring-2 ring-brand ring-offset-2;
   }
 
-  /* Continue has a strip of the page under it, so what scrolls beneath is not half hidden by the button. */
+  /* The time page as one screen on a phone (the owner, 2026-11-25): the days and the times hold at the top, the total
+     and Continue at the bottom, and the services between them scroll in a space of their own — nothing slides
+     under the button. From sm the page flows as a page does and Continue sticks to the bottom over a solid strip. */
   [data-testid="continue-bar"] {
-    @apply -mx-4 bg-stone-50/95 px-4 py-3;
+    @apply -mx-4 bg-stone-50 px-4 py-3;
     bottom: 0;
+  }
+
+  @media (width < 40rem) {
+    [data-booking] {
+      @apply fixed inset-0 z-10 m-0 flex max-w-none flex-col gap-3 bg-stone-50 px-4 pt-4;
+    }
+
+    [data-booking] > * {
+      @apply mt-0 shrink-0;
+    }
+
+    [data-booking] > .book-scroll {
+      @apply -mx-4 min-h-24 flex-1 basis-0 space-y-4 overflow-y-auto overscroll-contain px-4 pt-3 pb-2;
+    }
+
+    [data-booking] > [data-testid="continue-bar"] {
+      @apply static pt-0 pb-[max(0.75rem,env(safe-area-inset-bottom))];
+    }
+
+    [data-booking] > .book-total {
+      @apply pt-3;
+    }
+  }
+
+  @media (width >= 40rem) {
+    .book-scroll {
+      @apply space-y-6;
+    }
   }
 
   /* Who does the service, inside its card under a thin line, with a small face (the owner, 2026-11-25). */
   .card-staff {
     @apply flex items-center justify-between gap-3 border-t border-slate-200 pt-3 text-sm;
+  }
+
+  /* The staff line a too-early Continue points at (the owner, 2026-11-25): it comes into sight and lights up
+     gently for a moment, then rests with a soft edge so it is still easy to find. */
+  .card-staff:target {
+    @apply -mx-2 scroll-mt-[40vh] rounded-lg border-t-transparent px-2 pb-2;
+    box-shadow: 0 0 0 2px var(--color-brand-edge);
+    animation: staff-line-asks 1.4s ease-out;
+  }
+
+  @keyframes staff-line-asks {
+    0%,
+    35% {
+      background-color: var(--color-brand-soft);
+      box-shadow: 0 0 0 3px var(--color-brand);
+    }
+
+    100% {
+      background-color: transparent;
+    }
   }
 
   /* Continue before it can be used: there, and grey. */

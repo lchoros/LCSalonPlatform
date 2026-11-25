@@ -121,6 +121,7 @@
   "Booking.Public.AddRow": "Dodaj",
   "Booking.Public.ChangeStaff": "Zmień",
   "Booking.Public.ChooseStaff": "Wybierz",
+  "Booking.Public.StaffAtTime": "To osoby wolne o {0}. Aby wybrać kogoś innego, najpierw zmień godzinę.",
   "Booking.Public.Missing.Time": "Najpierw wybierz godzinę.",
   "Booking.Public.Missing.Staff": "Najpierw wybierz osobę.",
   "Booking.Public.Missing.TimeAndStaff": "Najpierw wybierz godzinę i osobę.",
