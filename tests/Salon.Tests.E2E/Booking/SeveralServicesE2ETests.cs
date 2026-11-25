@@ -61,7 +61,13 @@ public class SeveralServicesE2ETests(KestrelAppFixture app) : IClassFixture<Kest
 
         // More services come after a time is chosen for what is here (the owner, 2026-11-25).
         (await page.GetByTestId("add-service").CountAsync()).ShouldBe(0);
-        await Assertions.Expect(page.GetByTestId("add-after-time")).ToBeVisibleAsync();
+        // "Add another service" is in sight but pale, and Continue grey; a tap on either says what is missing.
+        await Assertions.Expect(page.GetByTestId("pick-first")).ToBeHiddenAsync();
+        await page.GetByTestId("add-service-off").TapAsync();
+        await Assertions.Expect(page.GetByTestId("pick-first")).ToBeVisibleAsync();
+        (await page.GetByTestId("pick-first").TextContentAsync()).ShouldNotBeNull().Trim().ShouldBe("Choose a time first.");
+        await page.WaitForFunctionAsync("() => getComputedStyle(document.getElementById(\"pick-first\")).opacity === \"1\"");
+        await CaptureAsync(page, "book-pick-first-mobile-390.png");
         await page.GetByTestId("slot").First.TapAsync();
         await Assertions.Expect(page.GetByTestId("continue")).ToHaveCountAsync(1);
         var chosenTime = (await page.GetByTestId("summary-when").TextContentAsync()).ShouldNotBeNull();
@@ -85,11 +91,24 @@ public class SeveralServicesE2ETests(KestrelAppFixture app) : IClassFixture<Kest
         // The time chosen before adding is kept: the first card still says it, the second follows on.
         (await page.GetByTestId("line-when").First.TextContentAsync()).ShouldBe(chosenTime);
         await Assertions.Expect(page.GetByTestId("continue")).ToHaveCountAsync(1);
-        (await page.GetByTestId("choose-staff").CountAsync()).ShouldBe(0);
+        (await page.GetByTestId("staff-required").CountAsync()).ShouldBe(0, "who with was not asked again");
+        (await page.GetByTestId("line-staff-required").CountAsync()).ShouldBe(0, "the added service takes the answer of the one before it");
         (await page.GetByTestId("remove-service").CountAsync()).ShouldBe(2);
         var slots = page.GetByTestId("slot");
         (await slots.CountAsync()).ShouldBeGreaterThan(0, "the demo rota has room for a 65-minute visit within two weeks");
         await CaptureAsync(page, "book-several-services-mobile-390.png");
+
+        // The second service gets a person of its own (ADR 0096): its card opens its own sheet of the people who do it.
+        await page.GetByTestId("line-change-staff").TapAsync();
+        await page.WaitForFunctionAsync("() => getComputedStyle(document.getElementById('who-1')).opacity === '1'");
+        await CaptureAsync(page, "book-several-services-who-mobile-390.png");
+        var second = page.GetByTestId("line-staff-option").First;
+        var secondName = (await second.Locator(".staff-face-name").TextContentAsync()).ShouldNotBeNull().Trim();
+        await second.TapAsync();
+        await page.ReachAsync(url => url.Contains("with=", StringComparison.Ordinal));
+        (await page.GetByTestId("line-summary-staff").TextContentAsync()).ShouldBe(secondName);
+        (await page.GetByTestId("summary-staff").TextContentAsync()).ShouldBe("No preference");
+        await CaptureAsync(page, "book-several-services-people-mobile-390.png");
 
         await slots.First.TapAsync();
         await page.GetByTestId("continue").TapAsync();

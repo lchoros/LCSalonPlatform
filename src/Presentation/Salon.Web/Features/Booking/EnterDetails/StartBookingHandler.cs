@@ -39,6 +39,7 @@ public sealed class StartBookingHandler(
             wording = ConsentWording(localizer, tenant.Name);
         }
 
+        var extras = basket.Read(request.Also, request.ServiceId);
         return await publicBooking.StartAsync(
             new PublicBookingRequest(
                 request.ServiceId,
@@ -50,7 +51,8 @@ public sealed class StartBookingHandler(
                 request.Email,
                 request.MarketingConsent,
                 wording,
-                basket.Read(request.Also, request.ServiceId)),
+                extras,
+                [.. basket.ReadStaff(request.With, extras.Count).Select(a => Guid.TryParse(a, out var person) ? person : (Guid?)null)]),
             cancellationToken);
     }
 

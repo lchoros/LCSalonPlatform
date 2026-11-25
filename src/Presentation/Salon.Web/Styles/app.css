@@ -547,9 +547,6 @@
     @apply flex flex-col items-center gap-2 rounded-2xl border border-transparent p-3 text-center text-sm font-medium text-slate-800 transition-colors hover:border-brand-edge hover:bg-brand-mist focus:outline-none focus-visible:ring-2 focus-visible:ring-brand;
   }
 
-  .staff-face.is-on {
-    @apply border-brand bg-brand-soft text-brand;
-  }
 
   .staff-face-any {
     @apply inline-flex size-20 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600;
@@ -557,6 +554,73 @@
 
   .staff-face-name {
     @apply leading-snug;
+  }
+
+  /* A face in the sheet (the owner, 2026-11-25): the chosen one a full circle of the brand, the others white with
+     its edge. A photograph keeps its picture and wears the edge; chosen, the edge is doubled. */
+  /* The chosen tile is said by its circle, not by a box around it. */
+  .staff-face.is-on {
+    @apply border-transparent font-semibold text-brand;
+    background: none;
+    box-shadow: none;
+  }
+
+  .staff-face [data-avatar="letter"],
+  .staff-face .staff-face-any {
+    @apply border-2 border-brand;
+    background-color: var(--color-white) !important;
+    color: var(--color-brand) !important;
+  }
+
+  .staff-face [data-avatar="photo"] {
+    @apply border-2 border-brand-edge;
+  }
+
+  .staff-face.is-on [data-avatar="letter"],
+  .staff-face.is-on .staff-face-any {
+    background-color: var(--color-brand) !important;
+    color: var(--color-white) !important;
+  }
+
+  .staff-face.is-on [data-avatar="photo"] {
+    @apply border-brand ring-2 ring-brand ring-offset-2;
+  }
+
+  /* Continue has a strip of the page under it, so what scrolls beneath is not half hidden by the button. */
+  [data-testid="continue-bar"] {
+    @apply -mx-4 bg-stone-50/95 px-4 py-3;
+    bottom: 0;
+  }
+
+  /* Who does the service, inside its card under a thin line, with a small face (the owner, 2026-11-25). */
+  .card-staff {
+    @apply flex items-center justify-between gap-3 border-t border-slate-200 pt-3 text-sm;
+  }
+
+  /* Continue before it can be used: there, and grey. */
+  .btn-off {
+    @apply border-slate-200 bg-slate-200 text-slate-600 shadow-none hover:bg-slate-200;
+  }
+
+  /* "Add another service" before it can be used: in sight, pale (the owner, 2026-11-25). */
+  .add-service.is-off {
+    @apply border-0 font-normal hover:no-underline;
+    background: none;
+    /* As pale as the brand goes while still readable on the page (4.6 to 1). */
+    color: #6d5ce8;
+  }
+
+  /* What is still missing, over the top of the page, shown by the link that was tapped too early. */
+  .pick-first {
+    @apply invisible fixed inset-x-4 top-4 z-40 mx-auto flex max-w-md items-center justify-between gap-3 opacity-0 shadow-lg transition-opacity;
+  }
+
+  .pick-first:target {
+    @apply visible opacity-100;
+  }
+
+  .pick-first-close {
+    @apply inline-flex size-8 shrink-0 items-center justify-center rounded-full hover:bg-red-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-700;
   }
   .staff-choice-required {
     @apply rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700;

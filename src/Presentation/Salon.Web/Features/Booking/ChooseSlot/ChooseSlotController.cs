@@ -24,12 +24,15 @@ namespace Salon.Web.Features.Booking.ChooseSlot;
 public sealed class ChooseSlotController(IDispatcher dispatcher, ITenantContext tenantContext, ITenantLookup tenantLookup, IVisitBasket basket) : SalonControllerBase
 {
     [HttpGet("{serviceId:guid}")]
-    public async Task<IActionResult> Index(Guid serviceId, string? date, string? staff, string? from, string? start, string? also, CancellationToken cancellationToken)
+    public async Task<IActionResult> Index(Guid serviceId, string? date, string? staff, string? from, string? start, string? also, string? with, CancellationToken cancellationToken)
     {
         // "any" is a choice the visitor made; nothing at all is no choice yet (ADR 0094, stage 3).
         var anyone = string.Equals(staff, ChooseSlotQuery.AnyStaff, StringComparison.OrdinalIgnoreCase);
         Guid? staffId = Guid.TryParse(staff, out var id) ? id : null;
-        var result = await dispatcher.SendAsync(new ChooseSlotQuery(serviceId, ParseDate(date), staffId, ParseDate(from), ParseStart(start), anyone, basket.Read(also, serviceId)), cancellationToken);
+        var extras = basket.Read(also, serviceId);
+        var result = await dispatcher.SendAsync(
+            new ChooseSlotQuery(serviceId, ParseDate(date), staffId, ParseDate(from), ParseStart(start), anyone, extras, basket.ReadStaff(with, extras.Count)),
+            cancellationToken);
         if (result is null)
         {
             return NotFound();
@@ -37,39 +40,46 @@ public sealed class ChooseSlotController(IDispatcher dispatcher, ITenantContext 
 
         // [RequireTenant] has already turned a tenant-less request into a 404.
         var tenant = await tenantLookup.FindByIdAsync(tenantContext.TenantId!.Value, cancellationToken);
+        var services = result.Lines.Select(l => l.ServiceId).ToList();
+        var answers = result.Lines.Select(Answer).ToList();
+        var canAdd = basket.IsOpen && result.Lines.Count < VisitRules.MaxServices && result.Slots.Count > 0;
         return View(new ChooseSlotViewModel(tenant?.Name ?? string.Empty, result)
         {
-            AlsoQuery = VisitBasket.Query(Extras(result)),
-            // More services come after a time is chosen for what is here (the owner, 2026-11-25); the time rides along.
-            AddPath = basket.IsOpen && result.Chosen is not null && result.Lines.Count < VisitRules.MaxServices ? AddPath(result) : null,
-            AddAfterTime = basket.IsOpen && result.Chosen is null && result.Slots.Count > 0 && result.Lines.Count < VisitRules.MaxServices,
-            RemovePaths = result.Lines.Count > 1 ? result.Lines.ToDictionary(l => l.ServiceId, l => WithoutPath(result, l.ServiceId)) : [],
+            AlsoQuery = VisitBasket.Query(services.Skip(1), answers.Skip(1)),
+            // One service is picked in full — its time and who with — before another is added (the owner, 2026-11-25);
+            // what was picked rides along.
+            AddPath = canAdd && result.Chosen is not null && !result.NeedsStaffChoice
+                ? ListUrl.Build(PublicBookingDefaults.BookPath, [("add", services[0].ToString()), .. Carried(result, services, answers)])
+                : null,
+            AddAfterTime = canAdd && (result.Chosen is null || result.NeedsStaffChoice),
+            RemovePaths = result.Lines.Count > 1
+                ? result.Lines.Select((l, i) => (l.ServiceId, Path: Address(result, Without(services, i), Without(answers, i)))).ToDictionary(p => p.ServiceId, p => p.Path)
+                : [],
+            // An answer to "who with" for one service: this page with that answer in its place, the rest as it is.
+            StaffPath = (line, answer) => Address(result, services, [.. answers.Select((a, i) => i == line ? answer : a)]),
         });
     }
 
-    private static IEnumerable<Guid> Extras(ChooseSlotResult result) => result.Lines.Skip(1).Select(l => l.ServiceId);
+    /// <summary>The answer to "who with" for one service as the address carries it: a person, "any", or nothing while it is owed.</summary>
+    private static string? Answer(VisitLine line)
+        => line.StaffId is { } person ? person.ToString() : line.Anyone && line.Staff.Count > 1 ? ChooseSlotQuery.AnyStaff : null;
 
-    /// <summary>The answer to "who with" as the address carries it: a person, "any", or nothing while it is unanswered.</summary>
-    private static string? StaffValue(ChooseSlotResult result)
-        => result.SelectedStaffId is { } person ? person.ToString() : result.AnyoneChosen && result.Staff.Count > 1 ? ChooseSlotQuery.AnyStaff : null;
+    private static List<T> Without<T>(List<T> list, int index) => [.. list.Where((_, i) => i != index)];
 
-    /// <summary>The service list in its "add to this booking" mode (ADR 0095); the ChooseService slice owns the route.</summary>
-    private static string AddPath(ChooseSlotResult result)
-        => ListUrl.Build(
-            PublicBookingDefaults.BookPath,
-            ("add", result.ServiceId.ToString()),
-            (VisitBasket.Parameter, VisitBasket.Write(Extras(result))),
-            ("staff", StaffValue(result)),
-            ("date", LocalDatePattern.Iso.Format(result.SelectedDate)),
-            ("from", LocalDatePattern.Iso.Format(result.Days.Count > 0 ? result.Days[0].Date : result.SelectedDate)),
-            ("start", result.Chosen is { } chosen ? InstantPattern.ExtendedIso.Format(chosen.Start) : null));
+    /// <summary>This page for the given services and answers, with the day and the tapped time kept.</summary>
+    private static string Address(ChooseSlotResult result, List<Guid> services, List<string?> answers)
+        => ListUrl.Build($"{PublicBookingDefaults.BookPath}/{services[0]}", [.. Carried(result, services, answers)]);
 
-    /// <summary>This page without one of its services: the next one takes the first place when the first is taken out.</summary>
-    private static string WithoutPath(ChooseSlotResult result, Guid removed)
-    {
-        var left = result.Lines.Select(l => l.ServiceId).Where(id => id != removed).ToList();
-        return ListUrl.Build($"{PublicBookingDefaults.BookPath}/{left[0]}", (VisitBasket.Parameter, VisitBasket.Write(left.Skip(1))), ("staff", StaffValue(result)));
-    }
+    /// <summary>Everything but the first service: who does it, the further services and who does those, the day, the window and the time.</summary>
+    private static IEnumerable<(string Name, string? Value)> Carried(ChooseSlotResult result, List<Guid> services, List<string?> answers) =>
+    [
+        ("staff", answers[0]),
+        (VisitBasket.Parameter, VisitBasket.Write(services.Skip(1))),
+        (VisitBasket.StaffParameter, VisitBasket.WriteStaff(answers.Skip(1))),
+        ("date", LocalDatePattern.Iso.Format(result.SelectedDate)),
+        ("from", LocalDatePattern.Iso.Format(result.Days.Count > 0 ? result.Days[0].Date : result.SelectedDate)),
+        ("start", result.Chosen is { } chosen ? InstantPattern.ExtendedIso.Format(chosen.Start) : null),
+    ];
 
     private static LocalDate? ParseDate(string? iso)
     {
@@ -107,4 +117,10 @@ public sealed record ChooseSlotViewModel(string SalonName, ChooseSlotResult Resu
 
     /// <summary>For a visit of several services, the page without each one of them; empty for one service.</summary>
     public IReadOnlyDictionary<Guid, string> RemovePaths { get; init; } = new Dictionary<Guid, string>();
+
+    /// <summary>This page with one service's "who with" answered: the line (0 is the first service) and the answer, a person's id or "any" (ADR 0096).</summary>
+    public Func<int, string, string> StaffPath { get; init; } = (_, _) => string.Empty;
+
+    /// <summary>The sheet of the first service whose "who with" is still owed: where Continue leads until every answer is in.</summary>
+    public string FirstOpenSheet => Result.Lines.ToList().FindIndex(l => l.NeedsStaffChoice) is var open and > 0 ? $"who-{open}" : "who";
 }

@@ -64,7 +64,7 @@ public sealed record BookAppointmentRequest(
     string? Notes = null,
     Guid? ByUserId = null);
 
-/// <summary>What a visit of several services needs: the services in the order they are done, one person, one start.</summary>
+/// <summary>What a visit of several services needs: the services in the order they are done, who does them, one start.</summary>
 public sealed record BookVisitRequest(
     Guid ClientId,
     Guid StaffMemberId,
@@ -72,4 +72,11 @@ public sealed record BookVisitRequest(
     Instant Start,
     AppointmentSource Source,
     string? Notes = null,
-    Guid? ByUserId = null);
+    Guid? ByUserId = null)
+{
+    /// <summary>
+    /// Who does each service, in the order of <see cref="ServiceIds"/> (ADR 0096); empty or null means
+    /// <see cref="StaffMemberId"/> does them all.
+    /// </summary>
+    public IReadOnlyList<Guid>? StaffMemberIds { get; init; }
+}

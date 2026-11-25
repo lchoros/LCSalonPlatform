@@ -49,7 +49,8 @@ public partial class PublicBookingTests
         var today = Iso(SystemClock.Instance.GetCurrentInstant().InZone(London).Date);
         var noTime = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff={_annaId}");
         noTime.ShouldNotContain("data-testid=\"add-service\"");
-        noTime.ShouldContain("data-testid=\"add-after-time\">Choose a time first; then you can add another service.</p>");
+        noTime.ShouldContain("<a href=\"#pick-first\" class=\"add-service is-off\" data-testid=\"add-service-off\">", Case.Sensitive, "in sight and pale until a time is chosen; a tap says what is missing");
+        noTime.ShouldContain("<span>Choose a time first.</span>");
 
         var one = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&from={today}&staff={_annaId}&start={nineThirty}");
         // The way to the list carries who with, the day and the time, so the client comes back to them.
@@ -69,13 +70,13 @@ public partial class PublicBookingTests
         both.ShouldContain("data-testid=\"summary-duration\">75 min</p>");
         both.ShouldContain("data-testid=\"summary-total\">£50.00</p>");
         // Taking one out leaves the other as the booking; the answer to "who with" is kept.
-        both.ShouldContain($"href=\"/book/{colour}?staff={_annaId}\"");
-        both.ShouldContain($"href=\"/book/{_serviceId}?staff={_annaId}\"");
+        both.ShouldContain($"href=\"/book/{colour}?staff={_annaId}&date={Iso(_day)}&from={today}\"");
+        both.ShouldContain($"href=\"/book/{_serviceId}?staff={_annaId}&date={Iso(_day)}&from={today}\"");
 
         var expected = await VisitStartsAsync([_serviceId, colour], _annaId);
         var hrefs = SlotHrefs(both);
         hrefs.Count.ShouldBe(expected.Count);
-        hrefs.ShouldAllBe(h => h.EndsWith($"&staff={_annaId}&also={colour}", StringComparison.Ordinal), "a tapped time keeps the whole visit");
+        hrefs.ShouldAllBe(h => h.EndsWith($"&staff={_annaId}&also={colour}&with={_annaId}", StringComparison.Ordinal), "a tapped time keeps the whole visit");
         // Anna works to 17:00: a 75-minute visit can start at 15:45 at the latest, the cut alone at 16:30.
         expected.Max().InZone(London).TimeOfDay.ShouldBe(new LocalTime(15, 45));
         (await SlotStartsAsync(_studio.Id, _annaId)).Max().InZone(London).TimeOfDay.ShouldBe(new LocalTime(16, 30));
@@ -83,7 +84,7 @@ public partial class PublicBookingTests
         // The continue link carries the visit to the details, whose summary names it whole.
         var start = expected[0];
         var picked = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff={_annaId}&also={colour}&start={Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(start))}");
-        picked.ShouldContain($"/book/{_serviceId}/details?start={Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(start))}&staff={_annaId}&also={colour}\"");
+        picked.ShouldContain($"/book/{_serviceId}/details?start={Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(start))}&staff={_annaId}&also={colour}&with={_annaId}\"");
         var details = await GetAsync(client, $"{DetailsPath(start, _annaId)}&also={colour}");
         details.ShouldContain("Cut + Colour");
         details.ShouldContain("75 min");
@@ -118,7 +119,63 @@ public partial class PublicBookingTests
     }
 
     [Fact]
-    public async Task When_no_one_person_does_all_of_it_the_page_says_so_and_offers_no_time()
+    public async Task Each_service_of_a_visit_has_its_own_person_and_the_visit_changes_hands_only_where_it_has_to()
+    {
+        var colour = await AddTimedServiceAsync("Colour", 45, 30m);
+        using var host = SeveralServicesOn();
+        using var client = ClientOn(host);
+        var ten = _day.At(new LocalTime(10, 0)).InZoneStrictly(London).ToInstant();
+        var start = Uri.EscapeDataString(InstantPattern.ExtendedIso.Format(ten));
+        var today = Iso(SystemClock.Instance.GetCurrentInstant().InZone(London).Date);
+
+        // A service added to the visit takes the person of the one before it: nothing more to answer.
+        var same = await GetAsync(client, $"/book/{_serviceId}?staff={_annaId}&also={colour}&date={Iso(_day)}&from={today}&start={start}");
+        same.ShouldContain("data-testid=\"summary-staff\">Anna</span>");
+        same.ShouldContain("data-testid=\"line-summary-staff\">Anna</span>");
+        same.ShouldNotContain("staff-required\"");
+        // Its own sheet offers the people who do it; an answer there changes only that service.
+        same.ShouldContain("<div id=\"who-1\" class=\"sheet\" role=\"dialog\"");
+        same.ShouldContain("data-testid=\"line-choose-staff\">Who would you like for Colour?</p>");
+        same.ShouldContain($"href=\"/book/{_serviceId}?staff={_annaId}&also={colour}&with={_tomId}&date={Iso(_day)}&from={today}&start={start}\" class=\"staff-face\" data-testid=\"line-staff-option\"");
+
+        // The cut with Anna, the colour with Tom: each card says who, the times are those where one follows the other,
+        // and the details carry both answers on.
+        var split = await GetAsync(client, $"/book/{_serviceId}?staff={_annaId}&also={colour}&with={_tomId}&date={Iso(_day)}&from={today}&start={start}");
+        split.ShouldContain("data-testid=\"summary-staff\">Anna</span>");
+        split.ShouldContain("data-testid=\"line-summary-staff\">Tom</span>");
+        LineTimes().Matches(split).Select(m => m.Groups[1].Value).ShouldBe(["10:00 – 10:30", "10:30 – 11:15"]);
+        split.ShouldContain($"/book/{_serviceId}/details?start={start}&staff={_annaId}&also={colour}&with={_tomId}\" class=\"btn btn-primary w-full shadow-lg\" data-testid=\"continue\"");
+        await using (var scope = factory.CreateTenantScope(_studio.Id))
+        {
+            var plan = await scope.ServiceProvider.GetRequiredService<IAvailabilityService>().GetVisitPlanAsync([new VisitPart(_serviceId, _annaId), new VisitPart(colour, _tomId)], _day, _day);
+            // Tom works 10:00–14:00: the colour, 45 minutes, can begin at 10:00 at the earliest, so the cut at 09:30.
+            plan[0].Start.InZone(London).TimeOfDay.ShouldBe(new LocalTime(9, 30));
+            plan[0].StaffMemberIds.ShouldBe([_annaId, _tomId]);
+            SlotHrefs(split).Count.ShouldBe(plan.Count);
+        }
+
+        var details = await GetAsync(client, $"{DetailsPath(ten, _annaId)}&also={colour}&with={_tomId}");
+        details.ShouldContain("Cut + Colour");
+        details.ShouldContain("Anna, Tom");
+        details.ShouldContain($"<input type=\"hidden\" name=\"With\" value=\"{_tomId}\" />");
+
+        // Booked: two appointments in a row, each with its own person.
+        var fields = Fields(ten, _annaId);
+        fields["Also"] = colour.ToString();
+        fields["With"] = _tomId.ToString();
+        var posted = await PostAsync(client, $"/book/{_serviceId}/details", fields, details);
+        posted.StatusCode.ShouldBe(HttpStatusCode.Redirect, await posted.Content.ReadAsStringAsync());
+        (await VerificationsAsync(_studio.Id)).ShouldHaveSingleItem().ExtraStaffIds.ShouldBe([_tomId]);
+        var verified = await PostCodeAsync(client, posted.Headers.Location.ShouldNotBeNull().OriginalString, host.Services.GetRequiredService<RecordingSmsSender>().LastCodeFor(PhoneE164).ShouldNotBeNull());
+        verified.StatusCode.ShouldBe(HttpStatusCode.Redirect, await verified.Content.ReadAsStringAsync());
+        var booked = await AppointmentsAsync(_studio.Id);
+        booked.Select(a => (a.ServiceId, a.StaffMemberId)).ShouldBe([(_serviceId, _annaId), (colour, _tomId)]);
+        booked[1].Start.ShouldBe(booked[0].End);
+        booked[1].VisitGroupId.ShouldBe(booked[0].VisitGroupId.ShouldNotBeNull());
+    }
+
+    [Fact]
+    public async Task Where_no_one_person_does_every_service_the_visit_goes_from_one_to_the_other()
     {
         var colour = await AddTimedServiceAsync("Colour", 45, 30m);
         await SetOffersAsync(_annaId, _serviceId, offers: false);
@@ -128,10 +185,21 @@ public partial class PublicBookingTests
 
         var page = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&also={colour}");
 
-        page.ShouldContain("data-testid=\"nobody-offers-all\">Nobody here does all of these in one visit. Remove one, or book them separately.</p>");
-        page.ShouldNotContain("data-testid=\"slot\"");
-        page.ShouldNotContain("data-testid=\"staff-picker\"");
-        page.ShouldContain("data-testid=\"remove-service\"");
+        // Only Tom cuts and only Anna colours: there is nothing to ask, and the times are those where she can follow him.
+        page.ShouldNotContain("data-testid=\"nobody-offers-all\"");
+        page.ShouldNotContain("staff-required\"");
+        page.ShouldNotContain("class=\"sheet\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"who", Case.Sensitive, "one person offers each service: no sheet to open");
+        await using var scope = factory.CreateTenantScope(_studio.Id);
+        var plan = await scope.ServiceProvider.GetRequiredService<IAvailabilityService>().GetVisitPlanAsync([new VisitPart(_serviceId, null), new VisitPart(colour, null)], _day, _day);
+        plan.ShouldNotBeEmpty();
+        plan.ShouldAllBe(s => s.StaffMemberIds[0] == _tomId && s.StaffMemberIds[1] == _annaId);
+        SlotHrefs(page).Count.ShouldBe(plan.Count);
+
+        // A service nobody offers at all is said, and there is no time.
+        await SetOffersAsync(_annaId, colour, offers: false);
+        var none = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&also={colour}");
+        none.ShouldContain("data-testid=\"nobody-offers-all\">");
+        none.ShouldNotContain("data-testid=\"slot\"");
     }
 
     [Fact]

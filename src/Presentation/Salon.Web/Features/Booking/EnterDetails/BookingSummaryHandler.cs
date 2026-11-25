@@ -80,6 +80,9 @@ public sealed class BookingSummaryHandler(
 
         // The further services of the visit (ADR 0095), each by the same rules, added to the first.
         var names = new List<string> { service.Name };
+        // Who does each of them (ADR 0096): the person chosen for it, or nobody for "anyone".
+        var people = new List<string?> { staffName };
+        var extraIndex = 0;
         foreach (var extraId in request.ExtraServiceIds ?? [])
         {
             var extra = await db.Services.AsNoTracking()
@@ -93,7 +96,9 @@ public sealed class BookingSummaryHandler(
 
             var extraPrice = extra.Price;
             var extraDuration = extra.Duration;
-            if (request.StaffMemberId is { } person)
+            var extraStaff = request.ExtraStaffIds is { } chosenStaff && extraIndex < chosenStaff.Count ? chosenStaff[extraIndex] : null;
+            extraIndex++;
+            if (extraStaff is { } person)
             {
                 var offering = await offerings.ResolveAsync(extra.Id, person, cancellationToken);
                 if (!offering.Offers)
@@ -112,6 +117,11 @@ public sealed class BookingSummaryHandler(
             }
 
             names.Add(extra.Name);
+            people.Add(extraStaff is { } named ? await db.StaffMembers.AsNoTracking().Where(s => s.Id == named && s.IsActive && s.IsBookable).Select(s => s.DisplayName).FirstOrDefaultAsync(cancellationToken) : null);
+            if (extraStaff is not null && people[^1] is null)
+            {
+                return null;
+            }
             duration += extraDuration;
             price = price with { Amount = price.Amount + extraPrice };
             deposit += DepositRules.Amount(extraPrice, DepositRules.Percent(rules.DefaultDepositPercent, extra.DepositPercent, null));
@@ -122,7 +132,8 @@ public sealed class BookingSummaryHandler(
             duration,
             price,
             priceIsFrom,
-            staffName,
+            // One name when one person does it all; otherwise each in the order of the services, "anyone" where none is named.
+            people.Distinct().Count() == 1 ? staffName : string.Join(", ", people.Select(p => p ?? localizer["Booking.Public.Anyone"].ToString())),
             request.Start,
             DateTimeZoneProviders.Tzdb.GetZoneOrNull(tenant.TimeZoneId) ?? DateTimeZone.Utc,
             tenant.Name,

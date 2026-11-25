@@ -104,6 +104,7 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         using var client = factory.ClientFor(HostA);
 
         var asked = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}");
+        var windowFrom = Iso(SystemClock.Instance.GetCurrentInstant().InZone(London).Date);
 
         // Nobody is chosen for the visitor (the owner, 2026-11-22), and nothing stands in the way either (2026-11-25):
         // the days and the times of anyone who could do it are there, the staff line says the answer is still owed,
@@ -114,12 +115,15 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         asked.ShouldContain("<a href=\"#who\" class=\"btn btn-compact btn-secondary shrink-0\" data-testid=\"change-staff\">Choose<");
         asked.ShouldContain("data-testid=\"choose-staff\">Choose a person, or ");
         asked.ShouldNotContain("aria-current=\"true\"", Case.Sensitive, "neither \"anyone\" nor a person is marked as chosen");
-        asked.ShouldContain($"href=\"/book/{_serviceId}?staff=any&date={Iso(_day)}\"", Case.Sensitive, "\"anyone available\" is an answer of its own");
-        asked.ShouldContain($"href=\"/book/{_serviceId}?staff={_tomId}&date={Iso(_day)}\"");
+        asked.ShouldContain($"href=\"/book/{_serviceId}?staff=any&date={Iso(_day)}&from={windowFrom}\"", Case.Sensitive, "\"anyone available\" is an answer of its own");
+        asked.ShouldContain($"href=\"/book/{_serviceId}?staff={_tomId}&date={Iso(_day)}&from={windowFrom}\"");
         DayCount(asked).ShouldBe(14);
         var anyoneHrefs = await ExpectedSlotHrefsAsync(null);
         SlotHrefs(asked).ShouldBe(anyoneHrefs.Select(h => h.Replace("&staff=any", string.Empty, StringComparison.Ordinal)).ToList(), "the times of anyone, with the question still open");
-        asked.ShouldNotContain("data-testid=\"continue-bar\"");
+        asked.ShouldContain("<a href=\"#pick-first\" class=\"btn btn-primary btn-off w-full\" data-testid=\"continue-off\">Continue</a>", Case.Sensitive, "Continue is there and grey until a time is tapped; a tap says what is missing");
+        asked.ShouldContain("data-testid=\"pick-first\">");
+        asked.ShouldContain("<span>Choose a time and who with first.</span>");
+        asked.ShouldNotContain("data-testid=\"continue\"");
 
         // A tapped time with the question open: Continue opens the sheet, and an answer keeps the day and the time.
         var start = Uri.EscapeDataString(InstantPattern.ExtendedIso.Format((await SlotStartsAsync(_studio.Id, _tomId))[0]));
@@ -132,7 +136,6 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         var anyone = await GetAsync(client, $"/book/{_serviceId}?staff=any&date={Iso(_day)}&from={today}&start={start}");
 
         anyone.ShouldNotContain("data-testid=\"staff-required\"");
-        anyone.ShouldNotContain("data-testid=\"choose-staff\"");
         // Answered: "Change" beside the staff line opens the sheet again, and Continue goes on with the time kept.
         anyone.ShouldContain("<a href=\"#who\" class=\"btn btn-compact btn-secondary shrink-0\" data-testid=\"change-staff\">Change<");
         anyone.ShouldContain("aria-current=\"true\" data-testid=\"staff-any\"");

@@ -64,7 +64,10 @@ public partial class PublicBookingTests
     {
         using var visitor = factory.ClientFor(HostA);
 
-        foreach (var path in new[] { "/book", $"/book/{_serviceId}", DetailsPath(At(10, 0), _annaId), "/privacy" })
+        // The time page collects nothing about the client and carries no footer (the owner, 2026-11-25; ADR 0096): the
+        // notice is one tap away on the page before it and on the page that asks for the details.
+        (await GetAsync(visitor, $"/book/{_serviceId}")).ShouldNotContain("data-testid=\"footer-privacy\"");
+        foreach (var path in new[] { "/book", DetailsPath(At(10, 0), _annaId), "/privacy" })
         {
             (await GetAsync(visitor, path)).ShouldContain("href=\"/privacy\" class=\"underline underline-offset-2\" data-testid=\"footer-privacy\"", Case.Sensitive, path);
         }
