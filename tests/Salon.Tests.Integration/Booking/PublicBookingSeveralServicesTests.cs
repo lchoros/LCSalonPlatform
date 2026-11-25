@@ -49,12 +49,13 @@ public partial class PublicBookingTests
         var today = Iso(SystemClock.Instance.GetCurrentInstant().InZone(London).Date);
         var noTime = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff={_annaId}");
         noTime.ShouldNotContain("data-testid=\"add-service\"");
-        noTime.ShouldContain("<a href=\"#pick-first\" class=\"add-service is-off\" data-testid=\"add-service-off\">", Case.Sensitive, "in sight and pale until a time is chosen; a tap says what is missing");
+        noTime.ShouldContain("<a href=\"#finish-first\" class=\"add-service is-off\" data-testid=\"add-service-off\">", Case.Sensitive, "in sight and pale until a time is chosen; a tap says to finish this service first");
+        noTime.ShouldContain("<span>Please complete this service first: choose a time.</span>");
         noTime.ShouldContain("<span>Choose a time first.</span>");
 
         var one = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&from={today}&staff={_annaId}&start={nineThirty}");
-        // The way to the list carries who with, the day and the time, so the client comes back to them.
-        one.ShouldContain($"href=\"/book?add={_serviceId}&staff={_annaId}&date={Iso(_day)}&from={today}&start={nineThirty}\" class=\"add-service\" data-testid=\"add-service\"");
+        // The way to the list carries who with and the day; the time is chosen again once the visit is longer.
+        one.ShouldContain($"href=\"/book?add={_serviceId}&staff={_annaId}&date={Iso(_day)}&from={today}\" class=\"add-service\" data-testid=\"add-service\"");
         one.ShouldNotContain("data-testid=\"remove-service\"", Case.Sensitive, "one service is changed, not removed");
         one.ShouldContain("data-testid=\"summary-when\">09:30 – 10:00</p>");
 

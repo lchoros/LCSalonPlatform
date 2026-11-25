@@ -39,7 +39,7 @@ public static class ChooseSlotText
         return $"{start.ToString("HH:mm", culture)} – {start.PlusMinutes(minutes).ToString("HH:mm", culture)}";
     }
 
-    /// <summary>What the client still has to choose before going on or adding a service: a time, who with, or both.</summary>
+    /// <summary>What the client still has to choose before going on: a time, who with, or both.</summary>
     public static string MissingKey(ChooseSlotResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -48,6 +48,18 @@ public static class ChooseSlotText
             (true, true) => "Booking.Public.Missing.TimeAndStaff",
             (false, true) => "Booking.Public.Missing.Staff",
             _ => "Booking.Public.Missing.Time",
+        };
+    }
+
+    /// <summary>What to finish before another service can be added: this service's time, who with, or both.</summary>
+    public static string FinishKey(ChooseSlotResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        return (result.Chosen is null, result.NeedsStaffChoice) switch
+        {
+            (true, true) => "Booking.Public.Finish.TimeAndStaff",
+            (false, true) => "Booking.Public.Finish.Staff",
+            _ => "Booking.Public.Finish.Time",
         };
     }
 

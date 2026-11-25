@@ -34,6 +34,9 @@ async function go(link) {
     const strip = page.querySelector('.day-strip');
     // The second value of a day's address is the first day of the window ("from"): the same one means the same days.
     const before = strip && { first: strip.querySelector('a')?.getAttribute('href')?.split('?')[1]?.split('&')[1], left: strip.scrollLeft };
+    // Only what the tap changes goes pale and comes back (the owner, 2026-11-26): a day changes the times, an arrow
+    // the days and the times, a time or a person neither.
+    page.dataset.change = link.closest('.slot-row') ? 'time' : link.closest('.day-strip') ? 'day' : link.classList.contains('strip-arrow') ? 'window' : 'other';
     page.setAttribute('aria-busy', 'true');
     try {
         const response = await fetch(url, { headers: { Accept: 'text/html' }, credentials: 'same-origin' });
@@ -46,7 +49,10 @@ async function go(link) {
         }
 
         const fromSheet = location.hash === '#who';
+        // A tapped time leaves its line of times where the finger left it.
+        const lines = page.dataset.change === 'time' ? [...page.querySelectorAll('.slot-row')].map(row => row.scrollLeft) : [];
         page.replaceChildren(...next.childNodes);
+        page.querySelectorAll('.slot-row').forEach((row, at) => { row.scrollLeft = lines[at] ?? 0; });
         page.dataset.arrived = 'true';
         history.replaceState(null, '', url.pathname + url.search);
         if (fromSheet) {
