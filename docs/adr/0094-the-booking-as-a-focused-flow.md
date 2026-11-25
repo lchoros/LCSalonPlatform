@@ -129,3 +129,9 @@ the price."
   a link of its own, outside the row's link, so a tap on the row still books and a tap on the text reads.
 - "Book" is on the row on a phone too (it was only shown from `sm`).
 - Options of one service (variants) show no description yet.
+
+### No category names over the list (2026-11-25, late)
+
+The owner: "can we remove category names when listing services? … filter yes, but no need to show the category name
+on each." The list is one list in the order of the categories; their names are on the filter tiles only. Asked
+alongside and not built: a "popular services" filter — it needs a rule for what counts as popular (see the PR).

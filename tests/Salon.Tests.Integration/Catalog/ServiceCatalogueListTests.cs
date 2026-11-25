@@ -121,7 +121,7 @@ public class ServiceCatalogueListTests(SalonWebApplicationFactory factory) : IAs
 
         Count(page, "data-testid=\"book-service\"").ShouldBe(1);
         page.ShouldContain(">Brows 03<");
-        page.ShouldContain("data-testid=\"group-heading\">Brows<", Case.Sensitive, "a category split by the page break gets its heading again");
+        page.ShouldNotContain("data-testid=\"group-heading\"", Case.Sensitive, "the list carries no category names; the tiles do");
         page.ShouldContain("data-testid=\"pager\" data-page=\"2\" data-pages=\"2\"");
         page.ShouldContain("href=\"/book\" rel=\"prev\"", Case.Sensitive, "page one has the plain address");
         page.ShouldNotContain("data-testid=\"pager-next\"");

@@ -51,11 +51,9 @@
     {
         @foreach (var group in Model.Groups)
         {
-            <section class="space-y-3" data-testid="service-group" data-category="@(group.Key ?? string.Empty)">
-                @if (Model.ShowHeadings)
-                {
-                    <h2 class="text-lg font-semibold" data-testid="group-heading">@(group.Key ?? T["Booking.Public.OtherServices"])</h2>
-                }
+            @* One list, in the order of the categories, without their names over it (the owner, 2026-11-25): the
+               category tiles above filter it, and that is where the names are. *@
+            <section class="space-y-3" data-testid="service-group">
                 <ul class="service-rows" data-testid="service-list">
                     @foreach (var entry in group)
                     {

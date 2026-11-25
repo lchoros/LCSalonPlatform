@@ -75,11 +75,8 @@ public sealed class ChooseServiceController(IDispatcher dispatcher, ITenantConte
 /// <param name="Filter">The category tiles, shown when <see cref="ServiceChoice.ShowFilters"/>.</param>
 public sealed record ChooseServiceViewModel(string SalonName, ServiceChoice Choice, FilterTilesModel Filter, SearchBoxModel Search, PagerModel Pager)
 {
-    /// <summary>Headings appear only once the salon has filed at least one service under a category.</summary>
-    public bool ShowHeadings => Choice.Categories.Count > 0;
-
-    /// <summary>The entries of the page under their category, in order; a category split by a page break gets its heading again.</summary>
-    public IEnumerable<IGrouping<string?, BookableEntry>> Groups => Choice.Entries.Items.GroupBy(e => e.CategoryName);
+    /// <summary>The entries of the page as one list, in the order of their categories; the names of the categories are on the filter tiles only.</summary>
+    public IEnumerable<IGrouping<string?, BookableEntry>> Groups => Choice.Entries.Items.GroupBy(_ => (string?)null);
 
     /// <summary>Set while the list is adding a service to a booking already begun (ADR 0095); null on the ordinary first step.</summary>
     public AddingTo? Adding { get; init; }

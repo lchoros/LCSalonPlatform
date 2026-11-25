@@ -139,7 +139,7 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
     }
 
     [Fact]
-    public async Task Without_categories_the_list_is_flat_and_with_them_it_is_grouped_with_other_services_last()
+    public async Task The_list_carries_no_category_names_and_keeps_the_order_of_the_categories_with_other_services_last()
     {
         var flat = await GetHtmlAsync("studio-20.localhost");
         flat.ShouldNotContain("data-testid=\"group-heading\"");
@@ -155,7 +155,8 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
 
         var grouped = await GetHtmlAsync("studio-20.localhost");
 
-        GroupHeadings(grouped).ShouldBe(["Hair", "Other services"]);
+        // The names of the categories are on the filter tiles, not over the list (the owner, 2026-11-25); the order stays.
+        grouped.ShouldNotContain("data-testid=\"group-heading\"");
         CardNames(grouped).ShouldBe(["Colour", "Cut &amp; blow-dry"]);
         grouped.ShouldNotContain("Retired perm");
 
@@ -163,9 +164,6 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
         // Another salon's categories do not leak into this list.
         polish.ShouldNotContain("data-testid=\"group-heading\"");
     }
-
-    private static List<string> GroupHeadings(string html)
-        => GroupHeadingPattern().Matches(html).Select(m => m.Groups["name"].Value).ToList();
 
     private static List<string> CardNames(string html)
         => CardNamePattern().Matches(html).Select(m => m.Groups["name"].Value).ToList();
@@ -205,8 +203,4 @@ public partial class ListServicesTests(SalonWebApplicationFactory factory) : IAs
     /// <summary>The name on each service row, in document order.</summary>
     [GeneratedRegex("data-testid=\"book-service\".*?<span class=\"block font-semibold leading-snug\">(?<name>[^<]+)</span>", RegexOptions.Singleline)]
     private static partial Regex CardNamePattern();
-
-    /// <summary>The text of each category heading, in document order.</summary>
-    [GeneratedRegex("data-testid=\"group-heading\">(?<name>[^<]+)</h2>")]
-    private static partial Regex GroupHeadingPattern();
 }
