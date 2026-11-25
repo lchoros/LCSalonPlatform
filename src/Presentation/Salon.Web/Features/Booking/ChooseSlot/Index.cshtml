@@ -13,20 +13,48 @@
     var staffQuery = r.AnyoneChosen && r.Staff.Count > 1 ? $"&staff={ChooseSlotQuery.AnyStaff}{Model.AlsoQuery}" : personQuery;
     var keptDay = r.NeedsStaffChoice && !r.DayAsked ? string.Empty : $"&date={r.SelectedDate.ToIso()}";
     var hasAnySlot = r.Days.Any(d => d.HasSlots);
+    var windowStart = (r.Days.Count > 0 ? r.Days[0].Date : r.SelectedDate).ToIso();
 }
 <section class="mx-auto max-w-2xl space-y-6">
-    <header class="space-y-3">
+    @* The steps are for a desk; a phone has the page to itself (the owner, 2026-11-25). *@
+    <div class="space-y-3 max-sm:hidden">
         <p class="text-sm font-medium text-stone-600" data-testid="step">@T.Format("Booking.Public.Step", 2, 3)</p>
         <ol class="steps">
             <li class="is-done"><span class="steps-bar"></span>@T["Booking.Public.StepService"]</li>
             <li class="is-done"><span class="steps-bar"></span>@T["Booking.Public.StepTime"]</li>
             <li><span class="steps-bar"></span>@T["Booking.Public.StepDetails"]</li>
         </ol>
-        <div class="flex items-center justify-between gap-3">
-            <h1 class="book-title">@T["Booking.Public.ChooseTime"]</h1>
-            @* The way out of a booking asks first (ADR 0094): the link only opens the question below. *@
-            <a href="#discard" class="book-close" data-testid="close-booking" aria-label="@T["Booking.Public.Close"]"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></a>
-        </div>
+    </div>
+
+    @* The top of the page (ADR 0094, stage 5). On a phone it is one line, as on the screen the owner sent: the month as
+       the title, the two arrows that page the days, and the way out. On a desk the title stands above and the month
+       sits between its arrows. One set of elements, placed by the grid, so nothing is in the page twice. Every day
+       and week link comes back here (#days). The arrows always hold their places: where there is nothing earlier or
+       later the arrow is drawn faint and is not a link. *@
+    <header id="days" class="book-top @(r.NeedsStaffChoice ? null : "has-month")">
+        <h1 class="book-title book-top-title">@T["Booking.Public.ChooseTime"]</h1>
+        @if (!r.NeedsStaffChoice)
+        {
+            @if (r.EarlierFrom is { } earlier)
+            {
+                <a href="/book/@r.ServiceId?from=@earlier.ToIso()@staffQuery#days" class="strip-arrow book-top-earlier" data-testid="earlier-days" aria-label="@T["Booking.Public.EarlierDays"]"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6" /></svg></a>
+            }
+            else
+            {
+                <span class="strip-arrow is-off book-top-earlier" data-testid="earlier-days-off" aria-hidden="true"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6" /></svg></span>
+            }
+            <p class="day-month book-top-month" data-testid="month">@r.SelectedDate.ToString("MMMM yyyy", culture)</p>
+            @if (r.LaterFrom is { } later)
+            {
+                <a href="/book/@r.ServiceId?from=@later.ToIso()@staffQuery#days" class="strip-arrow book-top-later" data-testid="later-days" aria-label="@T["Booking.Public.LaterDays"]"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" /></svg></a>
+            }
+            else
+            {
+                <span class="strip-arrow is-off book-top-later" data-testid="later-days-off" aria-hidden="true"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" /></svg></span>
+            }
+        }
+        @* The way out of a booking asks first (ADR 0094): the link only opens the question below. *@
+        <a href="#discard" class="book-close book-top-close" data-testid="close-booking" aria-label="@T["Booking.Public.Close"]"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></a>
     </header>
 
     <div id="discard" class="modal" role="dialog" aria-modal="true" aria-labelledby="discard-title" data-testid="discard-modal">
@@ -40,58 +68,48 @@
 
     @if (r.Staff.Count > 1)
     {
-        @* Who with is asked, not assumed (the owner, 2026-11-22): nobody is chosen when the page opens, and the days
-           and times wait for the answer. "Anyone available" is an answer like the others (staff=any). *@
-        <section id="who" class="staff-choice @(r.NeedsStaffChoice ? "is-needed" : null)" data-testid="staff-choice">
-            <h2 class="staff-choice-title">
-                @T["Booking.Public.With"]
+        @* Who with, in a light sheet over the page instead of a row on it (the owner, 2026-11-25). It is still asked,
+           not assumed (2026-11-22): while nobody is chosen the sheet is simply there and the days and times wait
+           behind it; afterwards "Change" beside the staff line opens it again. "Anyone available" is an answer like
+           the others (staff=any). No script: the link to #who shows it, any answer is a new page. *@
+        <div id="who" class="modal @(r.NeedsStaffChoice ? "is-open" : null)" role="dialog" aria-modal="true" aria-labelledby="who-title" data-testid="staff-choice">
+            <div class="modal-card">
+                <div class="flex items-center justify-between gap-3">
+                    <h2 id="who-title" class="flex items-center gap-2 text-xl font-semibold text-slate-800">
+                        @T["Booking.Public.With"]
+                        @if (r.NeedsStaffChoice)
+                        {
+                            <span class="staff-choice-required" data-testid="staff-required">@T["Booking.Public.Required"]</span>
+                        }
+                    </h2>
+                    @if (!r.NeedsStaffChoice)
+                    {
+                        <a href="#days" class="book-close" data-testid="staff-close" aria-label="@T["Booking.Public.CloseChoice"]"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></a>
+                    }
+                </div>
                 @if (r.NeedsStaffChoice)
                 {
-                    <span class="staff-choice-required" data-testid="staff-required">@T["Booking.Public.Required"]</span>
+                    <p class="text-sm text-slate-600" data-testid="choose-staff">@T["Booking.Public.ChooseStaffFirst"]</p>
                 }
-            </h2>
-            <nav aria-label="@T["Booking.Public.With"]" data-testid="staff-picker" class="scroll-row">
-                <a href="/book/@r.ServiceId?staff=@ChooseSlotQuery.AnyStaff@keptDay@Model.AlsoQuery" class="pill @Badges.DayTile(r.AnyoneChosen, true)" aria-current="@(r.AnyoneChosen ? "true" : null)" data-testid="staff-any">@T["Booking.Public.Anyone"]</a>
-                @foreach (var person in r.Staff)
+                <nav aria-label="@T["Booking.Public.With"]" data-testid="staff-picker" class="staff-list">
+                    <a href="/book/@r.ServiceId?staff=@ChooseSlotQuery.AnyStaff@keptDay@Model.AlsoQuery" class="staff-row @(r.AnyoneChosen ? "is-on" : null)" aria-current="@(r.AnyoneChosen ? "true" : null)" data-testid="staff-any"><span class="staff-row-any" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.6-3.4 3.2-5.5 6.5-5.5s5.900 2.100 6.500 5.500M16 4.800a3.500 3.500 0 0 1 0 6.400M18.500 14.900c1.700.9 2.700 2.600 3 5.100" /></svg></span>@T["Booking.Public.Anyone"]</a>
+                    @foreach (var person in r.Staff)
+                    {
+                        var on = person.Id == r.SelectedStaffId;
+                        <a href="/book/@r.ServiceId?staff=@person.Id@keptDay@Model.AlsoQuery" class="staff-row @(on ? "is-on" : null)" aria-current="@(on ? "true" : null)" data-testid="staff-option"><avatar name="@person.DisplayName" photo="@person.PhotoPath" size="Small" />@person.DisplayName</a>
+                    }
+                </nav>
+                @if (r.NeedsStaffChoice)
                 {
-                    var on = person.Id == r.SelectedStaffId;
-                    <a href="/book/@r.ServiceId?staff=@person.Id@keptDay@Model.AlsoQuery" class="pill gap-2 pl-2 @Badges.DayTile(on, true)" aria-current="@(on ? "true" : null)" data-testid="staff-option"><avatar name="@person.DisplayName" photo="@person.PhotoPath" size="Small" />@person.DisplayName</a>
+                    <a href="/book" class="btn btn-secondary w-full" data-testid="staff-back">@T["Booking.Public.BackToServices"]</a>
                 }
-            </nav>
-            @if (r.NeedsStaffChoice)
-            {
-                <p class="text-sm text-slate-600" data-testid="choose-staff">@T["Booking.Public.ChooseStaffFirst"]</p>
-            }
-        </section>
+            </div>
+        </div>
     }
 
     @if (!r.NeedsStaffChoice)
     {
-    var windowStart = (r.Days.Count > 0 ? r.Days[0].Date : r.SelectedDate).ToIso();
-    @* The two arrows always hold their places (the owner, 2026-11-20): where there is nothing earlier or later the
-       arrow is drawn faint and is not a link, so the strip between them never shifts. Every link comes back to this
-       bar (#days), so changing the day or the week does not throw the page to its top. *@
-    <div id="days" class="day-wrap">
-        <div class="day-head">
-        @if (r.EarlierFrom is { } earlier)
-        {
-            <a href="/book/@r.ServiceId?from=@earlier.ToIso()@staffQuery#days" class="strip-arrow" data-testid="earlier-days" aria-label="@T["Booking.Public.EarlierDays"]"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6" /></svg></a>
-        }
-        else
-        {
-            <span class="strip-arrow is-off" data-testid="earlier-days-off" aria-hidden="true"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6" /></svg></span>
-        }
-            <p class="day-month" data-testid="month">@r.SelectedDate.ToString("MMMM yyyy", culture)</p>
-        @if (r.LaterFrom is { } later)
-        {
-            <a href="/book/@r.ServiceId?from=@later.ToIso()@staffQuery#days" class="strip-arrow" data-testid="later-days" aria-label="@T["Booking.Public.LaterDays"]"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" /></svg></a>
-        }
-        else
-        {
-            <span class="strip-arrow is-off" data-testid="later-days-off" aria-hidden="true"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" /></svg></span>
-        }
-        </div>
-        <nav aria-label="@T["Booking.Public.Day"]" data-testid="date-strip" class="vt-days scroll-row mx-0 min-w-0 flex-1 px-0 scroll-px-0">
+        <nav aria-label="@T["Booking.Public.Day"]" data-testid="date-strip" class="vt-days day-strip scroll-row">
             @foreach (var day in r.Days)
             {
                 var on = day.Date == r.SelectedDate;
@@ -102,63 +120,67 @@
                 </a>
             }
         </nav>
-    </div>
 
-    <div class="vt-times space-y-3">
-        <h2 class="text-lg font-semibold" data-testid="selected-day">@r.SelectedDate.ToString("dddd, d MMMM", culture)</h2>
-        @if (r.Slots.Count == 0)
-        {
-            <p data-testid="no-slots" class="rounded-xl border border-dashed border-stone-300 p-6 text-center text-stone-600">
-                @(hasAnySlot ? T["Booking.Public.NoSlotsOnDay"] : T.Format("Booking.Public.NoSlotsAtAll", r.Days.Count))
-            </p>
-        }
-        else
-        {
-            <div class="slot-parts" data-testid="slot-list" aria-label="@T["Booking.Public.Times"]">
-                @* On a phone the parts of the day are tabs (the Booksy pattern the owner chose), driven by these
-                   radios without a line of script; from sm every part shows at once under its own heading. *@
-                @for (var i = 0; i < r.Groups.Count; i++)
-                {
-                    <input type="radio" name="slot-part" id="slot-part-@i" class="sr-only" checked="@(i == r.ChosenGroup)" aria-hidden="true" tabindex="-1" />
-                }
-                @if (r.Groups.Count > 1)
-                {
-                    <div class="slot-part-tabs sm:hidden" data-testid="slot-part-tabs">
-                        @for (var i = 0; i < r.Groups.Count; i++)
-                        {
-                            <label for="slot-part-@i" class="slot-part-tab">@T[r.Groups[i].LabelKey]</label>
-                        }
-                    </div>
-                }
-                @for (var i = 0; i < r.Groups.Count; i++)
-                {
-                    var group = r.Groups[i];
-                    <section class="slot-group space-y-2" data-part="@i" data-testid="slot-group">
-                        <h3 class="hidden text-xs font-semibold uppercase tracking-wide text-stone-600 sm:block">@T[group.LabelKey]</h3>
-                        <ul class="slot-grid">
-                            @foreach (var slot in group.Slots)
+        <div class="vt-times space-y-3">
+            @* The day in words is for a desk and for a screen reader; on a phone the chosen tile says it. *@
+            <h2 class="text-lg font-semibold max-sm:sr-only" data-testid="selected-day">@r.SelectedDate.ToString("dddd, d MMMM", culture)</h2>
+            @if (r.Slots.Count == 0)
+            {
+                <p data-testid="no-slots" class="rounded-xl border border-dashed border-stone-300 p-6 text-center text-stone-600">
+                    @(hasAnySlot ? T["Booking.Public.NoSlotsOnDay"] : T.Format("Booking.Public.NoSlotsAtAll", r.Days.Count))
+                </p>
+            }
+            else
+            {
+                <div class="slot-parts" data-testid="slot-list" aria-label="@T["Booking.Public.Times"]">
+                    @* On a phone the parts of the day are tabs and the times of one part run in a single line that
+                       a finger slides (the Booksy pattern the owner chose), driven by these radios without a line of
+                       script; from sm every part shows at once under its own heading, in a grid. *@
+                    @for (var i = 0; i < r.Groups.Count; i++)
+                    {
+                        <input type="radio" name="slot-part" id="slot-part-@i" class="sr-only" checked="@(i == r.ChosenGroup)" aria-hidden="true" tabindex="-1" />
+                    }
+                    @if (r.Groups.Count > 1)
+                    {
+                        <div class="slot-part-tabs sm:hidden" data-testid="slot-part-tabs">
+                            @for (var i = 0; i < r.Groups.Count; i++)
                             {
-                                var chosen = slot.Start == r.Chosen?.Start;
-                                <li>
-                                    @* Tapping selects on this page; Continue below carries the time on (owner's call, 2026-11-20). *@
-                                    <a href="/book/@r.ServiceId?date=@r.SelectedDate.ToIso()&from=@windowStart&start=@Uri.EscapeDataString(slot.Start.ToIso())@staffQuery" data-testid="slot" aria-current="@(chosen ? "true" : null)" class="slot @(chosen ? "is-chosen" : null)">@slot.LocalStart.ToString("HH:mm", culture)</a>
-                                </li>
+                                <label for="slot-part-@i" class="slot-part-tab">@T[r.Groups[i].LabelKey]</label>
                             }
-                        </ul>
-                    </section>
-                }
-            </div>
-        }
-    </div>
-
+                        </div>
+                    }
+                    @for (var i = 0; i < r.Groups.Count; i++)
+                    {
+                        var group = r.Groups[i];
+                        <section class="slot-group space-y-2" data-part="@i" data-testid="slot-group">
+                            <h3 class="hidden text-xs font-semibold uppercase tracking-wide text-stone-600 sm:block">@T[group.LabelKey]</h3>
+                            <ul class="slot-grid slot-row">
+                                @foreach (var slot in group.Slots)
+                                {
+                                    var chosen = slot.Start == r.Chosen?.Start;
+                                    <li>
+                                        @* Tapping selects on this page; Continue below carries the time on (owner's call, 2026-11-20). *@
+                                        <a href="/book/@r.ServiceId?date=@r.SelectedDate.ToIso()&from=@windowStart&start=@Uri.EscapeDataString(slot.Start.ToIso())@staffQuery" data-testid="slot" aria-current="@(chosen ? "true" : null)" class="slot @(chosen ? "is-chosen" : null)">@slot.LocalStart.ToString("HH:mm", culture)</a>
+                                    </li>
+                                }
+                            </ul>
+                        </section>
+                    }
+                </div>
+            }
+        </div>
     }
+
     @* What is being booked, under the times (ADR 0094, stage 2): the service and its price, the time once one is
        tapped, who with, the total, and the one button that goes on. *@
     <section class="book-summary" data-testid="booking-summary" aria-label="@T["Booking.Public.Summary"]">
         @if (r.Lines.Count <= 1)
         {
             <div class="flex items-start justify-between gap-4">
-                <p class="min-w-0 font-medium text-slate-800" data-testid="service-name">@r.ServiceName</p>
+                <div class="min-w-0">
+                    <p class="font-medium text-slate-800" data-testid="service-name">@r.ServiceName</p>
+                    <a href="/book" class="text-sm text-slate-600 underline underline-offset-4" data-testid="change-service">@T["Booking.Public.ChangeService"]</a>
+                </div>
                 <div class="shrink-0 text-right">
                     <p class="font-semibold text-slate-800 tabular-nums" data-testid="summary-price">@(r.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", r.Price.ToDisplayString(culture)) : r.Price.ToDisplayString(culture))</p>
                     <p class="text-sm text-slate-600 tabular-nums" data-testid="summary-when">@ChooseSlotText.When(T, r, culture)</p>
@@ -190,20 +212,24 @@
         {
             <p class="notice notice-error" role="alert" data-testid="nobody-offers-all">@T["Booking.Public.NobodyOffersAll"]</p>
         }
-        <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-3 text-sm">
-            <p class="text-slate-600">@T["Booking.Public.SummaryStaff"] <span class="font-medium text-slate-800" data-testid="summary-staff">@ChooseSlotText.Who(T, r)</span></p>
-            <span class="flex flex-wrap gap-2">
-                @if (Model.AddPath is { } addPath)
-                {
-                    <a href="@addPath" class="btn btn-compact btn-secondary" data-testid="add-service">@T["Booking.Public.AddService"]</a>
-                }
-                <a href="/book" class="btn btn-compact btn-secondary" data-testid="change-service">@T["Booking.Public.ChangeService"]</a>
-            </span>
+        <div class="flex items-center justify-between gap-3 border-t border-slate-200 pt-3 text-sm">
+            <p class="min-w-0 text-slate-600">@T["Booking.Public.SummaryStaff"] <span class="font-medium text-slate-800" data-testid="summary-staff">@ChooseSlotText.Who(T, r)</span></p>
+            @if (r.Staff.Count > 1 && !r.NeedsStaffChoice)
+            {
+                <a href="#who" class="btn btn-compact btn-secondary shrink-0" data-testid="change-staff">@T["Booking.Public.ChangeStaff"]<span class="sr-only">: @T["Booking.Public.With"]</span></a>
+            }
         </div>
     </section>
+    @if (Model.AddPath is { } addPath)
+    {
+        <a href="@addPath" class="add-service" data-testid="add-service"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>@T["Booking.Public.AddService"]</a>
+    }
     <div class="book-total">
         <p class="text-sm text-slate-600">@T["Booking.Public.Total"]</p>
-        <p class="text-2xl font-semibold text-slate-800 tabular-nums" data-testid="summary-total">@(r.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", r.Price.ToDisplayString(culture)) : r.Price.ToDisplayString(culture))</p>
+        <div class="text-right">
+            <p class="text-2xl font-semibold text-slate-800 tabular-nums" data-testid="summary-total">@(r.PriceIsFrom ? T.Format("Booking.ListServices.FromPrice", r.Price.ToDisplayString(culture)) : r.Price.ToDisplayString(culture))</p>
+            <p class="text-sm text-slate-600 tabular-nums" data-testid="summary-duration">@T.Format("Booking.Public.DurationMinutes", (int)r.Duration.TotalMinutes)</p>
+        </div>
     </div>
     @if (r.Chosen is { } picked)
     {
@@ -225,3 +251,6 @@
         </p>
     }
 </section>
+@section Scripts {
+    <script type="module" src="~/js/booking-slots.js" asp-append-version="true"></script>
+}

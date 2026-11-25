@@ -60,3 +60,32 @@ fold the two together, "yes merge".
   the home page, the confirmation and the messages.
 - Cost: a salon's printed or shared `/services` links land on step 1 of a booking, under the heading "Choose a
   service", not on a page called "Services". If a salon wants a plain price list back, the redirect is one line.
+
+## Addendum, 2026-11-25: the time page on a phone, after the owner's screen (stage 5)
+
+The owner sent the phone screen they want ("on mobile please copy one to one") and said where it may differ.
+
+- **The top is one line on a phone**: the month as the title, the two arrows ("we can still keep left right"), the
+  way out. "Choose a time" stays as the page's heading for a screen reader. On a desk the title stands above and the
+  month sits between its arrows. One set of elements placed by a grid, so nothing is in the page twice.
+- **No steps on a phone** ("on mobile we do not need to see steps, on desktop yes"): the step line and its three
+  bars are hidden under `sm` on the service, time and details pages.
+- **Day tiles are taller on a phone** (80 px by 64 px; 64 by 56 from `sm`).
+- **Morning · Afternoon · Evening** as one segmented control, in words instead of clock ranges, and the times of the
+  chosen part in **a single line that slides**. From `sm` every part shows under its heading in the grid, as before.
+  A small script (`booking-slots.js`) brings the chosen day and time back into sight after a tap, because each tap is
+  a new page and a line starts at its beginning; without script the page works, the chosen one may need a slide.
+- **Who with is a sheet over the page**, not a row on it ("launching some light modal where you can select staff").
+  It is still asked, not assumed (stage 3): while nobody is chosen the sheet is simply open and the days and times
+  wait behind it, with "Back to services" as the way out. Afterwards the card says "Staff: … " with **Change**, which
+  opens the sheet again; its cross closes it. No script (`:target`).
+- **The card** holds the service, its price, the time and the staff line; "Change service" is a quiet link under the
+  name; **"+ Add another service"** is a line of its own under the card; the total shows the length beneath it.
+- **Changing the day or the month does not move the screen**: the top line and the card hold still and the days and
+  times go pale and come back (a view transition; browsers without it navigate as before).
+
+Where this differs from the screen sent, on purpose: the staff question still has to be answered first (the owner's
+own rule of three days earlier; one line to change if "No preference" should be the default again), the arrows stay,
+and only parts of the day that have a free time get a tab.
+
+Not done yet: the wide layout with the order in a column at the right (the owner's third picture).

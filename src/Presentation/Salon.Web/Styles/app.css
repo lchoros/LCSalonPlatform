@@ -418,53 +418,130 @@
     @apply flex items-baseline justify-end gap-3 border-t border-slate-200 pt-4;
   }
 
-  /* Who with, asked before the days and times (ADR 0094, stage 3). While it is unanswered the question stands in a
-     brand-edged box with "Required" beside it; once answered it is a quiet heading over the pills. */
-  .staff-choice {
-    @apply space-y-2;
+  .book-close {
+    @apply inline-flex size-11 shrink-0 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand;
   }
 
-  .staff-choice.is-needed {
-    @apply rounded-xl border border-brand bg-white p-4;
+
+  /* The time page on a phone, after the screen the owner sent (ADR 0094, stage 5). */
+
+  /* Its top: one grid, two shapes. On a phone one line — the month as the title, the two arrows, the way out. From sm
+     the title stands above with the way out, and the month sits between its arrows underneath. */
+  .book-top {
+    @apply grid scroll-mt-4 items-center gap-x-2 gap-y-3;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "title close";
   }
 
-  /* While the question is open every answer is in sight: the pills wrap instead of running off the edge. */
-  .staff-choice.is-needed .scroll-row {
-    @apply mx-0 flex-wrap overflow-visible px-0;
+  .book-top-title {
+    grid-area: title;
   }
 
-  .staff-choice-title {
-    @apply flex items-center gap-2 text-sm font-semibold text-slate-700;
+  .book-top-month {
+    grid-area: month;
+  }
+
+  .book-top-earlier {
+    grid-area: earlier;
+  }
+
+  .book-top-later {
+    grid-area: later;
+  }
+
+  .book-top-close {
+    grid-area: close;
+  }
+
+  @media (width < 40rem) {
+    .book-top.has-month {
+      grid-template-columns: 1fr auto auto auto;
+      grid-template-areas: "month earlier later close";
+    }
+
+    /* The month is the title a phone shows; the words "Choose a time" stay for a screen reader. */
+    .book-top.has-month .book-top-title {
+      @apply sr-only;
+    }
+
+    .book-top.has-month .book-top-month {
+      @apply text-left text-2xl tracking-tight;
+    }
+  }
+
+  @media (width >= 40rem) {
+    .book-top.has-month {
+      grid-template-columns: auto 1fr 1fr auto;
+      grid-template-areas:
+        "title title title close"
+        "earlier month month later";
+    }
+  }
+
+  /* The days: no scrollbar of their own (the arrows page them, a finger slides them), and taller on a phone. */
+  .day-strip {
+    @apply pb-0 [scrollbar-width:none];
+  }
+
+  .day-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .day-strip .tile {
+    @apply h-20 w-16 gap-1 sm:h-16 sm:w-14 sm:gap-0.5;
+  }
+
+  /* The times of one part of the day in a single line on a phone; the shared grid from sm. */
+  @media (width < 40rem) {
+    .slot-grid.slot-row {
+      @apply -mx-4 flex snap-x gap-2 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pb-1 [scrollbar-width:none];
+    }
+
+    .slot-grid.slot-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .slot-grid.slot-row > li {
+      @apply shrink-0 snap-start;
+    }
+
+    .slot-grid.slot-row .slot {
+      @apply h-12 w-[5.25rem] border-slate-300 bg-white text-base font-medium text-slate-800;
+    }
+
+    .slot-grid.slot-row .slot.is-chosen {
+      @apply border-brand bg-brand text-white;
+    }
+  }
+
+  /* Who with, as a list in its sheet: a face or a sign, a name, the chosen one outlined. */
+  .staff-list {
+    @apply flex max-h-[60vh] flex-col gap-2 overflow-y-auto;
+  }
+
+  .staff-row {
+    @apply flex min-h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-base font-medium text-slate-800 transition-colors hover:border-brand-line hover:bg-brand-mist focus:outline-none focus-visible:ring-2 focus-visible:ring-brand;
+  }
+
+  .staff-row.is-on {
+    @apply border-brand bg-brand-soft text-brand;
+    box-shadow: inset 0 0 0 1px var(--color-brand);
+  }
+
+  .staff-row-any {
+    @apply inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600;
   }
 
   .staff-choice-required {
     @apply rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700;
   }
 
-  .book-close {
-    @apply inline-flex size-11 shrink-0 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand;
+  /* "Add another service": a line of its own under the card, in the brand, not one more button in it. */
+  .add-service {
+    @apply inline-flex min-h-11 items-center gap-2 text-base font-semibold text-brand underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-brand;
   }
-
-  /* The month with the two arrows beside it, above the days — not squeezed onto the days' own line
-     (the owner, 2026-11-22). */
-  .day-wrap {
-    @apply scroll-mt-4 space-y-3;
-  }
-
-  .day-head {
-    @apply flex items-center justify-between gap-3;
-  }
-
   .day-month {
-    @apply flex-1 text-center text-lg font-semibold text-slate-800;
-  }
-
-  .day-wrap .scroll-row {
-    @apply pb-0 [scrollbar-width:none];
-  }
-
-  .day-wrap .scroll-row::-webkit-scrollbar {
-    display: none;
+    @apply text-center text-lg font-semibold text-slate-800;
   }
 
   .tile-day {
@@ -494,10 +571,11 @@
 
   /* A question over the page without script: the link to #discard shows it, any other link takes it away. */
   .modal {
-    @apply invisible fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 opacity-0 transition-opacity;
+    @apply invisible fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-4 opacity-0 transition-opacity sm:items-center;
   }
 
-  .modal:target {
+  .modal:target,
+  .modal.is-open {
     @apply visible opacity-100;
   }
 
@@ -671,11 +749,11 @@
   }
 
   .slot-part-tabs {
-    @apply flex gap-1.5;
+    @apply flex gap-1 rounded-xl bg-slate-100 p-1;
   }
 
   .slot-part-tab {
-    @apply flex min-h-10 flex-1 cursor-pointer items-center justify-center rounded-lg border border-stone-200 bg-white px-2 text-center text-xs font-semibold text-stone-600 transition-colors;
+    @apply flex min-h-10 flex-1 cursor-pointer items-center justify-center rounded-lg px-2 text-center text-sm font-medium text-slate-600 transition-colors;
   }
 
   .slot-parts > .slot-group {
@@ -691,7 +769,7 @@
   #slot-part-0:checked ~ .slot-part-tabs > [for="slot-part-0"],
   #slot-part-1:checked ~ .slot-part-tabs > [for="slot-part-1"],
   #slot-part-2:checked ~ .slot-part-tabs > [for="slot-part-2"] {
-    @apply border-brand bg-brand text-white;
+    @apply bg-white text-slate-900 shadow-sm;
   }
 
   /* The compact "what you chose" bar shown on every step after the first. */
@@ -1045,6 +1123,39 @@
   ::view-transition-group(booking-times) {
     animation-duration: 240ms;
     animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  /* The owner, 2026-11-25: changing the month or the day should not move the screen — the days and the times
+     should go pale and come back, a soft blink of white. So the top line and the summary are parts of their own
+     that hold still, and the days and times fade out and then in instead of sliding over one another. */
+  .book-top {
+    view-transition-name: booking-top;
+  }
+
+  .book-summary {
+    view-transition-name: booking-summary;
+  }
+
+  ::view-transition-old(booking-days),
+  ::view-transition-old(booking-times) {
+    animation: 90ms ease-out both booking-fade-out;
+  }
+
+  ::view-transition-new(booking-days),
+  ::view-transition-new(booking-times) {
+    animation: 190ms ease-in 80ms both booking-fade-in;
+  }
+
+  @keyframes booking-fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes booking-fade-in {
+    from {
+      opacity: 0;
+    }
   }
 }
 

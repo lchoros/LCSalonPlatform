@@ -81,6 +81,12 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await CaptureAsync(page, "book-who-with-mobile-390.png");
         await page.ChooseAnyoneAsync();
         await Assertions.Expect(page.GetByTestId("staff-required")).ToHaveCountAsync(0);
+        // Who with lives in a sheet now: closed once answered, opened again by "Change" and closed by its cross.
+        await Assertions.Expect(page.GetByTestId("staff-option").First).ToBeHiddenAsync();
+        await page.GetByTestId("change-staff").TapAsync();
+        await Assertions.Expect(page.GetByTestId("staff-option").First).ToBeVisibleAsync();
+        await page.GetByTestId("staff-close").TapAsync();
+        await Assertions.Expect(page.GetByTestId("staff-option").First).ToBeHiddenAsync();
         (await page.GetByTestId("staff-any").GetAttributeAsync("aria-current")).ShouldBe("true");
         (await page.GetByTestId("day").CountAsync()).ShouldBe(14);
 
