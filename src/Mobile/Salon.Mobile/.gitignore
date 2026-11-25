@@ -1,0 +1,2 @@
+# A dev host for Debug builds only (see Salon.Mobile.csproj); machine-specific, never committed.
+appsettings.Local.json

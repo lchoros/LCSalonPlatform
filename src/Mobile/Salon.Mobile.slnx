@@ -1,0 +1,12 @@
+<Solution>
+  <!-- The client booking app on its own (ADR 0097): never part of Salon.slnx, so a mobile break cannot block a web
+       build. Needs the MAUI workloads. -->
+  <Folder Name="/Solution Items/">
+    <File Path="../../Directory.Build.props" />
+    <File Path="../../Directory.Packages.props" />
+    <File Path="../../docs/adr/0097-a-client-booking-app.md" />
+    <File Path="../../docs/mobile/BOOKING-API.md" />
+  </Folder>
+  <Project Path="../Libraries/Salon.Api.Contracts/Salon.Api.Contracts.csproj" />
+  <Project Path="Salon.Mobile/Salon.Mobile.csproj" />
+</Solution>

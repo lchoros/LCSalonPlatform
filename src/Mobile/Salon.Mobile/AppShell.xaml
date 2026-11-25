@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- One flow, no menu and no tabs (ADR 0094: inside a booking the page is only the booking). The service list is the
+     root; the other screens are routes pushed on it (Navigation/ShellNavigator.cs). -->
+<Shell
+    x:Class="Salon.Mobile.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:s="clr-namespace:Salon.Mobile.Screens"
+    xmlns:r="clr-namespace:Salon.Mobile.Resources.Strings"
+    Title="{x:Static r:AppResources.AppName}">
+
+    <ShellContent
+        Title="{x:Static r:AppResources.ServicesTitle}"
+        ContentTemplate="{DataTemplate s:ServicesPage}"
+        Route="services" />
+
+</Shell>

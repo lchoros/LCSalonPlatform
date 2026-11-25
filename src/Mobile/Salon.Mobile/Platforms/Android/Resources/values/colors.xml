@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- The brand of the web (Salon.Web Styles/app.css: brand and brand-strong). -->
+  <color name="colorPrimary">#5B3FE0</color>
+  <color name="colorPrimaryDark">#4A30C4</color>
+  <color name="colorAccent">#5B3FE0</color>
+</resources>

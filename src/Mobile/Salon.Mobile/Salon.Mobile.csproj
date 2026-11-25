@@ -1,0 +1,85 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The client booking app for one salon (ADR 0097): five screens over /api/v1/booking. Kept out of Salon.slnx so a
+       mobile break never blocks a web build (ADR 0081); open src/Mobile/Salon.Mobile.slnx instead. Needs the MAUI
+       workloads; iOS is only added on a Mac (or with -p:SalonMobileIos=true) so the project restores and builds on
+       Windows. Machine paths (JDK, Android SDK) never go in here: pass them on the command line or put them in a
+       git-ignored Salon.Mobile.csproj.user. -->
+
+  <PropertyGroup>
+    <!-- The repository's Directory.Build.props sets a single net10.0; an app with several targets must clear it, or
+         the outer build would be taken for a net10.0 build. Inner builds get theirs as a global property. -->
+    <TargetFramework></TargetFramework>
+    <TargetFrameworks>net10.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx')) or '$(SalonMobileIos)' == 'true'">$(TargetFrameworks);net10.0-ios</TargetFrameworks>
+
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Salon.Mobile</RootNamespace>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <!-- XamlC in every configuration: it fails the build when a page binds to a member its screen interface does not
+         have (XC0045), which is the check that matters when the real screen models replace the samples. The source
+         generator falls back to a runtime binding without a word. Pass -p:MauiXamlInflator=SourceGen for a session
+         with XAML Hot Reload. MAUI1001 is only the advice that an explicit XamlC turns Hot Reload off; it is silenced
+         here and nowhere else. -->
+    <MauiXamlInflator Condition="'$(MauiXamlInflator)' == ''">XamlC</MauiXamlInflator>
+    <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+    <NoWarn>$(NoWarn);MAUI1001</NoWarn>
+    <NeutralLanguage>en-GB</NeutralLanguage>
+
+    <!-- Placeholders until the owner names the store listing; each salon's build may set its own. -->
+    <ApplicationTitle>Booking</ApplicationTitle>
+    <ApplicationId>com.salonplatform.booking</ApplicationId>
+    <ApplicationDisplayVersion>0.1</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+
+    <!-- Unpackaged on Windows: the Windows build is for looking at the screens on a desk, not for a store. -->
+    <WindowsPackageType>None</WindowsPackageType>
+
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#5B3FE0" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#5B3FE0" BaseSize="128,128" />
+    <MauiImage Include="Resources\Images\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Configuration travels inside the app (SalonAppOptions). A git-ignored appsettings.Local.json overrides it in
+         Debug builds only, for a dev host: { "BaseAddress": "https://localhost:7289" }. -->
+    <EmbeddedResource Include="appsettings.json" LogicalName="Salon.Mobile.appsettings.json" />
+    <EmbeddedResource Include="appsettings.Local.json" LogicalName="Salon.Mobile.appsettings.Local.json" Condition="'$(Configuration)' == 'Debug' and Exists('appsettings.Local.json')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Every word on screen (en-GB, with pl-PL beside it). XAML refers to {x:Static r:AppResources.Key}, so a missing
+         key fails the build. The class is checked in and kept in step by Visual Studio's generator: generating it at
+         build time is too late for the WinUI XAML compiler's first pass, which compiles the C# before resources. -->
+    <EmbeddedResource Update="Resources\Strings\AppResources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>AppResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <Compile Update="Resources\Strings\AppResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AppResources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Central package management turns MAUI's implicit references off (DisableMauiImplicitPackageReferences), so
+         the one it would add is named here, at the installed workload's own version ($(MauiVersion)); nothing is
+         pinned in Directory.Packages.props for it. -->
+    <PackageReference Include="Microsoft.Maui.Controls" VersionOverride="$(MauiVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libraries\Salon.Api.Contracts\Salon.Api.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>
