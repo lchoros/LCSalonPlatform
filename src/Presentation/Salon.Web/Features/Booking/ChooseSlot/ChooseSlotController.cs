@@ -48,9 +48,10 @@ public sealed class ChooseSlotController(IDispatcher dispatcher, ITenantContext 
         {
             AlsoQuery = VisitBasket.Query(services.Skip(1), answers.Skip(1)),
             // One service is picked in full — its time and who with — before another is added (the owner, 2026-11-25);
-            // what was picked rides along.
+            // who with and the day ride along. The time does not (2026-11-26): with another service the visit is a
+            // different length, so the client chooses its time again.
             AddPath = canAdd && result.Chosen is not null && !result.NeedsStaffChoice
-                ? ListUrl.Build(PublicBookingDefaults.BookPath, [("add", services[0].ToString()), .. Carried(result, services, answers)])
+                ? ListUrl.Build(PublicBookingDefaults.BookPath, [("add", services[0].ToString()), .. Carried(result, services, answers).Where(kept => kept.Name != "start")])
                 : null,
             AddAfterTime = canAdd && (result.Chosen is null || result.NeedsStaffChoice),
             RemovePaths = result.Lines.Count > 1

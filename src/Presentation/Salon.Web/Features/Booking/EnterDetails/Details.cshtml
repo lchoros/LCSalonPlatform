@@ -10,8 +10,10 @@
 }
 <section class="mx-auto max-w-lg space-y-6">
     <header class="space-y-3">
+        @* On a phone the step is a few small words, counted from the time page ("Step 2 of 2"); the three bars are for a desk (the owner, 2026-11-26). *@
         <p class="text-sm font-medium text-stone-600 max-sm:hidden" data-testid="step">@T.Format("Booking.Public.Step", 3, 3)</p>
-        <ol class="steps">
+        <p class="text-xs text-slate-500 sm:hidden" data-testid="step-short">@T.Format("Booking.Public.Step", 2, 2)</p>
+        <ol class="steps max-sm:hidden">
             <li class="is-done"><span class="steps-bar"></span>@T["Booking.Public.StepService"]</li>
             <li class="is-done"><span class="steps-bar"></span>@T["Booking.Public.StepTime"]</li>
             <li class="is-done"><span class="steps-bar"></span>@T["Booking.Public.StepDetails"]</li>

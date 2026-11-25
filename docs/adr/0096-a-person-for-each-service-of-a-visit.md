@@ -74,3 +74,13 @@ each service of a visit was already an appointment of its own with its own `staf
 - **The time page is one screen on a phone**: the days and times hold at the top, the total and Continue at the
   bottom, and the service cards scroll in a space of their own between them, so nothing slides under the button.
   From `sm` the page flows as before with Continue stuck to the bottom over a solid strip.
+
+## Addendum, 2026-11-26
+
+- **The time is chosen again after a service is added** ("do not want to add time automatically for second service,
+  user has to select it again"). The way to the service list carries who with and the day, not the time: the visit is
+  a different length now, and the client taps its time afresh. Each card shows its length until then.
+- **"Add another service" tapped too early has its own words**: "Please complete this service first: choose a time."
+  (or who with, or both), apart from Continue's "Choose a time first."
+- **Only what a tap changes goes pale** (`data-change` on the page): a day changes the times; an arrow the days and
+  the times; a time or a person changes neither, and the line of times stays where the finger left it.
