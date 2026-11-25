@@ -62,15 +62,15 @@ public class SeveralServicesE2ETests(KestrelAppFixture app) : IClassFixture<Kest
         // More services come after a time is chosen for what is here (the owner, 2026-11-25).
         (await page.GetByTestId("add-service").CountAsync()).ShouldBe(0);
         // "Add another service" is in sight but pale, and Continue grey; a tap on either says what is missing.
-        await Assertions.Expect(page.GetByTestId("pick-first")).ToBeHiddenAsync();
+        await Assertions.Expect(page.GetByTestId("finish-first")).ToBeHiddenAsync();
         await page.GetByTestId("add-service-off").TapAsync();
-        await Assertions.Expect(page.GetByTestId("pick-first")).ToBeVisibleAsync();
-        (await page.GetByTestId("pick-first").TextContentAsync()).ShouldNotBeNull().Trim().ShouldBe("Choose a time first.");
-        await page.WaitForFunctionAsync("() => getComputedStyle(document.getElementById(\"pick-first\")).opacity === \"1\"");
+        await Assertions.Expect(page.GetByTestId("finish-first")).ToBeVisibleAsync();
+        (await page.GetByTestId("finish-first").TextContentAsync()).ShouldNotBeNull().Trim().ShouldBe("Please complete this service first: choose a time.");
+        await page.WaitForFunctionAsync("() => getComputedStyle(document.getElementById(\"finish-first\")).opacity === \"1\"");
         await CaptureAsync(page, "book-pick-first-mobile-390.png");
         await page.GetByTestId("slot").First.TapAsync();
         await Assertions.Expect(page.GetByTestId("continue")).ToHaveCountAsync(1);
-        var chosenTime = (await page.GetByTestId("summary-when").TextContentAsync()).ShouldNotBeNull();
+        (await page.GetByTestId("summary-when").TextContentAsync()).ShouldNotBeNull().ShouldContain("–", Case.Sensitive, "a time is tapped: the card says from when to when");
 
         // "Add another service" opens the same list; what is already chosen is not offered again.
         await page.GetByTestId("add-service").TapAsync();
@@ -88,8 +88,9 @@ public class SeveralServicesE2ETests(KestrelAppFixture app) : IClassFixture<Kest
         (await page.GetByTestId("line-price").AllTextContentsAsync()).ShouldBe(["£45.00", "£15.00"]);
         (await page.GetByTestId("summary-total").TextContentAsync()).ShouldBe("£60.00");
         (await page.GetByTestId("summary-duration").TextContentAsync()).ShouldBe("65 min");
-        // The time chosen before adding is kept: the first card still says it, the second follows on.
-        (await page.GetByTestId("line-when").First.TextContentAsync()).ShouldBe(chosenTime);
+        // The time is not carried over (the owner, 2026-11-26): the visit is longer now, so each card shows its length
+        // again and the client chooses the time afresh.
+        (await page.GetByTestId("line-when").AllTextContentsAsync()).ShouldBe(["45 min", "20 min"]);
         // Nobody is picked for the added service (the owner, 2026-11-25): its line says the answer is owed and Continue is grey.
         await Assertions.Expect(page.GetByTestId("continue-off")).ToHaveCountAsync(1);
         (await page.GetByTestId("staff-required").CountAsync()).ShouldBe(0, "who with was not asked again");

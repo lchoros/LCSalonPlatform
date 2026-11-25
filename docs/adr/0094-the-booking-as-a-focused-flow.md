@@ -152,8 +152,9 @@ The owner, after a day with it: "steps took too much space … times slightly sm
 first service can be closer; under the total we don't need the time again … the Choose button on staff is too high …
 maybe do not scroll the services on their own — the entire screen except the total and Continue".
 
-- The three step bars are for a desk again. On a phone the step is a few small words, "Step 2 of 3", at the left of
-  the total, where it costs no room (and small above the title on the details page).
+- The three step bars are for a desk again. On a phone the step is a few small words, "Step 1 of 2", at the left of
+  the total, where it costs no room (and "Step 2 of 2", small, above the title on the details page). The phone counts
+  from the time page: choosing the service is already behind the client ("it is step 1 of 2 rather than 3").
 - Times and the Morning / Afternoon / Evening control are a size smaller; the staff line's button is as low as the
   line.
 - The foot is the total and Continue, close together, fixed to the bottom of the screen over a solid strip. The
