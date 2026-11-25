@@ -7,6 +7,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The JSON shapes of /api/v1 (ADR 0097): the base controller of the booking API writes its refusals in them. -->
+    <ProjectReference Include="..\..\Libraries\Salon.Api.Contracts\Salon.Api.Contracts.csproj" />
     <ProjectReference Include="..\..\Libraries\Salon.Services\Salon.Services.csproj" />
   </ItemGroup>
 
