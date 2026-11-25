@@ -106,7 +106,9 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         var asked = await GetAsync(client, $"/book/{_serviceId}");
 
         // Nobody is chosen for the visitor (the owner, 2026-11-22): the question stands alone until it is answered.
-        asked.ShouldContain("data-testid=\"staff-choice\"");
+        // The question is a sheet over the page (the owner, 2026-11-25), open by itself while it is unanswered.
+        asked.ShouldContain("<div id=\"who\" class=\"modal is-open\" role=\"dialog\"");
+        asked.ShouldNotContain("data-testid=\"change-staff\"");
         asked.ShouldContain("data-testid=\"staff-required\">Required</span>");
         asked.ShouldContain("data-testid=\"choose-staff\">Choose a person, or ");
         asked.ShouldNotContain("aria-current=\"true\"", Case.Sensitive, "neither \"anyone\" nor a person is marked as chosen");
@@ -121,6 +123,9 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
 
         anyone.ShouldNotContain("data-testid=\"staff-required\"");
         anyone.ShouldNotContain("data-testid=\"choose-staff\"");
+        // Answered: the sheet is closed, and "Change" beside the staff line opens it again.
+        anyone.ShouldContain("<div id=\"who\" class=\"modal\" role=\"dialog\"");
+        anyone.ShouldContain("<a href=\"#who\" class=\"btn btn-compact btn-secondary shrink-0\" data-testid=\"change-staff\">");
         anyone.ShouldContain("aria-current=\"true\" data-testid=\"staff-any\"");
         anyone.ShouldContain("data-testid=\"summary-staff\">No preference</span>");
         SlotHrefs(anyone).ShouldBe(await ExpectedSlotHrefsAsync(null));
@@ -183,9 +188,9 @@ public partial class PublicBookingTests(SalonWebApplicationFactory factory) : IA
         var html = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff=any");
 
         html.ShouldContain("data-testid=\"slot-group\"");
-        html.ShouldContain("Until 12:00");
-        html.ShouldContain("12:00–16:00");
-        html.ShouldContain("After 16:00");
+        html.ShouldContain(">Morning</label>");
+        html.ShouldContain(">Afternoon</label>");
+        html.ShouldContain(">Evening</label>");
     }
 
     [Fact]

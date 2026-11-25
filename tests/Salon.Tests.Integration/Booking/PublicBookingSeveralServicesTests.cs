@@ -45,7 +45,7 @@ public partial class PublicBookingTests
         using var client = ClientOn(host);
 
         var one = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff={_annaId}");
-        one.ShouldContain($"href=\"/book?add={_serviceId}&staff={_annaId}\" class=\"btn btn-compact btn-secondary\" data-testid=\"add-service\"");
+        one.ShouldContain($"href=\"/book?add={_serviceId}&staff={_annaId}\" class=\"add-service\" data-testid=\"add-service\"");
         one.ShouldNotContain("data-testid=\"remove-service\"", Case.Sensitive, "one service is changed, not removed");
 
         var both = await GetAsync(client, $"/book/{_serviceId}?date={Iso(_day)}&staff={_annaId}&also={colour}");
