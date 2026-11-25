@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Step 1, the service list (ADR 0094, "The service list, the same evening"): a title, a search box, the filter chips
+     in one line, then rows with the name at the left, the price and the length at the right, and a Book pill. What
+     the salon wrote shows as two grey lines with "More", which opens all of it in a white sheet. Options of one
+     service open under one row. The same page serves "Add another service" (IsAdding). -->
+<ContentPage
+    x:Class="Salon.Mobile.Screens.ServicesPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:c="clr-namespace:Salon.Mobile.Screens.Contracts"
+    xmlns:s="clr-namespace:Salon.Mobile.Screens"
+    xmlns:p="clr-namespace:Salon.Mobile.Screens.Parts"
+    xmlns:r="clr-namespace:Salon.Mobile.Resources.Strings"
+    x:DataType="c:IServicesScreen"
+    Title="{x:Static r:AppResources.ServicesTitle}">
+
+    <Grid>
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="12" Padding="0,12,0,0">
+
+            <!-- The title; in "add" mode a way back to the booking before it. -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Padding="16,0">
+                <p:IconButton
+                    Margin="-10,0,4,0"
+                    Icon="{StaticResource IconBack}"
+                    Color="{StaticResource Ink}"
+                    Description="{x:Static r:AppResources.BackToBooking}"
+                    Command="{Binding BackCommand}"
+                    IsVisible="{Binding IsAdding}" />
+                <Label Grid.Column="1" Style="{StaticResource Title}" VerticalOptions="Center" Text="{x:Static r:AppResources.ServicesTitle}">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding IsAdding}" Value="True">
+                            <Setter Property="Text" Value="{x:Static r:AppResources.AddServiceTitle}" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+            </Grid>
+
+            <Label Grid.Row="1" Padding="16,0" Style="{StaticResource Muted}" Text="{x:Static r:AppResources.AddServiceLead}" IsVisible="{Binding IsAdding}" />
+
+            <Border Grid.Row="2" Margin="16,0" Style="{StaticResource Field}">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Path
+                        Data="{StaticResource IconSearch}"
+                        Stroke="{StaticResource Muted}"
+                        StrokeThickness="2"
+                        StrokeLineCap="Round"
+                        Aspect="None"
+                        WidthRequest="24"
+                        HeightRequest="24"
+                        VerticalOptions="Center" />
+                    <Entry
+                        Grid.Column="1"
+                        Text="{Binding SearchText}"
+                        Placeholder="{x:Static r:AppResources.SearchServices}"
+                        SemanticProperties.Description="{x:Static r:AppResources.SearchServices}"
+                        ReturnType="Search"
+                        ClearButtonVisibility="WhileEditing" />
+                </Grid>
+            </Border>
+
+            <!-- All, Popular, the categories: one line that slides. -->
+            <ScrollView Grid.Row="3" Orientation="Horizontal" HorizontalScrollBarVisibility="Never" SemanticProperties.Description="{x:Static r:AppResources.Categories}">
+                <HorizontalStackLayout Padding="16,0" Spacing="8" BindableLayout.ItemsSource="{Binding Filters}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="c:IServiceFilter">
+                            <Border Style="{StaticResource Chip}">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Screen.ChooseFilterCommand, Source={RelativeSource AncestorType={x:Type s:ServicesPage}}, x:DataType=s:ServicesPage}"
+                                        CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource BrandSoft}" />
+                                        <Setter Property="Stroke" Value="{StaticResource Brand}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Label Text="{Binding ., Converter={StaticResource FilterName}}" FontSize="14" TextColor="{StaticResource InkSoft}" VerticalOptions="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="{StaticResource Brand}" />
+                                            <Setter Property="FontFamily" Value="{StaticResource FontMedium}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </HorizontalStackLayout>
+            </ScrollView>
+
+            <ScrollView Grid.Row="4">
+                <VerticalStackLayout Padding="0,4,0,24">
+                    <BoxView Style="{StaticResource Rule}" Color="{StaticResource LineStrong}" />
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Rows}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="c:IServiceRow">
+                                <VerticalStackLayout>
+                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12" Padding="16,14,16,10">
+                                        <Label Text="{Binding Name}" Style="{StaticResource RowName}" VerticalOptions="Center" />
+                                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                            <Label Text="{Binding Price, Converter={StaticResource Price}}" Style="{StaticResource Strong}" HorizontalTextAlignment="End" />
+                                            <Label Text="{Binding DurationMinutes, Converter={StaticResource Duration}}" Style="{StaticResource Small}" HorizontalTextAlignment="End" />
+                                        </VerticalStackLayout>
+                                        <Button
+                                            Grid.Column="2"
+                                            Style="{StaticResource Pill}"
+                                            Text="{x:Static r:AppResources.Book}"
+                                            VerticalOptions="Center"
+                                            IsVisible="{Binding HasOptions, Converter={StaticResource Not}}"
+                                            Command="{Binding Screen.BookCommand, Source={RelativeSource AncestorType={x:Type s:ServicesPage}}, x:DataType=s:ServicesPage}"
+                                            CommandParameter="{Binding .}">
+                                            <Button.Triggers>
+                                                <DataTrigger TargetType="Button" Binding="{Binding Screen.IsAdding, Source={RelativeSource AncestorType={x:Type s:ServicesPage}}, x:DataType=s:ServicesPage}" Value="True">
+                                                    <Setter Property="Text" Value="{x:Static r:AppResources.Add}" />
+                                                </DataTrigger>
+                                            </Button.Triggers>
+                                        </Button>
+                                        <p:IconButton
+                                            Grid.Column="2"
+                                            Icon="{StaticResource IconChevronDown}"
+                                            Color="{StaticResource Brand}"
+                                            Ring="{StaticResource BrandLine}"
+                                            Description="{x:Static r:AppResources.ShowOptions}"
+                                            IsVisible="{Binding HasOptions}"
+                                            Command="{Binding Screen.ToggleOptionsCommand, Source={RelativeSource AncestorType={x:Type s:ServicesPage}}, x:DataType=s:ServicesPage}"
+                                            CommandParameter="{Binding .}">
+                                            <p:IconButton.Triggers>
+                                                <DataTrigger TargetType="p:IconButton" Binding="{Binding IsOpen}" Value="True">
+                                                    <Setter Property="Rotation" Value="180" />
+                                                </DataTrigger>
+                                            </p:IconButton.Triggers>
+                                        </p:IconButton>
+                                    </Grid>
+
+                                    <!-- Two grey lines of what the salon wrote, and "More". -->
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Padding="16,0,8,6" IsVisible="{Binding Description, Converter={StaticResource HasValue}}">
+                                        <Label Text="{Binding Description}" Style="{StaticResource Small}" MaxLines="2" LineBreakMode="TailTruncation" VerticalOptions="Center" />
+                                        <Button
+                                            Grid.Column="1"
+                                            Style="{StaticResource Link}"
+                                            FontSize="12"
+                                            Text="{x:Static r:AppResources.ReadMore}"
+                                            VerticalOptions="End"
+                                            Command="{Binding Screen.ReadMoreCommand, Source={RelativeSource AncestorType={x:Type s:ServicesPage}}, x:DataType=s:ServicesPage}"
+                                            CommandParameter="{Binding .}" />
+                                    </Grid>
+
+                                    <!-- The options of one service, under its row. -->
+                                    <VerticalStackLayout BackgroundColor="{StaticResource BrandMist}" IsVisible="{Binding IsOpen}" BindableLayout.ItemsSource="{Binding Options}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="c:IServiceOption">
+                                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12" Padding="32,10,16,10">
+                                                    <Label Text="{Binding Label}" Style="{StaticResource RowName}" VerticalOptions="Center" />
+                                                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                                        <Label Text="{Binding Price, Converter={StaticResource Price}}" Style="{StaticResource Strong}" HorizontalTextAlignment="End" />
+                                                        <Label Text="{Binding DurationMinutes, Converter={StaticResource Duration}}" Style="{StaticResource Small}" HorizontalTextAlignment="End" />
+                                                    </VerticalStackLayout>
+                                                    <Button
+                                                        Grid.Column="2"
+                                                        Style="{StaticResource Pill}"
+                                                        Text="{x:Static r:AppResources.Book}"
+                                                        VerticalOptions="Center"
+                                                        Command="{Binding Screen.BookCommand, Source={RelativeSource AncestorType={x:Type s:ServicesPage}}, x:DataType=s:ServicesPage}"
+                                                        CommandParameter="{Binding .}">
+                                                        <Button.Triggers>
+                                                            <DataTrigger TargetType="Button" Binding="{Binding Screen.IsAdding, Source={RelativeSource AncestorType={x:Type s:ServicesPage}}, x:DataType=s:ServicesPage}" Value="True">
+                                                                <Setter Property="Text" Value="{x:Static r:AppResources.Add}" />
+                                                            </DataTrigger>
+                                                        </Button.Triggers>
+                                                    </Button>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+
+                                    <BoxView Style="{StaticResource Rule}" Color="{StaticResource LineStrong}" />
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                    <!-- Nothing left after the search or the filter. -->
+                    <VerticalStackLayout Padding="16,24" Spacing="12" IsVisible="{Binding Rows, Converter={StaticResource HasValue}, ConverterParameter=not}">
+                        <Label Style="{StaticResource Muted}" Text="{x:Static r:AppResources.NoMatch}" IsVisible="{Binding HasNoServices, Converter={StaticResource Not}}" />
+                        <Button Style="{StaticResource Outline}" HorizontalOptions="Start" Text="{x:Static r:AppResources.ShowAll}" Command="{Binding ShowAllCommand}" IsVisible="{Binding HasNoServices, Converter={StaticResource Not}}" />
+                        <Label Style="{StaticResource Muted}" Text="{x:Static r:AppResources.NoServices}" IsVisible="{Binding HasNoServices}" />
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </ScrollView>
+        </Grid>
+
+        <!-- The whole description: a white sheet with the price and the length, the way back and Book. -->
+        <Grid x:Name="ReadingSheet" x:DataType="c:IServiceRow" BindingContext="{x:Null}" Style="{StaticResource Sheet}" RowDefinitions="Auto,*,Auto" Padding="16,8,16,16" RowSpacing="12">
+            <HorizontalStackLayout Spacing="0">
+                <p:IconButton
+                    Margin="-10,0,0,0"
+                    Icon="{StaticResource IconBack}"
+                    Color="{StaticResource Brand}"
+                    Description="{x:Static r:AppResources.BackToList}"
+                    Command="{Binding Screen.CloseReadingCommand, Source={RelativeSource AncestorType={x:Type s:ServicesPage}}, x:DataType=s:ServicesPage}" />
+                <Label Text="{x:Static r:AppResources.BackToList}" Style="{StaticResource LinkLabel}" TextDecorations="None" VerticalOptions="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding Screen.CloseReadingCommand, Source={RelativeSource AncestorType={x:Type s:ServicesPage}}, x:DataType=s:ServicesPage}" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </HorizontalStackLayout>
+            <ScrollView Grid.Row="1">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="{Binding Name}" Style="{StaticResource Title}" />
+                    <Label Style="{StaticResource Muted}" Text="{Binding ., Converter={StaticResource PriceAndDuration}}" />
+                    <Label Margin="0,8,0,0" Text="{Binding Description}" Style="{StaticResource Body}" />
+                </VerticalStackLayout>
+            </ScrollView>
+            <Button
+                Grid.Row="2"
+                Text="{x:Static r:AppResources.Book}"
+                IsVisible="{Binding HasOptions, Converter={StaticResource Not}}"
+                Command="{Binding Screen.BookCommand, Source={RelativeSource AncestorType={x:Type s:ServicesPage}}, x:DataType=s:ServicesPage}"
+                CommandParameter="{Binding .}" />
+        </Grid>
+    </Grid>
+</ContentPage>

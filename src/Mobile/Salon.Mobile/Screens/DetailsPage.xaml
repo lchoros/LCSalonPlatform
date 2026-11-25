@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Step 3, the client's details: the visit in one card, the four fields with their own errors, the marketing tick in
+     the salon's exact words, the privacy notice in the browser, and the button. -->
+<ContentPage
+    x:Class="Salon.Mobile.Screens.DetailsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:c="clr-namespace:Salon.Mobile.Screens.Contracts"
+    xmlns:p="clr-namespace:Salon.Mobile.Screens.Parts"
+    xmlns:r="clr-namespace:Salon.Mobile.Resources.Strings"
+    x:DataType="c:IDetailsScreen"
+    Title="{x:Static r:AppResources.YourDetails}">
+
+    <Grid RowDefinitions="Auto,*" Padding="0,8,0,0">
+        <Grid ColumnDefinitions="Auto,*" Padding="6,0,16,0">
+            <p:IconButton Icon="{StaticResource IconBack}" Color="{StaticResource Ink}" Description="{x:Static r:AppResources.Back}" Command="{Binding BackCommand}" />
+            <Label Grid.Column="1" Text="{x:Static r:AppResources.YourDetails}" Style="{StaticResource Title}" FontSize="20" VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="16,12,16,32" Spacing="16">
+                <Border Style="{StaticResource Problem}" IsVisible="{Binding Problem, Converter={StaticResource HasValue}}">
+                    <Label Text="{Binding Problem}" TextColor="{StaticResource Danger}" FontSize="14" />
+                </Border>
+
+                <!-- The visit. -->
+                <Border Style="{StaticResource Card}">
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="2">
+                        <Label Grid.ColumnSpan="2" Text="{x:Static r:AppResources.SummaryTitle}" Style="{StaticResource Small}" Margin="0,0,0,4" />
+                        <Label Grid.Row="1" Text="{Binding Visit.ServiceName}" Style="{StaticResource Strong}" />
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Visit.Price, Converter={StaticResource Price}}" Style="{StaticResource Strong}" />
+                        <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding Visit, Converter={StaticResource When}}" Style="{StaticResource Muted}" />
+                        <Label Grid.Row="3" Grid.ColumnSpan="2" Style="{StaticResource Muted}">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{x:Static r:AppResources.StaffLabel}" />
+                                    <Span Text=" " />
+                                    <Span Text="{Binding Visit, Converter={StaticResource StaffName}}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </Grid>
+                </Border>
+
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="{x:Static r:AppResources.FirstName}" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource Field}">
+                        <Entry Text="{Binding FirstName}" SemanticProperties.Description="{x:Static r:AppResources.FirstName}" ReturnType="Next">
+                            <Entry.Keyboard>
+                                <Keyboard x:FactoryMethod="Create">
+                                    <x:Arguments>
+                                        <KeyboardFlags>CapitalizeWord</KeyboardFlags>
+                                    </x:Arguments>
+                                </Keyboard>
+                            </Entry.Keyboard>
+                        </Entry>
+                    </Border>
+                    <Label Text="{Binding FirstNameError}" Style="{StaticResource FieldError}" IsVisible="{Binding FirstNameError, Converter={StaticResource HasValue}}" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="{x:Static r:AppResources.LastName}" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource Field}">
+                        <Entry Text="{Binding LastName}" SemanticProperties.Description="{x:Static r:AppResources.LastName}" ReturnType="Next">
+                            <Entry.Keyboard>
+                                <Keyboard x:FactoryMethod="Create">
+                                    <x:Arguments>
+                                        <KeyboardFlags>CapitalizeWord</KeyboardFlags>
+                                    </x:Arguments>
+                                </Keyboard>
+                            </Entry.Keyboard>
+                        </Entry>
+                    </Border>
+                    <Label Text="{Binding LastNameError}" Style="{StaticResource FieldError}" IsVisible="{Binding LastNameError, Converter={StaticResource HasValue}}" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="{x:Static r:AppResources.Phone}" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource Field}">
+                        <Entry Text="{Binding Phone}" Keyboard="Telephone" SemanticProperties.Description="{x:Static r:AppResources.Phone}" SemanticProperties.Hint="{x:Static r:AppResources.PhoneHint}" ReturnType="Next" />
+                    </Border>
+                    <Label Text="{x:Static r:AppResources.PhoneHint}" Style="{StaticResource Small}" />
+                    <Label Text="{Binding PhoneError}" Style="{StaticResource FieldError}" IsVisible="{Binding PhoneError, Converter={StaticResource HasValue}}" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="{x:Static r:AppResources.Email}" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource Field}">
+                        <Entry Text="{Binding Email}" Keyboard="Email" SemanticProperties.Description="{x:Static r:AppResources.Email}" ReturnType="Done" />
+                    </Border>
+                    <Label Text="{Binding EmailError}" Style="{StaticResource FieldError}" IsVisible="{Binding EmailError, Converter={StaticResource HasValue}}" />
+                </VerticalStackLayout>
+
+                <!-- The marketing tick, in the salon's own words; a tap on the words ticks it too. -->
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4">
+                    <CheckBox IsChecked="{Binding MarketingConsent}" VerticalOptions="Start" SemanticProperties.Description="{Binding ConsentWording}" />
+                    <Label Grid.Column="1" Text="{Binding ConsentWording}" Style="{StaticResource Body}" FontSize="14" VerticalOptions="Center">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnConsentTapped" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                </Grid>
+
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{x:Static r:AppResources.PrivacyAtForm}" Style="{StaticResource Small}" />
+                    <Label Text="{x:Static r:AppResources.PrivacyLink}" Style="{StaticResource LinkLabel}" MinimumHeightRequest="44" VerticalTextAlignment="Center" SemanticProperties.Description="{x:Static r:AppResources.PrivacyLink}">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OpenPrivacyCommand}" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                </VerticalStackLayout>
+
+                <Grid>
+                    <Button Text="{Binding RequiresCode, Converter={StaticResource SubmitText}}" Command="{Binding SubmitCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
+                    <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource White}" HorizontalOptions="End" Margin="0,0,16,0" SemanticProperties.Description="{x:Static r:AppResources.Loading}" />
+                </Grid>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

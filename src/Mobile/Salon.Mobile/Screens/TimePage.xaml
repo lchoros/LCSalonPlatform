@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Step 2, the time (ADR 0094, stages 5 and 6): one top line with the month, the arrows and the way out; tall day
+     tiles; Morning / Afternoon / Evening; the times in one sliding line; the service cards scrolling in their own
+     area; the total and Continue fixed at the bottom. "Who with" is a white sheet over all of it. -->
+<ContentPage
+    x:Class="Salon.Mobile.Screens.TimePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:c="clr-namespace:Salon.Mobile.Screens.Contracts"
+    xmlns:s="clr-namespace:Salon.Mobile.Screens"
+    xmlns:p="clr-namespace:Salon.Mobile.Screens.Parts"
+    xmlns:r="clr-namespace:Salon.Mobile.Resources.Strings"
+    x:DataType="c:ITimeScreen"
+    Title="{x:Static r:AppResources.ChooseTime}">
+
+    <Grid>
+        <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="12" Padding="0,8,0,0">
+
+            <!-- The top line: the month as the title, the two arrows, the cross that asks first. -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="2" Padding="16,0,6,0">
+                <Label
+                    Style="{StaticResource Title}"
+                    FontSize="20"
+                    VerticalOptions="Center"
+                    Text="{Binding SelectedDate, Converter={StaticResource Date}, ConverterParameter=month}" />
+                <p:IconButton
+                    Grid.Column="1"
+                    Icon="{StaticResource IconChevronLeft}"
+                    Color="{StaticResource Brand}"
+                    Ring="{StaticResource BrandEdge}"
+                    Description="{x:Static r:AppResources.EarlierDays}"
+                    Command="{Binding EarlierCommand}"
+                    IsEnabled="{Binding CanGoEarlier}" />
+                <p:IconButton
+                    Grid.Column="2"
+                    Icon="{StaticResource IconChevronRight}"
+                    Color="{StaticResource Brand}"
+                    Ring="{StaticResource BrandEdge}"
+                    Description="{x:Static r:AppResources.LaterDays}"
+                    Command="{Binding LaterCommand}"
+                    IsEnabled="{Binding CanGoLater}" />
+                <p:IconButton
+                    Grid.Column="3"
+                    Icon="{StaticResource IconClose}"
+                    Color="{StaticResource Ink}"
+                    Description="{x:Static r:AppResources.LeaveBooking}"
+                    Command="{Binding CloseCommand}" />
+            </Grid>
+
+            <!-- What is missing after a tap that came too early, or the salon's refusal. -->
+            <VerticalStackLayout Grid.Row="1" Padding="16,0" Spacing="8">
+                <Border Style="{StaticResource Problem}" IsVisible="{Binding Hint, Converter={StaticResource HasValue}}">
+                    <Label Text="{Binding Hint, Converter={StaticResource TimeHint}}" TextColor="{StaticResource Danger}" FontSize="14" />
+                </Border>
+                <Border Style="{StaticResource Problem}" IsVisible="{Binding Problem, Converter={StaticResource HasValue}}">
+                    <Label Text="{Binding Problem}" TextColor="{StaticResource Danger}" FontSize="14" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Days, parts of the day and times: pale while an answer is on its way. -->
+            <VerticalStackLayout x:Name="Picker" Grid.Row="2" Spacing="12">
+                <VerticalStackLayout.Triggers>
+                    <DataTrigger TargetType="VerticalStackLayout" Binding="{Binding IsBusy}" Value="True">
+                        <Setter Property="Opacity" Value="0.45" />
+                        <Setter Property="InputTransparent" Value="True" />
+                    </DataTrigger>
+                </VerticalStackLayout.Triggers>
+
+                <ScrollView x:Name="DayStrip" Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                    <HorizontalStackLayout x:Name="DayRow" Padding="16,0" Spacing="8" BindableLayout.ItemsSource="{Binding Days}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="c:IDayTile">
+                                <Border
+                                    WidthRequest="64"
+                                    HeightRequest="80"
+                                    StrokeShape="RoundRectangle 14"
+                                    StrokeThickness="1"
+                                    Stroke="{StaticResource BrandEdge}"
+                                    BackgroundColor="{StaticResource White}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Screen.ChooseDayCommand, Source={RelativeSource AncestorType={x:Type s:TimePage}}, x:DataType=s:TimePage}"
+                                            CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding HasTimes}" Value="False">
+                                            <Setter Property="Stroke" Value="{StaticResource DangerEdge}" />
+                                            <Setter Property="StrokeDashArray" Value="4,3" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource Brand}" />
+                                            <Setter Property="Stroke" Value="{StaticResource Brand}" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <VerticalStackLayout VerticalOptions="Center" Spacing="6">
+                                        <Label Text="{Binding LocalDate, Converter={StaticResource Date}, ConverterParameter=weekday}" FontSize="12" TextColor="{StaticResource Muted}" HorizontalTextAlignment="Center">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                    <Setter Property="TextColor" Value="{StaticResource White}" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                        <Grid HorizontalOptions="Center">
+                                            <Label Text="{Binding LocalDate, Converter={StaticResource Date}, ConverterParameter=day}" Style="{StaticResource Strong}" FontSize="20" HorizontalTextAlignment="Center">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding HasTimes}" Value="False">
+                                                        <Setter Property="TextColor" Value="{StaticResource Muted}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter Property="TextColor" Value="{StaticResource White}" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                            <!-- Struck through in red: a line of its own, as a label cannot colour its strike. -->
+                                            <BoxView HeightRequest="2" WidthRequest="30" Color="{StaticResource DangerStrike}" VerticalOptions="Center" IsVisible="{Binding HasTimes, Converter={StaticResource Not}}" />
+                                        </Grid>
+                                        <BoxView WidthRequest="20" HeightRequest="4" CornerRadius="2" Color="{StaticResource Free}" HorizontalOptions="Center">
+                                            <BoxView.Triggers>
+                                                <DataTrigger TargetType="BoxView" Binding="{Binding HasTimes}" Value="False">
+                                                    <Setter Property="Color" Value="Transparent" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="BoxView" Binding="{Binding IsSelected}" Value="True">
+                                                    <Setter Property="Color" Value="{StaticResource White}" />
+                                                </DataTrigger>
+                                            </BoxView.Triggers>
+                                        </BoxView>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </ScrollView>
+
+                <!-- Morning · Afternoon · Evening: only the parts that have a free time. -->
+                <Border
+                    Margin="16,0"
+                    Padding="4"
+                    BackgroundColor="{StaticResource Card}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 12"
+                    IsVisible="{Binding PartsOfDay, Converter={StaticResource HasValue}}">
+                    <FlexLayout Direction="Row" BindableLayout.ItemsSource="{Binding PartsOfDay}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="c:IPartOfDayTab">
+                                <Border
+                                    FlexLayout.Grow="1"
+                                    FlexLayout.Basis="0"
+                                    HeightRequest="44"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 9"
+                                    BackgroundColor="Transparent">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Screen.ChoosePartOfDayCommand, Source={RelativeSource AncestorType={x:Type s:TimePage}}, x:DataType=s:TimePage}"
+                                            CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource White}" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Label Text="{Binding Part, Converter={StaticResource PartOfDay}}" FontSize="14" TextColor="{StaticResource Muted}" HorizontalTextAlignment="Center" VerticalOptions="Center">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="TextColor" Value="{StaticResource Brand}" />
+                                                <Setter Property="FontFamily" Value="{StaticResource FontMedium}" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
+                </Border>
+
+                <!-- The times of that part, in one line that slides. -->
+                <ScrollView x:Name="TimeStrip" Orientation="Horizontal" HorizontalScrollBarVisibility="Never" IsVisible="{Binding Times, Converter={StaticResource HasValue}}">
+                    <HorizontalStackLayout x:Name="TimeRow" Padding="16,0" Spacing="8" BindableLayout.ItemsSource="{Binding Times}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="c:ITimeChip">
+                                <Border
+                                    HeightRequest="44"
+                                    MinimumWidthRequest="72"
+                                    Padding="14,0"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 12"
+                                    BackgroundColor="{StaticResource BrandMist}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Screen.ChooseTimeCommand, Source={RelativeSource AncestorType={x:Type s:TimePage}}, x:DataType=s:TimePage}"
+                                            CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource Brand}" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Label Text="{Binding LocalTime}" Style="{StaticResource Strong}" FontSize="15" TextColor="{StaticResource BrandDeep}" HorizontalTextAlignment="Center" VerticalOptions="Center">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="TextColor" Value="{StaticResource White}" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </ScrollView>
+
+                <Label
+                    Padding="16,0"
+                    Style="{StaticResource Muted}"
+                    Text="{x:Static r:AppResources.NoSlotsOnDay}"
+                    IsVisible="{Binding Times, Converter={StaticResource HasValue}, ConverterParameter=not}" />
+            </VerticalStackLayout>
+
+            <!-- A grey card per service of the visit, scrolling in its own area. -->
+            <ScrollView Grid.Row="3">
+                <VerticalStackLayout Padding="16,4,16,16" Spacing="4">
+                    <VerticalStackLayout Spacing="4" BindableLayout.ItemsSource="{Binding Parts}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="c:IVisitPart">
+                                <Grid Padding="0,12,12,0">
+                                    <Border Style="{StaticResource Card}">
+                                        <VerticalStackLayout Spacing="12">
+                                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                                <VerticalStackLayout Spacing="2">
+                                                    <Label Text="{Binding Name}" Style="{StaticResource Strong}" />
+                                                    <Label Text="{Binding ., Converter={StaticResource TimeRange}}" Style="{StaticResource Small}" IsVisible="{Binding LocalStart, Converter={StaticResource HasValue}}" />
+                                                    <Label Text="{Binding DurationMinutes, Converter={StaticResource Duration}}" Style="{StaticResource Small}" IsVisible="{Binding LocalStart, Converter={StaticResource HasValue}, ConverterParameter=not}" />
+                                                </VerticalStackLayout>
+                                                <Label Grid.Column="1" Text="{Binding Price, Converter={StaticResource Price}}" Style="{StaticResource Strong}" />
+                                            </Grid>
+
+                                            <BoxView Style="{StaticResource Rule}" Color="{StaticResource LineStrong}" />
+
+                                            <!-- Who with, answered: "Staff: [face] Name  Change". -->
+                                            <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="8" IsVisible="{Binding NeedsStaffChoice, Converter={StaticResource Not}}">
+                                                <Label Text="{x:Static r:AppResources.StaffLabel}" Style="{StaticResource Small}" FontSize="14" VerticalOptions="Center" />
+                                                <Border Grid.Column="1" WidthRequest="28" HeightRequest="28" StrokeShape="Ellipse" StrokeThickness="0" BackgroundColor="{StaticResource BrandSoft}" VerticalOptions="Center">
+                                                    <Grid>
+                                                        <Label Text="{Binding StaffName, Converter={StaticResource Initials}}" FontSize="11" TextColor="{StaticResource Brand}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" IsVisible="{Binding Anyone, Converter={StaticResource Not}}" />
+                                                        <Path Data="{StaticResource IconPeople}" Stroke="{StaticResource Brand}" StrokeThickness="2" StrokeLineCap="Round" Aspect="Uniform" Margin="6" IsVisible="{Binding Anyone}" />
+                                                        <Image Source="{Binding StaffPhotoUrl}" Aspect="AspectFill" IsVisible="{Binding StaffPhotoUrl, Converter={StaticResource HasValue}}" />
+                                                    </Grid>
+                                                </Border>
+                                                <Label Grid.Column="2" Text="{Binding ., Converter={StaticResource StaffName}}" FontSize="14" TextColor="{StaticResource InkSoft}" VerticalOptions="Center" LineBreakMode="TailTruncation" />
+                                                <Button
+                                                    Grid.Column="3"
+                                                    Style="{StaticResource Link}"
+                                                    Text="{x:Static r:AppResources.ChangeStaff}"
+                                                    Command="{Binding Screen.ChooseStaffCommand, Source={RelativeSource AncestorType={x:Type s:TimePage}}, x:DataType=s:TimePage}"
+                                                    CommandParameter="{Binding .}" />
+                                            </Grid>
+
+                                            <!-- Who with, still owed: "Not chosen yet · Required  Choose"; it stands out after an early Continue. -->
+                                            <Border Padding="8,0,0,0" Margin="-8,0,0,0" StrokeThickness="0" StrokeShape="RoundRectangle 10" BackgroundColor="Transparent" IsVisible="{Binding NeedsStaffChoice}">
+                                                <Border.Triggers>
+                                                    <DataTrigger TargetType="Border" Binding="{Binding IsFlagged}" Value="True">
+                                                        <Setter Property="BackgroundColor" Value="{StaticResource DangerSoft}" />
+                                                        <Setter Property="Stroke" Value="{StaticResource DangerEdge}" />
+                                                        <Setter Property="StrokeThickness" Value="1" />
+                                                    </DataTrigger>
+                                                </Border.Triggers>
+                                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                                    <Label Text="{x:Static r:AppResources.StaffLabel}" Style="{StaticResource Small}" FontSize="14" VerticalOptions="Center" />
+                                                    <Label Grid.Column="1" FontSize="14" VerticalOptions="Center">
+                                                        <Label.FormattedText>
+                                                            <FormattedString>
+                                                                <Span Text="{x:Static r:AppResources.StaffNotChosen}" TextColor="{StaticResource InkSoft}" />
+                                                                <Span Text="{x:Static r:AppResources.Separator}" TextColor="{StaticResource Muted}" />
+                                                                <Span Text="{x:Static r:AppResources.Required}" TextColor="{StaticResource Danger}" FontFamily="{StaticResource FontMedium}" />
+                                                            </FormattedString>
+                                                        </Label.FormattedText>
+                                                    </Label>
+                                                    <Button
+                                                        Grid.Column="2"
+                                                        Style="{StaticResource Link}"
+                                                        Text="{x:Static r:AppResources.ChooseStaff}"
+                                                        Command="{Binding Screen.ChooseStaffCommand, Source={RelativeSource AncestorType={x:Type s:TimePage}}, x:DataType=s:TimePage}"
+                                                        CommandParameter="{Binding .}" />
+                                                </Grid>
+                                            </Border>
+                                        </VerticalStackLayout>
+                                    </Border>
+
+                                    <!-- A round cross at the corner takes the service out (only with more than one). -->
+                                    <p:IconButton
+                                        Margin="0,-12,-12,0"
+                                        HorizontalOptions="End"
+                                        VerticalOptions="Start"
+                                        DiscSize="28"
+                                        Icon="{StaticResource IconClose}"
+                                        Color="{StaticResource Muted}"
+                                        Disc="{StaticResource White}"
+                                        Ring="{StaticResource LineStrong}"
+                                        Description="{x:Static r:AppResources.RemoveService}"
+                                        IsVisible="{Binding CanRemove}"
+                                        Command="{Binding Screen.RemovePartCommand, Source={RelativeSource AncestorType={x:Type s:TimePage}}, x:DataType=s:TimePage}"
+                                        CommandParameter="{Binding .}" />
+                                </Grid>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                    <!-- Pale until a time is chosen; a tap before then says why. -->
+                    <Button
+                        Style="{StaticResource Link}"
+                        FontSize="16"
+                        HorizontalOptions="Start"
+                        Padding="0"
+                        Text="{x:Static r:AppResources.AddService}"
+                        Opacity="{Binding CanAddService, Converter={StaticResource AllowedOpacity}}"
+                        Command="{Binding AddServiceCommand}" />
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- Fixed at the bottom: the total and Continue, grey until allowed. -->
+            <Grid Grid.Row="4" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="12" Padding="16,0,16,16" BackgroundColor="{StaticResource White}">
+                <BoxView Grid.ColumnSpan="2" Style="{StaticResource Rule}" Margin="-16,0" />
+                <Label Grid.Row="1" Text="{x:Static r:AppResources.Total}" Style="{StaticResource Strong}" FontSize="16" VerticalOptions="Center" />
+                <VerticalStackLayout Grid.Row="1" Grid.Column="1">
+                    <Label Text="{Binding Total, Converter={StaticResource Price}}" Style="{StaticResource Strong}" FontSize="16" HorizontalTextAlignment="End" />
+                    <Label Text="{Binding TotalMinutes, Converter={StaticResource Duration}}" Style="{StaticResource Small}" HorizontalTextAlignment="End" />
+                </VerticalStackLayout>
+                <Button Grid.Row="2" Grid.ColumnSpan="2" Text="{x:Static r:AppResources.Continue}" Command="{Binding ContinueCommand}">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding CanContinue}" Value="False">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Disabled}" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+            </Grid>
+        </Grid>
+
+        <!-- Who with, for one service: full screen, white, the people side by side, "Anyone available" first. -->
+        <Grid x:Name="StaffSheetView" x:DataType="c:IStaffSheet" BindingContext="{x:Null}" Style="{StaticResource Sheet}" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="16,8,6,16">
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="{x:Static r:AppResources.WhoWith}" Style="{StaticResource Title}" VerticalOptions="Center" />
+                <p:IconButton Grid.Column="1" Icon="{StaticResource IconClose}" Color="{StaticResource Ink}" Description="{x:Static r:AppResources.CloseChoice}" Command="{Binding CloseCommand}" />
+            </Grid>
+            <VerticalStackLayout Grid.Row="1" Spacing="4" Padding="0,0,10,8">
+                <Label Text="{Binding ServiceName, StringFormat={x:Static r:AppResources.ChooseStaffFor}}" Style="{StaticResource Muted}" />
+                <Label Text="{Binding AtTime, StringFormat={x:Static r:AppResources.StaffAtTime}}" Style="{StaticResource Small}" IsVisible="{Binding AtTime, Converter={StaticResource HasValue}}" />
+            </VerticalStackLayout>
+            <ScrollView Grid.Row="2">
+                <FlexLayout Wrap="Wrap" Direction="Row" JustifyContent="Start" AlignItems="Start" BindableLayout.ItemsSource="{Binding Choices}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="c:IStaffChoice">
+                            <VerticalStackLayout WidthRequest="100" Padding="4,8" Spacing="8">
+                                <VerticalStackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Screen.StaffSheet.ChooseCommand, Source={RelativeSource AncestorType={x:Type s:TimePage}}, x:DataType=s:TimePage}"
+                                        CommandParameter="{Binding .}" />
+                                </VerticalStackLayout.GestureRecognizers>
+                                <Border
+                                    WidthRequest="72"
+                                    HeightRequest="72"
+                                    HorizontalOptions="Center"
+                                    StrokeShape="Ellipse"
+                                    StrokeThickness="2"
+                                    Stroke="{StaticResource Brand}"
+                                    BackgroundColor="{StaticResource White}">
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource Brand}" />
+                                            <Setter Property="Padding" Value="3" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Grid>
+                                        <Label Text="{Binding Name, Converter={StaticResource Initials}}" Style="{StaticResource Strong}" FontSize="22" TextColor="{StaticResource Brand}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" IsVisible="{Binding IsAnyone, Converter={StaticResource Not}}">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                    <Setter Property="TextColor" Value="{StaticResource White}" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                        <Path Data="{StaticResource IconPeople}" Stroke="{StaticResource Brand}" StrokeThickness="2" StrokeLineCap="Round" Aspect="None" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center" Scale="1.4" IsVisible="{Binding IsAnyone}">
+                                            <Path.Triggers>
+                                                <DataTrigger TargetType="Path" Binding="{Binding IsSelected}" Value="True">
+                                                    <Setter Property="Stroke" Value="{StaticResource White}" />
+                                                </DataTrigger>
+                                            </Path.Triggers>
+                                        </Path>
+                                        <Image Source="{Binding PhotoUrl}" Aspect="AspectFill" IsVisible="{Binding PhotoUrl, Converter={StaticResource HasValue}}" />
+                                    </Grid>
+                                </Border>
+                                <Label Text="{Binding ., Converter={StaticResource StaffName}}" FontSize="14" TextColor="{StaticResource InkSoft}" HorizontalTextAlignment="Center" MaxLines="2" LineBreakMode="WordWrap">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="{StaticResource Brand}" />
+                                            <Setter Property="FontFamily" Value="{StaticResource FontMedium}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </FlexLayout>
+            </ScrollView>
+        </Grid>
+    </Grid>
+</ContentPage>

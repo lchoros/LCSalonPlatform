@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Step 5, the confirmation: what was booked, when, who with; "Manage this booking" opens the client's own link on
+     the web (moving and cancelling happen there, ADR 0097); "Book another" starts over. -->
+<ContentPage
+    x:Class="Salon.Mobile.Screens.DonePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:c="clr-namespace:Salon.Mobile.Screens.Contracts"
+    xmlns:r="clr-namespace:Salon.Mobile.Resources.Strings"
+    x:DataType="c:IDoneScreen"
+    Title="{x:Static r:AppResources.DoneTitle}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,48,16,32" Spacing="16">
+            <Border WidthRequest="72" HeightRequest="72" HorizontalOptions="Center" StrokeShape="Ellipse" StrokeThickness="0" BackgroundColor="{StaticResource BrandSoft}">
+                <Path Data="{StaticResource IconCheck}" Stroke="{StaticResource Brand}" StrokeThickness="2.5" StrokeLineCap="Round" StrokeLineJoin="Round" Aspect="None" WidthRequest="24" HeightRequest="24" Scale="1.5" HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+            <Label Text="{x:Static r:AppResources.DoneTitle}" Style="{StaticResource Title}" HorizontalTextAlignment="Center" />
+            <Label Text="{x:Static r:AppResources.DoneLead}" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
+
+            <Border Style="{StaticResource Problem}" IsVisible="{Binding Problem, Converter={StaticResource HasValue}}">
+                <Label Text="{Binding Problem}" TextColor="{StaticResource Danger}" FontSize="14" />
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="12">
+                    <Label Text="{x:Static r:AppResources.DoneService}" Style="{StaticResource Small}" FontSize="14" />
+                    <Label Grid.Column="1" Text="{Binding Visit.ServiceName}" Style="{StaticResource Strong}" />
+                    <Label Grid.Row="1" Text="{x:Static r:AppResources.DoneWhen}" Style="{StaticResource Small}" FontSize="14" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Visit, Converter={StaticResource When}}" Style="{StaticResource Strong}" />
+                    <Label Grid.Row="2" Text="{x:Static r:AppResources.DoneStaff}" Style="{StaticResource Small}" FontSize="14" />
+                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding Visit, Converter={StaticResource StaffName}}" Style="{StaticResource Strong}" />
+                    <Label Grid.Row="3" Text="{x:Static r:AppResources.DonePrice}" Style="{StaticResource Small}" FontSize="14" />
+                    <Label Grid.Row="3" Grid.Column="1" Text="{Binding Visit.Price, Converter={StaticResource Price}}" Style="{StaticResource Strong}" />
+                </Grid>
+            </Border>
+
+            <Button Style="{StaticResource Outline}" Text="{x:Static r:AppResources.Manage}" Command="{Binding ManageCommand}" />
+            <Button Text="{x:Static r:AppResources.BookAnother}" Command="{Binding BookAnotherCommand}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

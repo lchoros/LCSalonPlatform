@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Step 4, the code: where it went, six digits in one field (the phone offers the texted code above the keyboard),
+     the button, and how many attempts are left after a wrong one. -->
+<ContentPage
+    x:Class="Salon.Mobile.Screens.CodePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:c="clr-namespace:Salon.Mobile.Screens.Contracts"
+    xmlns:p="clr-namespace:Salon.Mobile.Screens.Parts"
+    xmlns:r="clr-namespace:Salon.Mobile.Resources.Strings"
+    x:DataType="c:ICodeScreen"
+    Title="{x:Static r:AppResources.CodeTitle}">
+
+    <Grid RowDefinitions="Auto,*" Padding="0,8,0,0">
+        <p:IconButton Margin="6,0,0,0" HorizontalOptions="Start" Icon="{StaticResource IconBack}" Color="{StaticResource Ink}" Description="{x:Static r:AppResources.Back}" Command="{Binding BackCommand}" />
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="16,8,16,32" Spacing="16">
+                <Label Text="{x:Static r:AppResources.CodeTitle}" Style="{StaticResource Title}" />
+                <Label Text="{Binding MaskedPhone, StringFormat={x:Static r:AppResources.CodeSent}}" Style="{StaticResource Body}" />
+
+                <Border Style="{StaticResource Problem}" IsVisible="{Binding Problem, Converter={StaticResource HasValue}}">
+                    <Label Text="{Binding Problem}" TextColor="{StaticResource Danger}" FontSize="14" />
+                </Border>
+
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="{x:Static r:AppResources.CodeLabel}" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource Field}" MinimumHeightRequest="60">
+                        <Entry
+                            x:Name="CodeEntry"
+                            Text="{Binding Code}"
+                            Keyboard="Numeric"
+                            MaxLength="6"
+                            FontSize="28"
+                            CharacterSpacing="10"
+                            HorizontalTextAlignment="Center"
+                            ReturnType="Done"
+                            ReturnCommand="{Binding VerifyCommand}"
+                            SemanticProperties.Description="{x:Static r:AppResources.CodeLabel}" />
+                    </Border>
+                    <Label Text="{Binding AttemptsLeft, Converter={StaticResource AttemptsLeft}}" Style="{StaticResource FieldError}" IsVisible="{Binding AttemptsLeft, Converter={StaticResource HasValue}}" />
+                </VerticalStackLayout>
+
+                <Grid>
+                    <Button Text="{x:Static r:AppResources.CodeSubmit}" Command="{Binding VerifyCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
+                    <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource White}" HorizontalOptions="End" Margin="0,0,16,0" SemanticProperties.Description="{x:Static r:AppResources.Loading}" />
+                </Grid>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
