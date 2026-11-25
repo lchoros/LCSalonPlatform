@@ -1,6 +1,5 @@
 using System.Globalization;
 using NodaTime;
-using Salon.Core.Booking;
 using Salon.Core.Cqrs;
 using Salon.Core.Messaging;
 using Salon.Core.Tenancy;
@@ -80,34 +79,28 @@ public sealed class PreviewMessageTemplateHandler(ITenantContext tenantContext, 
     public async Task<MessagePreview> HandleAsync(PreviewMessageTemplateQuery request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
+        // An unknown key never gets here: the controller answers 404 first.
+        var definition = MessageTemplateCatalog.Get(request.Key);
         var tenant = await SalonMessageCulture.TenantAsync(tenantContext, tenantLookup, cancellationToken);
-        var tokens = Sample(tenant);
+        var samples = MessagePreviewSamples.For(
+            tenant.Name,
+            new MessageSamplePeople(
+                localizer["Settings.Messages.Sample.ClientFirstName"],
+                localizer["Settings.Messages.Sample.ServiceName"],
+                localizer["Settings.Messages.Sample.StaffName"]),
+            clock.GetCurrentInstant(),
+            DateTimeZoneProviders.Tzdb.GetZoneOrNull(tenant.TimeZoneId) ?? DateTimeZone.Utc,
+            CultureInfo.GetCultureInfo(tenant.Culture),
+            urls.CancelBookingUrl(tenant.Slug, MessagePreviewSamples.SampleLinkToken),
+            urls.BookingUrl(tenant.Slug));
 
-        // Rendered the way a real message is: a placeholder the message does not offer comes out empty.
-        var body = MessageTemplateRenderer.Render(request.Body ?? string.Empty, tokens).Text;
-        var subject = request.Channel == MessageChannel.Email ? MessageTemplateRenderer.Render(request.Subject ?? string.Empty, tokens).Text : null;
-        return new MessagePreview(subject, body, request.Channel == MessageChannel.Sms ? SmsLengthRules.Measure(body) : null);
-    }
-
-    /// <summary>
-    /// Made-up details of realistic length: the salon's own name and links, a visit tomorrow at ten, and a link as long
-    /// as a real one, so the count of texts is close to what a client's message will cost.
-    /// </summary>
-    private MessageTokens Sample(TenantInfo tenant)
-    {
-        var zone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(tenant.TimeZoneId) ?? DateTimeZone.Utc;
-        var tomorrowAtTen = clock.GetCurrentInstant().InZone(zone).Date.PlusDays(1).At(new LocalTime(10, 0)).InZoneLeniently(zone).ToInstant();
-        var link = string.Concat(Enumerable.Repeat("example", 7))[..PublicBookingToken.Length];
-
-        return MessageTokens.Empty
-            .Add("SalonName", tenant.Name)
-            .Add("ClientFirstName", localizer["Settings.Messages.Sample.ClientFirstName"])
-            .Add("ServiceName", localizer["Settings.Messages.Sample.ServiceName"])
-            .Add("StaffName", localizer["Settings.Messages.Sample.StaffName"])
-            .Add("AppointmentStart", BookingSmsTokens.FormatStart(tomorrowAtTen, zone, CultureInfo.GetCultureInfo(tenant.Culture)))
-            .Add("CancelUrl", urls.CancelBookingUrl(tenant.Slug, link))
-            .Add("BookingUrl", urls.BookingUrl(tenant.Slug))
-            .Add("Code", new string('1', PhoneVerificationRules.CodeLength));
+        // Only what the message offers is filled in; anything else is marked, as saving refuses it (ADR 0098).
+        var body = MessagePreviewRenderer.Render(definition, request.Body, samples);
+        var subject = request.Channel == MessageChannel.Email ? MessagePreviewRenderer.Render(definition, request.Subject, samples) : null;
+        var tags = definition.TokenNames
+            .Select(name => new MessageTag(name, samples.TryGet(name, out var value) ? value : string.Empty, definition.RequiredTokenNames.Contains(name)))
+            .ToArray();
+        return new MessagePreview(subject, body, request.Channel == MessageChannel.Sms ? SmsLengthRules.Measure(body.Sent) : null, tags);
     }
 }
 

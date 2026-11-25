@@ -31,8 +31,17 @@ public sealed record MessageTemplateDetails(
 /// <summary>What a client would receive for <paramref name="Subject"/> and <paramref name="Body"/>, filled with made-up details. Nothing is saved.</summary>
 public sealed record PreviewMessageTemplateQuery(string Key, MessageChannel Channel, string? Subject, string? Body) : IQuery<MessagePreview>;
 
-/// <param name="Length">How many texts the example costs; null for an email.</param>
-public sealed record MessagePreview(string? Subject, string Body, SmsLength? Length);
+/// <param name="Subject">The subject in pieces; null for a text.</param>
+/// <param name="Body">The message in pieces: words, filled-in example values and unknown placeholders (ADR 0098).</param>
+/// <param name="Length">How many texts the example costs, measured on what a client would receive; null for an email.</param>
+/// <param name="Tags">The placeholders this message offers, in catalogue order, each with its example value.</param>
+public sealed record MessagePreview(PreviewedText? Subject, PreviewedText Body, SmsLength? Length, IReadOnlyList<MessageTag> Tags);
+
+/// <summary>A placeholder the edit page offers as a tag to tap (ADR 0098).</summary>
+/// <param name="Name">The token name, as it goes between the double curly brackets.</param>
+/// <param name="Sample">What the preview fills it with.</param>
+/// <param name="Required">True when the message must keep it.</param>
+public sealed record MessageTag(string Name, string Sample, bool Required);
 
 /// <summary>Saves the salon's own wording of one message on one channel, in the salon's language.</summary>
 public sealed record SaveMessageTemplateCommand(string Key, MessageChannel Channel, string? Subject, string? Body) : ICommand<bool>;

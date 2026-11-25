@@ -76,24 +76,26 @@ public class MessageTemplatesPageTests(SalonWebApplicationFactory factory) : IAs
             sms.ShouldContain("{{" + token + "}}</code>");
         }
 
-        sms.ShouldContain("the link the client uses to change or cancel the visit");
-        sms.ShouldContain("data-testid=\"preview-body\">Hi Olivia, your Cut and blow-dry at Studio 20 is booked for ");
-        sms.ShouldContain("/v/exampleexampleexamplee<");
+        sms.ShouldContain("<span>Link to change or cancel</span>");
+        sms.ShouldContain("data-testid=\"preview-body\">Hi <mark class=\"tag-value\">Olivia</mark>, your <mark class=\"tag-value\">Cut and blow-dry</mark> at <mark class=\"tag-value\">Studio 20</mark> is booked for <mark class=\"tag-value\">");
+        sms.ShouldContain("/v/exampleexampleexamplee</mark><");
         // How many texts depends on the length of the salon's address, so only the line itself is checked here.
         sms.ShouldContain("data-testid=\"preview-length\" data-segments=\"");
         sms.ShouldContain("Texts needed: ");
+        sms.ShouldContain("data-testid=\"preview-estimate\">An estimate: real names and services are longer or shorter.<");
         sms.ShouldNotContain("data-testid=\"preview-unsaved\"");
-        sms.ShouldNotContain("data-testid=\"preview-unicode\"");
+        sms.ShouldContain("data-testid=\"preview-unicode\" hidden=\"hidden\"", Case.Sensitive, "the Unicode note waits, hidden, for the script to need it");
         sms.ShouldNotContain("data-testid=\"reset-form\"", Case.Sensitive, "there is nothing to go back from");
 
         var email = await GetAsync(client, ConfirmationEmail);
         email.ShouldContain("value=\"Your {{ServiceName}} at {{SalonName}} is booked\"");
-        email.ShouldContain("data-testid=\"preview-subject\">Your Cut and blow-dry at Studio 20 is booked<");
+        email.ShouldContain("data-testid=\"preview-subject\">Your <mark class=\"tag-value\">Cut and blow-dry</mark> at <mark class=\"tag-value\">Studio 20</mark> is booked<");
         email.ShouldNotContain("data-testid=\"preview-length\"", Case.Sensitive, "an email is not counted in texts");
 
         var code = await GetAsync(client, CodeSms);
-        code.ShouldContain("the code the client types in<span class=\"font-medium\">, must stay in the message</span>");
-        code.ShouldContain("data-testid=\"preview-body\">Studio 20: your code is 111111. It expires in 10 minutes.<");
+        code.ShouldContain("<span>Code</span>");
+        code.ShouldContain("<span class=\"tag-required\">must stay in the message</span>");
+        code.ShouldContain("data-testid=\"preview-body\"><mark class=\"tag-value\">Studio 20</mark>: your code is <mark class=\"tag-value\">111111</mark>. It expires in 10 minutes.<");
     }
 
     [Fact]
@@ -110,7 +112,7 @@ public class MessageTemplatesPageTests(SalonWebApplicationFactory factory) : IAs
         after.ShouldContain("The message has been saved.");
         after.ShouldContain("data-testid=\"status\">Your own wording<");
         after.ShouldContain($">{own}</textarea>");
-        after.ShouldContain("data-testid=\"preview-body\">Hello Olivia! Studio 20 has you down for ");
+        after.ShouldContain("data-testid=\"preview-body\">Hello <mark class=\"tag-value\">Olivia</mark>! <mark class=\"tag-value\">Studio 20</mark> has you down for ");
         after.ShouldContain("data-testid=\"standard-body\">Hi {{ClientFirstName}}, your {{ServiceName}} at {{SalonName}} is booked for");
         after.ShouldContain("data-testid=\"reset-form\"");
 
@@ -139,7 +141,7 @@ public class MessageTemplatesPageTests(SalonWebApplicationFactory factory) : IAs
         var saved = await TemplatesAsync(_studio.Id, s => s.GetAsync(MessageTemplateCatalog.BookingConfirmation, MessageChannel.Email, "en-GB"));
         saved.Subject.ShouldBe("See you at {{SalonName}}");
         saved.Body.ShouldBe("Dear {{ClientFirstName}},\n\nyour {{ServiceName}} is on {{AppointmentStart}}.\n{{CancelUrl}}");
-        (await GetAsync(client, ConfirmationEmail)).ShouldContain("data-testid=\"preview-subject\">See you at Studio 20<");
+        (await GetAsync(client, ConfirmationEmail)).ShouldContain("data-testid=\"preview-subject\">See you at <mark class=\"tag-value\">Studio 20</mark><");
     }
 
     [Theory]
@@ -197,9 +199,9 @@ public class MessageTemplatesPageTests(SalonWebApplicationFactory factory) : IAs
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
         html.ShouldContain("This is a preview of what you typed. It is not saved yet.");
-        html.ShouldContain("data-testid=\"preview-body\">Dzień dobry Olivia, czekamy w środę. ");
+        html.ShouldContain("data-testid=\"preview-body\">Dzień dobry <mark class=\"tag-value\">Olivia</mark>, czekamy w środę. ");
         html.ShouldContain("data-testid=\"preview-length\" data-segments=\"2\">Texts needed: 2.");
-        html.ShouldContain("data-testid=\"preview-unicode\"");
+        html.ShouldContain("data-testid=\"preview-unicode\">");
         html.ShouldContain($">{polish}</textarea>");
         (await TemplatesAsync(_studio.Id, s => s.GetAsync(MessageTemplateCatalog.BookingConfirmation, MessageChannel.Sms, "en-GB"))).IsTenantOverride.ShouldBeFalse();
     }

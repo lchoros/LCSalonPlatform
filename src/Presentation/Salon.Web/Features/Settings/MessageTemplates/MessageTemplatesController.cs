@@ -90,6 +90,12 @@ public sealed class MessageTemplatesController(IDispatcher dispatcher, ILocaliza
     /// <summary>The address of one message on one channel.</summary>
     public static string EditPath(string key, MessageChannel channel) => $"{Path}/{key}/{Slug(channel)}";
 
+    /// <summary>Where the form shows what was typed without saving it (the way to a preview without script).</summary>
+    public static string PreviewPath(string key, MessageChannel channel) => EditPath(key, channel) + "/preview";
+
+    /// <summary>Where the salon's own wording is deleted, so the standard text applies again.</summary>
+    public static string ResetPath(string key, MessageChannel channel) => EditPath(key, channel) + "/reset";
+
     public static string Slug(MessageChannel channel) => channel == MessageChannel.Email ? "email" : "sms";
 
     private static MessageChannel? ParseChannel(string? slug) => slug?.ToUpperInvariant() switch

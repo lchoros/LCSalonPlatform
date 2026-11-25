@@ -991,6 +991,80 @@
     @apply border-brand bg-brand text-white hover:border-brand hover:bg-brand hover:text-white;
   }
 
+  /* Tags on the messages page (ADR 0098): the placeholders a message offers, as light chips in the brand to tap. They
+     come disabled from the server and the script switches them on; until then (or without script) they read as a
+     plain list of each tag's name and how to type it. */
+  .tag-panel {
+    @apply space-y-2 rounded-lg bg-brand-mist p-3;
+  }
+
+  .tag-chips {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .tag-chips:has(.tag-chip:disabled) {
+    @apply flex-col gap-1;
+  }
+
+  .tag-chip {
+    @apply inline-flex min-h-11 items-center gap-1.5 rounded-full border border-brand-edge bg-white px-3 py-1.5 text-left text-sm font-medium text-brand-deep transition-colors hover:border-brand-line hover:bg-brand-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-brand-mist;
+  }
+
+  .tag-chip:disabled {
+    @apply min-h-0 cursor-default flex-wrap border-transparent bg-transparent px-0 py-0 text-stone-900 hover:border-transparent hover:bg-transparent;
+  }
+
+  .tag-chip:disabled .tag-plus {
+    display: none;
+  }
+
+  .tag-plus {
+    @apply shrink-0 text-brand;
+  }
+
+  .tag-code {
+    @apply rounded bg-white px-1 py-0.5 font-mono text-xs text-stone-800;
+  }
+
+  .tag-chips[data-ready] .tag-code {
+    display: none;
+  }
+
+  .tag-required {
+    @apply text-xs font-normal text-stone-600;
+  }
+
+  .tag-required::before {
+    content: "· ";
+  }
+
+  /* The example under each box: what a client receives, the filled-in values in the brand's soft shade, a tag the
+     message does not offer in red with its own words (colour never carries the meaning alone). */
+  .message-preview {
+    @apply mt-2 space-y-2 rounded-lg border border-stone-200 bg-stone-50 p-3;
+  }
+
+  .message-preview-title {
+    @apply text-sm font-semibold text-stone-800;
+  }
+
+  .message-preview-text {
+    @apply whitespace-pre-line text-stone-900 [overflow-wrap:anywhere];
+  }
+
+  .tag-value {
+    @apply rounded bg-brand-soft px-0.5 text-brand-deep;
+  }
+
+  .tag-unknown {
+    @apply rounded bg-red-50 px-0.5 text-red-800 underline decoration-red-600 decoration-wavy;
+  }
+
+  .tag-unknown-note {
+    /* inline-block: a parent's underline does not carry into it. */
+    @apply inline-block text-xs font-semibold;
+  }
+
   /* Outcome notices: colour plus text, so colour alone never carries the meaning. */
   .notice {
     @apply rounded-lg border p-3 text-sm;
