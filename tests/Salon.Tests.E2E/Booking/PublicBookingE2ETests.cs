@@ -126,7 +126,13 @@ public class PublicBookingE2ETests(KestrelAppFixture app) : IClassFixture<Kestre
         await CaptureAsync(page, "book-slots-mobile-390.png");
         await CaptureDesktopAsync(page.Url, "book-slots-desktop-1280.png");
         interaction.Start();
+        // A tapped time must not rebuild the days or the list of times (the owner, 2026-11-26: "days boxes shouldn't
+        // flash when choosing time"): the very same elements are on the page afterwards, and only the mark has moved.
+        await page.EvaluateAsync("() => { document.querySelector(\".day-strip\").dataset.kept = \"yes\"; document.querySelector(\".vt-times\").dataset.kept = \"yes\"; }");
         await slots.First.TapAsync();
+        await Assertions.Expect(page.GetByTestId("continue")).ToHaveCountAsync(1);
+        (await page.EvaluateAsync<string>("() => document.querySelector(\".day-strip\").dataset.kept + \"/\" + document.querySelector(\".vt-times\").dataset.kept")).ShouldBe("yes/yes");
+        (await slots.First.GetAttributeAsync("aria-current")).ShouldBe("true");
 
         // The tap only selects; the Continue bar carries the time to the details (ADR 0080).
         await page.GetByTestId("continue").TapAsync();

@@ -29,6 +29,53 @@ function keepDays(before, root) {
     }
 }
 
+// Puts the fetched content into the page. A tapped time changes neither the days nor the list of times, so those stay
+// exactly as they are — the same elements, never taken out and put back, so they cannot blink (the owner, 2026-11-26)
+// — and only the mark on the chosen time moves; everything else (the cards, the total, the staff sheets) is replaced.
+// Anything unexpected — another shape of page, a time that was gone after all — replaces the lot, as before.
+function swap(next) {
+    const now = [...page.children];
+    const then = [...next.children];
+    if (page.dataset.change !== 'time' || now.length !== then.length) {
+        page.replaceChildren(...next.childNodes);
+        return;
+    }
+
+    now.forEach((old, at) => {
+        const fresh = then[at];
+        if (old.matches('.book-top, .day-strip') && fresh.className === old.className) {
+            return;
+        }
+
+        if (old.matches('.vt-times') && markChosen(old, fresh)) {
+            return;
+        }
+
+        old.replaceWith(fresh);
+    });
+}
+
+// Moves the mark of the chosen time inside the list that is already on the page; false when the lists differ.
+function markChosen(old, fresh) {
+    const chosen = fresh.querySelector('.slot.is-chosen')?.getAttribute('href');
+    const slots = [...old.querySelectorAll('.slot')];
+    if (!chosen || slots.length !== fresh.querySelectorAll('.slot').length || !slots.some(slot => slot.getAttribute('href') === chosen)) {
+        return false;
+    }
+
+    for (const slot of slots) {
+        const on = slot.getAttribute('href') === chosen;
+        slot.classList.toggle('is-chosen', on);
+        if (on) {
+            slot.setAttribute('aria-current', 'true');
+        } else {
+            slot.removeAttribute('aria-current');
+        }
+    }
+
+    return true;
+}
+
 async function go(link) {
     const url = new URL(link.href);
     const strip = page.querySelector('.day-strip');
@@ -48,11 +95,8 @@ async function go(link) {
             return;
         }
 
-        const fromSheet = location.hash === '#who';
-        // A tapped time leaves its line of times where the finger left it.
-        const lines = page.dataset.change === 'time' ? [...page.querySelectorAll('.slot-row')].map(row => row.scrollLeft) : [];
-        page.replaceChildren(...next.childNodes);
-        page.querySelectorAll('.slot-row').forEach((row, at) => { row.scrollLeft = lines[at] ?? 0; });
+        const fromSheet = location.hash.startsWith('#who');
+        swap(next);
         page.dataset.arrived = 'true';
         history.replaceState(null, '', url.pathname + url.search);
         if (fromSheet) {
