@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The JSON shapes of /api/v1 (ADR 0097): plain records, no dependencies, shared by the web host and the mobile app. -->
+
+</Project>

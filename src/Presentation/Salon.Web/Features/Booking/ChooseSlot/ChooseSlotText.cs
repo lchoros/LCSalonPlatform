@@ -1,5 +1,6 @@
 using System.Globalization;
 using Salon.Services.Localization;
+using Salon.Web.Framework.Booking.Times;
 
 namespace Salon.Web.Features.Booking.ChooseSlot;
 

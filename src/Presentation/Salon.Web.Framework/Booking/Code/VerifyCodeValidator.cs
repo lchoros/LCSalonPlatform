@@ -2,7 +2,7 @@ using FluentValidation;
 using Salon.Core.Booking;
 using Salon.Services.Localization;
 
-namespace Salon.Web.Features.Booking.VerifyCode;
+namespace Salon.Web.Framework.Booking.Code;
 
 public sealed class VerifyCodeValidator : AbstractValidator<VerifyCodeCommand>
 {

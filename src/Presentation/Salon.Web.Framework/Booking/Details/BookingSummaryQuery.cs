@@ -3,7 +3,7 @@ using Salon.Core.Cqrs;
 using Salon.Core.Domain;
 using Salon.Core.Settings;
 
-namespace Salon.Web.Features.Booking.EnterDetails;
+namespace Salon.Web.Framework.Booking.Details;
 
 /// <summary>
 /// What the details page shows above the form (ADR 0014): the chosen service, person ("anyone" when null) and start, in

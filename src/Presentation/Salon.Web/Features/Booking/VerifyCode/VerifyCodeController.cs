@@ -7,6 +7,7 @@ using Salon.Services.Booking;
 using Salon.Services.Clients;
 using Salon.Services.Localization;
 using Salon.Web.Framework.Booking;
+using Salon.Web.Framework.Booking.Code;
 using Salon.Web.Framework.Controllers;
 using Salon.Web.Framework.Mvc;
 

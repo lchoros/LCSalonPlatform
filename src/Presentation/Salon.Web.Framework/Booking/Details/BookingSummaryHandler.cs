@@ -12,7 +12,7 @@ using Salon.Services.Localization;
 using Salon.Services.Settings;
 using Salon.Services.Tenancy;
 
-namespace Salon.Web.Features.Booking.EnterDetails;
+namespace Salon.Web.Framework.Booking.Details;
 
 public sealed class BookingSummaryHandler(
     SalonDbContext db,

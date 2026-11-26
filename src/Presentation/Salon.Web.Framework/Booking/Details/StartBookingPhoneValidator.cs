@@ -4,7 +4,7 @@ using Salon.Services.Clients;
 using Salon.Services.Localization;
 using Salon.Services.Tenancy;
 
-namespace Salon.Web.Features.Booking.EnterDetails;
+namespace Salon.Web.Framework.Booking.Details;
 
 /// <summary>
 /// Whether a number resolves depends on the salon's country (a UK "07…" is fine in London and meaningless in Warsaw), so

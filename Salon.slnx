@@ -8,6 +8,7 @@
   </Folder>
   <Folder Name="/src/" />
   <Folder Name="/src/Libraries/">
+    <Project Path="src/Libraries/Salon.Api.Contracts/Salon.Api.Contracts.csproj" />
     <Project Path="src/Libraries/Salon.Core/Salon.Core.csproj" />
     <Project Path="src/Libraries/Salon.Data/Salon.Data.csproj" />
     <Project Path="src/Libraries/Salon.Services/Salon.Services.csproj" />

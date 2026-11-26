@@ -4,9 +4,8 @@ using Salon.Core.Tenancy;
 using Salon.Services.Booking;
 using Salon.Services.Localization;
 using Salon.Services.Tenancy;
-using Salon.Web.Framework.Booking;
 
-namespace Salon.Web.Features.Booking.EnterDetails;
+namespace Salon.Web.Framework.Booking.Details;
 
 /// <summary>
 /// Runs inside the pipeline's transaction (ADR 0003): the verification row commits only if the SMS was handed to the

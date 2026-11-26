@@ -4,7 +4,7 @@ using Salon.Core.Clients;
 using Salon.Services.Clients;
 using Salon.Services.Localization;
 
-namespace Salon.Web.Features.Booking.EnterDetails;
+namespace Salon.Web.Framework.Booking.Details;
 
 /// <summary>Field rules that need no database or tenant: names, email shape, the slot instant. Messages come from resource keys.</summary>
 public sealed class StartBookingValidator : AbstractValidator<StartBookingCommand>

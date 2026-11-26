@@ -5,6 +5,9 @@ public static class PublicBookingDefaults
 {
     public const string BookPath = "/book";
 
+    /// <summary>The salon's privacy notice (ADR 0063); the ShowPrivacyNotice slice owns the route.</summary>
+    public const string PrivacyPath = "/privacy";
+
     /// <summary>The <c>staff</c> value in a booking address that says "anyone available" was chosen (ADR 0094).</summary>
     public const string AnyStaff = "any";
 

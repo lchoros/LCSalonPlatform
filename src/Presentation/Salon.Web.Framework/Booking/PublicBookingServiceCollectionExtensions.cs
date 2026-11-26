@@ -5,8 +5,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Salon.Api.Contracts.Booking;
 using Salon.Core.Tasks;
+using Salon.Services.Localization;
 using Salon.Services.Notifications;
+using Salon.Web.Framework.Api;
 using Salon.Web.Framework.Tenancy;
 
 namespace Salon.Web.Framework.Booking;
@@ -42,24 +45,51 @@ public static class PublicBookingServiceCollectionExtensions
 
                 return ValueTask.CompletedTask;
             };
-            limiter.AddPolicy(PublicBookingDefaults.SmsCodeRateLimitPolicy, httpContext => PerAddress(httpContext, o => o.SmsCodeRateLimit));
-            limiter.AddPolicy(PublicBookingDefaults.CodeVerifyRateLimitPolicy, httpContext => PerAddress(httpContext, o => o.CodeVerifyRateLimit));
-            limiter.AddPolicy(PublicBookingDefaults.DepositPayRateLimitPolicy, httpContext => PerAddress(httpContext, o => o.DepositPayRateLimit));
+            // One policy, one count per address, whether the page or the booking API (ADR 0097) asked.
+            limiter.AddPolicy(PublicBookingDefaults.SmsCodeRateLimitPolicy, new PerAddressPolicy(o => o.SmsCodeRateLimit));
+            limiter.AddPolicy(PublicBookingDefaults.CodeVerifyRateLimitPolicy, new PerAddressPolicy(o => o.CodeVerifyRateLimit));
+            limiter.AddPolicy(PublicBookingDefaults.DepositPayRateLimitPolicy, new PerAddressPolicy(o => o.DepositPayRateLimit));
         });
 
         return services;
     }
 
-    private static RateLimitPartition<string> PerAddress(HttpContext httpContext, Func<PublicBookingOptions, FixedWindowLimit> pick)
+    /// <summary>
+    /// A fixed window per address. A refusal says when to try again; a page gets the bare status and its status page
+    /// (ADR 0087), the booking API an <see cref="ApiProblem"/> it can show. A policy's own rejection replaces the
+    /// limiter's general one, which the sign-in registers last and so would otherwise decide.
+    /// </summary>
+    private sealed class PerAddressPolicy(Func<PublicBookingOptions, FixedWindowLimit> pick) : IRateLimiterPolicy<string>
     {
-        var limit = pick(httpContext.RequestServices.GetRequiredService<IOptions<PublicBookingOptions>>().Value);
-        return RateLimitPartition.GetFixedWindowLimiter(
-            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            _ => new FixedWindowRateLimiterOptions
+        public Func<OnRejectedContext, CancellationToken, ValueTask>? OnRejected => RejectAsync;
+
+        public RateLimitPartition<string> GetPartition(HttpContext httpContext)
+        {
+            var limit = pick(httpContext.RequestServices.GetRequiredService<IOptions<PublicBookingOptions>>().Value);
+            return RateLimitPartition.GetFixedWindowLimiter(
+                httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = limit.PermitLimit,
+                    Window = limit.Window,
+                    QueueLimit = 0,
+                });
+        }
+
+        private static async ValueTask RejectAsync(OnRejectedContext context, CancellationToken cancellationToken)
+        {
+            var http = context.HttpContext;
+            if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
             {
-                PermitLimit = limit.PermitLimit,
-                Window = limit.Window,
-                QueueLimit = 0,
-            });
+                http.Response.Headers.RetryAfter = ((int)Math.Ceiling(retryAfter.TotalSeconds)).ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (http.Request.Path.StartsWithSegments(BookingApi.Root, StringComparison.OrdinalIgnoreCase))
+            {
+                // The limiter runs before the salon's culture is set, so the sentence is in the default language.
+                var localizer = http.RequestServices.GetRequiredService<ILocalizationService>();
+                await http.Response.WriteAsJsonAsync(new ApiProblem(ApiProblemCodes.TooManyCodes, localizer["Booking.Api.TooManyRequests"]), cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 }

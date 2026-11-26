@@ -1,7 +1,7 @@
 using Salon.Core.Cqrs;
 using Salon.Services.Booking;
 
-namespace Salon.Web.Features.Booking.VerifyCode;
+namespace Salon.Web.Framework.Booking.Code;
 
 /// <summary>
 /// The code typed for one verification (ADR 0014). A right code books the appointment the verification carries; a wrong

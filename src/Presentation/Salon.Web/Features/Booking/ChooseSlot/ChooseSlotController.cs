@@ -6,6 +6,7 @@ using Salon.Core.Cqrs;
 using Salon.Core.Tenancy;
 using Salon.Services.Tenancy;
 using Salon.Web.Framework.Booking;
+using Salon.Web.Framework.Booking.Times;
 using Salon.Web.Framework.Controllers;
 using Salon.Web.Framework.Lists;
 using Salon.Web.Framework.Mvc;

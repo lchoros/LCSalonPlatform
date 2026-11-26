@@ -211,5 +211,16 @@
   "Booking.Held.Manage": "Zmień lub odwołaj tę wizytę",
   "Booking.Held.Over": "Tego terminu już dla Ciebie nie trzymamy. Nadal jesteś na liście oczekujących i możesz zobaczyć terminy, które są teraz wolne.",
   "Booking.Held.Gone": "Przepraszamy, ten termin właśnie zniknął. Nadal jesteś na liście oczekujących i możesz zobaczyć terminy, które są teraz wolne.",
-  "Booking.Held.Invalid": "Nie znamy tego linku. Być może skopiowano go bez ostatnich znaków. Możesz zobaczyć terminy, które są teraz wolne."
+  "Booking.Held.Invalid": "Nie znamy tego linku. Być może skopiowano go bez ostatnich znaków. Możesz zobaczyć terminy, które są teraz wolne.",
+  "Booking.Api.Invalid": "Popraw zaznaczone dane.",
+  "Booking.Api.NotFound": "Nie znaleźliśmy tego. Zacznij od nowa.",
+  "Booking.Api.TooManyRequests": "Zbyt wiele prób z tego połączenia. Odczekaj chwilę i spróbuj ponownie.",
+  "Booking.Api.Validation.BodyInvalid": "Nie udało się odczytać żądania.",
+  "Booking.Api.Validation.PartsRequired": "Wybierz usługę.",
+  "Booking.Api.Validation.OneServiceOnly": "Ten salon przyjmuje online jedną usługę na rezerwację.",
+  "Booking.Api.Validation.TooManyServices": "Liczba usług w jednej rezerwacji: najwyżej {0}.",
+  "Booking.Api.Validation.ServiceTwice": "Każda usługa może wystąpić w rezerwacji tylko raz.",
+  "Booking.Api.Validation.StaffInvalid": "Wybierz osobę z listy albo dowolną dostępną.",
+  "Booking.Api.Validation.StaffRequired": "Wybierz, kto ma wykonać każdą usługę.",
+  "Booking.Api.Validation.DateInvalid": "Wybierz dzień z listy."
 }
