@@ -1,0 +1,40 @@
+@using Salon.Web.Features.Help.Guide
+@model GuideViewModel
+@{
+    ViewData["Title"] = T["Guide.Title"];
+}
+<section class="guide space-y-8">
+    <header class="space-y-2">
+        <h1 class="page-title">@T["Guide.Title"]</h1>
+        <p class="max-w-prose text-stone-600">@T["Guide.Lead"]</p>
+    </header>
+
+    @* The list of what is on the page: a tap goes to the section. *@
+    <nav aria-label="@T["Guide.Contents"]" class="guide-contents" data-testid="guide-contents">
+        @foreach (var part in Model.Sections)
+        {
+            <a href="#@part.Anchor" class="pill" data-testid="guide-link">@T[part.TitleKey]</a>
+        }
+    </nav>
+
+    @foreach (var part in Model.Sections)
+    {
+        <article id="@part.Anchor" class="guide-section panel" data-testid="guide-section" aria-labelledby="@part.Anchor-title">
+            <div class="guide-words">
+                <h2 id="@part.Anchor-title" class="text-xl font-semibold text-slate-800">@T[part.TitleKey]</h2>
+                <p class="text-stone-600">@T[part.LeadKey]</p>
+                <ol class="guide-steps">
+                    @foreach (var step in part.StepKeys)
+                    {
+                        <li>@T[step]</li>
+                    }
+                </ol>
+                <a href="@part.Path" class="btn btn-compact btn-secondary" data-testid="guide-open">@T["Guide.Open"]<span class="sr-only">: @T[part.TitleKey]</span></a>
+            </div>
+            @* A picture of the screen, of a made-up salon; the words beside it say everything the picture shows. *@
+            <a href="@part.Image" class="guide-shot" aria-hidden="true" tabindex="-1"><img src="@part.Image" alt="" loading="lazy" width="1200" height="800" /></a>
+        </article>
+    }
+
+    <p class="text-sm text-stone-600" data-testid="guide-foot">@T["Guide.Foot"]</p>
+</section>

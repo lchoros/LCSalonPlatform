@@ -1,0 +1,49 @@
+{
+  "Guide.Title": "Guide",
+  "Guide.Lead": "How to run your salon here, one job at a time. Each part has a picture of the screen, the steps, and a button that takes you to that page. The pictures show a made-up salon.",
+  "Guide.Contents": "What is in this guide",
+  "Guide.Open": "Open this page",
+  "Guide.Foot": "Something missing or unclear? Tell us and we will add it.",
+  "Guide.Nav": "Guide",
+
+  "Guide.Day.Title": "Today's appointments",
+  "Guide.Day.Lead": "The day list shows every visit of the day under the person who does it. It is the page to keep open at the desk.",
+  "Guide.Day.Step1": "Open Appointments. Use Today and the arrows to move between days.",
+  "Guide.Day.Step2": "When a client confirms, tap Confirm. When they walk in, tap Arrived.",
+  "Guide.Day.Step3": "After the visit, tap Checkout to take the payment; the visit is then marked completed.",
+  "Guide.Day.Step4": "If a client does not come, tap No-show. It is kept on their card.",
+  "Guide.Day.Step5": "To cancel, tap Cancel and then \"Yes, cancel the visit\". The client is told and the time becomes free.",
+
+
+  "Guide.Book.Title": "Booking for a client",
+  "Guide.Book.Lead": "For a client who rings or stands at the desk.",
+  "Guide.Book.Step1": "Tap New booking on the day list or the calendar.",
+  "Guide.Book.Step2": "Choose the client (or add a new one), the service and the person, then tap Show times.",
+  "Guide.Book.Step3": "Tap a free time. If the day is full, the page offers the next day that has a time.",
+  "Guide.Book.Step4": "Save. The visit appears in the diary, and the client gets a confirmation if you have switched those on.",
+
+
+  "Guide.Services.Title": "Services and prices",
+  "Guide.Services.Lead": "What clients can book, how long each takes and what it costs.",
+  "Guide.Services.Step1": "Open Services and tap Add a service: name, length in minutes and price.",
+  "Guide.Services.Step2": "Write a short description. Clients see it under the service name when they book.",
+  "Guide.Services.Step3": "Put the service in a category so clients can filter the list.",
+  "Guide.Services.Step4": "Tick \"Show under Popular\" on the services you want clients to find first.",
+  "Guide.Services.Step5": "If a person takes longer or charges differently, set it under \"Staff prices and durations\". Untick a person who does not do the service.",
+
+  "Guide.Staff.Title": "Your team",
+  "Guide.Staff.Lead": "Who works here, when, and who can be booked.",
+  "Guide.Staff.Step1": "Open Staff and tap Add a staff member.",
+  "Guide.Staff.Step2": "Set their working hours for each day of the week. Clients can only book inside them.",
+  "Guide.Staff.Step3": "Add time off for holidays or a morning away; those times are closed for booking.",
+  "Guide.Staff.Step4": "Add a photo. Clients see it when they choose who they want.",
+
+
+  "Guide.Online.Title": "What your clients see",
+  "Guide.Online.Lead": "Your booking page works on a phone and needs no account. Share its address on your social pages and messages.",
+  "Guide.Online.Step1": "The client picks a service. They can search, filter by category, or tap Popular.",
+  "Guide.Online.Step2": "They pick a day and a time. Only free times are shown.",
+  "Guide.Online.Step3": "They choose who with, or \"Anyone available\".",
+  "Guide.Online.Step4": "They can add another service to the same visit; each can be with a different person.",
+  "Guide.Online.Step5": "They enter their name and mobile number, type the code sent by text, and the visit is in your diary."
+}

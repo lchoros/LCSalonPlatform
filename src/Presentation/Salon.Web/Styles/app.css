@@ -1217,6 +1217,41 @@
     --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 3v18h18M7 16v-5M12 16V8M17 16V7'/%3E%3C/svg%3E");
   }
 
+  /* The guide at the foot of the menu: an open book. */
+  [data-testid="nav-guide"] {
+    --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z'/%3E%3C/svg%3E");
+  }
+
+  [data-testid="nav-guide"]::before {
+    display: block;
+  }
+
+  /* The guide (ADR 0099): what is on the page as a row of pills; then each job as a card — the words and steps beside
+     a picture of the screen on a desk, the picture under the words on a phone. */
+  .guide-contents {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .guide-section {
+    @apply grid scroll-mt-4 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start;
+  }
+
+  .guide-words {
+    @apply space-y-3;
+  }
+
+  .guide-steps {
+    @apply list-decimal space-y-2 pl-5 text-slate-700 marker:font-semibold marker:text-brand;
+  }
+
+  .guide-shot {
+    @apply block overflow-hidden rounded-xl border border-stone-200 bg-stone-50 shadow-sm;
+  }
+
+  .guide-shot img {
+    @apply block h-auto w-full;
+  }
+
   [data-testid="nav-services"] {
     --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12'/%3E%3C/svg%3E");
   }
