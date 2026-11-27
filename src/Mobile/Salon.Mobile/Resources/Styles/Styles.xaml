@@ -79,7 +79,7 @@
 
     <Style x:Key="Small" TargetType="Label">
         <Setter Property="FontSize" Value="12" />
-        <Setter Property="TextColor" Value="{StaticResource Muted}" />
+        <Setter Property="TextColor" Value="{StaticResource MutedInk}" />
     </Style>
 
     <Style x:Key="Body" TargetType="Label">
@@ -90,7 +90,7 @@
 
     <Style x:Key="Muted" TargetType="Label" BasedOn="{StaticResource Body}">
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="TextColor" Value="{StaticResource Muted}" />
+        <Setter Property="TextColor" Value="{StaticResource MutedInk}" />
     </Style>
 
     <Style x:Key="FieldLabel" TargetType="Label">
@@ -206,7 +206,7 @@
 
     <!-- Shapes -->
     <Style x:Key="Card" TargetType="Border">
-        <Setter Property="BackgroundColor" Value="{StaticResource Card}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource CardFill}" />
         <Setter Property="StrokeThickness" Value="0" />
         <Setter Property="StrokeShape" Value="RoundRectangle 16" />
         <Setter Property="Padding" Value="16" />

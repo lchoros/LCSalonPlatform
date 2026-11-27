@@ -41,7 +41,7 @@
                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
                     <Path
                         Data="{StaticResource IconSearch}"
-                        Stroke="{StaticResource Muted}"
+                        Stroke="{StaticResource MutedInk}"
                         StrokeThickness="2"
                         StrokeLineCap="Round"
                         Aspect="None"

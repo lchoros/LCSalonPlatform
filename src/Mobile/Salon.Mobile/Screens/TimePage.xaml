@@ -93,7 +93,7 @@
                                         </DataTrigger>
                                     </Border.Triggers>
                                     <VerticalStackLayout VerticalOptions="Center" Spacing="6">
-                                        <Label Text="{Binding LocalDate, Converter={StaticResource Date}, ConverterParameter=weekday}" FontSize="12" TextColor="{StaticResource Muted}" HorizontalTextAlignment="Center">
+                                        <Label Text="{Binding LocalDate, Converter={StaticResource Date}, ConverterParameter=weekday}" FontSize="12" TextColor="{StaticResource MutedInk}" HorizontalTextAlignment="Center">
                                             <Label.Triggers>
                                                 <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
                                                     <Setter Property="TextColor" Value="{StaticResource White}" />
@@ -104,7 +104,7 @@
                                             <Label Text="{Binding LocalDate, Converter={StaticResource Date}, ConverterParameter=day}" Style="{StaticResource Strong}" FontSize="20" HorizontalTextAlignment="Center">
                                                 <Label.Triggers>
                                                     <DataTrigger TargetType="Label" Binding="{Binding HasTimes}" Value="False">
-                                                        <Setter Property="TextColor" Value="{StaticResource Muted}" />
+                                                        <Setter Property="TextColor" Value="{StaticResource MutedInk}" />
                                                     </DataTrigger>
                                                     <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
                                                         <Setter Property="TextColor" Value="{StaticResource White}" />
@@ -135,7 +135,7 @@
                 <Border
                     Margin="16,0"
                     Padding="4"
-                    BackgroundColor="{StaticResource Card}"
+                    BackgroundColor="{StaticResource CardFill}"
                     StrokeThickness="0"
                     StrokeShape="RoundRectangle 12"
                     IsVisible="{Binding PartsOfDay, Converter={StaticResource HasValue}}">
@@ -159,7 +159,7 @@
                                             <Setter Property="BackgroundColor" Value="{StaticResource White}" />
                                         </DataTrigger>
                                     </Border.Triggers>
-                                    <Label Text="{Binding Part, Converter={StaticResource PartOfDay}}" FontSize="14" TextColor="{StaticResource Muted}" HorizontalTextAlignment="Center" VerticalOptions="Center">
+                                    <Label Text="{Binding Part, Converter={StaticResource PartOfDay}}" FontSize="14" TextColor="{StaticResource MutedInk}" HorizontalTextAlignment="Center" VerticalOptions="Center">
                                         <Label.Triggers>
                                             <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
                                                 <Setter Property="TextColor" Value="{StaticResource Brand}" />
@@ -269,7 +269,7 @@
                                                         <Label.FormattedText>
                                                             <FormattedString>
                                                                 <Span Text="{x:Static r:AppResources.StaffNotChosen}" TextColor="{StaticResource InkSoft}" />
-                                                                <Span Text="{x:Static r:AppResources.Separator}" TextColor="{StaticResource Muted}" />
+                                                                <Span Text="{x:Static r:AppResources.Separator}" TextColor="{StaticResource MutedInk}" />
                                                                 <Span Text="{x:Static r:AppResources.Required}" TextColor="{StaticResource Danger}" FontFamily="{StaticResource FontMedium}" />
                                                             </FormattedString>
                                                         </Label.FormattedText>
@@ -292,7 +292,7 @@
                                         VerticalOptions="Start"
                                         DiscSize="28"
                                         Icon="{StaticResource IconClose}"
-                                        Color="{StaticResource Muted}"
+                                        Color="{StaticResource MutedInk}"
                                         Disc="{StaticResource White}"
                                         Ring="{StaticResource LineStrong}"
                                         Description="{x:Static r:AppResources.RemoveService}"
