@@ -1,0 +1,49 @@
+{
+  "Guide.Title": "Przewodnik",
+  "Guide.Lead": "Jak prowadzić tutaj salon, krok po kroku. Każda część ma zdjęcie ekranu, kolejne kroki i przycisk, który otwiera tę stronę. Zdjęcia pokazują zmyślony salon.",
+  "Guide.Contents": "Co jest w przewodniku",
+  "Guide.Open": "Otwórz tę stronę",
+  "Guide.Foot": "Czegoś brakuje albo coś jest niejasne? Daj nam znać, a to dopiszemy.",
+  "Guide.Nav": "Przewodnik",
+
+  "Guide.Day.Title": "Dzisiejsze wizyty",
+  "Guide.Day.Lead": "Lista dnia pokazuje każdą wizytę pod osobą, która ją wykonuje. To strona, którą warto mieć otwartą przy recepcji.",
+  "Guide.Day.Step1": "Otwórz Wizyty. Przycisk Dziś i strzałki przenoszą między dniami.",
+  "Guide.Day.Step2": "Gdy klient potwierdzi, naciśnij Potwierdź. Gdy przyjdzie, naciśnij Przybył.",
+  "Guide.Day.Step3": "Po wizycie naciśnij Rozliczenie, aby przyjąć płatność; wizyta zostanie oznaczona jako zakończona.",
+  "Guide.Day.Step4": "Jeśli klient nie przyjdzie, naciśnij Nie przyszedł. Zostaje to na jego karcie.",
+  "Guide.Day.Step5": "Aby odwołać, naciśnij Odwołaj, a potem „Tak, odwołaj wizytę”. Klient dostaje wiadomość, a termin się zwalnia.",
+
+
+  "Guide.Book.Title": "Rezerwacja dla klienta",
+  "Guide.Book.Lead": "Dla klienta, który dzwoni albo stoi przy recepcji.",
+  "Guide.Book.Step1": "Naciśnij Nowa wizyta na liście dnia albo w kalendarzu.",
+  "Guide.Book.Step2": "Wybierz klienta (albo dodaj nowego), usługę i osobę, a potem naciśnij Pokaż terminy.",
+  "Guide.Book.Step3": "Naciśnij wolną godzinę. Jeśli dzień jest pełny, strona proponuje najbliższy dzień z wolnym terminem.",
+  "Guide.Book.Step4": "Zapisz. Wizyta pojawia się w kalendarzu, a klient dostaje potwierdzenie, jeśli je włączono.",
+
+
+  "Guide.Services.Title": "Usługi i ceny",
+  "Guide.Services.Lead": "Co klienci mogą zarezerwować, ile to trwa i ile kosztuje.",
+  "Guide.Services.Step1": "Otwórz Usługi i naciśnij Dodaj usługę: nazwa, czas w minutach i cena.",
+  "Guide.Services.Step2": "Dopisz krótki opis. Klienci widzą go pod nazwą usługi podczas rezerwacji.",
+  "Guide.Services.Step3": "Przypisz usługę do kategorii, żeby klienci mogli filtrować listę.",
+  "Guide.Services.Step4": "Zaznacz „Pokaż w Popularne” przy usługach, które klienci mają znaleźć najpierw.",
+  "Guide.Services.Step5": "Jeśli ktoś potrzebuje więcej czasu albo ma inną cenę, ustaw to w „Ceny i czasy pracowników”. Odznacz osobę, która tej usługi nie wykonuje.",
+
+  "Guide.Staff.Title": "Zespół",
+  "Guide.Staff.Lead": "Kto tu pracuje, kiedy i do kogo można się umówić.",
+  "Guide.Staff.Step1": "Otwórz Pracownicy i naciśnij Dodaj pracownika.",
+  "Guide.Staff.Step2": "Ustaw godziny pracy na każdy dzień tygodnia. Klienci mogą rezerwować tylko w tych godzinach.",
+  "Guide.Staff.Step3": "Dodaj wolne na urlop albo nieobecność; te terminy są wtedy zamknięte.",
+  "Guide.Staff.Step4": "Dodaj zdjęcie. Klienci widzą je, gdy wybierają osobę.",
+
+
+  "Guide.Online.Title": "Co widzą klienci",
+  "Guide.Online.Lead": "Strona rezerwacji działa na telefonie i nie wymaga konta. Podaj jej adres w mediach społecznościowych i wiadomościach.",
+  "Guide.Online.Step1": "Klient wybiera usługę. Może szukać, filtrować po kategorii albo nacisnąć Popularne.",
+  "Guide.Online.Step2": "Wybiera dzień i godzinę. Widać tylko wolne terminy.",
+  "Guide.Online.Step3": "Wybiera osobę albo „Dowolna osoba”.",
+  "Guide.Online.Step4": "Może dodać kolejną usługę do tej samej wizyty; każda może być u innej osoby.",
+  "Guide.Online.Step5": "Podaje imię, nazwisko i numer telefonu, wpisuje kod z SMS-a i wizyta jest w Twoim kalendarzu."
+}
